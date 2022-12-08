@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.eclipse.pass</groupId>
+    <artifactId>eclipse-pass-parent</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>pass-support</artifactId>
+  <packaging>pom</packaging>
+
+  <name>PASS backend</name>
+  <description>PASS support module</description>
+  <url>https://github.com/eclipse-pass/pass-support</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Jim Martino</name>
+      <email>jrm.jhu@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins Univeristy</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Mark Patton</name>
+      <email>mpatton@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins Univeristy</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>John Abrahams</name>
+      <email>jabrah20@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+  </developers>
+
+  <modules>
+    <module>pass-data-client</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:https://github.com/eclipse-pass/pass-support.git</connection>
+    <developerConnection>scm:git:https://github.com/eclipse-pass/pass-support.git</developerConnection>
+    <url>https://github.com/eclipse-pass/pass-support</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <properties>
+    <junit.version>4.12</junit.version>
+    <elide.version>6.1.8</elide.version>
+    <spring.version>2.5.6</spring.version>
+    <junit.jupiter.version>5.5.2</junit.jupiter.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+    </dependencies>
+  </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+	
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>${docker-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build-helper-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-failsafe-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${maven-war-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

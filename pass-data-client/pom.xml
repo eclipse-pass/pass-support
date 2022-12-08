@@ -1,0 +1,117 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.eclipse.pass</groupId>
+    <artifactId>pass-support</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>pass-data-client</artifactId>
+
+  <!-- Properties for ITs -->
+  <properties>
+    <pass.core.port>8080</pass.core.port>
+    <pass.core.url>http://localhost:8080</pass.core.url>
+  </properties>
+  
+  <dependencies>
+    <dependency>
+      <groupId>com.markomilos.jsonapi</groupId>
+      <artifactId>jsonapi-adapters</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.10.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup</groupId>
+      <artifactId>javapoet</artifactId>
+      <version>1.13.0</version>
+    </dependency>
+    
+    <!-- Test dependencies -->
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>io.fabric8</groupId>
+	<artifactId>docker-maven-plugin</artifactId>
+	<executions>
+          <execution>
+            <id>start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+	</executions>
+	<configuration>
+          <images>
+            <image>
+              <name>ghcr.io/eclipse-pass/pass-core-main:%v</name>
+              <run>
+                <wait>
+                  <http>
+                    <url>
+                      ${pass.core.url}/data/grant
+                    </url>
+                  </http>
+                  <time>60000</time>
+                </wait>
+		<ports>
+                  <port>${pass.core.port}:${pass.core.port}</port>
+		</ports>
+              </run>
+            </image>
+          </images>
+	</configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-failsafe-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+	<configuration>
+          <systemPropertyVariables>
+            <pass.core.url>${pass.core.url}</pass.core.url>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
