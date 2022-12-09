@@ -29,6 +29,24 @@ import org.eclipse.pass.support.client.model.PassEntity;
  */
 public interface PassClient {
     /**
+     * Create a new PassClient configured by using system properties:
+     * pass.core.url, pass.core.user, and pass.core.password.
+     *
+     * @return new PassClient
+     */
+    public static PassClient newInstance() {
+        String url = System.getProperty("pass.core.url");
+        String user = System.getProperty("pass.core.user");
+        String pass = System.getProperty("pass.core.password");
+
+        if (url == null) {
+            throw new RuntimeException("Missing required system property: pass.core.url");
+        }
+
+        return new JsonApiPassClient(url, user, pass);
+    }
+
+    /**
      * Create a new PassClient.
      *
      * @param baseUrl base url of PASS API
