@@ -21,8 +21,6 @@ package org.eclipse.pass.support.client;
 public class RSQL {
     private RSQL() {}
 
-    // '"' | "'" | "(" | ")" | ";" | "," | "=" | "!" | "~" | "<" | ">";
-
     /**
      * @param expressions RSQL expressions
      * @return logical conjunction of arguments as RSQL expression
