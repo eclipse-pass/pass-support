@@ -1,0 +1,133 @@
+name: "Publish: full release OR snapshot"
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseversion:
+        description: 'Release version'
+        required: true
+      nextversion:
+        description: 'Next dev version'
+        required: true
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      # Output project version from the POM to conditionally run dependent steps
+      project-version: ${{ steps.project_version.outputs.version }}
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v3
+
+      - name: Setup Java & Maven
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'temurin'
+          cache: 'maven'
+      
+      - name: Get project version from POM
+        id: project_version
+        run: echo "VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`" >> $GITHUB_OUTPUT
+
+  # Run only if project POM has version ending in "-SNAPSHOT"
+  snapshot:
+    needs: setup
+    if: github.event_name == 'push' && endsWith(needs.setup.outputs.project-version, '-SNAPSHOT')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v3
+
+      - name: Setup Java & Maven
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Publish SNAPSHOT
+        run: mvn -B --no-transfer-progress clean deploy
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+  # Run for manual trigger (workflow dispatch), since you'll have release and next dev versions specified
+  # All commits will have a -SNAPSHOT project version anyway, since the releases will be handled here
+  release:
+    needs: setup
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      RELEASE: ${{ inputs.releaseversion }}
+      NEXT: ${{ inputs.nextversion }}
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v3
+
+      - name: Config git user
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Setup Java & Maven
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      # =============================================================================
+      # Start the release
+      # =============================================================================
+      - name: Bump version to release
+        run: mvn -B -U -V -ntp versions:update-parent -DparentVersion=$RELEASE
+
+      - name: Commit release version bump
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: pom.xml **/pom.xml
+          message: "Update parent version to $RELEASE"
+
+      - name: Release main POM
+        run: |
+          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE -Darguments="-B -ntp"
+          mvn -B -U -V -ntp release:perform -P release -Darguments="-B -ntp"
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+      - name: Update parent POM to new dev version
+        run: mvn -B -U -V -ntp versions:update-parent -DallowSnapshots=true -DparentVersion=$NEXT
+
+      - name: Commit snapshot version bump
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: pom.xml **/pom.xml
+          message: "Update parent version to $NEXT"
+          push: true
+
+      - name: Build and publish new dev version
+        run: mvn -B -U -V -ntp deploy -P release -Darguments="-B -ntp"
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+      - name: Push new release tag GH
+        run: git push origin --tags
