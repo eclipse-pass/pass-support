@@ -105,8 +105,8 @@ jobs:
 
       - name: Release main POM
         run: |
-          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE -Darguments="-B -ntp"
-          mvn -B -U -V -ntp release:perform -P release -Darguments="-B -ntp"
+          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE"
+          mvn -B -U -V -ntp release:perform -P release
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
