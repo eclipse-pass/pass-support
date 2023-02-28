@@ -105,7 +105,7 @@ jobs:
 
       - name: Release main POM
         run: |
-          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE" -DdevelopmentVersion=$NEXT
+          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE -DdevelopmentVersion=$NEXT
           mvn -B -U -V -ntp release:perform -P release
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
@@ -123,7 +123,7 @@ jobs:
           push: true
 
       - name: Build and publish new dev version
-        run: mvn -B -U -V -ntp deploy -P release -Darguments="-B -ntp"
+        run: mvn -B -U -V -ntp deploy -P release
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
