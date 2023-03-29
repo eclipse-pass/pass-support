@@ -50,7 +50,10 @@ public class JsonApiPassClientIT {
     @BeforeAll
     public static void setup() {
         String base_url = System.getProperty("pass.core.url", "http://localhost:8080");
-        client = new JsonApiPassClient(base_url);
+        String backend_user = System.getProperty("pass.core.backend.user", "backend");
+        String backend_password = System.getProperty("pass.core.backend.password", "backend");
+
+        client = new JsonApiPassClient(base_url, backend_user, backend_password);
     }
 
     @Test
