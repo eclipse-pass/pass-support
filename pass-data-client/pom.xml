@@ -4,16 +4,18 @@
   <parent>
     <groupId>org.eclipse.pass</groupId>
     <artifactId>pass-support</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.4.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>pass-data-client</artifactId>
-  <version>0.3.0-SNAPSHOT</version>
+  <version>0.4.0-SNAPSHOT</version>
 
   <!-- Properties for ITs -->
   <properties>
     <pass.core.port>8080</pass.core.port>
     <pass.core.url>http://localhost:8080</pass.core.url>
+    <pass.core.backend.user>backend</pass.core.backend.user>
+    <pass.core.backend.password>backend</pass.core.backend.password>
   </properties>
   
   <dependencies>
@@ -78,11 +80,17 @@
             <image>
               <name>ghcr.io/eclipse-pass/pass-core-main:%v</name>
               <run>
+		<env>
+                  <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
+                  <PASS_CORE_BACKEND_USER>${pass.core.backend.user}</PASS_CORE_BACKEND_USER>
+                  <PASS_CORE_BACKEND_PASSWORD>${pass.core.backend.password}</PASS_CORE_BACKEND_PASSWORD>		  
+		</env>
                 <wait>
                   <http>
                     <url>
                       ${pass.core.url}/data/grant
                     </url>
+		    <status>401</status>
                   </http>
                   <time>60000</time>
                 </wait>
