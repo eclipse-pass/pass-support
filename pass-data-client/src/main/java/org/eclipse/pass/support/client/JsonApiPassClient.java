@@ -169,7 +169,7 @@ public class JsonApiPassClient implements PassClient {
         String url = get_url(obj);
         RequestBody body = RequestBody.create(json, JSON_API_MEDIA_TYPE);
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
-                .addHeader("Content-Type", JSON_API_CONTENT_TYPE).post(body).build();
+                .addHeader("Content-Type", JSON_API_CONTENT_TYPE).patch(body).build();
 
         Response response = client.newCall(request).execute();
 
