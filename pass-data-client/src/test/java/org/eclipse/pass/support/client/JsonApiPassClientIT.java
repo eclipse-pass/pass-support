@@ -39,6 +39,7 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionEvent;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.client.model.UserRole;
 import org.junit.jupiter.api.BeforeAll;
@@ -130,21 +131,39 @@ public class JsonApiPassClientIT {
     @Test
     public void testUpdateObject() throws IOException {
 
-        Publication pub = new Publication();
-        pub.setTitle("Ten puns");
+        Publication pub1 = new Publication();
+        pub1.setTitle("Ten puns");
 
-        client.createObject(pub);
+        Publication pub2 = new Publication();
+        pub1.setTitle("Twenty puns");
+
+        client.createObject(pub1);
+        client.createObject(pub2);
 
         Submission sub = new Submission();
 
         sub.setAggregatedDepositStatus(AggregatedDepositStatus.NOT_STARTED);
         sub.setSource(Source.PASS);
-        sub.setPublication(pub);
+        sub.setPublication(pub1);
         sub.setSubmitterName("Name");
         sub.setSubmitted(false);
 
         client.createObject(sub);
 
+        assertEquals(sub, client.getObject(sub, "publication"));
+
+        // Try to update pub1 attributes
+        pub1.setTitle("Different title");
+
+        client.updateObject(pub1);
+        assertEquals(pub1, client.getObject(pub1));
+
+        // Try to update sub attributes and relationship
+        sub.setSource(Source.OTHER);
+        sub.setSubmissionStatus(SubmissionStatus.CANCELLED);
+        sub.setPublication(pub2);
+
+        client.updateObject(sub);
         assertEquals(sub, client.getObject(sub, "publication"));
     }
 
