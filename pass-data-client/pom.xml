@@ -14,8 +14,8 @@
   <properties>
     <pass.core.port>8080</pass.core.port>
     <pass.core.url>http://localhost:8080</pass.core.url>
-    <pass.core.backend.user>backend</pass.core.backend.user>
-    <pass.core.backend.password>backend</pass.core.backend.password>
+    <pass.core.user>backend</pass.core.user>
+    <pass.core.password>backend</pass.core.password>
   </properties>
   
   <dependencies>
@@ -82,8 +82,8 @@
               <run>
 		<env>
                   <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
-                  <PASS_CORE_BACKEND_USER>${pass.core.backend.user}</PASS_CORE_BACKEND_USER>
-                  <PASS_CORE_BACKEND_PASSWORD>${pass.core.backend.password}</PASS_CORE_BACKEND_PASSWORD>		  
+                  <PASS_CORE_BACKEND_USER>${pass.core.user}</PASS_CORE_BACKEND_USER>
+                  <PASS_CORE_BACKEND_PASSWORD>${pass.core.password}</PASS_CORE_BACKEND_PASSWORD>
 		</env>
                 <wait>
                   <http>
@@ -117,6 +117,8 @@
 	      <configuration>
           <systemPropertyVariables>
             <pass.core.url>${pass.core.url}</pass.core.url>
+            <pass.core.user>${pass.core.user}</pass.core.user>
+            <pass.core.password>${pass.core.password}</pass.core.password> 
           </systemPropertyVariables>
         </configuration>
       </plugin>
