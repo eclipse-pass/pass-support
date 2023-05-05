@@ -1,0 +1,101 @@
+{
+  "uid": "11111111",
+  "pubdate": "2017 Apr 1",
+  "epubdate": "2017 Apr 1",
+  "source": "Journal A",
+  "authors": [
+    {
+      "name": "Fuchsia A",
+      "authtype": "Author",
+      "clusterid": ""
+    },
+    {
+      "name": "Green F",
+      "authtype": "Author",
+      "clusterid": ""
+    }
+  ],
+  "lastauthor": "Fuchsia A",
+  "title": "Article A",
+  "sorttitle": "Article A",
+  "volume": "140",
+  "issue": "3",
+  "pages": "111-113",
+  "lang": [
+    "eng"
+  ],
+  "nlmuniqueid": "1111111",
+  "issn": "1234-1234",
+  "essn": "2345-2345",
+  "pubtype": [
+    "Journal Article"
+  ],
+  "recordstatus": "PubMed - indexed for MEDLINE",
+  "pubstatus": "256",
+  "articleids": [
+    {
+      "idtype": "pubmed",
+      "idtypen": 1,
+      "value": "11111111"
+    },
+    {
+      "idtype": "doi",
+      "idtypeen": 2,
+      "value": "10.1000/a.abcd.1234"
+    }
+  ],
+  "history": [
+    {
+      "pubstatus": "received",
+      "date": "2016/10/12 00:00"
+    },
+    {
+      "pubstatus": "revised",
+      "date": "2017/01/12 00:00"
+    },
+    {
+      "pubstatus": "accepted",
+      "date": "2017/01/12 00:00"
+    },
+    {
+      "pubstatus": "pubmed",
+      "date": "2017/03/12 06:00"
+    },
+    {
+      "pubstatus": "medline",
+      "date": "2017/09/12 06:00"
+    },
+    {
+      "pubstatus": "entrez",
+      "date": "2017/03/12 06:00"
+    }
+  ],
+  "references": [
+  ],
+  "attributes": [
+    "Has Abstract"
+  ],
+  "pmcrefcount": 3,
+  "fulljournalname": "Journal A",
+  "elocationid": "doi: 10.1000/a.abcd.1234",
+  "doctype": "citation",
+  "srccontriblist": [
+  ],
+  "booktitle": "",
+  "medium": "",
+  "edition": "",
+  "publisherlocation": "",
+  "publishername": "",
+  "srcdate": "",
+  "reportnumber": "",
+  "availablefromurl": "",
+  "locationlabel": "",
+  "doccontriblist": [
+  ],
+  "docdate": "",
+  "bookname": "",
+  "chapter": "",
+  "sortpubdate": "2017/09/12 00:00",
+  "sortfirstauthor": "Green F",
+  "vernaculartitle": ""
+}

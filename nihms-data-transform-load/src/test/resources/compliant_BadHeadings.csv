@@ -1,0 +1,4 @@
+wrong,PMCID,NIHMSID,grnt,PI Name,Publication Date,NIHMS file deposited,NIHMS initial approval,NIHMS tagging complete,NIHMS final approval,Article Title,First Author Name,Journal Title,Journal Publisher,Method A Journal,NIHMS Person
+12345678,3453453,678678,A12 BC000001,"BENIGN, JUDY",4/1/2017,4/4/2016,4/5/2016,4/12/2016,4/12/2016,A title made up to test with,"BENIGN, JUDY",Great Papers,Acme Publisher Inc,no,"Benign, Judy"
+34567890,4564564,789789,B23 DE000002,"SMITH, KAREN",3/1/2017,7/6/2015,7/6/2015,7/14/2015,7/14/2015,Another title made up to test with,"LI, SAM",American Made Up Journal,American Great Journal Society,no,"Smith, Karen"
+34567890,4564564,789789,B23 DE000002,"KHAN, AHMED",3/1/2017,7/6/2015,7/6/2015,7/14/2015,7/14/2015,Another title made up to test with,"KHAN, AHMED",American Made Up Journal,American Great Journal Society,no,"Khan, Ahmed"
