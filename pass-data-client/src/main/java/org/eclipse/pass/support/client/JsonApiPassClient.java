@@ -1,7 +1,10 @@
 package org.eclipse.pass.support.client;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +16,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonAdapter.Factory;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.JsonReader.Token;
+import com.squareup.moshi.JsonWriter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import jsonapi.Document;
@@ -63,6 +67,7 @@ public class JsonApiPassClient implements PassClient {
     private final static MediaType JSON_API_MEDIA_TYPE = MediaType.parse("application/vnd.api+json; charset=utf-8");
 
     private final Moshi moshi;
+    private final Moshi update_moshi;
     private final String baseUrl;
     private final OkHttpClient client;
 
@@ -78,9 +83,9 @@ public class JsonApiPassClient implements PassClient {
     /**
      * Create a JsonApiClient which uses HTTP basic auth.
      *
-     * @param baseUrl  base url of PASS API
-     * @param user user to connect as
-     * @param pass password of user
+     * @param baseUrl base url of PASS API
+     * @param user    user to connect as
+     * @param pass    password of user
      */
     public JsonApiPassClient(String baseUrl, String user, String pass) {
         this.baseUrl = (baseUrl.endsWith("/") ? baseUrl : baseUrl + "/") + "data/";
@@ -92,17 +97,41 @@ public class JsonApiPassClient implements PassClient {
         }
 
         client = client_builder.build();
+        moshi = create_moshi(false);
 
+        // Serialize null value of attributes for the JSON API document
+        update_moshi = create_moshi(true);
+    }
+
+    private Moshi create_moshi(boolean serialize_nulls) {
         Factory factory = new JsonApiFactory.Builder().addTypes(Contributor.class, Deposit.class, File.class,
                 Funder.class, Grant.class, Journal.class, Policy.class, Publication.class, Publisher.class,
                 Repository.class, RepositoryCopy.class, Submission.class, SubmissionEvent.class, User.class).build();
 
-        this.moshi = new Moshi.Builder().add(factory).add(new AggregatedDepositStatusAdapter())
-                .add(new AwardStatusAdapter()).add(new ContributorRoleAdapter()).add(new CopyStatusAdapter())
-                .add(new DepositStatusAdapter()).add(new EventTypeAdapter()).add(new FileRoleAdapter())
-                .add(new IntegrationTypeAdapter()).add(new PerformerRoleAdapter()).add(new SourceAdapter())
-                .add(new SubmissionStatusAdapter()).add(new ZonedDateTimeAdapter()).add(new UriAdapter())
-                .add(new UserRoleAdapter()).build();
+        Moshi.Builder builder = new Moshi.Builder().add(factory);
+
+        if (serialize_nulls) {
+            Factory serialize_nulls_factory = new JsonAdapter.Factory() {
+                @Override
+                public JsonAdapter<?> create(Type type, Set<? extends Annotation> annotations, Moshi moshi) {
+                    if (type.getTypeName().startsWith("org.eclipse.pass.")) {
+                        return moshi.nextAdapter(this, type, annotations).serializeNulls();
+                    }
+
+                    return null;
+                }
+            };
+
+            builder.add(serialize_nulls_factory);
+        }
+
+        builder.add(new AggregatedDepositStatusAdapter()).add(new AwardStatusAdapter())
+                .add(new ContributorRoleAdapter()).add(new CopyStatusAdapter()).add(new DepositStatusAdapter())
+                .add(new EventTypeAdapter()).add(new FileRoleAdapter()).add(new IntegrationTypeAdapter())
+                .add(new PerformerRoleAdapter()).add(new SourceAdapter()).add(new SubmissionStatusAdapter())
+                .add(new ZonedDateTimeAdapter()).add(new UriAdapter()).add(new UserRoleAdapter());
+
+        return builder.build();
     }
 
     private String get_url(PassEntity obj) {
@@ -161,10 +190,14 @@ public class JsonApiPassClient implements PassClient {
 
     @Override
     public <T extends PassEntity> void updateObject(T obj) throws IOException {
-        JsonAdapter<Document<T>> adapter = moshi.adapter(Types.newParameterizedType(Document.class, obj.getClass()));
+        // Use adapters that will serialize null values for attributes
+        JsonAdapter<Object> adapter = update_moshi.adapter(Types.newParameterizedType(Document.class, obj.getClass()));
         Document<T> doc = Document.with(obj).includedSerialization(IncludedSerialization.NONE).build();
 
         String json = adapter.toJson(doc);
+
+        // Null relationships are not serialized. Add any missing null to one relationships
+        json = add_null_relationships(json, get_null_relationships(obj));
 
         String url = get_url(obj);
         RequestBody body = RequestBody.create(json, JSON_API_MEDIA_TYPE);
@@ -176,6 +209,81 @@ public class JsonApiPassClient implements PassClient {
         if (!response.isSuccessful()) {
             throw new IOException(
                     "Update failed: " + url + " returned " + response.code() + " " + response.body().string());
+        }
+    }
+
+    // Return all to one relationships that have a null value.
+    private List<String> get_null_relationships(PassEntity entity) {
+        List<String> rels = new ArrayList<>();
+
+        for (Method m : entity.getClass().getMethods()) {
+            if (m.getName().startsWith("get") && PassEntity.class.isAssignableFrom(m.getReturnType())) {
+                try {
+                    if (m.invoke(entity) == null) {
+                        String rel = m.getName();
+                        rel = Character.toLowerCase(rel.charAt(3)) + rel.substring(4);
+                        rels.add(rel);
+                    }
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    throw new RuntimeException("Failed to invoke: " + m.getName(), e);
+                }
+            }
+        }
+
+        return rels;
+    }
+
+    // Add the missing to one relationships with null values to the document
+    @SuppressWarnings("unchecked")
+    private String add_null_relationships(String json, List<String> null_rels) throws IOException {
+        try (Buffer in_buf = new Buffer();
+                Buffer out_buf = new Buffer();
+                JsonReader in = JsonReader.of(in_buf.writeUtf8(json));
+                JsonWriter out = JsonWriter.of(out_buf);) {
+            out.setSerializeNulls(true);
+
+            in.beginObject();
+            out.beginObject();
+
+            while (in.hasNext()) {
+                String name = in.nextName();
+
+                if (name.equals("data")) {
+                    in.beginObject();
+                    out.name("data");
+                    out.beginObject();
+                    Map<String, ?> rels = null;
+
+                    while (in.hasNext()) {
+                        String data_name = in.nextName();
+
+                        if (data_name.equals("relationships")) {
+                            rels = (Map<String, ?>) in.readJsonValue();
+                        } else {
+                            out.name(data_name).jsonValue(in.readJsonValue());
+                        }
+                    }
+
+                    if (rels == null) {
+                        rels = new HashMap<>();
+                    }
+
+                    for (String rel: null_rels) {
+                        rels.put(rel, null);
+                    }
+
+                    out.name("relationships").jsonValue(rels);
+
+                    in.endObject();
+                    out.endObject();
+                } else {
+                    out.name(name).jsonValue(in.readJsonValue());
+                }
+            }
+            in.endObject();
+            out.endObject();
+
+            return out_buf.readUtf8();
         }
     }
 

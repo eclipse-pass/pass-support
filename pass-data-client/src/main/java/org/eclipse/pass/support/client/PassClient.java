@@ -79,8 +79,7 @@ public interface PassClient {
     <T extends PassEntity> void createObject(T obj) throws IOException;
 
     /**
-     * Update an existing object. Note that a relationship cannot be removed by
-     * setting it to null.
+     * Update an existing object.
      *
      * @param <T> type of the object
      * @param obj object to update
