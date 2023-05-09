@@ -154,7 +154,11 @@ public class JsonApiPassClientIT {
 
         // Try to update pub1 attributes
         pub1.setTitle("Different title");
+        client.updateObject(pub1);
+        assertEquals(pub1, client.getObject(pub1));
 
+        // Try to remove attribute
+        pub1.setTitle(null);
         client.updateObject(pub1);
         assertEquals(pub1, client.getObject(pub1));
 
@@ -162,9 +166,45 @@ public class JsonApiPassClientIT {
         sub.setSource(Source.OTHER);
         sub.setSubmissionStatus(SubmissionStatus.CANCELLED);
         sub.setPublication(pub2);
-
         client.updateObject(sub);
         assertEquals(sub, client.getObject(sub, "publication"));
+
+        // Try to remove the relationship
+        sub.setPublication(null);
+        client.updateObject(sub);
+        assertEquals(sub, client.getObject(sub, "publication"));
+    }
+
+    @Test
+    public void testUpdateObjectMultipleRelationships() throws IOException {
+        Repository rep1 = new Repository();
+        rep1.setDescription("one");
+
+        Repository rep2 = new Repository();
+        rep2.setDescription("two");
+
+        client.createObject(rep1);
+        client.createObject(rep2);
+
+        Submission sub = new Submission();
+        sub.setSubmitterName("Bob");
+
+        client.createObject(sub);
+
+        // Add multiple value relationship
+        sub.setRepositories(Arrays.asList(rep1, rep2));
+        client.updateObject(sub);
+        assertEquals(sub, client.getObject(sub, "repositories"));
+
+        // Delete one value of relationship
+        sub.setRepositories(Arrays.asList(rep2));
+        client.updateObject(sub);
+        assertEquals(sub, client.getObject(sub, "repositories"));
+
+        // Try to delete the relationship
+        sub.setRepositories(null);
+        client.updateObject(sub);
+        assertEquals(sub, client.getObject(sub, "repositories"));
     }
 
     @Test
@@ -213,7 +253,7 @@ public class JsonApiPassClientIT {
     }
 
     private static ZonedDateTime dt(String s) {
-        return ZonedDateTime.parse("2010-12-10T02:01:20.300Z", Util.dateTimeFormatter());
+        return ZonedDateTime.parse(s, Util.dateTimeFormatter());
     }
 
     @Test
