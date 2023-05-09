@@ -18,7 +18,6 @@ package org.eclipse.pass.support.client.model;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -286,7 +285,7 @@ public class Submission implements PassEntity {
      * @param repositories the repositories to set
      */
     public void setRepositories(List<Repository> repositories) {
-        this.repositories = repositories == null ? Collections.emptyList() : repositories;
+        this.repositories = repositories == null ? new ArrayList<>() : repositories;
     }
 
     /**
@@ -350,7 +349,7 @@ public class Submission implements PassEntity {
      * @param preparers the preparers to set
      */
     public void setPreparers(List<User> preparers) {
-        this.preparers = preparers == null ? Collections.emptyList() : preparers;
+        this.preparers = preparers == null ? new ArrayList<>() : preparers;
     }
 
     /**
@@ -364,7 +363,7 @@ public class Submission implements PassEntity {
      * @param grants the grants to set
      */
     public void setGrants(List<Grant> grants) {
-        this.grants = grants == null ? Collections.emptyList() : grants;
+        this.grants = grants == null ? new ArrayList<>() : grants;
     }
 
     /**
@@ -378,7 +377,7 @@ public class Submission implements PassEntity {
      * @param effectivePolicies the policies being satisfied upon submission
      */
     public void setEffectivePolicies(List<Policy> effectivePolicies) {
-        this.effectivePolicies = effectivePolicies == null ? Collections.emptyList() : effectivePolicies;
+        this.effectivePolicies = effectivePolicies == null ? new ArrayList<>() : effectivePolicies;
     }
 
     @Override

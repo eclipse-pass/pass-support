@@ -17,7 +17,6 @@ package org.eclipse.pass.support.client.model;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -246,7 +245,7 @@ public class Grant implements PassEntity {
      * @param coPis the coPis to set
      */
     public void setCoPis(List<User> coPis) {
-        this.coPis = coPis == null ? Collections.emptyList() : coPis;
+        this.coPis = coPis == null ? new ArrayList<>() : coPis;
     }
 
     /**
