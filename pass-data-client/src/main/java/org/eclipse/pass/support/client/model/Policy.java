@@ -17,6 +17,7 @@ package org.eclipse.pass.support.client.model;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -160,7 +161,7 @@ public class Policy implements PassEntity {
      * @param repositories list repositories to set
      */
     public void setRepositories(List<Repository> repositories) {
-        this.repositories = repositories;
+        this.repositories = repositories == null ? Collections.emptyList() : repositories;
     }
 
     @Override

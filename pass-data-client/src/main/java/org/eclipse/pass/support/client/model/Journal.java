@@ -30,6 +30,7 @@ import jsonapi.ToOne;
  */
 
 @Resource(type = "journal")
+
 public class Journal implements PassEntity {
     /**
      * Unique id for the resource.
