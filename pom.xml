@@ -45,6 +45,7 @@
 
   <modules>
     <module>pass-data-client</module>
+    <module>pass-journal-loader</module>
   </modules>
 
   <scm>

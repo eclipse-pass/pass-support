@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.eclipse.pass</groupId>
+    <artifactId>pass-support</artifactId>
+    <version>0.6.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.eclipse.pass</groupId>
+  <artifactId>pass-journal-loader</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Eclipse-PASS Journal Loader</name>
+  <description>Tool for populating journal objects in the PASS repository</description>
+  <url>https://github.com/eclipse-pass/pass-journal-loader</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Jim Martino</name>
+      <email>jrm@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Mark Patton</name>
+      <email>mpatton@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>John Abrahams</name>
+      <email>jabrah20@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+  </developers>
+
+  <modules>
+    <module>pass-journal-loader-nih</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <commons.csv.version>1.6</commons.csv.version>
+    <junit.version>4.12</junit.version>
+    <logback.version>1.2.3</logback.version>
+    <mockito.version>2.25.1</mockito.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.eclipse.pass</groupId>
+        <artifactId>pass-data-client</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>${commons.csv.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build-helper-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven-dependency-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-failsafe-plugin.version}</version>
+        </plugin>
+
+      </plugins>
+
+    </pluginManagement>
+  </build>
+</project>
