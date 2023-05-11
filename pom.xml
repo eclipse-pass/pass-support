@@ -53,6 +53,7 @@
     <module>pass-data-client</module>
     <module>pass-journal-loader</module>
     <module>pass-grant-loader</module>
+    <module>pass-nihms-loader</module>
     <module>pass-notification-service</module>
   </modules>
 
