@@ -58,6 +58,7 @@
   <properties>
     <javapoet.version>1.13.0</javapoet.version>
     <jsonapi-adapters.version>1.1.0</jsonapi-adapters.version>
+    <mockito.version>4.8.1</mockito.version>
   </properties>
 
   <dependencyManagement>
