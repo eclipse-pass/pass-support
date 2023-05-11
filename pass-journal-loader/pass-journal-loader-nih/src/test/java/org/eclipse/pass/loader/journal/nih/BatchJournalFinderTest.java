@@ -16,9 +16,9 @@
 
 package org.eclipse.pass.loader.journal.nih;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -31,8 +31,8 @@ import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.PmcParticipation;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 /**
@@ -47,7 +47,7 @@ public class BatchJournalFinderTest {
     private Journal journal4;
     private Journal journal5;
 
-    @Before
+    @BeforeEach
     public void setupTest() throws Exception {
         journal1 = new Journal();
         journal1.setId("test:1");

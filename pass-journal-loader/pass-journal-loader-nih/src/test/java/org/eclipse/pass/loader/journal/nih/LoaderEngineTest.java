@@ -16,7 +16,7 @@
 
 package org.eclipse.pass.loader.journal.nih;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -30,19 +30,19 @@ import java.util.stream.Stream;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PmcParticipation;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author apb@jhu.edu
  */
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class LoaderEngineTest {
     @Mock
     PassClient client;
@@ -55,7 +55,7 @@ public class LoaderEngineTest {
 
     private LoaderEngine toTest;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         toTest = new LoaderEngine(client, finder);

@@ -17,7 +17,7 @@
 package org.eclipse.pass.loader.journal.nih;
 
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +27,7 @@ import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PmcParticipation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author apb@jhu.edu
