@@ -38,16 +38,12 @@ import org.slf4j.LoggerFactory;
  * @author apb@jhu.edu
  */
 public class BatchJournalFinder implements JournalFinder {
+    private static final Logger LOG = LoggerFactory.getLogger(BatchJournalFinder.class);
 
-    private Logger LOG = LoggerFactory.getLogger(BatchJournalFinder.class);
-
-    private Map<String, Set<String>> issnMap = new HashMap<>();
-
-    private Map<String, Set<String>> nlmtaMap = new HashMap<>();
-
-    private Map<String, Set<String>> nameMap = new HashMap<>();
-
-    private Set<String> foundUris = new HashSet<>();
+    private final Map<String, Set<String>> issnMap = new HashMap<>();
+    private final Map<String, Set<String>> nlmtaMap = new HashMap<>();
+    private final Map<String, Set<String>> nameMap = new HashMap<>();
+    private final Set<String> foundUris = new HashSet<>();
 
     private void load(PassClient client) throws IOException {
         LOG.info("Loading existing journals from PASS");
@@ -82,8 +78,8 @@ public class BatchJournalFinder implements JournalFinder {
     }
 
     /**
-     * @param client
-     * @throws IOException
+     * @param client the PassClient to use
+     * @throws IOException on error
      */
     public BatchJournalFinder(PassClient client) throws IOException {
 

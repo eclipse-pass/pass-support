@@ -31,13 +31,18 @@ import org.slf4j.LoggerFactory;
  * @author apb@jhu.edu
  */
 public class Main {
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     private Main () {
         //never called
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
-
+    /**
+     * Entry point for the command line tool.
+     *
+     * @param args the command line arguments
+     * @throws Exception on error
+     */
     public static void main(String[] args) throws Exception {
 
         LogUtil.adjustLogLevels();

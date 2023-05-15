@@ -26,11 +26,11 @@ import org.eclipse.pass.support.client.model.Journal;
 public interface JournalFinder {
     /**
      * Find the journal best matching the provided data.
-     * If the journal already exists, return SKIP
+     * If the journal has already been processed, return SKIP
      *
-     * @param nlmta
-     * @param name
-     * @param issns
+     * @param nlmta of journal
+     * @param name of journal
+     * @param issns of journal
      * @return matching journal id, SKIP, or null
      */
     String find(String nlmta, String name, List<String> issns);
@@ -38,7 +38,7 @@ public interface JournalFinder {
     /**
      * Add a journal to be searched
      *
-     * @param j
+     * @param j the Journal to add
      */
     void add(Journal j);
 }

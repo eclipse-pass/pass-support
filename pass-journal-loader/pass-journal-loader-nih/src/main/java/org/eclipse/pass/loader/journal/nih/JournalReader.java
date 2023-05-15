@@ -27,7 +27,15 @@ import org.eclipse.pass.support.client.model.Journal;
  */
 public interface JournalReader {
 
+    /**
+     * @param source the InputStream to read journals from
+     * @param charset the Charset of the text
+     * @return Stream of Journal
+     */
     Stream<Journal> readJournals(InputStream source, Charset charset);
 
+    /**
+     * @return whether or not PMC participation is known
+     */
     boolean hasPmcParticipation();
 }

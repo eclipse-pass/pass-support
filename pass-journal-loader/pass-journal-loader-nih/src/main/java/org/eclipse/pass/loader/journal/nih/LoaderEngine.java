@@ -37,9 +37,9 @@ import org.slf4j.LoggerFactory;
  * @author apb@jhu.edu
  */
 public class LoaderEngine implements AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(LoaderEngine.class);
     private final PassClient client;
     private final JournalFinder finder;
-    private Logger LOG = LoggerFactory.getLogger(LoaderEngine.class);
     private boolean dryRun = false;
     private final AtomicInteger numCreated = new AtomicInteger(0);
     private final AtomicInteger numUpdated = new AtomicInteger(0);
