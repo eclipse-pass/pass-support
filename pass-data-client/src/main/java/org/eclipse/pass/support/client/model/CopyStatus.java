@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public enum CopyStatus {
     /**
-     * The target Repository has rejected the Deposit
+     * The target Repository has accepted the Deposit
      */
     ACCEPTED("accepted"),
     /**
