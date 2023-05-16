@@ -252,6 +252,11 @@ public class JsonApiPassClientIT {
         selector = new PassClientSelector<>(Publication.class, 0, 2, filter, "id");
         pubs.forEach(p -> p.setJournal(new Journal(journal.getId())));
         assertIterableEquals(pubs, client.streamObjects(selector).collect(Collectors.toList()));
+
+        // Test searching on a relationship. Do not include journal.
+        filter = RSQL.equals("journal.id", journal.getId());
+        selector = new PassClientSelector<>(Publication.class, 0, 100, filter, "id");
+        assertIterableEquals(pubs, client.streamObjects(selector).collect(Collectors.toList()));
     }
 
     @Test
