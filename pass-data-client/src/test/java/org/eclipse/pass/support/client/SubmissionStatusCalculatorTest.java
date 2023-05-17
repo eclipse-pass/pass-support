@@ -44,6 +44,7 @@ public class SubmissionStatusCalculatorTest {
     private final String repo1Id = "repository:1";
     private final String repo2Id = "repository:2";
     private final String repo3Id = "repository:3";
+    private ZonedDateTime last = ZonedDateTime.now();
 
     private Deposit deposit(DepositStatus status, String repId) {
         Deposit d = new Deposit();
@@ -59,10 +60,14 @@ public class SubmissionStatusCalculatorTest {
         return r;
     }
 
-    private SubmissionEvent submissionEvent(ZonedDateTime dt, EventType eventType) {
+    // Make the performed date later on each call
+    private SubmissionEvent submissionEvent(EventType eventType) {
         SubmissionEvent event = new SubmissionEvent();
-        event.setPerformedDate(dt);
+        event.setPerformedDate(last);
         event.setEventType(eventType);
+
+        last = last.plusDays(1);
+
         return event;
     }
 
@@ -405,19 +410,19 @@ public class SubmissionStatusCalculatorTest {
     @Test
     public void testPreSubmissionStatusApprovalRequested() {
         List<SubmissionEvent> submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED));
+            Arrays.asList(submissionEvent(EventType.APPROVAL_REQUESTED));
         assertEquals(SubmissionStatus.APPROVAL_REQUESTED,
                      SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
         submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED_NEWUSER));
+            Arrays.asList(submissionEvent(EventType.APPROVAL_REQUESTED_NEWUSER));
         assertEquals(SubmissionStatus.APPROVAL_REQUESTED,
                      SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
         submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED_NEWUSER),
-                          submissionEvent(ZonedDateTime.now(), EventType.CHANGES_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED));
+            Arrays.asList(submissionEvent(EventType.APPROVAL_REQUESTED_NEWUSER),
+                          submissionEvent(EventType.CHANGES_REQUESTED),
+                          submissionEvent(EventType.APPROVAL_REQUESTED));
         assertEquals(SubmissionStatus.APPROVAL_REQUESTED,
                      SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
@@ -431,21 +436,21 @@ public class SubmissionStatusCalculatorTest {
     @Test
     public void testPreSubmissionStatusChangesRequested() {
         List<SubmissionEvent> submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.CHANGES_REQUESTED));
+            Arrays.asList(submissionEvent(EventType.CHANGES_REQUESTED));
         assertEquals(SubmissionStatus.CHANGES_REQUESTED,
                      SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
         submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.CHANGES_REQUESTED));
+            Arrays.asList(submissionEvent(EventType.APPROVAL_REQUESTED),
+                          submissionEvent(EventType.CHANGES_REQUESTED));
         assertEquals(SubmissionStatus.CHANGES_REQUESTED,
                      SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
         submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.CHANGES_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.CHANGES_REQUESTED));
+            Arrays.asList(submissionEvent(EventType.APPROVAL_REQUESTED),
+                          submissionEvent(EventType.CHANGES_REQUESTED),
+                          submissionEvent(EventType.APPROVAL_REQUESTED),
+                          submissionEvent(EventType.CHANGES_REQUESTED));
         assertEquals(SubmissionStatus.CHANGES_REQUESTED,
                      SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
@@ -459,21 +464,21 @@ public class SubmissionStatusCalculatorTest {
     @Test
     public void testPreSubmissionStatusCancelled() {
         List<SubmissionEvent> submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.CANCELLED));
+            Arrays.asList(submissionEvent(EventType.CANCELLED));
         assertEquals(SubmissionStatus.CANCELLED,
                 SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
         submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.CANCELLED));
+            Arrays.asList(submissionEvent(EventType.APPROVAL_REQUESTED),
+                          submissionEvent(EventType.CANCELLED));
         assertEquals(SubmissionStatus.CANCELLED,
                 SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
         submissionEvents =
-            Arrays.asList(submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.CHANGES_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.APPROVAL_REQUESTED),
-                          submissionEvent(ZonedDateTime.now(), EventType.CANCELLED));
+            Arrays.asList(submissionEvent(EventType.APPROVAL_REQUESTED),
+                          submissionEvent(EventType.CHANGES_REQUESTED),
+                          submissionEvent(EventType.APPROVAL_REQUESTED),
+                          submissionEvent(EventType.CANCELLED));
         assertEquals(SubmissionStatus.CANCELLED,
                 SubmissionStatusCalculator.calculatePreSubmissionStatus(submissionEvents, null));
 
