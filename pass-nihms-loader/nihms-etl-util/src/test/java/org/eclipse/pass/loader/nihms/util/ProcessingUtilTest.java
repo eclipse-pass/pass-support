@@ -17,7 +17,8 @@ package org.eclipse.pass.loader.nihms.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.joda.time.DateTime;
+import java.time.ZonedDateTime;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,13 +34,13 @@ public class ProcessingUtilTest {
     @Test
     public void testFormatDate() {
         String dateStr = "12/11/2018";
-        DateTime newDate = ProcessingUtil.formatDate(dateStr, "MM/dd/yyyy");
-        assertEquals(12, newDate.getMonthOfYear());
+        ZonedDateTime newDate = ProcessingUtil.formatDate(dateStr, "MM/dd/yyyy");
+        assertEquals(12, newDate.getMonthValue());
         assertEquals(11, newDate.getDayOfMonth());
         assertEquals(2018, newDate.getYear());
-        assertEquals(0, newDate.getMinuteOfHour());
-        assertEquals(0, newDate.getSecondOfMinute());
-        assertEquals(0, newDate.getMillisOfSecond());
+        assertEquals(0, newDate.getMinute());
+        assertEquals(0, newDate.getSecond());
+        assertEquals(0, newDate.getNano());
     }
 
 }

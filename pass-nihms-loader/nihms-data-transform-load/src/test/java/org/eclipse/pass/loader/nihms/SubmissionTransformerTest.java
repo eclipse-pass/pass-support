@@ -15,13 +15,16 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
+import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,33 +34,36 @@ import org.eclipse.pass.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
-import org.eclipse.pass.model.Grant;
-import org.eclipse.pass.model.Publication;
-import org.eclipse.pass.model.RepositoryCopy.CopyStatus;
-import org.eclipse.pass.model.Submission;
-import org.eclipse.pass.model.Submission.Source;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.Journal;
+import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Source;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.User;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for NIHMS Transformer code
  *
  * @author Karen Hanson
  */
+@ExtendWith(MockitoExtension.class)
 public class SubmissionTransformerTest {
 
-    private static final String sGrantUri = "https://example.com/fedora/grants/1";
-    private static final String sSubmissionUri = "https://example.com/fedora/submissions/1";
-    private static final String sNihmsRepositoryUri = "https://example.com/fedora/repositories/2";
-    private static final String sJournalUri = "https://example.com/fedora/journals/1";
-    private static final String sPublicationUri = "https://example.com/fedora/publications/1";
-    private static final String sUserUri = "https://example.com/fedora/users/1";
+    private static final String grantId = "1";
+    private static final String submissionId = "1";
+    private static final String nihmsRepositoryId = "1";
+    private static final String journalId = "1";
+    private static final String publicationId = "1";
+    private static final String userId = "1";
 
     private static final String nihmsId = "abcdefg";
     private static final String pmcId = "9876543";
@@ -74,9 +80,6 @@ public class SubmissionTransformerTest {
 
     private static final String pmcIdTemplateUrl = "https://example.com/pmc/pmc%s";
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Mock
     private NihmsPassClientService clientServiceMock;
 
@@ -88,9 +91,9 @@ public class SubmissionTransformerTest {
 
     private NihmsPublicationToSubmission transformer;
 
-    @Before
+    @BeforeEach
     public void init() {
-        System.setProperty("nihms.pass.uri", sNihmsRepositoryUri);
+        System.setProperty("nihms.pass.uri", nihmsRepositoryId);
         System.setProperty("pmc.url.template", pmcIdTemplateUrl);
         MockitoAnnotations.initMocks(this);
         transformer = new NihmsPublicationToSubmission(clientServiceMock, pmidLookupMock);
@@ -99,7 +102,7 @@ public class SubmissionTransformerTest {
     /**
      * Tests the scenario where there is no current Publication or Submission in PASS for the article, and no
      * need for a new RepositoryCopy. The returned object should have a Publication and Submission object without
-     * a URI and no RepositoryCopies
+     * an ID and no RepositoryCopies
      */
     @Test
     public void testTransformNewPubNewSubNoRepoCopy() throws Exception {
@@ -112,16 +115,19 @@ public class SubmissionTransformerTest {
         when(clientServiceMock.findMostRecentGrantByAwardNumber(awardNumber)).thenReturn(grant);
         when(clientServiceMock.findPublicationByPmid(pmid)).thenReturn(null);
         when(clientServiceMock.findPublicationByDoi(doi, pmid)).thenReturn(null);
-        when(clientServiceMock.findJournalByIssn(issn)).thenReturn(new URI(sJournalUri));
+        when(clientServiceMock.readRepository(nihmsRepositoryId)).thenReturn(new Repository(nihmsRepositoryId));
 
         when(pmidLookupMock.retrievePubMedRecord(Mockito.anyString())).thenReturn(pubMedRecordMock);
 
-        pmrMockWhenValues();
+        when(pubMedRecordMock.getDoi()).thenReturn(doi);
+        when(pubMedRecordMock.getIssue()).thenReturn(issue);
+        when(pubMedRecordMock.getVolume()).thenReturn(volume);
+        when(pubMedRecordMock.getTitle()).thenReturn(title);
 
         SubmissionDTO dto = transformer.transform(pub);
 
         checkPmrValues(dto);
-        assertEquals(ConfigUtil.getNihmsRepositoryUri(), dto.getSubmission().getRepositories().get(0));
+        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
         assertNull(dto.getPublication().getId());
         assertNull(dto.getSubmission().getId());
         assertNull(dto.getRepositoryCopy());
@@ -130,12 +136,10 @@ public class SubmissionTransformerTest {
     /**
      * Tests the scenario where there is no current Publication or Submission in PASS for the article, and a
      * new RepositoryCopy is needed. The returned object should have a Publication, Submission and RepositoryCopy
-     * objects
-     * all without a URI
+     * objects all without an ID
      */
     @Test
     public void testTransformNewPubNewSubNewRepoCopy() throws Exception {
-
         NihmsPublication pub = newTestPub();
         pub.setNihmsStatus(NihmsStatus.IN_PROCESS);
         pub.setNihmsId(nihmsId);
@@ -147,15 +151,19 @@ public class SubmissionTransformerTest {
         when(clientServiceMock.findMostRecentGrantByAwardNumber(awardNumber)).thenReturn(grant);
         when(clientServiceMock.findPublicationByPmid(pmid)).thenReturn(null);
         when(clientServiceMock.findPublicationByDoi(doi, pmid)).thenReturn(null);
-        when(clientServiceMock.findJournalByIssn(issn)).thenReturn(new URI(sJournalUri));
+        when(clientServiceMock.readRepository(nihmsRepositoryId)).thenReturn(new Repository(nihmsRepositoryId));
+
         when(pmidLookupMock.retrievePubMedRecord(pmid)).thenReturn(pubMedRecordMock);
 
-        pmrMockWhenValues();
+        when(pubMedRecordMock.getDoi()).thenReturn(doi);
+        when(pubMedRecordMock.getIssue()).thenReturn(issue);
+        when(pubMedRecordMock.getVolume()).thenReturn(volume);
+        when(pubMedRecordMock.getTitle()).thenReturn(title);
 
         SubmissionDTO dto = transformer.transform(pub);
 
         checkPmrValues(dto);
-        assertEquals(ConfigUtil.getNihmsRepositoryUri(), dto.getSubmission().getRepositories().get(0));
+        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
 
         assertNull(dto.getPublication().getId());
         assertNull(dto.getSubmission().getId());
@@ -173,7 +181,6 @@ public class SubmissionTransformerTest {
      */
     @Test
     public void testTransformUpdatePubUpdateSubNewCompliantRepoCopy() throws Exception {
-
         NihmsPublication pub = newTestPub();
         pub.setNihmsStatus(NihmsStatus.COMPLIANT);
         pub.setNihmsId(nihmsId);
@@ -185,24 +192,21 @@ public class SubmissionTransformerTest {
         Publication publication = newTestPublication();
         Submission submission = newTestSubmission();
 
-        List<Submission> submissions = new ArrayList<Submission>();
+        List<Submission> submissions = new ArrayList<>();
         submissions.add(submission);
 
         Grant grant = newTestGrant();
         when(clientServiceMock.findMostRecentGrantByAwardNumber(awardNumber)).thenReturn(grant);
 
         when(clientServiceMock.findPublicationByPmid(pmid)).thenReturn(publication);
-        when(clientServiceMock.findSubmissionsByPublicationAndUserId(publication.getId(), grant.getPi())).thenReturn(
-            submissions);
-
-        when(pmidLookupMock.retrievePubMedRecord(pmid)).thenReturn(pubMedRecordMock);
-
-        pmrMockWhenValues();
+        when(clientServiceMock.findSubmissionsByPublicationAndUserId(publication.getId(), grant.getPi().getId()))
+                .thenReturn(submissions);
+        when(clientServiceMock.readRepository(nihmsRepositoryId)).thenReturn(new Repository(nihmsRepositoryId));
 
         SubmissionDTO dto = transformer.transform(pub);
 
         checkPmrValues(dto);
-        assertEquals(ConfigUtil.getNihmsRepositoryUri(), dto.getSubmission().getRepositories().get(0));
+        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
 
         assertEquals(true, dto.getSubmission().getSubmitted());
         assertNotNull(dto.getSubmission().getSubmittedDate());
@@ -221,7 +225,6 @@ public class SubmissionTransformerTest {
      */
     @Test
     public void testTransformUpdatePubAddGrantRepoToSubNoRepoCopy() throws Exception {
-
         NihmsPublication pub = newTestPub();
         //if its compliant it will be marked as submitted regardless of whether there is a repoCopy,
         // so make this pub in-process.
@@ -233,53 +236,49 @@ public class SubmissionTransformerTest {
         submission.setSubmitted(false);
         submission.setSubmittedDate(null);
         //no repos or grants yet
-        submission.setRepositories(new ArrayList<URI>());
-        submission.setGrants(new ArrayList<URI>());
+        submission.setRepositories(new ArrayList<>());
+        submission.setGrants(new ArrayList<>());
 
-        List<Submission> submissions = new ArrayList<Submission>();
+        List<Submission> submissions = new ArrayList<>();
         submissions.add(submission);
 
         Grant grant = newTestGrant();
         when(clientServiceMock.findMostRecentGrantByAwardNumber(awardNumber)).thenReturn(grant);
 
         when(clientServiceMock.findPublicationByPmid(pmid)).thenReturn(publication);
-        when(clientServiceMock.findSubmissionsByPublicationAndUserId(publication.getId(), grant.getPi())).thenReturn(
-            submissions);
-
-        when(pmidLookupMock.retrievePubMedRecord(pmid)).thenReturn(pubMedRecordMock);
-
-        pmrMockWhenValues();
+        when(clientServiceMock.findSubmissionsByPublicationAndUserId(publication.getId(), grant.getPi().getId()))
+                .thenReturn(submissions);
+        when(clientServiceMock.readGrant(grantId)).thenReturn(grant);
+        when(clientServiceMock.readRepository(nihmsRepositoryId)).thenReturn(new Repository(nihmsRepositoryId));
 
         SubmissionDTO dto = transformer.transform(pub);
 
         checkPmrValues(dto);
 
         assertEquals(false, dto.getSubmission().getSubmitted());
-
-        assertTrue(dto.getSubmission().getRepositories().contains(ConfigUtil.getNihmsRepositoryUri()));
-
-        assertTrue(dto.getSubmission().getGrants().contains(grant.getId()));
-
+        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
+        assertEquals(grant.getId(), dto.getSubmission().getGrants().get(0).getId());
         assertNull(dto.getSubmission().getSubmittedDate());
-
         assertNull(dto.getRepositoryCopy());
-
     }
 
     /**
      * Makes sure exception is thrown if no matching grant is found for the Award Number
      */
     @Test
-    public void testTransformNoMatchingGrantThrowsException() {
-
-        when(clientServiceMock.findMostRecentGrantByAwardNumber(Mockito.anyObject())).thenReturn(null);
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("No Grant matching award number");
+    public void testTransformNoMatchingGrantThrowsException() throws IOException {
+        when(clientServiceMock.findMostRecentGrantByAwardNumber(any())).thenReturn(null);
 
         NihmsPublication pub = newTestPub();
 
-        transformer.transform(pub);
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            transformer.transform(pub);
+        });
 
+        String expectedMessage = "No Grant matching award number";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     private void checkPmrValues(SubmissionDTO dto) {
@@ -288,62 +287,52 @@ public class SubmissionTransformerTest {
         assertEquals(issue, dto.getPublication().getIssue());
         assertEquals(pmid, dto.getPublication().getPmid());
         assertEquals(doi, dto.getPublication().getDoi());
-
-        assertEquals(sGrantUri, dto.getSubmission().getGrants().get(0).toString());
+        assertEquals(grantId, dto.getSubmission().getGrants().get(0).getId());
         assertEquals(Source.OTHER, dto.getSubmission().getSource());
-        assertEquals(sUserUri, dto.getSubmission().getSubmitter().toString());
-    }
-
-    private void pmrMockWhenValues() {
-        when(pubMedRecordMock.getPmid()).thenReturn(pmid);
-        when(pubMedRecordMock.getDoi()).thenReturn(doi);
-        when(pubMedRecordMock.getIssn()).thenReturn(issn);
-        when(pubMedRecordMock.getEssn()).thenReturn(null);
-        when(pubMedRecordMock.getIssue()).thenReturn(issue);
-        when(pubMedRecordMock.getVolume()).thenReturn(volume);
-        when(pubMedRecordMock.getTitle()).thenReturn(title);
+        assertEquals(userId, dto.getSubmission().getSubmitter().getId());
     }
 
     private Grant newTestGrant() throws Exception {
-        Grant grant = new Grant();
-        grant.setId(new URI(sGrantUri));
-        grant.setPi(new URI(sUserUri));
+        User user = new User(userId);
+        Grant grant = new Grant(grantId);
+        grant.setPi(user);
         grant.setAwardNumber(awardNumber);
         return grant;
     }
 
     private Publication newTestPublication() throws Exception {
-        Publication publication = new Publication();
-        publication.setId(new URI(sPublicationUri));
+        Journal journal = new Journal(journalId);
+        Publication publication = new Publication(publicationId);
         publication.setPmid(pmid);
         publication.setDoi(doi);
         publication.setTitle(title);
-        publication.setJournal(new URI(sJournalUri));
+        publication.setJournal(journal);
         publication.setVolume(volume);
         publication.setIssue(issue);
         return publication;
     }
 
     private Submission newTestSubmission() throws Exception {
-        Submission submission = new Submission();
+        Submission submission = new Submission(submissionId);
+        Publication publication = new Publication(publicationId);
+        User user = new User(userId);
 
-        submission.setId(new URI(sSubmissionUri));
-
-        List<URI> grants = new ArrayList<URI>();
-        grants.add(new URI(sGrantUri));
+        List<Grant> grants = new ArrayList<>();
+        Grant grant = new Grant(grantId);
+        grants.add(grant);
 
         submission.setGrants(grants);
         submission.setSource(Source.OTHER);
         submission.setSubmitted(true);
-        submission.setSubmittedDate(new DateTime());
-        submission.setPublication(new URI(sPublicationUri));
+        submission.setSubmittedDate(ZonedDateTime.now());
+        submission.setPublication(publication);
 
-        List<URI> repositories = new ArrayList<URI>();
-        repositories.add(ConfigUtil.getNihmsRepositoryUri());
-
+        Repository repository = new Repository(ConfigUtil.getNihmsRepositoryId());
+        List<Repository> repositories = new ArrayList<>();
+        repositories.add(repository);
         submission.setRepositories(repositories);
 
-        submission.setSubmitter(new URI(sUserUri));
+        submission.setSubmitter(user);
 
         return submission;
     }

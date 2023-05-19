@@ -35,8 +35,8 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -107,9 +107,10 @@ public class UrlBuilderTest {
         String[] parts = query.split("&");
         //TODO: fix assertEquals
         //java.lang.NumberFormatException: For input string: "Unexpected number of URL parameters.  Wanted 8, got 7"
-        //	at org.eclipse.pass.loader.nihms.UrlBuilderTest.verifyParams(UrlBuilderTest.java:109)
+        //at org.eclipse.pass.loader.nihms.UrlBuilderTest.verifyParams(UrlBuilderTest.java:109)
         /*assertEquals(
-                Float.parseFloat(format("Unexpected number of URL parameters.  Wanted %s, got %s", additional.size() + 7, parts.length)),
+        Float.parseFloat(format("Unexpected number of URL parameters.  Wanted %s, got %s",
+         additional.size() + 7, parts.length)),
             additional.size() + 7, parts.length);*/
 
         Stream.of(parts).forEach(part -> {

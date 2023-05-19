@@ -15,11 +15,23 @@
  */
 package org.eclipse.pass.client.nihms;
 
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.pass.client.nihms.NihmsPassClientService.AWARD_NUMBER_FLD;
+import static org.eclipse.pass.client.nihms.NihmsPassClientService.ERR_CREATE_PUBLICATION;
+import static org.eclipse.pass.client.nihms.NihmsPassClientService.PUBLICATION_FLD;
+import static org.eclipse.pass.client.nihms.NihmsPassClientService.REPOSITORY_FLD;
+import static org.eclipse.pass.client.nihms.NihmsPassClientService.SUBMISSION_FLD;
+import static org.eclipse.pass.client.nihms.NihmsPassClientService.SUBMITTER_FLD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -49,7 +61,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *
  * @author Karen Hanson
  */
-//TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class NihmsPassClientServiceTest {
@@ -70,8 +81,6 @@ public class NihmsPassClientServiceTest {
     @Mock
     private PassClient mockClient;
     private NihmsPassClientService clientService;
-
-
 
     @BeforeEach
     public void initMocks() {

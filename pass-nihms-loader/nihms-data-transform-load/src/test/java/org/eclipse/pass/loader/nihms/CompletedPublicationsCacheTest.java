@@ -15,9 +15,9 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,9 +25,9 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests CompletedPublicationsCache class
@@ -39,14 +39,14 @@ public class CompletedPublicationsCacheTest {
     private static CompletedPublicationsCache completedPubsCache;
     private String cachepath;
 
-    @Before
+    @BeforeEach
     public void startup() {
         cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
         System.setProperty("nihmsetl.loader.cachepath", cachepath);
         completedPubsCache = CompletedPublicationsCache.getInstance();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         completedPubsCache.clear();
     }

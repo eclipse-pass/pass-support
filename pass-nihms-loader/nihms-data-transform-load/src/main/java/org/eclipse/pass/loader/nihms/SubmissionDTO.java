@@ -15,11 +15,9 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import java.net.URI;
-
-import org.eclipse.pass.model.Publication;
-import org.eclipse.pass.model.RepositoryCopy;
-import org.eclipse.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
 
 /**
  * Data transfer object to hold the various components of a NIHMS Submission up to the point of
@@ -41,7 +39,7 @@ public class SubmissionDTO {
 
     private boolean updateRepositoryCopy = false;
 
-    private URI grantId = null;
+    private String grantId = null;
 
     /**
      * @return the submission
@@ -88,14 +86,14 @@ public class SubmissionDTO {
     /**
      * @return the grantId
      */
-    public URI getGrantId() {
+    public String getGrantId() {
         return grantId;
     }
 
     /**
      * @param grantId the grantId to set
      */
-    public void setGrantId(URI grantId) {
+    public void setGrantId(String grantId) {
         this.grantId = grantId;
     }
 

@@ -31,14 +31,15 @@ import org.eclipse.pass.client.nihms.cache.NihmsRepositoryCopyIdCache;
 import org.eclipse.pass.client.nihms.cache.PublicationIdCache;
 import org.eclipse.pass.client.nihms.cache.UserPubSubmissionsCache;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
-import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
@@ -107,7 +108,7 @@ public class NihmsPassClientService {
 
     public NihmsPassClientService(PassClient passClient) {
         this.passClient = passClient;
-        nihmsRepoId = ConfigUtil.getNihmsRepositoryUri();
+        nihmsRepoId = ConfigUtil.getNihmsRepositoryId();
         initCaches();
     }
 
@@ -373,7 +374,7 @@ public class NihmsPassClientService {
             return null;
         }
         //TODO: equals needs to change to hasmember
-        String journalFilter = RSQL.equals(ISSNS_FLD, issn);
+        String journalFilter = RSQL.hasMember(ISSNS_FLD, issn);
         PassClientSelector<Journal> journalSelector = new PassClientSelector<>(Journal.class);
         journalSelector.setFilter(journalFilter);
         PassClientResult<Journal> journalResult = passClient.selectObjects(journalSelector);
@@ -429,7 +430,7 @@ public class NihmsPassClientService {
      * @param grantId the grant id
      * @return Grant if found, or null if not found
      */
-    private Grant readGrant(String grantId) throws IOException {
+    public Grant readGrant(String grantId) throws IOException {
         if (grantId == null) {
             throw new IllegalArgumentException("grantId cannot be empty");
         }
@@ -473,6 +474,19 @@ public class NihmsPassClientService {
             throw new IllegalArgumentException("depositId cannot be empty");
         }
         return (passClient.getObject(Deposit.class, depositId));
+    }
+
+    /**
+     * Retrieve repository record from database
+     *
+     * @param repositoryId the repository id
+     * @return the deposit, or null if not found
+     */
+    public Repository readRepository(String repositoryId) throws IOException {
+        if (repositoryId == null) {
+            throw new IllegalArgumentException("repositoryId cannot be empty");
+        }
+        return (passClient.getObject(Repository.class, repositoryId));
     }
 
     /**

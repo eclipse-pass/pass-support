@@ -15,11 +15,11 @@
  */
 package org.eclipse.pass.loader.nihms.util;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 /**
  * General small utilities to tidy up data processing code.
@@ -55,23 +55,24 @@ public class ProcessingUtil {
     }
 
     /**
-     * Formats a dateto a joda datetime according to pattern provided. If pattern is null, defaults to yyyy-MM-dd.
+     * Formats a date to a ZonedDateTime according to pattern provided. If pattern is null, defaults to yyyy-MM-dd.
      * Returns null if no date passed in
      *
      * @param date    a date
      * @param pattern e.g. MM/dd/yyyy
      * @return the DateTime for the supplied {@code date}
      */
-    public static DateTime formatDate(String date, String pattern) {
+    public static ZonedDateTime formatDate(String date, String pattern) {
         if (nullOrEmpty(date)) {
             return null;
         }
         if (nullOrEmpty(pattern)) {
             pattern = DEFAULT_DATE_PATTERN;
         }
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
-        DateTime dt = formatter.parseDateTime(date);
-        return dt;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        LocalDate ld = LocalDate.parse(date, formatter);
+        ZonedDateTime zdt = ld.atStartOfDay(ZoneId.of("UTC"));
+        return zdt;
     }
 
 }

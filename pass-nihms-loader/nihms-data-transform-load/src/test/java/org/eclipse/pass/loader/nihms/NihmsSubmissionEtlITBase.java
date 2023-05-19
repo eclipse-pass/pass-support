@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.loader.nihms.integration;
+package org.eclipse.pass.loader.nihms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -30,25 +29,21 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.pass.client.PassClient;
-import org.eclipse.pass.client.PassClientFactory;
-import org.eclipse.pass.client.SubmissionStatusService;
+import org.eclipse.pass.support.client.PassClient;
+
 import org.eclipse.pass.client.nihms.NihmsPassClientService;
 import org.eclipse.pass.entrez.PmidLookup;
 import org.eclipse.pass.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.CompletedPublicationsCache;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
-import org.eclipse.pass.model.Deposit;
-import org.eclipse.pass.model.Grant;
-import org.eclipse.pass.model.Grant.AwardStatus;
-import org.eclipse.pass.model.PassEntity;
-import org.eclipse.pass.model.Publication;
-import org.eclipse.pass.model.RepositoryCopy;
-import org.eclipse.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
 import org.joda.time.DateTime;
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
 import org.mockito.Mock;
 
 /**
@@ -159,29 +154,29 @@ public abstract class NihmsSubmissionEtlITBase {
         URI uri = client.createResource(grant);
         createdUris.put(uri, Grant.class);
         return uri;
-    }
+    }*/
 
-    /**
+    /*
      * Try invoking a runnable until it succeeds.
      *
      * @param times  The number of times to run
      * @param thingy The runnable.
      */
-    void attempt(final int times, final Runnable thingy) {
+    /*void attempt(final int times, final Runnable thingy) {
         attempt(times, () -> {
             thingy.run();
             return null;
         });
-    }
+    }*/
 
-    /**
+    /*
      * Try invoking a callable until it succeeds.
      *
      * @param times Number of times to try
      * @param it    the thing to call.
      * @return the result from the callable, when successful.
      */
-    <T> T attempt(final int times, final Callable<T> it) {
+    /*<T> T attempt(final int times, final Callable<T> it) {
 
         Throwable caught = null;
 
@@ -200,13 +195,13 @@ public abstract class NihmsSubmissionEtlITBase {
             }
         }
         throw new RuntimeException("Failed executing task", caught);
-    }
+    }*/
 
-    protected void setMockPMRecord(String pmid) throws IOException {
+    /*protected void setMockPMRecord(String pmid) throws IOException {
         String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("pmidrecord.json"));
         JSONObject rootObj = new JSONObject(json);
         PubMedEntrezRecord pmr = new PubMedEntrezRecord(rootObj);
         when(mockPmidLookup.retrievePubMedRecord(eq(pmid))).thenReturn(pmr);
-    }
+    }*/
 
 }

@@ -15,20 +15,17 @@
  */
 package org.eclipse.pass.loader.nihms.util;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import java.io.File;
 import java.io.IOException;
-//import java.nio.file.FileSystems;
 import java.nio.file.Path;
-//import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Karen Hanson

@@ -15,9 +15,10 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -28,9 +29,11 @@ import java.util.function.Consumer;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Tests that the CSVProcessor pulls records and consumes them as NihmsPublications
@@ -38,19 +41,20 @@ import org.junit.Test;
  *
  * @author Karen Hanson
  */
+@ExtendWith(MockitoExtension.class)
 public class NihmsCsvProcessorTest {
 
     private int count = 0;
 
     String cachepath = null;
 
-    @Before
+    @BeforeEach
     public void startup() {
         cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
         System.setProperty("nihmsetl.loader.cachepath", cachepath);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         File cachefile = new File(cachepath);
         if (cachefile.exists()) {
@@ -128,13 +132,12 @@ public class NihmsCsvProcessorTest {
      *
      * @throws URISyntaxException
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testBadHeadingDetection() {
         String filename = "/compliant_BadHeadings.csv";
         Path resource = null;
         try {
             resource = Paths.get(NihmsCsvProcessorTest.class.getResource(filename).toURI());
-
         } catch (URISyntaxException ex) {
             fail("problem with test file path");
         }
@@ -142,26 +145,27 @@ public class NihmsCsvProcessorTest {
             fail();
         };
         NihmsCsvProcessor processor = new NihmsCsvProcessor(resource, NihmsStatus.COMPLIANT);
-        processor.processCsv(consumer);
+
+        assertThrows(RuntimeException.class, () -> {
+            processor.processCsv(consumer);
+        });
     }
 
     /**
      * Check a file path that doesn't exist is provided
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testBadPath() {
         String filename = "/compliant_DoesntExist.csv";
-        Path resource = null;
-        try {
-            resource = Paths.get(NihmsCsvProcessorTest.class.getResource(filename).toURI());
-        } catch (URISyntaxException ex) {
-            fail("problem with test file path");
-        }
+        Path resource = Paths.get(filename);
         Consumer<NihmsPublication> consumer = pub -> {
             fail();
         };
         NihmsCsvProcessor processor = new NihmsCsvProcessor(resource, NihmsStatus.COMPLIANT);
-        processor.processCsv(consumer);
+
+        assertThrows(RuntimeException.class, () -> {
+            processor.processCsv(consumer);
+        });
     }
 
 }

@@ -13,15 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.loader.nihms.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.net.URI;
-import java.util.Set;
-
+import org.eclipse.pass.loader.nihms.NihmsSubmissionEtlITBase;
 import org.eclipse.pass.loader.nihms.cli.NihmsTransformLoadApp;
 import org.eclipse.pass.model.Grant;
 import org.eclipse.pass.model.Publication;
@@ -29,6 +22,13 @@ import org.eclipse.pass.model.RepositoryCopy;
 import org.eclipse.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.net.URI;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Smoke tests loads in some test data from spreadsheets and verifies it all loaded in as expected

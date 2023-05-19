@@ -27,6 +27,107 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <http-client.version>4.5.2</http-client.version>
+        <org-json.version>20180130</org-json.version>
+        <commons.csv.version>1.6</commons.csv.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <logback.version>1.4.6</logback.version>
+        <selenium.version>3.11.0</selenium.version>
+        <args4j.version>2.33</args4j.version>
+        <handy-uri-templates.version>2.1.8</handy-uri-templates.version>
+        <commons-io.version>2.4</commons-io.version>
+        <okhttp.version>4.10.0</okhttp.version>
+        <pass.core.port>8080</pass.core.port>
+        <pass.core.url>http://localhost:8080</pass.core.url>
+        <pass.core.user>backend</pass.core.user>
+        <pass.core.password>backend</pass.core.password>
     </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build-helper-maven-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven-dependency-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <pass.core.url>${pass.core.url}</pass.core.url>
+                            <pass.core.user>${pass.core.user}</pass.core.user>
+                            <pass.core.password>${pass.core.password}</pass.core.password>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>start</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>start</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>stop</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>stop</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <images>
+                            <image>
+                                <name>ghcr.io/eclipse-pass/pass-core-main:%v</name>
+                                <run>
+                                    <env>
+                                        <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
+                                        <PASS_CORE_BACKEND_USER>${pass.core.user}</PASS_CORE_BACKEND_USER>
+                                        <PASS_CORE_BACKEND_PASSWORD>${pass.core.password}</PASS_CORE_BACKEND_PASSWORD>
+                                    </env>
+                                    <wait>
+                                        <http>
+                                            <url>
+                                                ${pass.core.url}/data/journal
+                                            </url>
+                                            <status>401</status>
+                                        </http>
+                                        <time>60000</time>
+                                    </wait>
+                                    <ports>
+                                        <port>${pass.core.port}:${pass.core.port}</port>
+                                    </ports>
+                                </run>
+                            </image>
+                        </images>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

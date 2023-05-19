@@ -15,11 +15,11 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-//TODO: find out if this is still needed
-//import static org.eclipse.pass.client.util.SubmissionStatusCalculator.calculatePostSubmissionStatus;
 import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.formatDate;
 import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
+import static org.eclipse.pass.support.client.SubmissionStatusCalculator.calculatePostSubmissionStatus;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +32,14 @@ import org.eclipse.pass.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
+import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Source;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,9 +70,9 @@ public class NihmsPublicationToSubmission {
     private PmidLookup pmidLookup;
 
     /**
-     * URI for the NIHMS repository, this should be set as a property
+     * ID for the NIHMS repository, this should be set as a property
      */
-    private String nihmsRepositoryUri;
+    private String nihmsRepositoryId;
 
     /**
      * PMC URL template is used with String.format() to pass a PMCID into.
@@ -107,17 +115,17 @@ public class NihmsPublicationToSubmission {
 
     private void setProperties() {
         this.pmcUrlTemplate = ConfigUtil.getSystemProperty(PMC_URL_TEMPLATE_KEY, PMC_URL_TEMPLATE_DEFAULT);
-        this.nihmsRepositoryUri = ConfigUtil.getNihmsRepositoryUri();
+        this.nihmsRepositoryId = ConfigUtil.getNihmsRepositoryId();
     }
 
-    /*
+    /**
      * Does the heavy lifting of converting a NihmsPublication record into the NihmsSubmissionDTO
-     * that is needed for the NihmsLoader to write it to Fedora
+     * that is needed for the NihmsLoader
      *
      * @param pub the publication
      * @return the DTO, never {@code null}
      */
-    /*public SubmissionDTO transform(NihmsPublication pub) {
+    public SubmissionDTO transform(NihmsPublication pub) throws IOException {
 
         //matching grant uri is a requirement for all nihms submissions
         Grant grant = clientService.findMostRecentGrantByAwardNumber(pub.getGrantNumber());
@@ -142,7 +150,7 @@ public class NihmsPublicationToSubmission {
         submissionDTO.setSubmission(submission);
 
         return submissionDTO;
-    }*/
+    }
 
     //****************************************************
     //
@@ -150,7 +158,7 @@ public class NihmsPublicationToSubmission {
     //
     //****************************************************
 
-    /*private Publication retrieveOrCreatePublication(NihmsPublication nihmsPub) {
+    private Publication retrieveOrCreatePublication(NihmsPublication nihmsPub) throws IOException {
         //use pmid to get additional metadata from Entrez. Need this for DOI, maybe other fields too
         String pmid = nihmsPub.getPmid();
         String doi = null;
@@ -190,9 +198,9 @@ public class NihmsPublicationToSubmission {
         }
 
         return publication;
-    }*/
+    }
 
-    /*
+    /**
      * Ideally, uses the record from Entrez to populate publication details, but in the absence of that
      * this will create a publication with what we have in the NihmsPublication
      *
@@ -200,7 +208,7 @@ public class NihmsPublicationToSubmission {
      * @param pmr      the pubmed record
      * @return the Publication, never {@code null}
      */
-    /*private Publication initiateNewPublication(NihmsPublication nihmsPub, PubMedEntrezRecord pmr) {
+    private Publication initiateNewPublication(NihmsPublication nihmsPub, PubMedEntrezRecord pmr) throws IOException {
         LOG.info("No existing publication found for PMID \"{}\", initiating new Publication record",
                  nihmsPub.getPmid());
         Publication publication = new Publication();
@@ -215,9 +223,11 @@ public class NihmsPublicationToSubmission {
         } else {
             publication.setTitle(nihmsPub.getArticleTitle());
         }
-
+        //TODO: should a new publication be created?
+/*        String publicationId = clientService.createPublication(publication);
+        publication.setId(publicationId);*/
         return publication;
-    }*/
+    }
 
     //****************************************************
     //
@@ -225,7 +235,8 @@ public class NihmsPublicationToSubmission {
     //
     //****************************************************
 
-    /*private RepositoryCopy retrieveOrCreateRepositoryCopy(NihmsPublication pub, URI publicationId) {
+    private RepositoryCopy retrieveOrCreateRepositoryCopy(NihmsPublication pub, String publicationId)
+            throws IOException {
         RepositoryCopy repoCopy = null;
         if (publicationId != null) {
             repoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
@@ -262,17 +273,17 @@ public class NihmsPublicationToSubmission {
             }
         }
         return repoCopy;
-    }*/
+    }
 
-    /*private RepositoryCopy initiateNewRepositoryCopy(NihmsPublication pub, URI publicationId) {
+    private RepositoryCopy initiateNewRepositoryCopy(NihmsPublication pub, String publicationId) throws IOException {
         RepositoryCopy repositoryCopy = new RepositoryCopy();
 
         LOG.info("NIHMS RepositoryCopy record needed for PMID \"{}\", initiating new RepositoryCopy record",
                  pub.getPmid());
 
-        repositoryCopy.setPublication(publicationId);
+        repositoryCopy.setPublication((clientService.readPublication(publicationId)));
         repositoryCopy.setCopyStatus(calcRepoCopyStatus(pub, null));
-        repositoryCopy.setRepository(nihmsRepositoryUri);
+        repositoryCopy.setRepository(clientService.readRepository(nihmsRepositoryId));
 
         List<String> externalIds = new ArrayList<String>();
         String pmcId = pub.getPmcId();
@@ -286,7 +297,7 @@ public class NihmsPublicationToSubmission {
         repositoryCopy.setExternalIds(externalIds);
 
         return repositoryCopy;
-    }*/
+    }
 
     private URI createAccessUrl(String pmcId) {
         URI accessUrl = null;
@@ -304,23 +315,23 @@ public class NihmsPublicationToSubmission {
     //
     //****************************************************
 
-    /*private Submission retrieveOrCreateSubmission(URI publicationUri, Grant grant, RepositoryCopy repoCopy,
-                                                  NihmsStatus nihmsStatus, String depositedDate) {
+    private Submission retrieveOrCreateSubmission(String publicationId, Grant grant, RepositoryCopy repoCopy,
+                                                  NihmsStatus nihmsStatus, String depositedDate) throws IOException {
         boolean hasRepoCopy = repoCopy != null;
         Submission submission = null;
-        URI grantId = grant.getId();
+        String grantId = grant.getId();
 
         //no point in doing this unless there was previously a publication - no publication, no existing submission!
-        if (publicationUri != null) {
-            List<Submission> submissions = clientService.findSubmissionsByPublicationAndUserId(publicationUri,
-                                                                                               grant.getPi());
+        if (publicationId != null) {
+            List<Submission> submissions = clientService.findSubmissionsByPublicationAndUserId(publicationId,
+                                                                                               grant.getPi().getId());
 
             if (!nullOrEmpty(submissions)) {
                 // is there already a nihms submission in the system for this publication? if so add to it instead of
                 // making a new one
                 List<Submission> nihmsSubmissions = submissions.stream()
                                                                .filter(s -> s.getRepositories()
-                                                                             .contains(nihmsRepositoryUri))
+                                                                             .contains(nihmsRepositoryId))
                                                                .collect(Collectors.toList());
 
                 if (nihmsSubmissions.size() == 1) {
@@ -338,8 +349,8 @@ public class NihmsPublicationToSubmission {
                 if (submission == null) {
                     submission = submissions.stream().filter(s -> !s.getSubmitted()).findFirst().orElse(null);
                     if (submission != null) {
-                        List<URI> repositories = submission.getRepositories();
-                        repositories.add(nihmsRepositoryUri);
+                        List<Repository> repositories = submission.getRepositories();
+                        repositories.add(clientService.readRepository(nihmsRepositoryId));
                         submission.setRepositories(repositories);
                         submissionDTO.setUpdateSubmission(true);
                     }
@@ -349,7 +360,7 @@ public class NihmsPublicationToSubmission {
         }
 
         if (submission == null) {
-            submission = initiateNewSubmission(grant, publicationUri);
+            submission = initiateNewSubmission(grant, publicationId);
             submissionDTO.setUpdateSubmission(true);
         }
 
@@ -374,35 +385,39 @@ public class NihmsPublicationToSubmission {
 
         if (submission.getRepositories().size() == 1 && hasRepoCopy) {
             //if there is only one repo, can calculate status here, will be checked again later using database
-            SubmissionStatus newStatus = calculatePostSubmissionStatus(submission.getRepositories(), null,
+            List<Repository> repositories = submission.getRepositories();
+            List<String> repoIds = repositories.stream().map(r -> r.getId()).collect(Collectors.toList());
+            SubmissionStatus newStatus = calculatePostSubmissionStatus(repoIds, null,
                                                                        Arrays.asList(repoCopy));
             submission.setSubmissionStatus(newStatus);
             submissionDTO.setUpdateSubmission(true);
         }
 
         // finally, make sure grant is in the list of the chosen submission
-        List<URI> grants = submission.getGrants();
-        if (!grants.contains(grantId)) {
-            grants.add(grantId);
+        List<Grant> grants = submission.getGrants();
+        List<String> grantIds = grants.stream().map(g -> g.getId()).collect(Collectors.toList());
+        if (!grantIds.contains(grantId)) {
+            grants.add(clientService.readGrant(grantId));
             submission.setGrants(grants);
             submissionDTO.setUpdateSubmission(true);
         }
 
         return submission;
-    }*/
+    }
 
-    /*private Submission initiateNewSubmission(Grant grant, URI publicationUri) {
-        LOG.info("No Submission to Repository {} found for Grant {}", nihmsRepositoryUri, grant.getId());
+    private Submission initiateNewSubmission(Grant grant, String publicationId) throws IOException {
+        LOG.info("No Submission to Repository {} found for Grant {}", nihmsRepositoryId, grant.getId());
         Submission submission = new Submission();
 
-        submission.setPublication(publicationUri);
+        Publication publication = clientService.readPublication(publicationId);
+        submission.setPublication(publication);
 
-        List<URI> repositories = new ArrayList<URI>();
-        repositories.add(nihmsRepositoryUri);
+        List<Repository> repositories = new ArrayList<>();
+        repositories.add(clientService.readRepository(nihmsRepositoryId));
         submission.setRepositories(repositories);
 
-        List<URI> grants = new ArrayList<URI>();
-        grants.add(grant.getId());
+        List<Grant> grants = new ArrayList<>();
+        grants.add(grant);
         submission.setGrants(grants);
 
         submission.setSource(Source.OTHER);
@@ -414,7 +429,7 @@ public class NihmsPublicationToSubmission {
         submission.setSubmitter(grant.getPi());
 
         return submission;
-    }*/
+    }
 
     /**
      * Determines a new deposit status based on various dates populated in the NIHMS publication
@@ -426,7 +441,7 @@ public class NihmsPublicationToSubmission {
      * @param currCopyStatus current RepositoryCopy CopyStatus
      * @return the new copy status, may be {@code null}
      */
-    /*public static CopyStatus calcRepoCopyStatus(NihmsPublication pub, CopyStatus currCopyStatus) {
+    public static CopyStatus calcRepoCopyStatus(NihmsPublication pub, CopyStatus currCopyStatus) {
         if (pub.getNihmsStatus().equals(NihmsStatus.COMPLIANT)) {
             return CopyStatus.COMPLETE;
         }
@@ -467,6 +482,6 @@ public class NihmsPublicationToSubmission {
         }
 
         return newStatus;
-    }*/
+    }
 
 }

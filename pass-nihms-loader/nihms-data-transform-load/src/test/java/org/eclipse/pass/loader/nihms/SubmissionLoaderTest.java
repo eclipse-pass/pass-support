@@ -15,61 +15,52 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
-
-import org.eclipse.pass.client.SubmissionStatusService;
 import org.eclipse.pass.client.nihms.NihmsPassClientService;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
-import org.eclipse.pass.model.Deposit;
-import org.eclipse.pass.model.Deposit.DepositStatus;
-import org.eclipse.pass.model.Publication;
-import org.eclipse.pass.model.RepositoryCopy;
-import org.eclipse.pass.model.RepositoryCopy.CopyStatus;
-import org.eclipse.pass.model.Submission;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.eclipse.pass.support.client.SubmissionStatusService;
+import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.User;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for Nihms SubmissionLoader
  *
  * @author Karen Hanson
  */
+@ExtendWith(MockitoExtension.class)
 public class SubmissionLoaderTest {
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Mock
     private NihmsPassClientService clientServiceMock;
 
     @Mock
     private SubmissionStatusService statusServiceMock;
 
-    private static final String sSubmissionUri = "https://example.com/fedora/submissions/1";
-    private static final String sRepositoryCopyUri = "https://example.com/fedora/repositoryCopies/1";
-    private static final String sDepositUri = "https://example.com/fedora/deposits/1";
-    private static final String sPublicationUri = "https://example.com/fedora/publications/1";
-    private static final String sUserUri = "https://example.com/fedora/users/1";
+    private static final String submissionId = "1";
+    private static final String repositoryCopyId = "1";
+    private static final String depositId = "1";
+    private static final String publicationId = "1";
+    private static final String userId = "1";
 
     private static final String title = "A Title";
     private static String pmid = "12345678";
-
-    @Before
-    public void initMocks() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     /**
      * Check that if a Submission is provided with new Publication, new Submission and no
@@ -85,18 +76,19 @@ public class SubmissionLoaderTest {
         publication.setTitle(title);
         publication.setPmid(pmid);
 
+        User submitter = new User();
+        submitter.setId(userId);
+
         Submission submission = new Submission();
-        submission.setPublication(new URI(sPublicationUri));
-        submission.setSubmitter(new URI(sUserUri));
+        submission.setPublication(publication);
+        submission.setSubmitter(submitter);
 
         SubmissionDTO dto = new SubmissionDTO();
         dto.setPublication(publication);
         dto.setSubmission(submission);
 
-        when(clientServiceMock.createPublication(publication)).thenReturn(new URI(sPublicationUri));
-        when(clientServiceMock.createSubmission(submission)).thenReturn(new URI(sSubmissionUri));
-        when(clientServiceMock.findPublicationByPmid(Mockito.eq(publication.getPmid()))).thenReturn(null);
-        when(clientServiceMock.findPublicationByDoi(Mockito.any(), Mockito.eq(publication.getPmid()))).thenReturn(null);
+        when(clientServiceMock.createPublication(publication)).thenReturn(publication.getId());
+        when(clientServiceMock.createSubmission(submission)).thenReturn(submission.getId());
 
         loader.load(dto);
 
@@ -106,13 +98,13 @@ public class SubmissionLoaderTest {
 
         ArgumentCaptor<Submission> submissionCaptor = ArgumentCaptor.forClass(Submission.class);
         verify(clientServiceMock).createSubmission(submissionCaptor.capture());
-        submission.setPublication(new URI(sPublicationUri));
+        submission.setPublication(publication);
         assertEquals(submission, submissionCaptor.getValue());
 
         //no repo copy so shouldn't touch RepositoryCopy create/update
-        verify(clientServiceMock, never()).createRepositoryCopy(Mockito.anyObject());
-        verify(clientServiceMock, never()).updateRepositoryCopy(Mockito.anyObject());
-        verify(clientServiceMock, never()).updateDeposit(Mockito.anyObject());
+        verify(clientServiceMock, never()).createRepositoryCopy(any());
+        verify(clientServiceMock, never()).updateRepositoryCopy(any());
+        verify(clientServiceMock, never()).updateDeposit(any());
     }
 
     /**
@@ -126,33 +118,31 @@ public class SubmissionLoaderTest {
         SubmissionLoader loader = new SubmissionLoader(clientServiceMock, statusServiceMock);
 
         Publication publication = new Publication();
-        publication.setId(new URI(sPublicationUri));
         publication.setTitle(title);
         publication.setPmid(pmid);
 
+        User submitter = new User(userId);
+
         Submission submission = new Submission();
-        submission.setSubmitter(new URI(sUserUri));
-        submission.setPublication(publication.getId());
+        submission.setPublication(publication);
+        submission.setSubmitter(submitter);
 
         SubmissionDTO dto = new SubmissionDTO();
         dto.setPublication(publication);
         dto.setSubmission(submission);
 
-        URI submissionUri = new URI(sSubmissionUri);
-        when(clientServiceMock.createSubmission(submission)).thenReturn(submissionUri);
-
         loader.load(dto);
 
-        verify(clientServiceMock, never()).updatePublication(Mockito.any());
+        verify(clientServiceMock, never()).updatePublication(any());
 
         ArgumentCaptor<Submission> submissionCaptor = ArgumentCaptor.forClass(Submission.class);
         verify(clientServiceMock).createSubmission(submissionCaptor.capture());
         assertEquals(submission, submissionCaptor.getValue());
 
         //no repo copy so shouldn't touch RepositoryCopy create/update
-        verify(clientServiceMock, never()).createRepositoryCopy(Mockito.anyObject());
-        verify(clientServiceMock, never()).updateRepositoryCopy(Mockito.anyObject());
-        verify(clientServiceMock, never()).updateDeposit(Mockito.anyObject());
+        verify(clientServiceMock, never()).createRepositoryCopy(any());
+        verify(clientServiceMock, never()).updateRepositoryCopy(any());
+        verify(clientServiceMock, never()).updateDeposit(any());
     }
 
     /**
@@ -164,15 +154,15 @@ public class SubmissionLoaderTest {
     @Test
     public void testLoadExistingPubExistingSubmissionNoRepoCopy() throws Exception {
 
-        Publication publication = new Publication();
-        publication.setId(new URI(sPublicationUri));
+        Publication publication = new Publication(publicationId);
         publication.setTitle(title);
         publication.setPmid(pmid);
 
-        Submission submission = new Submission();
-        submission.setId(new URI(sSubmissionUri));
-        submission.setPublication(new URI(sPublicationUri));
-        submission.setSubmitter(new URI(sUserUri));
+        User submitter = new User(userId);
+
+        Submission submission = new Submission(submissionId);
+        submission.setPublication(publication);
+        submission.setSubmitter(submitter);
 
         SubmissionDTO dto = new SubmissionDTO();
         dto.setPublication(publication);
@@ -183,11 +173,11 @@ public class SubmissionLoaderTest {
         loader.load(dto);
 
         //should not update anything
-        verify(clientServiceMock, never()).updatePublication(Mockito.any());
-        verify(clientServiceMock, never()).updateSubmission(Mockito.any());
-        verify(clientServiceMock, never()).createRepositoryCopy(Mockito.anyObject());
-        verify(clientServiceMock, never()).updateRepositoryCopy(Mockito.anyObject());
-        verify(clientServiceMock, never()).updateDeposit(Mockito.anyObject());
+        verify(clientServiceMock, never()).updatePublication(any());
+        verify(clientServiceMock, never()).updateSubmission(any());
+        verify(clientServiceMock, never()).createRepositoryCopy(any());
+        verify(clientServiceMock, never()).updateRepositoryCopy(any());
+        verify(clientServiceMock, never()).updateDeposit(any());
     }
 
     /**
@@ -198,19 +188,21 @@ public class SubmissionLoaderTest {
      */
     @Test
     public void testLoadExistingPublicationNewSubmissionNewRepoCopy() throws Exception {
-
-        Publication publication = new Publication();
-        publication.setId(new URI(sPublicationUri));
+        Publication publication = new Publication(publicationId);
         publication.setTitle(title);
         publication.setPmid(pmid);
 
-        Submission submission = new Submission();
-        submission.setPublication(publication.getId());
-        submission.setSubmitter(new URI(sUserUri));
+        User submitter = new User(userId);
+
+        Submission submission = new Submission(submissionId);
+        submission.setPublication(publication);
+        submission.setSubmitter(submitter);
+
+        Repository nihmsRepo = new Repository(ConfigUtil.getNihmsRepositoryId());
 
         RepositoryCopy repositoryCopy = new RepositoryCopy();
-        repositoryCopy.setPublication(publication.getId());
-        repositoryCopy.setRepository(ConfigUtil.getNihmsRepositoryUri());
+        repositoryCopy.setPublication(publication);
+        repositoryCopy.setRepository(nihmsRepo);
         repositoryCopy.setCopyStatus(CopyStatus.ACCEPTED);
 
         SubmissionDTO dto = new SubmissionDTO();
@@ -220,26 +212,16 @@ public class SubmissionLoaderTest {
 
         SubmissionLoader loader = new SubmissionLoader(clientServiceMock, statusServiceMock);
 
-        URI submissionUri = new URI(sSubmissionUri);
-        URI repositoryCopyUri = new URI(sRepositoryCopyUri);
-        when(clientServiceMock.createSubmission(submission)).thenReturn(submissionUri);
-        when(clientServiceMock.createRepositoryCopy(repositoryCopy)).thenReturn(repositoryCopyUri);
-        when(clientServiceMock.findPublicationByPmid(Mockito.eq(publication.getPmid()))).thenReturn(publication);
-
         //run it
         loader.load(dto);
 
-        verify(clientServiceMock, never()).updatePublication(Mockito.any());
-
-        ArgumentCaptor<Submission> submissionCaptor = ArgumentCaptor.forClass(Submission.class);
-        verify(clientServiceMock).createSubmission(submissionCaptor.capture());
-        assertEquals(submission, submissionCaptor.getValue());
+        verify(clientServiceMock, never()).updatePublication(any());
 
         ArgumentCaptor<RepositoryCopy> repoCopyCaptor = ArgumentCaptor.forClass(RepositoryCopy.class);
         verify(clientServiceMock).createRepositoryCopy(repoCopyCaptor.capture());
         assertEquals(repositoryCopy, repoCopyCaptor.getValue());
 
-        verify(clientServiceMock, never()).updateDeposit(Mockito.anyObject());
+        verify(clientServiceMock, never()).updateDeposit(any());
     }
 
     /**
@@ -252,23 +234,24 @@ public class SubmissionLoaderTest {
     @Test
     public void testLoadExistingPubExistingSubmissionNewRepoCopy() throws Exception {
 
-        Publication publication = new Publication();
-        publication.setId(new URI(sPublicationUri));
+        Publication publication = new Publication(publicationId);
         publication.setTitle(title);
         publication.setPmid(pmid);
 
-        Submission submission = new Submission();
-        submission.setId(new URI(sSubmissionUri));
-        submission.setPublication(publication.getId());
-        submission.setSubmitter(new URI(sUserUri));
+        User submitter = new User(userId);
+
+        Submission submission = new Submission(submissionId);
+        submission.setPublication(publication);
+        submission.setSubmitter(submitter);
+
+        Repository nihmsRepo = new Repository(ConfigUtil.getNihmsRepositoryId());
 
         RepositoryCopy repositoryCopy = new RepositoryCopy();
-        repositoryCopy.setPublication(publication.getId());
-        repositoryCopy.setRepository(ConfigUtil.getNihmsRepositoryUri());
+        repositoryCopy.setPublication(publication);
+        repositoryCopy.setRepository(nihmsRepo);
         repositoryCopy.setCopyStatus(CopyStatus.ACCEPTED);
 
-        Deposit deposit = new Deposit();
-        deposit.setId(new URI(sDepositUri));
+        Deposit deposit = new Deposit(depositId);
         deposit.setDepositStatus(DepositStatus.SUBMITTED);
         deposit.setRepository(repositoryCopy.getRepository());
 
@@ -279,16 +262,14 @@ public class SubmissionLoaderTest {
 
         SubmissionLoader loader = new SubmissionLoader(clientServiceMock, statusServiceMock);
 
-        URI repositoryCopyUri = new URI(sRepositoryCopyUri);
-        when(clientServiceMock.createRepositoryCopy(repositoryCopy)).thenReturn(repositoryCopyUri);
-        when(clientServiceMock.findNihmsDepositForSubmission(submission.getId())).thenReturn(deposit);
+        when(clientServiceMock.findNihmsDepositForSubmission(any())).thenReturn(deposit);
 
         //run it
         loader.load(dto);
 
-        verify(clientServiceMock, never()).updatePublication(Mockito.any());
+        verify(clientServiceMock, never()).updatePublication(any());
 
-        verify(clientServiceMock, never()).updateSubmission(Mockito.any());
+        verify(clientServiceMock, never()).updateSubmission(any());
 
         ArgumentCaptor<RepositoryCopy> repoCopyCaptor = ArgumentCaptor.forClass(RepositoryCopy.class);
         verify(clientServiceMock).createRepositoryCopy(repoCopyCaptor.capture());
@@ -296,7 +277,7 @@ public class SubmissionLoaderTest {
 
         ArgumentCaptor<Deposit> depositCaptor = ArgumentCaptor.forClass(Deposit.class);
         verify(clientServiceMock).updateDeposit(depositCaptor.capture());
-        deposit.setRepositoryCopy(repositoryCopyUri);
+        deposit.setRepositoryCopy(repositoryCopy);
         deposit.setDepositStatus(DepositStatus.ACCEPTED);
         assertEquals(deposit, depositCaptor.getValue());
 
@@ -309,12 +290,11 @@ public class SubmissionLoaderTest {
     public void testLoadThrowExceptionWhenNullDTO() {
         SubmissionLoader loader = new SubmissionLoader(clientServiceMock, statusServiceMock);
 
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("A null Submission object was passed to the loader.");
+        Exception exception = assertThrows(RuntimeException.class, () -> loader.load(null));
 
-        loader.load(null);
+        assertEquals("A null Submission object was passed to the loader.", exception.getMessage());
 
-        verifyZeroInteractions(clientServiceMock);
+        verifyNoMoreInteractions(clientServiceMock);
     }
 
     /**
@@ -323,14 +303,11 @@ public class SubmissionLoaderTest {
     @Test
     public void testLoadThrowExceptionWhenNoSubmission() {
         SubmissionLoader loader = new SubmissionLoader(clientServiceMock, statusServiceMock);
-
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("A null Submission object was passed to the loader.");
-
         SubmissionDTO dto = new SubmissionDTO();
-        loader.load(dto);
 
-        verifyZeroInteractions(clientServiceMock);
+        Exception exception = assertThrows(RuntimeException.class, () -> loader.load(dto));
+
+        assertEquals("A null Submission object was passed to the loader.", exception.getMessage());
+        verifyNoMoreInteractions(clientServiceMock);
     }
-
 }

@@ -15,7 +15,6 @@
  */
 package org.eclipse.pass.client.nihms.cache;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;

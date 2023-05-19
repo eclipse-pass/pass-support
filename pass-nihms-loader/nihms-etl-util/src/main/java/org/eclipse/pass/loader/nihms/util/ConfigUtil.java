@@ -19,8 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Properties;
 
 /**
@@ -32,8 +30,8 @@ public class ConfigUtil {
         //never called
     }
 
-    private static final String NIHMS_REPOSITORY_URI_KEY = "nihmsetl.repository.id";
-    private static final String NIHMS_REPOSITORY_URI_DEFAULT = "1";
+    private static final String NIHMS_REPOSITORY_ID_KEY = "nihmsetl.repository.id";
+    private static final String NIHMS_REPOSITORY_ID_DEFAULT = "1";
 
     /**
      * Retrieve property from a system property or environment variable or set to default
@@ -60,12 +58,12 @@ public class ConfigUtil {
     }
 
     /**
-     * Retrieves the NIHMS Repository URI based on property key
+     * Retrieves the NIHMS Repository ID based on property key
      *
-     * @return the NIHMS repository URI
+     * @return the NIHMS repository ID
      */
-    public static String getNihmsRepositoryUri() {
-        return ConfigUtil.getSystemProperty(NIHMS_REPOSITORY_URI_KEY, NIHMS_REPOSITORY_URI_DEFAULT);
+    public static String getNihmsRepositoryId() {
+        return ConfigUtil.getSystemProperty(NIHMS_REPOSITORY_ID_KEY, NIHMS_REPOSITORY_ID_DEFAULT);
     }
 
     /**

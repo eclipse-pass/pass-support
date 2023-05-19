@@ -18,20 +18,21 @@ package org.eclipse.pass.loader.nihms;
 import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.eclipse.pass.client.SubmissionStatusService;
-import org.eclipse.pass.client.fedora.UpdateConflictException;
 import org.eclipse.pass.client.nihms.NihmsPassClientService;
 import org.eclipse.pass.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
+import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +94,14 @@ public class NihmsTransformLoadService {
 
         List<Path> filepaths = loadFiles(dataDirectory);
 
-        Consumer<NihmsPublication> pubConsumer = pub -> transformAndLoadNihmsPub(pub);
+        Consumer<NihmsPublication> pubConsumer = pub -> {
+            try {
+                transformAndLoadNihmsPub(pub);
+            } catch (IOException e) {
+                LOG.error("Error transforming and loading NIHMS publication for NihmsId {}", pub.getNihmsId(), e);
+                throw new RuntimeException(e);
+            }
+        };
         int count = 0;
         for (Path path : filepaths) {
             NihmsStatus nihmsStatus = nihmsStatus(path);
@@ -120,7 +128,7 @@ public class NihmsTransformLoadService {
      *
      * @param pub the NihmsPublication object
      */
-    public void transformAndLoadNihmsPub(NihmsPublication pub) {
+    public void transformAndLoadNihmsPub(NihmsPublication pub) throws IOException {
         final int MAX_ATTEMPTS = 3; //applies to UpdateConflictExceptions only, which can be recovered from
         int attempt = 0;
 
@@ -148,7 +156,7 @@ public class NihmsTransformLoadService {
                 }
 
                 break;
-            } catch (UpdateConflictException ex) {
+            } catch (IllegalStateException | ConcurrentModificationException | IllegalArgumentException ex) {
                 if (attempt < MAX_ATTEMPTS) {
                     LOG.warn("Update failed for PMID %s due to database conflict, attempting retry # %d", pub.getPmid(),
                              attempt);
@@ -157,6 +165,10 @@ public class NihmsTransformLoadService {
                         String.format("Update could not be applied for PMID %s after %d attempts ", pub.getPmid(),
                                       MAX_ATTEMPTS), ex);
                 }
+            } catch (IOException e) {
+                LOG.error("Error transforming or loading record for PMID {} with award number {}", pub.getPmid(),
+                          pub.getGrantNumber(), e);
+                throw new IOException(e);
             }
         }
 
