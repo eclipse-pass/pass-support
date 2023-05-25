@@ -54,21 +54,45 @@ public class NihmsPassClientService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPassClientService.class);
 
+    /**
+     * The field name for the ISSN
+     */
     public static final String ISSNS_FLD = "issns";
 
+    /**
+     * The field name for the submission
+     */
     public static final String SUBMISSION_FLD = "submission";
 
+    /**
+     * The field name for the repository
+     */
     public static final String REPOSITORY_FLD = "repository";
 
+    /**
+     * The field name for the award number
+     */
     public static final String AWARD_NUMBER_FLD = "awardNumber";
 
+    /**
+     * The field name for the publication
+     */
     public static final String PUBLICATION_FLD = "publication";
 
+    /**
+     * The field name for the submitter
+     */
     public static final String SUBMITTER_FLD = "submitter";
 
+    /**
+     * The error message when a publication is missing a DOI or PMID
+     */
     static final String ERR_CREATE_PUBLICATION =
         "Refusing to create a Publication: it must have either a DOI or a PMID.";
 
+    /**
+     * The PassClient used by this service to interact and persist PASS data
+     */
     private final PassClient passClient;
 
     /**
@@ -102,10 +126,17 @@ public class NihmsPassClientService {
      */
     private final String nihmsRepoId;
 
+    /**
+     * Default constructor that uses the default PassClient
+     */
     public NihmsPassClientService() {
         this(PassClient.newInstance());
     }
 
+    /**
+     * Constructor that allows a PassClient to be passed in
+     * @param passClient the PassClient used to persist data
+     */
     public NihmsPassClientService(PassClient passClient) {
         this.passClient = passClient;
         nihmsRepoId = ConfigUtil.getNihmsRepositoryId();
@@ -137,6 +168,7 @@ public class NihmsPassClientService {
      *
      * @param awardNumber the award number
      * @return the grant, or {@code null} if not found
+     * @throws IOException if there is an error reading the grant from the PassClient
      */
     public Grant findMostRecentGrantByAwardNumber(String awardNumber) throws IOException {
         if (nullOrEmpty(awardNumber)) {
@@ -189,6 +221,7 @@ public class NihmsPassClientService {
      *
      * @param pmid the pub med id
      * @return the publication, or {@code null} if it can't be found
+     * @throws IOException if there is an error reading the publication from the PassClient
      */
     public Publication findPublicationByPmid(String pmid) throws IOException {
         if (pmid == null) {
@@ -218,6 +251,7 @@ public class NihmsPassClientService {
      * @param doi  the digital object identifier
      * @param pmid the pub med id
      * @return the publication, or {@code null} if it can't be found
+     * @throws IOException if there is an error reading the publication from the PassClient
      */
     public Publication findPublicationByDoi(String doi, String pmid) throws IOException {
         if (pmid == null) {
@@ -245,6 +279,7 @@ public class NihmsPassClientService {
      *
      * @param pubId the publication id
      * @return the repository copy, or {@code null} if it can't be found
+     * @throws IOException if there is an error reading the repository copy
      */
     public RepositoryCopy findNihmsRepositoryCopyForPubId(String pubId) throws IOException {
         if (pubId == null) {
@@ -292,6 +327,7 @@ public class NihmsPassClientService {
      * @param pubId  the publication id
      * @param userId the user id
      * @return the submissions, may be empty but never {@code null}
+     * @throws IOException if there is an error reading the submissions
      */
     public List<Submission> findSubmissionsByPublicationAndUserId(String pubId, String userId) throws IOException {
         if (pubId == null) {
@@ -340,6 +376,7 @@ public class NihmsPassClientService {
      * @param articleId   the article id
      * @param idFieldName the name of the field on the Submission model that will be matched e.g. "pmid" or "doi"
      * @return the publication, or {@code null} if it can't be found
+     * @throws IOException if there is an error reading the publication
      */
     private String findPublicationByArticleId(String articleId, String idFieldName) throws IOException {
         if (nullOrEmpty(articleId)) {
@@ -368,6 +405,7 @@ public class NihmsPassClientService {
      *
      * @param issn the issn
      * @return the journal ID for the ISSN, may be {@code null} if not found
+     * @throws IOException if there is an error reading the journal
      */
     public String findJournalByIssn(String issn) throws IOException {
         if (nullOrEmpty(issn)) {
@@ -392,6 +430,7 @@ public class NihmsPassClientService {
      *
      * @param submissionId the submission id
      * @return the deposit associated with the submission, may be {@code null} if not found
+     * @throws IOException if there is an error reading the deposit
      */
     public Deposit findNihmsDepositForSubmission(String submissionId) throws IOException {
         if (submissionId == null) {
@@ -429,6 +468,7 @@ public class NihmsPassClientService {
      *
      * @param grantId the grant id
      * @return Grant if found, or null if not found
+     * @throws IOException if there is an error reading the grant
      */
     public Grant readGrant(String grantId) throws IOException {
         if (grantId == null) {
@@ -442,6 +482,7 @@ public class NihmsPassClientService {
      *
      * @param publicationId the publication id
      * @return Publication if found, or null if not found
+     * @throws IOException if there is an error reading the publication
      */
     public Publication readPublication(String publicationId) throws IOException {
         if (publicationId == null) {
@@ -455,6 +496,7 @@ public class NihmsPassClientService {
      *
      * @param submissionId the submission id
      * @return matching submission or null if none found
+     * @throws IOException if there is an error reading the submission
      */
     public Submission readSubmission(String submissionId) throws IOException {
         if (submissionId == null) {
@@ -468,6 +510,7 @@ public class NihmsPassClientService {
      *
      * @param depositId the deposit id
      * @return the deposit, or null if not found
+     * @throws IOException if there is an error reading the deposit
      */
     public Deposit readDeposit(String depositId) throws IOException {
         if (depositId == null) {
@@ -481,6 +524,7 @@ public class NihmsPassClientService {
      *
      * @param repositoryId the repository id
      * @return the deposit, or null if not found
+     * @throws IOException if there is an error reading the Repository
      */
     public Repository readRepository(String repositoryId) throws IOException {
         if (repositoryId == null) {
@@ -492,6 +536,7 @@ public class NihmsPassClientService {
     /**
      * @param publication the publication
      * @return the uri of the created publication
+     * @throws IOException if there is an error creating the publication
      */
     public String createPublication(Publication publication) throws IOException {
 
@@ -511,6 +556,7 @@ public class NihmsPassClientService {
     /**
      * @param submission the submission
      * @return the entity ID of the created submission
+     * @throws IOException if there is an error creating the submission
      */
     public String createSubmission(Submission submission) throws IOException {
         passClient.createObject(submission);
@@ -521,8 +567,11 @@ public class NihmsPassClientService {
     }
 
     /**
+     * Create a new RepositoryCopy in PASS
+     *
      * @param repositoryCopy the repository copy
      * @return the entity ID of the created repository copy
+     * @throws IOException if unable to create repository copy
      */
     public String createRepositoryCopy(RepositoryCopy repositoryCopy) throws IOException {
         passClient.createObject(repositoryCopy);
@@ -532,8 +581,11 @@ public class NihmsPassClientService {
     }
 
     /**
+     * Update Publication in PASS
+     *
      * @param publication the publication
      * @return true if record needed to be updated, false if no update
+     * @throws IOException if unable to update publication
      */
     public boolean updatePublication(Publication publication) throws IOException {
         Publication origPublication = passClient.getObject(Publication.class, publication.getId());
@@ -546,8 +598,11 @@ public class NihmsPassClientService {
     }
 
     /**
+     * Update Submission in PASS
+     *
      * @param submission the submission
      * @return true if record needed to be updated, false if no update
+     * @throws IOException if unable to update submission
      */
     public boolean updateSubmission(Submission submission) throws IOException {
         Submission origSubmission = passClient.getObject(Submission.class, submission.getId());
@@ -564,8 +619,11 @@ public class NihmsPassClientService {
     }
 
     /**
+     * Update RepositoryCopy in PASS
+     *
      * @param repositoryCopy the repository copy
      * @return true if record needed to be updated, false if no update
+     * @throws IOException if unable to update repository copy
      */
     public boolean updateRepositoryCopy(RepositoryCopy repositoryCopy) throws IOException {
         RepositoryCopy origRepoCopy = passClient.getObject(RepositoryCopy.class, repositoryCopy.getId());
@@ -578,8 +636,11 @@ public class NihmsPassClientService {
     }
 
     /**
+     * Update Deposit in PASS
+     *
      * @param deposit the deposit
      * @return true if record needed to be updated, false if no update
+     * @throws IOException if unable to update deposit
      */
     public boolean updateDeposit(Deposit deposit) throws IOException {
         Deposit origDeposit = passClient.getObject(Deposit.class, deposit.getId());

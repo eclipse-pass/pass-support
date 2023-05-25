@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.loader.nihms.cli;
+package org.eclipse.pass.loader.nihms;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Properties;
 import java.util.Set;
 
-import org.eclipse.pass.loader.nihms.NihmsTransformLoadService;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
@@ -51,6 +50,11 @@ public class NihmsTransformLoadApp {
 
     private Set<NihmsStatus> statusesToProcess;
 
+    /**
+     * Constructor for the NihmsTransformLoadApp
+     * @param statusesToProcess the statuses to process
+     * @see NihmsStatus
+     */
     public NihmsTransformLoadApp(Set<NihmsStatus> statusesToProcess) {
         this.statusesToProcess = statusesToProcess;
     }

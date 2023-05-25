@@ -60,7 +60,6 @@ public class NihmsPassClientServiceIT {
         journal.setIssns(Arrays.asList("fooissn", "barissn"));
         journal.setJournalName("My Journal");
 
-        //journal = passClient.createAndReadResource(journal, Journal.class);
         passClient.createObject(journal);
         String journalId = journal.getId();
 

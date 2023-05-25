@@ -124,6 +124,7 @@ public class NihmsPublicationToSubmission {
      *
      * @param pub the publication
      * @return the DTO, never {@code null}
+     * @throws IOException if there is a problem with the lookup of the publication, repository, submission
      */
     public SubmissionDTO transform(NihmsPublication pub) throws IOException {
 
@@ -223,9 +224,6 @@ public class NihmsPublicationToSubmission {
         } else {
             publication.setTitle(nihmsPub.getArticleTitle());
         }
-        //TODO: should a new publication be created?
-/*        String publicationId = clientService.createPublication(publication);
-        publication.setId(publicationId);*/
         return publication;
     }
 

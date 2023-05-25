@@ -55,6 +55,10 @@ public class CompletedPublicationsCache {
         loadFromFile();
     }
 
+    /**
+     * Get singleton instance of cache
+     * @return the singleton instance
+     */
     public static synchronized CompletedPublicationsCache getInstance() {
         if (completedPubsSpace == null) {
             completedPubsSpace = new CompletedPublicationsCache();

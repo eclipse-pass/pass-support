@@ -31,6 +31,10 @@ public class PublicationIdCache {
         publicationCache = new HashMap<String, String>();
     }
 
+    /**
+     * Get singleton instance of PublicationIdCache
+     * @return the Publication ID cache
+     */
     public static synchronized PublicationIdCache getInstance() {
         if (publicationSpace == null) {
             publicationSpace = new PublicationIdCache();

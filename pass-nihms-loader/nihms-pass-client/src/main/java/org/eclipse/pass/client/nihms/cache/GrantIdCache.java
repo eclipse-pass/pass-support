@@ -31,6 +31,10 @@ public class GrantIdCache {
         grantCache = new HashMap<String, String>();
     }
 
+    /**
+     * Get singleton instance of GrantIdCache
+     * @return the grant id cache
+     */
     public static synchronized GrantIdCache getInstance() {
         if (grantSpace == null) {
             grantSpace = new GrantIdCache();

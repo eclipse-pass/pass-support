@@ -38,9 +38,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 public class UrlBuilderTest {
 
     private UrlBuilder underTest;
@@ -52,7 +53,7 @@ public class UrlBuilderTest {
     private Map<String, String> additional = Collections.emptyMap();
 
     @BeforeAll
-    public static void apiParams() throws Exception {
+    public static void apiParams() {
         System.setProperty(join("", API_URL_PARAM_PREFIX, "filter"), "");
         System.setProperty(join("", API_URL_PARAM_PREFIX, "format"), "csv");
         System.setProperty(join("", API_URL_PARAM_PREFIX, "inst"), "JOHNS HOPKINS");
@@ -96,22 +97,16 @@ public class UrlBuilderTest {
     }
 
     @AfterEach
-    public void verifyPath() throws Exception {
+    public void verifyPath() {
         assertTrue(generatedUrl.getPath().startsWith(NihmsHarvesterConfig.getApiPath()));
     }
 
-    @AfterAll
+    @AfterEach
     public void verifyParams() throws URISyntaxException {
         String query = generatedUrl.toURI().getQuery(); // .toURI() will decode the query parameter values
         assertNotNull(query);
         String[] parts = query.split("&");
-        //TODO: fix assertEquals
-        //java.lang.NumberFormatException: For input string: "Unexpected number of URL parameters.  Wanted 8, got 7"
-        //at org.eclipse.pass.loader.nihms.UrlBuilderTest.verifyParams(UrlBuilderTest.java:109)
-        /*assertEquals(
-        Float.parseFloat(format("Unexpected number of URL parameters.  Wanted %s, got %s",
-         additional.size() + 7, parts.length)),
-            additional.size() + 7, parts.length);*/
+        assertEquals(additional.size() + 7, parts.length);
 
         Stream.of(parts).forEach(part -> {
             String[] subpart = part.split("=");
@@ -150,7 +145,7 @@ public class UrlBuilderTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         System.err.println(generatedUrl.toString());
     }
@@ -175,7 +170,7 @@ public class UrlBuilderTest {
 
     @Test
     public void compliantUrlWithParamOverride() {
-        overrides = new HashMap<String, String>() {
+        overrides = new HashMap<>() {
             {
                 put("format", "moo");
             }
@@ -187,7 +182,7 @@ public class UrlBuilderTest {
 
     @Test
     public void compliantUrlWithAdditionalParam() {
-        additional = new HashMap<String, String>() {
+        additional = new HashMap<>() {
             {
                 put("api-key", "api-key-value");
             }
@@ -199,7 +194,7 @@ public class UrlBuilderTest {
 
     @Test
     public void nonCompliantUrlWithParamOverride() {
-        overrides = new HashMap<String, String>() {
+        overrides = new HashMap<>() {
             {
                 put("format", "moo");
             }
@@ -211,7 +206,7 @@ public class UrlBuilderTest {
 
     @Test
     public void nonCompliantUrlWithAdditionalParam() {
-        additional = new HashMap<String, String>() {
+        additional = new HashMap<>() {
             {
                 put("api-key", "api-key-value");
             }
@@ -223,7 +218,7 @@ public class UrlBuilderTest {
 
     @Test
     public void inProcessUrlWithParamOverride() {
-        overrides = new HashMap<String, String>() {
+        overrides = new HashMap<>() {
             {
                 put("format", "moo");
             }
@@ -235,7 +230,7 @@ public class UrlBuilderTest {
 
     @Test
     public void inProcessUrlWithAdditionalParam() {
-        additional = new HashMap<String, String>() {
+        additional = new HashMap<>() {
             {
                 put("api-key", "api-key-value");
             }

@@ -15,35 +15,41 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.net.URI;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.pass.support.client.PassClient;
-
 import org.eclipse.pass.client.nihms.NihmsPassClientService;
 import org.eclipse.pass.entrez.PmidLookup;
 import org.eclipse.pass.entrez.PubMedEntrezRecord;
-import org.eclipse.pass.loader.nihms.CompletedPublicationsCache;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.SubmissionStatusService;
+import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
-import org.joda.time.DateTime;
+import org.eclipse.pass.support.client.model.User;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 
 /**
@@ -55,30 +61,29 @@ public abstract class NihmsSubmissionEtlITBase {
     @Mock
     protected PmidLookup mockPmidLookup;
 
-    protected Map<URI, Class<? extends PassEntity>> createdUris = new HashMap<URI, Class<? extends PassEntity>>();
+    protected Map<PassEntity, Class<? extends PassEntity>> createdEntities = new HashMap<>();
 
     protected static final int RETRIES = 12;
 
-    protected final PassClient client = PassClientFactory.getPassClient();
 
-    protected final SubmissionStatusService statusService = new SubmissionStatusService(client);
+    protected final PassClient passClient = PassClient.newInstance();
 
-    protected final NihmsPassClientService nihmsPassClientService = new NihmsPassClientService(client);
+    protected final SubmissionStatusService statusService = new SubmissionStatusService(passClient);
 
-    protected static String path = TransformAndLoadSmokeIT.class.getClassLoader().getResource("data").getPath();
+    protected final NihmsPassClientService nihmsPassClientService = new NihmsPassClientService(passClient);
+
+    protected static String path = Objects.requireNonNull(TransformAndLoadSmokeIT.class.getClassLoader()
+            .getResource("data")).getPath();
 
     static {
-        if (System.getProperty("pass.fedora.baseurl") == null) {
-            System.setProperty("pass.fedora.baseurl", "http://localhost:8080/fcrepo/rest/");
+        if (System.getProperty("pass.core.url") == null) {
+            System.setProperty("pass.core.url", "http://localhost:8080");
         }
-        if (System.getProperty("pass.fedora.user") == null) {
-            System.setProperty("pass.fedora.user", "fedoraAdmin");
+        if (System.getProperty("pass.core.user") == null) {
+            System.setProperty("pass.core.user", "backend");
         }
-        if (System.getProperty("pass.fedora.password") == null) {
-            System.setProperty("pass.fedora.password", "moo");
-        }
-        if (System.getProperty("pass.elasticsearch.url") == null) {
-            System.setProperty("pass.elasticsearch.url", "http://localhost:9200/pass/");
+        if (System.getProperty("pass.core.password") == null) {
+            System.setProperty("pass.core.password", "backend");
         }
         if (System.getProperty("nihmsetl.data.dir") == null) {
             System.setProperty("nihmsetl.data.dir", path);
@@ -87,42 +92,56 @@ public abstract class NihmsSubmissionEtlITBase {
 
     protected static CompletedPublicationsCache completedPubsCache;
 
-    @Before
+    @BeforeEach
     public void startup() {
         String cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
         System.setProperty("nihmsetl.loader.cachepath", cachepath);
         completedPubsCache = CompletedPublicationsCache.getInstance();
     }
 
-    @After
-    public void cleanup() {
+    @AfterEach
+    public void cleanup() throws IOException {
         completedPubsCache.clear();
 
         nihmsPassClientService.clearCache();
 
         //clean out all data from the following (note Grant URIs added to createdUris the createGrant() method as we
         // don't want to delete pre-loaded data)
-        putAllInCreatedUris(client.findAllByAttribute(Submission.class, "@type", "Submission"), Submission.class);
-        putAllInCreatedUris(client.findAllByAttribute(Publication.class, "@type", "Publication"), Publication.class);
-        putAllInCreatedUris(client.findAllByAttribute(RepositoryCopy.class, "@type", "RepositoryCopy"),
-                            RepositoryCopy.class);
-        putAllInCreatedUris(client.findAllByAttribute(Deposit.class, "@type", "Deposit"), Deposit.class);
+        PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
+        subSelector.setFilter(RSQL.equals("@type", "Submission"));
+        createdEntities.put((PassEntity) passClient.selectObjects(subSelector).getObjects(), Submission.class);
+
+        PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
+        pubSelector.setFilter(RSQL.equals("@type", "Publication"));
+        createdEntities.put((PassEntity) passClient.selectObjects(pubSelector).getObjects(), Publication.class);
+
+        PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
+        repoCopySelector.setFilter(RSQL.equals("@type", "RepositoryCopy"));
+        createdEntities.put((PassEntity) passClient.selectObjects(repoCopySelector).getObjects(), RepositoryCopy.class);
+
+        PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
+        depoSelector.setFilter(RSQL.equals("@type", "Deposit"));
+        createdEntities.put((PassEntity) passClient.selectObjects(depoSelector).getObjects(), RepositoryCopy.class);
 
         //need to log fail if this doesn't work as it could mess up re-testing if data isn't cleaned out
         try {
-            URI uriCheck = null;
+            String idCheck = null;
 
-            if (createdUris.size() > 0) {
-                for (URI uri : createdUris.keySet()) {
-                    client.deleteResource(uri);
-                    uriCheck = uri;
+            if (createdEntities.size() > 0) {
+                for (PassEntity entity : createdEntities.keySet()) {
+                    idCheck = entity.getId();
+                    passClient.deleteObject(entity);
                 }
-                final URI finalUriCheck = uriCheck;
-                attempt(RETRIES, () -> {
-                    final URI uri = client.findByAttribute(createdUris.get(finalUriCheck), "@id", finalUriCheck);
-                    assertEquals(null, uri);
+                final String finalIdCheck = idCheck;
+                attempt(RETRIES, ()  -> {
+                    try {
+                        assertNull(passClient.getObject(PassEntity.class, finalIdCheck),
+                                "Entity " + finalIdCheck + " was not deleted");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 });
-                createdUris.clear();
+                createdEntities.clear();
             }
 
         } catch (Exception ex) {
@@ -130,31 +149,27 @@ public abstract class NihmsSubmissionEtlITBase {
         }
     }
 
-    private void putAllInCreatedUris(Set<URI> uris, Class<? extends PassEntity> cls) {
-        if (uris != null) {
-            for (URI uri : uris) {
-                createdUris.put(uri, cls);
-            }
-        }
-    }
-
-    protected URI createGrant(String awardNumber, String userId) throws Exception {
+    protected String createGrant(String awardNumber, String userId) throws Exception {
+        Funder primaryFunder = new Funder("funder:id1");
+        Funder directFunder = new Funder("funder:id2");
+        User user = new User(userId);
+        User coPi = new User("user:id");
         Grant grant = new Grant();
         grant.setAwardNumber(awardNumber);
-        grant.setPi(new URI(userId));
-        grant.setPrimaryFunder(new URI("funder:id1"));
-        grant.setDirectFunder(new URI("funder:id2"));
+        grant.setPi(user);
+        grant.setPrimaryFunder(primaryFunder);
+        grant.setDirectFunder(directFunder);
         grant.setAwardStatus(AwardStatus.ACTIVE);
-        List<URI> copis = new ArrayList<URI>();
-        copis.add(new URI("user:id"));
+        List<User> copis = new ArrayList<>();
+        copis.add(coPi);
         grant.setCoPis(copis);
         grant.setProjectName("test");
-        grant.setStartDate(new DateTime());
-        grant.setAwardDate(new DateTime());
-        URI uri = client.createResource(grant);
-        createdUris.put(uri, Grant.class);
-        return uri;
-    }*/
+        grant.setStartDate(ZonedDateTime.now());
+        grant.setAwardDate(ZonedDateTime.now());
+        passClient.createObject(grant);
+        createdEntities.put(grant, Grant.class);
+        return grant.getId();
+    }
 
     /*
      * Try invoking a runnable until it succeeds.
@@ -162,12 +177,12 @@ public abstract class NihmsSubmissionEtlITBase {
      * @param times  The number of times to run
      * @param thingy The runnable.
      */
-    /*void attempt(final int times, final Runnable thingy) {
+    void attempt(final int times, final Runnable thingy) {
         attempt(times, () -> {
             thingy.run();
             return null;
         });
-    }*/
+    }
 
     /*
      * Try invoking a callable until it succeeds.
@@ -176,7 +191,7 @@ public abstract class NihmsSubmissionEtlITBase {
      * @param it    the thing to call.
      * @return the result from the callable, when successful.
      */
-    /*<T> T attempt(final int times, final Callable<T> it) {
+    <T> T attempt(final int times, final Callable<T> it) {
 
         Throwable caught = null;
 
@@ -195,13 +210,13 @@ public abstract class NihmsSubmissionEtlITBase {
             }
         }
         throw new RuntimeException("Failed executing task", caught);
-    }*/
+    }
 
-    /*protected void setMockPMRecord(String pmid) throws IOException {
+    protected void setMockPMRecord(String pmid) throws IOException {
         String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("pmidrecord.json"));
         JSONObject rootObj = new JSONObject(json);
         PubMedEntrezRecord pmr = new PubMedEntrezRecord(rootObj);
         when(mockPmidLookup.retrievePubMedRecord(eq(pmid))).thenReturn(pmr);
-    }*/
+    }
 
 }

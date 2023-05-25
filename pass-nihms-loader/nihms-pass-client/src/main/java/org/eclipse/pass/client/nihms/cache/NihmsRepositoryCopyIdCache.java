@@ -32,6 +32,10 @@ public class NihmsRepositoryCopyIdCache {
         nihmsRepoCopyCache = new HashMap<String, String>();
     }
 
+    /**
+     * Get singleton instance of NihmsRepositoryCopyIdCache
+     * @return the RepositoryCopy ID cache
+     */
     public static synchronized NihmsRepositoryCopyIdCache getInstance() {
         if (repositoryCopySpace == null) {
             repositoryCopySpace = new NihmsRepositoryCopyIdCache();

@@ -19,7 +19,6 @@
         <module>nihms-data-harvest-cli</module>
         <module>nihms-data-transform-load</module>
         <module>nihms-data-transform-load-cli</module>
-        <module>nihms-etl-integration</module>
         <module>nihms-etl-model</module>
         <module>nihms-etl-util</module>
         <module>nihms-pass-client</module>

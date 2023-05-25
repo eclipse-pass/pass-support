@@ -64,6 +64,7 @@ public class SubmissionLoader {
      * by implementing retries, failing gracefully etc.
      *
      * @param dto the DTO
+     * @throws IOException if there is an error updating/creating the publication, repository copy, or submission
      */
     public void load(SubmissionDTO dto) throws IOException {
         if (dto == null || dto.getSubmission() == null) {

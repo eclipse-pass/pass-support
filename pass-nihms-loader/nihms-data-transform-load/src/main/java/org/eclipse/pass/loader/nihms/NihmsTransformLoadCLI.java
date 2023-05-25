@@ -1,4 +1,4 @@
-package org.eclipse.pass.loader.nihms.cli;
+package org.eclipse.pass.loader.nihms;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -53,6 +53,22 @@ public class NihmsTransformLoadCLI {
                     "will be processed.")
     private boolean inProcess = false;
 
+    /**
+     * This is the main entry point for the NihmsTransformLoadCLI application.
+     * The method processes the command line arguments, determines the Nihms statuses to be processed,
+     * and initializes and runs the NihmsTransformLoadApp.
+     *
+     * <p>Command line arguments are used to select the statuses to process.
+     * If the 'help' argument is specified, usage information will be printed and the application will terminate.
+     *
+     * <p>If there are issues with the provided command line arguments, a message detailing the error
+     * will be printed, followed by the usage information. The application will then terminate with an exit code of 1.
+     *
+     * <p>Other exceptions that may occur during the execution of the application are caught and their stack trace is
+     * printed, followed by the exception's message. The application will then terminate with an exit code of 1.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
 
         final NihmsTransformLoadCLI application = new NihmsTransformLoadCLI();

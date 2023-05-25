@@ -21,8 +21,17 @@ package org.eclipse.pass.loader.nihms.model;
  * @author Karen Hanson
  */
 public enum NihmsStatus {
+    /**
+     * Compliant status for NIHMS publication
+     */
     COMPLIANT("compliant"),
+    /**
+     * Non-compliant status for NIHMS publication
+     */
     NON_COMPLIANT("noncompliant"),
+    /**
+     * In process status for NIHMS publication
+     */
     IN_PROCESS("inprocess");
 
     private String value;

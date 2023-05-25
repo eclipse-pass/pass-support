@@ -54,6 +54,9 @@ public class NihmsTransformLoadService {
 
     private SubmissionStatusService statusService;
 
+    /**
+     * Default constructor for NihmsTransformLoadService
+     */
     public NihmsTransformLoadService() {
         nihmsPassClient = new NihmsPassClientService();
         pmidLookup = new PmidLookup();
@@ -127,6 +130,7 @@ public class NihmsTransformLoadService {
      * moving on
      *
      * @param pub the NihmsPublication object
+     * @throws IOException if there is an error transforming or loading the publication
      */
     public void transformAndLoadNihmsPub(NihmsPublication pub) throws IOException {
         final int MAX_ATTEMPTS = 3; //applies to UpdateConflictExceptions only, which can be recovered from

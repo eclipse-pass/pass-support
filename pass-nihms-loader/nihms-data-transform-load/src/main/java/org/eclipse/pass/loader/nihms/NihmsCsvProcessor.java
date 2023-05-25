@@ -101,6 +101,11 @@ public class NihmsCsvProcessor {
      */
     private NihmsStatus status = null;
 
+    /**
+     * Set the file path to the NIHMS CSV to read in and the status of the NIHMS deposit
+     * @param filePath path to NIHMS CSV
+     * @param status status of NIHMS deposit
+     */
     public NihmsCsvProcessor(Path filePath, NihmsStatus status) {
         this.filePath = filePath;
         this.status = status;

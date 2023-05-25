@@ -166,6 +166,7 @@ public class NihmsHarvester {
      * return false
      *
      * @param startDate true if valid start date (empty or formatted mm-yyyy)
+     * @return true if valid start date (empty or formatted mm-yyyy)
      */
     public static boolean validStartDate(String startDate) {
         return (nullOrEmpty(startDate) || startDate.matches("^(0?[1-9]|1[012])-(\\d{4})$"));

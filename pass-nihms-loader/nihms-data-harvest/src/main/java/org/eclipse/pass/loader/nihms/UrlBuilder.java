@@ -25,30 +25,60 @@ import java.util.Map;
 
 import com.damnhandy.uri.template.UriTemplate;
 
+/**
+ * The URLBuilder class is responsible for building NIHMS Loader URLs.
+ */
 public class UrlBuilder {
 
     private static final String TEMPLATE = "{scheme}://{host}{+path}{+type}{?params*}";
 
+    /**
+     * Get url for the type Compliant without any parameters
+     * @return the URL without any parameters
+     */
     public URL compliantUrl() {
         return urlFor(UrlType.COMPLIANT, Collections.emptyMap());
     }
 
+    /**
+     * Get the url for the type Compliant with the provided parameters
+     * @param params parameters for the URL
+     * @return the Compliant URL with the provided parameters
+     */
     public URL compliantUrl(Map<String, String> params) {
         return urlFor(UrlType.COMPLIANT, params);
     }
 
+    /**
+     * Get the url for the type Non-Compliant without any parameters
+     * @return the URL without any parameters
+     */
     public URL nonCompliantUrl() {
         return urlFor(UrlType.NON_COMPLIANT, Collections.emptyMap());
     }
 
+    /**
+     * Get the url for the type Non-Compliant with the provided parameters
+     * @param params parameters for the URL
+     * @return the Non-Compliant URL with the provided parameters
+     */
     public URL nonCompliantUrl(Map<String, String> params) {
         return urlFor(UrlType.NON_COMPLIANT, params);
     }
 
+    /**
+     * Get the url for the type In-Process without any parameters
+     * @return the URL without any parameters
+     */
     public URL inProcessUrl() {
         return urlFor(UrlType.IN_PROCESS, Collections.emptyMap());
     }
 
+    /**
+     * Get the url for the type In-Process with the provided parameters
+     * @param params parameters for the URL
+     * @return the In-Process URL with the provided parameters
+     */
     public URL inProcessUrl(Map<String, String> params) {
         return urlFor(UrlType.IN_PROCESS, params);
     }

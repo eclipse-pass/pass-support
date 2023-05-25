@@ -78,16 +78,16 @@ public class NihmsPublication {
     /**
      * Constructor populates the required fields for a NIHMS publication
      *
-     * @param pmid
-     * @param grantNumber
-     * @param nihmsId
-     * @param pmcId
-     * @param nihmsStatus
-     * @param fileDepositedDate
-     * @param initialApprovalDate
-     * @param taggingCompleteDate
-     * @param finalApprovalDate
-     * @param articleTitle
+     * @param pmid PMID of publication
+     * @param grantNumber Grant number of publication
+     * @param nihmsId NIHMS ID of publication
+     * @param pmcId PMC ID of publication
+     * @param nihmsStatus Status of publication
+     * @param fileDepositedDate Date of files that were deposited in NIHMS
+     * @param initialApprovalDate Date of initial NIHMS approval
+     * @param taggingCompleteDate Date tagging of article was complete
+     * @param finalApprovalDate Date of final approval
+     * @param articleTitle Title of publication
      */
     public NihmsPublication(NihmsStatus nihmsStatus, String pmid, String grantNumber, String nihmsId, String pmcId,
                             String fileDepositedDate, String initialApprovalDate, String taggingCompleteDate,
@@ -123,7 +123,7 @@ public class NihmsPublication {
     /**
      * True returned if has tagging completion date
      *
-     * @return
+     * @return true if has tagging completion date
      */
     public boolean isTaggingComplete() {
         return taggingCompleteDate != null && taggingCompleteDate.length() > 0;
@@ -132,7 +132,7 @@ public class NihmsPublication {
     /**
      * True returned if has file deposit date
      *
-     * @return
+     * @return true if has file deposit date
      */
     public boolean isFileDeposited() {
         return fileDepositedDate != null && fileDepositedDate.length() > 0;
@@ -141,7 +141,7 @@ public class NihmsPublication {
     /**
      * True returned if has initial approval date
      *
-     * @return
+     * @return true if has initial approval date
      */
     public boolean hasInitialApproval() {
         return initialApprovalDate != null && initialApprovalDate.length() > 0;
@@ -150,7 +150,7 @@ public class NihmsPublication {
     /**
      * True returned if has final approval date or marked as compliant
      *
-     * @return
+     * @return true if has final approval date or marked as compliant
      */
     public boolean hasFinalApproval() {
         return (nihmsStatus.equals(NihmsStatus.COMPLIANT))

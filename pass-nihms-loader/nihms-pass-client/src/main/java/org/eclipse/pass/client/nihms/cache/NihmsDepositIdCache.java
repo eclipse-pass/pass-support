@@ -32,6 +32,10 @@ public class NihmsDepositIdCache {
         depositCache = new HashMap<String, String>();
     }
 
+    /**
+     * Get singleton instance of NihmsDepositIdCache
+     * @return the deposit id cache
+     */
     public static synchronized NihmsDepositIdCache getInstance() {
         if (depositSpace == null) {
             depositSpace = new NihmsDepositIdCache();

@@ -60,6 +60,9 @@ public class PmidLookup {
 
     private String entrezPath;
 
+    /**
+     * Default constructor uses the default Entrez path
+     */
     public PmidLookup() {
         entrezPath = System.getProperty(ENTREZ_PATH_KEY, DEFAULT_ENTREZ_PATH);
     }

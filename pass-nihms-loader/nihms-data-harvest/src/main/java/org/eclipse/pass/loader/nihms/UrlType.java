@@ -18,10 +18,22 @@
 
 package org.eclipse.pass.loader.nihms;
 
+/**
+ * Enum for NIHMS URL types
+ */
 public enum UrlType {
 
+    /**
+     * Compliant status for NIHMS publication
+     */
     COMPLIANT("c"),
+    /**
+     * Non-compliant status for NIHMS publication
+     */
     NON_COMPLIANT("n"),
+    /**
+     * In process status for NIHMS publication
+     */
     IN_PROCESS("p");
 
     private String code;
@@ -30,6 +42,10 @@ public enum UrlType {
         this.code = code;
     }
 
+    /**
+     * Get the code for the URL type
+     * @return the code
+     */
     public String getCode() {
         return code;
     }

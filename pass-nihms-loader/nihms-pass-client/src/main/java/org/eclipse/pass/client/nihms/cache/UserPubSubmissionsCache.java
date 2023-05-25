@@ -34,6 +34,10 @@ public class UserPubSubmissionsCache {
         userPubSubmissionsCache = new HashMap<String, Set<String>>();
     }
 
+    /**
+     * Get singleton instance of UserPubSubmissionsCache
+     * @return the UserPubSubmissions ID cache
+     */
     public static synchronized UserPubSubmissionsCache getInstance() {
         if (userPubSubmissionCache == null) {
             userPubSubmissionCache = new UserPubSubmissionsCache();

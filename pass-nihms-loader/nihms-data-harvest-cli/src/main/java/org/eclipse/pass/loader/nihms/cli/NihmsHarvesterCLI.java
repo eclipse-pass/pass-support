@@ -66,6 +66,23 @@ public class NihmsHarvesterCLI {
                     + "NIHMS system default which is one year before the current month")
     private String startDate = "";
 
+    /**
+     * This is the main entry point for the NihmsHarvesterCLI application.
+     * The method processes the command line arguments, determines the Nihms statuses to be processed
+     * and initializes and runs the NihmsHarvesterApp.
+     *
+     * <p>Command line arguments are used to determine the statuses to process and to filter by start date.
+     * If no status is specified, all statuses will be processed. If the 'help' argument is specified,
+     * usage information will be printed and the application will terminate.
+     *
+     * <p>If there are issues with the provided command line arguments, a message detailing the error
+     * will be printed, followed by the usage information. The application will then terminate with an exit code of 1.
+     *
+     * <p>Other exceptions that may occur during the execution of the application are caught and their stack trace
+     * is printed, followed by the exception's message. The application will then terminate with an exit code of 1.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
 
         final NihmsHarvesterCLI application = new NihmsHarvesterCLI();

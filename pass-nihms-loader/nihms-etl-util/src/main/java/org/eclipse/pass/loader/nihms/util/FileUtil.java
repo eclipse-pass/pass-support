@@ -57,6 +57,9 @@ public class FileUtil {
     /**
      * Selects the path of the config file to load properties from. Uses system property first with key provided first,
      * if none then uses environment variable, otherwise default to current folder
+     * @param filepathKey the system property key to use
+     * @param defaultFileName the default filename to use of the configuration file
+     * @return the path to the config file
      */
     public static File getConfigFilePath(String filepathKey, String defaultFileName) {
         String configFilePath = ConfigUtil.getSystemProperty(filepathKey,
@@ -68,6 +71,8 @@ public class FileUtil {
     /**
      * Selects the directory that data will be downloaded to or read from.
      * Uses system property first, if none then use environment variable, otherwise default to ./data
+     *
+     * @return the path to the download directory
      */
     public static File getDataDirectory() {
         String currDirectoryPath = getCurrentDirectory();
