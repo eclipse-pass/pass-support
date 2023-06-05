@@ -55,6 +55,7 @@
     <module>pass-grant-loader</module>
     <module>pass-nihms-loader</module>
     <module>pass-notification-service</module>
+    <module>pass-deposit-services</module>
   </modules>
 
   <scm>
@@ -68,6 +69,11 @@
     <javapoet.version>1.13.0</javapoet.version>
     <jsonapi-adapters.version>1.1.0</jsonapi-adapters.version>
     <mockito.version>4.8.1</mockito.version>
+    <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+    <maven-remote-resources-plugin.version>3.1.0</maven-remote-resources-plugin.version>
+    <git-commit-plugin.version>4.9.10</git-commit-plugin.version>
+    <spring-boot-maven-plugin.version>3.1.0</spring-boot-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
