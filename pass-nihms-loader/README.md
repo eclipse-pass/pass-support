@@ -22,7 +22,8 @@ The following are required to run this tool:
 * Download the latest nihms-data-harvest-cli-{version}-shaded.jar from
   the [releases page](https://github.com/OA-PASS/nihms-submission-etl/releases) and place in a folder on the machine
   where the application will run.
-* Get an account for the NIH PACM website, and obtain an API key.
+* Get an account for the NIH PACM website, and obtain an API key. The API key is only valid for 3 months, so it will 
+  need to be updated periodically.
 * Create a data folder that files will be downloaded to.
 
 ### Data Harvest Configuration
@@ -147,14 +148,15 @@ The following is required to run this tool:
 There are several ways to configure the Data Transform-Load CLI. You can use a configuration file, environment
 variables, system variables, or a combination of these. The configuration file will set system properties. In the
 absence of a config file, system properties will be used, and in the absence of those, environment variables will be
-used.
+used. Note, that on a Windows machine, any paths in the configuration file or system properties must use forward slashes
+(`/`) instead of backslashes (`\`), or double backslashes (`\\`).
 
 By default, the application will look for a configuration file named `nihms-loader.properties` in the folder containing
 the java application. You can override the location of the properties file by defining an environment variable
 for `nihmsetl.harvester.configfile` e.g.
 
 ```
-> java -Dnihmsetl.loader.configfile=/path/to/configfile.properties -jar nihms-data-transform-load-cli-1.0.0-SNAPSHOT-shaded.jar 
+> java -Dnihmsetl.loader.configfile=/path/to/configfile.properties -jar nihms-data-transform-load-1.0.0-SNAPSHOT-shaded.jar 
 ```
 
 The configuration file should look like this:
@@ -162,23 +164,22 @@ The configuration file should look like this:
 ```
 nihmsetl.data.dir=/path/to/pass/loaders/data
 nihmsetl.loader.cachepath=/path/to/pass/loaders/cache/compliant-cache.data
-nihmsetl.repository.uri=https://example:8080/fcrepo/rest/repositories/aaa/bbb/ccc
 nihmsetl.pmcurl.template=https://www.ncbi.nlm.nih.gov/pmc/articles/%s/
-pass.core.baseurl=http://localhost:8080/
+pass.core.url=http://localhost:8080/
 pass.core.user=admin
 pass.core.password=password
 ```
 
 * `nihmsetl.data.dir` is the path that the CSV files will be read from. If a path is not defined, the app will look for
-  a `/data` folder in the folder containing the java app.
+  a `/data` folder in the folder containing the java app. When using a Windows path in the config file, use forward 
+  slashes (`/`) instead of backslashes (`\`), or double backslashes (`\\`).
 * `nihmsetl.loader.cachepath` designates a path to a file that will be used to store a cache of completed compliant data
   so that it is not reprocessed. Note that this file can be deleted to force a complete recheck of the data. If a path
   is not defined, this will default to a file at `/cache/compliant-cache.data` in the folder containing the java app.
-* `nihmsetl.repository.uri` the URI for the Repository resource in PASS that represents the PMC repository.
 * `nihmsetl.pmcurl.template` is the template URL used to construct the RepositoryCopy.accessUrl. The article PMC is
   passed into this URL.
-* `pass.core.baseurl` - The base url for the pass-core REST API such as `http://localhost:8080`
-* `pass.core.user` - User name for pass-core access
+* `pass.core.url` - The base url for the pass-core REST API such as `http://localhost:8080`
+* `pass.core.user` - Username for pass-core access
 * `pass.core.password` - Password for pass-core access
 
 ### Running the Data Transform-Load

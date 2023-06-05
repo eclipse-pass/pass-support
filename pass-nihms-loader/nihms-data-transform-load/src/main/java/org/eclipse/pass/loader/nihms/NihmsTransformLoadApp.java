@@ -42,10 +42,8 @@ public class NihmsTransformLoadApp {
      * These are the only system properties that can be loaded in from the properties file.
      * Existing values will not be overwritten, these will just be added if missing.
      */
-    private static final String[] SYSTEM_PROPERTIES = {"pass.fedora.user", "pass.fedora.password",
-                                                       "pass.fedora.baseurl", "pass.elasticsearch.url",
-                                                       "pass.elasticsearch.limit", "nihmsetl.data.dir",
-                                                       "nihmsetl.repository.uri", "nihmsetl.pmcurl.template",
+    private static final String[] SYSTEM_PROPERTIES = {"pass.core.user", "pass.core.password",
+                                                       "pass.core.url", "nihmsetl.data.dir", "nihmsetl.pmcurl.template",
                                                        "nihmsetl.loader.cachepath"};
 
     private Set<NihmsStatus> statusesToProcess;
