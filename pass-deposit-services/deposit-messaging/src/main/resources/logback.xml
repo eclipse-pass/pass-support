@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright 2018 Johns Hopkins University
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<configuration>
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %d{HH:mm:ss.SSS} [%20.20thread] %-5level [%30.-30C{0}] - %msg%n
+      </pattern>
+    </encoder>
+    <target>System.err</target>
+  </appender>
+  <root level="WARN">
+    <appender-ref ref="STDERR"/>
+  </root>
+  <logger name="org.springframework" additivity="false" level="${org.springframework.level:-WARN}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.level:-WARN}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.dataconservancy.pass.deposit" additivity="false"
+          level="${org.dataconservancy.pass.deposit.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="edu.jhu.library.pass.deposit.provider" additivity="false"
+          level="${edu.jhu.library.pass.deposit.provider.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.dataconservancy.pass.client" additivity="false"
+          level="${org.dataconservancy.pass.client.level:-WARN}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <!-- Default logging for the JMS messaging sub-system is INFO -->
+
+  <logger name="org.dataconservancy.pass.deposit.messaging" additivity="false"
+          level="${org.dataconservancy.pass.deposit.messaging.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.config" additivity="false"
+          level="${org.dataconservancy.pass.deposit.messaging.config.level:-DEBUG}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor" additivity="false"
+          level="${org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.service.DepositProcessor" additivity="false"
+          level="${org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <!-- DEBUG level will show policy messages that refuse to process Submissions based on some attribute of the
+       *Submission*, TRACE level will show policy messages that refuse the JMS message for some lower-level reason:
+       e.g. the user-agent of the message, or the type of the fedora resource -->
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.policy" additivity="false"
+          level="${org.dataconservancy.pass.deposit.messaging.policy.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <!-- DEBUG level will show FTP session opening and closing, TRACE will log more details of a session. -->
+
+  <logger name="org.dataconservancy.pass.deposit.transport.ftp" additivity="false"
+          level="{org.dataconservancy.pass.deposit.transport.ftp.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <!-- Cross-cutting loggers -->
+
+  <logger name="WORKERS_LOGGER" additivity="false"
+          level="${WORKERS_LOGGER.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <!-- the rest client is noisy, and detracts from looking at test logging output -->
+  <logger name="org.elasticsearch.client.RestClient" additivity="false"
+          level="${org.elasticsearch.client.level:-ERROR}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+</configuration>
