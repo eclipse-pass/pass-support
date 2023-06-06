@@ -56,6 +56,7 @@
     <module>pass-nihms-loader</module>
     <module>pass-notification-service</module>
     <module>pass-deposit-services</module>
+    <module>pass-messaging-support</module>
   </modules>
 
   <scm>
