@@ -20,8 +20,6 @@ import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
 
 import java.net.URI;
 import java.util.Collection;
@@ -32,7 +30,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.RemedialDepositException;
@@ -45,12 +42,15 @@ import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,9 +98,9 @@ public class DepositTaskHelper {
 
     private TaskExecutor taskExecutor;
 
-    private Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
+    private Policy<DepositStatus> intermediateDepositStatusPolicy;
 
-    private Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
+    private Policy<DepositStatus> terminalDepositStatusPolicy;
 
     private CriticalRepositoryInteraction cri;
 
@@ -118,8 +118,8 @@ public class DepositTaskHelper {
     @Autowired
     public DepositTaskHelper(PassClient passClient,
                              TaskExecutor depositWorkers,
-                             Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
-                             Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
+                             Policy<DepositStatus> intermediateDepositStatusPolicy,
+                             Policy<DepositStatus> terminalDepositStatusPolicy,
                              CriticalRepositoryInteraction cri,
                              Repositories repositories) {
         this.passClient = passClient;
@@ -283,7 +283,7 @@ public class DepositTaskHelper {
          *     <li>Deposit must have a RepositoryCopy, even if it is just a placeholder</li>
          * </ul>
          */
-        static Predicate<Deposit> precondition(Policy<Deposit.DepositStatus> statusPolicy, PassClient passClient) {
+        static Predicate<Deposit> precondition(Policy<DepositStatus> statusPolicy, PassClient passClient) {
             return (deposit) -> {
                 if (!statusPolicy.test(deposit.getDepositStatus())) {
                     LOG.debug(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
@@ -330,12 +330,12 @@ public class DepositTaskHelper {
                     return false;
                 }
 
-                if (deposit.getDepositStatus() == ACCEPTED) {
-                    return RepositoryCopy.CopyStatus.COMPLETE == repoCopy.getCopyStatus();
+                if (deposit.getDepositStatus() == DepositStatus.ACCEPTED) {
+                    return CopyStatus.COMPLETE == repoCopy.getCopyStatus();
                 }
 
-                if (deposit.getDepositStatus() == REJECTED) {
-                    return RepositoryCopy.CopyStatus.REJECTED == repoCopy.getCopyStatus();
+                if (deposit.getDepositStatus() == DepositStatus.REJECTED) {
+                    return CopyStatus.REJECTED == repoCopy.getCopyStatus();
                 }
 
                 return true;
@@ -344,7 +344,7 @@ public class DepositTaskHelper {
 
         static Function<Deposit, RepositoryCopy> critical(Repositories repositories, PassClient passClient) {
             return (deposit) -> {
-                AtomicReference<Deposit.DepositStatus> status = new AtomicReference<>();
+                AtomicReference<DepositStatus> status = new AtomicReference<>();
                 try {
                     Repository repo = passClient.readResource(deposit.getRepository(), Repository.class);
                     RepositoryConfig repoConfig = lookupConfig(repo, repositories)
@@ -375,16 +375,16 @@ public class DepositTaskHelper {
                     switch (status.get()) {
                         case ACCEPTED: {
                             LOG.debug("Deposit {} was accepted.", deposit.getId());
-                            deposit.setDepositStatus(ACCEPTED);
-                            repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.COMPLETE);
+                            deposit.setDepositStatus(DepositStatus.ACCEPTED);
+                            repoCopy.setCopyStatus(CopyStatus.COMPLETE);
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
                             break;
                         }
 
                         case REJECTED: {
                             LOG.debug("Deposit {} was rejected.", deposit.getId());
-                            deposit.setDepositStatus(Deposit.DepositStatus.REJECTED);
-                            repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.REJECTED);
+                            deposit.setDepositStatus(DepositStatus.REJECTED);
+                            repoCopy.setCopyStatus(CopyStatus.REJECTED);
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
                             break;
                         }

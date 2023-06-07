@@ -16,9 +16,9 @@
 
 package org.dataconservancy.pass.deposit.transport;
 
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
 
 public interface TransportResponse {
 

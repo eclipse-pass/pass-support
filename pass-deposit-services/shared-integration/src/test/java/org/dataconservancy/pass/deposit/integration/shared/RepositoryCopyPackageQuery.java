@@ -15,8 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared;
 
-import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -35,8 +33,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
-import org.dataconservancy.pass.client.PassJsonAdapter;
-import org.dataconservancy.pass.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +60,7 @@ class RepositoryCopyPackageQuery {
                                         "    \"bool\" : {\n" +
                                         "      \"must\": [\n" +
                                         "        { \"term\" : { \"@type\" :  \"RepositoryCopy\" } },\n" +
-                                        "        { \"term\" : { \"copyStatus\" : \"" + COMPLETE.name()
+                                        "        { \"term\" : { \"copyStatus\" : \"" + CopyStatus.COMPLETE.name()
                                                                                                .toLowerCase() + "\" }" +
                                         " },\n" +
                                         "        { \"wildcard\": {\"accessUrl\": \"file:/packages/*\" } }\n" +

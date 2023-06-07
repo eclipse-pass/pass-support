@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.abdera.i18n.iri.IRI;
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -39,12 +38,10 @@ import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.support.messaging.cri.DefaultConflictHandler;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.swordapp.client.DepositReceipt;
@@ -60,7 +57,7 @@ public class DepositTaskTest {
 
     private PassClient passClient;
 
-    private Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
+    private Policy<DepositStatus> intermediateDepositStatusPolicy;
 
     private CriticalRepositoryInteraction cri;
 
@@ -73,7 +70,7 @@ public class DepositTaskTest {
         dc = spy(dwc);
         passClient = mock(PassClient.class);
         intermediateDepositStatusPolicy = mock(Policy.class);
-        cri = new CriticalPath(passClient, new DefaultConflictHandler(passClient));
+        cri = new CriticalPath(passClient);
         underTest = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
     }
 

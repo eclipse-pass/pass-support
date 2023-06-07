@@ -21,11 +21,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
-import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,21 +54,22 @@ public class CriticalPathIT {
     public void simpleTest() throws Exception {
         // create a resource, put it in the repo
         Deposit deposit = new Deposit();
-        deposit = passClient.readResource(passClient.createResource(deposit), Deposit.class);
+
+        passClient.createObject(deposit);
 
         // simply use critical path to update its deposit status
 
         CriticalRepositoryInteraction.CriticalResult<Deposit, Deposit> result = criticalPath.performCritical(
             deposit.getId(), Deposit.class, (d) -> d.getDepositStatus() == null,
-            (d) -> d.getDepositStatus() == Deposit.DepositStatus.SUBMITTED, (d) -> {
-                d.setDepositStatus(Deposit.DepositStatus.SUBMITTED);
+            (d) -> d.getDepositStatus() == DepositStatus.SUBMITTED, (d) -> {
+                d.setDepositStatus(DepositStatus.SUBMITTED);
                 return d;
-            });
+            }, true);
 
         assertNotNull(result);
         assertTrue(result.success());
         assertNotNull(result.resource());
-        assertEquals(Deposit.DepositStatus.SUBMITTED, result.resource().get().getDepositStatus());
+        assertEquals(DepositStatus.SUBMITTED, result.resource().get().getDepositStatus());
         assertNotSame(deposit, result.resource());
     }
 
@@ -84,16 +86,16 @@ public class CriticalPathIT {
         CriticalRepositoryInteraction.CriticalResult<Deposit, Deposit> result = criticalPath.performCritical(
             deposit.getId(), Deposit.class, (d) -> d.getDepositStatus() == null, (d) -> {
                 probe[0] = Boolean.TRUE;
-                return d.getDepositStatus() == Deposit.DepositStatus.REJECTED;
+                return d.getDepositStatus() == DepositStatus.REJECTED;
             }, (d) -> {
-                d.setDepositStatus(Deposit.DepositStatus.SUBMITTED);
+                d.setDepositStatus(DepositStatus.SUBMITTED);
                 return d;
-            });
+            }, true);
 
         assertNotNull(result);
         assertFalse(result.success());
         assertNotNull(result.resource());
-        assertEquals(Deposit.DepositStatus.SUBMITTED, result.resource().get().getDepositStatus());
+        assertEquals(DepositStatus.SUBMITTED, result.resource().get().getDepositStatus());
         assertNotSame(deposit, result.resource());
         assertTrue(probe[0]);
     }
@@ -111,26 +113,26 @@ public class CriticalPathIT {
 
         CriticalRepositoryInteraction.CriticalResult<Deposit, Deposit> first = criticalPath.performCritical(
             deposit.getId(), Deposit.class, (d) -> d.getDepositStatus() == null,
-            (d) -> d.getDepositStatus() == Deposit.DepositStatus.SUBMITTED, (d) -> {
+            (d) -> d.getDepositStatus() == DepositStatus.SUBMITTED, (d) -> {
 
-                d.setDepositStatus(Deposit.DepositStatus.SUBMITTED);
+                d.setDepositStatus(DepositStatus.SUBMITTED);
                 return d;
-            });
+            }, true);
 
         CriticalRepositoryInteraction.CriticalResult<Deposit, Deposit> second = criticalPath.performCritical(
             deposit.getId(),
             Deposit.class, (d) -> d.getDepositStatus() == null,
-            (d) -> d.getDepositStatus() == Deposit.DepositStatus.REJECTED, (d) -> {
+            (d) -> d.getDepositStatus() == DepositStatus.REJECTED, (d) -> {
                 probe[0] = Boolean.TRUE;
-                d.setDepositStatus(Deposit.DepositStatus.REJECTED);
+                d.setDepositStatus(DepositStatus.REJECTED);
                 return d;
-            });
+            }, true);
 
         assertTrue(first.success());
         assertFalse(second.success());
         assertFalse(probe[0]);
-        assertEquals(Deposit.DepositStatus.SUBMITTED, first.resource().get().getDepositStatus());
-        assertEquals(Deposit.DepositStatus.SUBMITTED, second.resource().get().getDepositStatus());
+        assertEquals(DepositStatus.SUBMITTED, first.resource().get().getDepositStatus());
+        assertEquals(DepositStatus.SUBMITTED, second.resource().get().getDepositStatus());
     }
 
     @Test

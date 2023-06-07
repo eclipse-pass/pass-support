@@ -1,0 +1,647 @@
+[INFO] Scanning for projects...
+[INFO] Inspecting build with total of 15 modules...
+[INFO] Installing Nexus Staging features:
+[INFO]   ... total of 15 executions of maven-deploy-plugin replaced with nexus-staging-maven-plugin
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Deposit Services Parent Project                                    [pom]
+[INFO] Submission Model                                                   [jar]
+[INFO] Submission Model Builder                                           [jar]
+[INFO] Utility Classes                                                    [jar]
+[INFO] Shared Resources                                                   [jar]
+[INFO] File System Submission Model Builder                               [jar]
+[INFO] Assembler API                                                      [jar]
+[INFO] Transport API                                                      [jar]
+[INFO] FTP Transport                                                      [jar]
+[INFO] Shared Package Assembler implementation                            [jar]
+[INFO] SWORD v2 Transport                                                 [jar]
+[INFO] File System Transport                                              [jar]
+[INFO] PASS messaging integration                                         [jar]
+[INFO] Eclipse PASS Shared integration test fixtures                      [jar]
+[INFO] Integration Tests                                                  [jar]
+[INFO] 
+[INFO] --------------< org.eclipse.pass.deposit:deposit-parent >---------------
+[INFO] Building Deposit Services Parent Project 0.7.0-SNAPSHOT           [1/15]
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ deposit-parent ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0:enforce (default) @ deposit-parent ---
+[INFO] 
+[INFO] ---------------< org.eclipse.pass.deposit:deposit-model >---------------
+[INFO] Building Submission Model 0.7.0-SNAPSHOT                          [2/15]
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ deposit-model ---
+[INFO] Deleting /home/msp/work/pass/pass-support/pass-deposit-services/deposit-model/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0:enforce (default) @ deposit-model ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ deposit-model ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ deposit-model ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 7 source files to /home/msp/work/pass/pass-support/pass-deposit-services/deposit-model/target/classes
+[INFO] 
+[INFO] ----------------< org.eclipse.pass.deposit:builder-api >----------------
+[INFO] Building Submission Model Builder 0.7.0-SNAPSHOT                  [3/15]
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ builder-api ---
+[INFO] Deleting /home/msp/work/pass/pass-support/pass-deposit-services/builder-api/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0:enforce (default) @ builder-api ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ builder-api ---
+[INFO] skip non existing resourceDirectory /home/msp/work/pass/pass-support/pass-deposit-services/builder-api/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ builder-api ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 4 source files to /home/msp/work/pass/pass-support/pass-deposit-services/builder-api/target/classes
+[WARNING] /home/msp/work/pass/pass-support/pass-deposit-services/builder-api/src/main/java/org/dataconservancy/pass/deposit/builder/InvalidModel.java:[21,8] serializable class org.dataconservancy.pass.deposit.builder.InvalidModel has no definition of serialVersionUID
+[INFO] 
+[INFO] ---------------< org.eclipse.pass.deposit:deposit-util >----------------
+[INFO] Building Utility Classes 0.7.0-SNAPSHOT                           [4/15]
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ deposit-util ---
+[INFO] Deleting /home/msp/work/pass/pass-support/pass-deposit-services/deposit-util/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0:enforce (default) @ deposit-util ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ deposit-util ---
+[INFO] skip non existing resourceDirectory /home/msp/work/pass/pass-support/pass-deposit-services/deposit-util/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ deposit-util ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 7 source files to /home/msp/work/pass/pass-support/pass-deposit-services/deposit-util/target/classes
+[WARNING] Cannot find annotation method 'when()' in type 'javax.annotation.Nonnull': class file for javax.annotation.Nonnull not found
+[WARNING] unknown enum constant javax.annotation.meta.When.MAYBE
+  reason: class file for javax.annotation.meta.When not found
+[WARNING] /home/msp/work/pass/pass-support/pass-deposit-services/deposit-util/src/main/java/org/dataconservancy/deposit/util/spring/EncodingClassPathResource.java:[78,9] ClassPathResource(java.lang.String,java.lang.ClassLoader,java.lang.Class<?>) in org.springframework.core.io.ClassPathResource has been deprecated
+[INFO] 
+[INFO] -------------< org.eclipse.pass.deposit:shared-resources >--------------
+[INFO] Building Shared Resources 0.7.0-SNAPSHOT                          [5/15]
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ shared-resources ---
+[INFO] Deleting /home/msp/work/pass/pass-support/pass-deposit-services/shared-resources/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0:enforce (default) @ shared-resources ---
+[INFO] 
+[INFO] --- maven-remote-resources-plugin:3.1.0:bundle (default) @ shared-resources ---
+[INFO] skip non existing resourceDirectory /home/msp/work/pass/pass-support/pass-deposit-services/shared-resources/src/test/resources
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ shared-resources ---
+[INFO] Copying 43 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ shared-resources ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 6 source files to /home/msp/work/pass/pass-support/pass-deposit-services/shared-resources/target/classes
+[INFO] 
+[INFO] --------------< org.eclipse.pass.deposit:fedora-builder >---------------
+[INFO] Building File System Submission Model Builder 0.7.0-SNAPSHOT      [6/15]
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from maven-default-http-blocker: http://0.0.0.0/org/eclipse/pass/pass-data-client/0.7.0-SNAPSHOT/maven-metadata.xml
+[WARNING] Could not transfer metadata org.eclipse.pass:pass-data-client:0.7.0-SNAPSHOT/maven-metadata.xml from/to maven-default-http-blocker (http://0.0.0.0/): transfer failed for http://0.0.0.0/org/eclipse/pass/pass-data-client/0.7.0-SNAPSHOT/maven-metadata.xml
+[WARNING] org.eclipse.pass:pass-data-client:0.7.0-SNAPSHOT/maven-metadata.xml failed to transfer from http://0.0.0.0/ during a previous attempt. This failure was cached in the local repository and resolution will not be reattempted until the update interval of maven-default-http-blocker has elapsed or updates are forced. Original error: Could not transfer metadata org.eclipse.pass:pass-data-client:0.7.0-SNAPSHOT/maven-metadata.xml from/to maven-default-http-blocker (http://0.0.0.0/): transfer failed for http://0.0.0.0/org/eclipse/pass/pass-data-client/0.7.0-SNAPSHOT/maven-metadata.xml
+Downloading from maven-default-http-blocker: http://0.0.0.0/org/eclipse/pass/pass-support/0.7.0-SNAPSHOT/maven-metadata.xml
+[WARNING] Could not transfer metadata org.eclipse.pass:pass-support:0.7.0-SNAPSHOT/maven-metadata.xml from/to maven-default-http-blocker (http://0.0.0.0/): transfer failed for http://0.0.0.0/org/eclipse/pass/pass-support/0.7.0-SNAPSHOT/maven-metadata.xml
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ fedora-builder ---
+[INFO] Deleting /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0:enforce (default) @ fedora-builder ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ fedora-builder ---
+[INFO] skip non existing resourceDirectory /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ fedora-builder ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 5 source files to /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/target/classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[33,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[34,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[40,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[41,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[42,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[43,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[44,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[100,49] cannot find symbol
+  symbol:   class User
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[296,47] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[296,89] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[383,48] package File does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[33,42] package com.fasterxml.jackson.databind.exc does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[38,29] package org.apache.commons.io does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[40,39] package org.dataconservancy.pass.client does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[41,39] package org.dataconservancy.pass.client does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[42,47] package org.dataconservancy.pass.client.adapter does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[43,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[44,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[45,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[46,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[47,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[48,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[49,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[50,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[51,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[52,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[53,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[83,63] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[83,12] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[143,41] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[194,49] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[194,12] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[271,43] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[271,57] cannot find symbol
+  symbol:   class File
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[271,65] cannot find symbol
+  symbol:   class PassClient
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[333,50] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[333,72] cannot find symbol
+  symbol:   class PassClient
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[358,68] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[358,12] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[443,12] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[463,65] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[463,12] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[490,47] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FcrepoModelBuilder.java:[26,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FcrepoModelBuilder.java:[27,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[328,9] cannot find symbol
+  symbol:   class User
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[328,28] cannot find symbol
+  symbol:   class User
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[345,13] cannot find symbol
+  symbol:   class Grant
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[345,34] cannot find symbol
+  symbol:   class Grant
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[348,13] cannot find symbol
+  symbol:   class User
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[348,30] cannot find symbol
+  symbol:   class User
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[351,17] cannot find symbol
+  symbol:   class User
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[351,36] cannot find symbol
+  symbol:   class User
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[364,13] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[365,35] cannot find symbol
+  symbol:   class File
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[366,17] cannot find symbol
+  symbol:   class File
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[366,30] cannot find symbol
+  symbol:   class File
+  location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[384,29] package File does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[147,9] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[150,26] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[154,26] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[84,9] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[87,36] cannot find symbol
+  symbol:   variable IOUtils
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[91,13] cannot find symbol
+  symbol:   class PassJsonAdapterBasic
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[91,48] cannot find symbol
+  symbol:   class PassJsonAdapterBasic
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[96,53] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[97,58] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[101,17] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[110,39] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[111,35] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[144,9] cannot find symbol
+  symbol:   class PassJsonAdapterBasic
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[144,44] cannot find symbol
+  symbol:   class PassJsonAdapterBasic
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[152,13] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[195,9] cannot find symbol
+  symbol:   class PassClient
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[195,29] cannot find symbol
+  symbol:   variable PassClientFactory
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[201,13] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[210,13] cannot find symbol
+  symbol:   class PassEntity
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[212,35] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[214,17] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[214,42] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[219,42] cannot find symbol
+  symbol:   class Grant
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[220,17] cannot find symbol
+  symbol:   class Grant
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[220,32] cannot find symbol
+  symbol:   class Grant
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[225,42] cannot find symbol
+  symbol:   class Funder
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[226,17] cannot find symbol
+  symbol:   class Funder
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[226,34] cannot find symbol
+  symbol:   class Funder
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[228,42] cannot find symbol
+  symbol:   class Policy
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[229,17] cannot find symbol
+  symbol:   class Policy
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[229,34] cannot find symbol
+  symbol:   class Policy
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[232,42] cannot find symbol
+  symbol:   class Journal
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[233,17] cannot find symbol
+  symbol:   class Journal
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[233,36] cannot find symbol
+  symbol:   class Journal
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[235,42] cannot find symbol
+  symbol:   class Publication
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[236,17] cannot find symbol
+  symbol:   class Publication
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[236,44] cannot find symbol
+  symbol:   class Publication
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[238,42] cannot find symbol
+  symbol:   class File
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[239,17] cannot find symbol
+  symbol:   class File
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[239,30] cannot find symbol
+  symbol:   class File
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[256,9] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[256,38] cannot find symbol
+  symbol:   class Submission
+  location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[INFO] 100 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Deposit Services Parent Project 0.7.0-SNAPSHOT:
+[INFO] 
+[INFO] Deposit Services Parent Project .................... SUCCESS [  0.178 s]
+[INFO] Submission Model ................................... SUCCESS [  0.597 s]
+[INFO] Submission Model Builder ........................... SUCCESS [  0.140 s]
+[INFO] Utility Classes .................................... SUCCESS [  0.147 s]
+[INFO] Shared Resources ................................... SUCCESS [  0.246 s]
+[INFO] File System Submission Model Builder ............... FAILURE [  0.430 s]
+[INFO] Assembler API ...................................... SKIPPED
+[INFO] Transport API ...................................... SKIPPED
+[INFO] FTP Transport ...................................... SKIPPED
+[INFO] Shared Package Assembler implementation ............ SKIPPED
+[INFO] SWORD v2 Transport ................................. SKIPPED
+[INFO] File System Transport .............................. SKIPPED
+[INFO] PASS messaging integration ......................... SKIPPED
+[INFO] Eclipse PASS Shared integration test fixtures ...... SKIPPED
+[INFO] Integration Tests .................................. SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.252 s
+[INFO] Finished at: 2023-06-06T13:39:04-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.10.1:compile (default-compile) on project fedora-builder: Compilation failure: Compilation failure: 
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[33,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[34,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[40,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[41,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[42,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[43,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[44,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[100,49] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[296,47] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[296,89] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[383,48] package File does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[33,42] package com.fasterxml.jackson.databind.exc does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[38,29] package org.apache.commons.io does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[40,39] package org.dataconservancy.pass.client does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[41,39] package org.dataconservancy.pass.client does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[42,47] package org.dataconservancy.pass.client.adapter does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[43,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[44,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[45,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[46,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[47,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[48,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[49,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[50,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[51,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[52,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[53,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[83,63] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[83,12] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[143,41] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[194,49] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[194,12] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[271,43] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[271,57] cannot find symbol
+[ERROR]   symbol:   class File
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[271,65] cannot find symbol
+[ERROR]   symbol:   class PassClient
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[333,50] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[333,72] cannot find symbol
+[ERROR]   symbol:   class PassClient
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[358,68] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[358,12] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[443,12] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[463,65] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[463,12] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[490,47] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FcrepoModelBuilder.java:[26,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FcrepoModelBuilder.java:[27,38] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[328,9] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[328,28] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[345,13] cannot find symbol
+[ERROR]   symbol:   class Grant
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[345,34] cannot find symbol
+[ERROR]   symbol:   class Grant
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[348,13] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[348,30] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[351,17] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[351,36] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[364,13] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[365,35] cannot find symbol
+[ERROR]   symbol:   class File
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[366,17] cannot find symbol
+[ERROR]   symbol:   class File
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[366,30] cannot find symbol
+[ERROR]   symbol:   class File
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.ModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/ModelBuilder.java:[384,29] package File does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[147,9] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[150,26] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/FilesystemModelBuilder.java:[154,26] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[84,9] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[87,36] cannot find symbol
+[ERROR]   symbol:   variable IOUtils
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[91,13] cannot find symbol
+[ERROR]   symbol:   class PassJsonAdapterBasic
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[91,48] cannot find symbol
+[ERROR]   symbol:   class PassJsonAdapterBasic
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[96,53] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[97,58] package org.dataconservancy.pass.model does not exist
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[101,17] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[110,39] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[111,35] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[144,9] cannot find symbol
+[ERROR]   symbol:   class PassJsonAdapterBasic
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[144,44] cannot find symbol
+[ERROR]   symbol:   class PassJsonAdapterBasic
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[152,13] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[195,9] cannot find symbol
+[ERROR]   symbol:   class PassClient
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[195,29] cannot find symbol
+[ERROR]   symbol:   variable PassClientFactory
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[201,13] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[210,13] cannot find symbol
+[ERROR]   symbol:   class PassEntity
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[212,35] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[214,17] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[214,42] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[219,42] cannot find symbol
+[ERROR]   symbol:   class Grant
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[220,17] cannot find symbol
+[ERROR]   symbol:   class Grant
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[220,32] cannot find symbol
+[ERROR]   symbol:   class Grant
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[225,42] cannot find symbol
+[ERROR]   symbol:   class Funder
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[226,17] cannot find symbol
+[ERROR]   symbol:   class Funder
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[226,34] cannot find symbol
+[ERROR]   symbol:   class Funder
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[228,42] cannot find symbol
+[ERROR]   symbol:   class Policy
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[229,17] cannot find symbol
+[ERROR]   symbol:   class Policy
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[229,34] cannot find symbol
+[ERROR]   symbol:   class Policy
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[232,42] cannot find symbol
+[ERROR]   symbol:   class Journal
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[233,17] cannot find symbol
+[ERROR]   symbol:   class Journal
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[233,36] cannot find symbol
+[ERROR]   symbol:   class Journal
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[235,42] cannot find symbol
+[ERROR]   symbol:   class Publication
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[236,17] cannot find symbol
+[ERROR]   symbol:   class Publication
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[236,44] cannot find symbol
+[ERROR]   symbol:   class Publication
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[238,42] cannot find symbol
+[ERROR]   symbol:   class File
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[239,17] cannot find symbol
+[ERROR]   symbol:   class File
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[239,30] cannot find symbol
+[ERROR]   symbol:   class File
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[256,9] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] /home/msp/work/pass/pass-support/pass-deposit-services/fedora-builder/src/main/java/org/dataconservancy/pass/deposit/builder/fs/PassJsonFedoraAdapter.java:[256,38] cannot find symbol
+[ERROR]   symbol:   class Submission
+[ERROR]   location: class org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :fedora-builder

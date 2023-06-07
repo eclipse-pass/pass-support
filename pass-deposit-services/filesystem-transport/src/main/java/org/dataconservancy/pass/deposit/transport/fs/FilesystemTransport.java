@@ -18,7 +18,6 @@ package org.dataconservancy.pass.deposit.transport.fs;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.BASEDIR;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.CREATE_IF_MISSING;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.OVERWRITE;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,14 +33,14 @@ import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,7 +162,7 @@ public class FilesystemTransport implements Transport {
                                                 rc.setCopyStatus(CopyStatus.COMPLETE);
                                                 rc.setAccessUrl(outputFile.toURI());
                                                 return rc;
-                                            });
+                                            }, true);
 
                     verifySuccess(repositoryCopy, rcCr);
 
@@ -171,12 +170,12 @@ public class FilesystemTransport implements Transport {
 
                     CriticalResult<Deposit, Deposit> depositCr =
                         cri.performCritical(deposit.getId(), Deposit.class,
-                                            (criDeposit) -> SUBMITTED == criDeposit.getDepositStatus(),
+                                            (criDeposit) -> DepositStatus.SUBMITTED == criDeposit.getDepositStatus(),
                                             (criDeposit) -> DepositStatus.ACCEPTED == criDeposit.getDepositStatus(),
                                             (criDeposit) -> {
                                                 criDeposit.setDepositStatus(DepositStatus.ACCEPTED);
                                                 return criDeposit;
-                                            });
+                                            }, true);
 
                     verifySuccess(deposit, depositCr);
 

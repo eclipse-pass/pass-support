@@ -18,8 +18,6 @@ package org.dataconservancy.pass.deposit.messaging.service;
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,7 +28,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -39,11 +36,11 @@ import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWor
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +70,7 @@ public class DepositTask implements Runnable {
 
     private PassClient passClient;
 
-    private Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
+    private Policy<DepositStatus> intermediateDepositStatusPolicy;
 
     private CriticalRepositoryInteraction cri;
 
@@ -87,7 +84,7 @@ public class DepositTask implements Runnable {
 
     public DepositTask(DepositWorkerContext dc,
                        PassClient passClient,
-                       Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
+                       Policy<DepositStatus> intermediateDepositStatusPolicy,
                        CriticalRepositoryInteraction cri) {
         this.dc = dc;
         this.passClient = passClient;
@@ -170,7 +167,7 @@ public class DepositTask implements Runnable {
             } catch (Exception e) {
                 String msg = format("Failed to update deposit status to %s for tuple [%s, %s, %s]; " +
                                     "parsing the Atom statement %s for %s failed: %s",
-                                    ACCEPTED, dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(),
+                                    DepositStatus.ACCEPTED, dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(),
                                     statementUri, dc.deposit().getId(), e.getMessage());
                 throw new DepositServiceRuntimeException(msg, e, dc.deposit());
             }
@@ -465,9 +462,9 @@ public class DepositTask implements Runnable {
          */
         static BiPredicate<Deposit, TransportResponse> depositPostcondition(DepositWorkerContext dc) {
             return (deposit, tr) -> {
-                if (deposit.getDepositStatus() != SUBMITTED) {
+                if (deposit.getDepositStatus() != DepositStatus.SUBMITTED) {
                     LOG.debug("Postcondition failed for {}: Expected Deposit status '{}' but actual status " +
-                              "is '{}'", deposit.getId(), SUBMITTED, deposit.getDepositStatus());
+                              "is '{}'", deposit.getId(), DepositStatus.SUBMITTED, deposit.getDepositStatus());
                     return false;
                 }
 
