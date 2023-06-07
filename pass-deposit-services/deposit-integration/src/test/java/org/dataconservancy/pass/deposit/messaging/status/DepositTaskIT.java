@@ -47,6 +47,7 @@ import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
+import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Test;

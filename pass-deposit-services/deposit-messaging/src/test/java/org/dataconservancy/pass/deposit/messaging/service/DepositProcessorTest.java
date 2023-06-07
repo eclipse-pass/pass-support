@@ -19,7 +19,7 @@ import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUti
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalDepositStatus;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -47,6 +47,7 @@ import org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.Depos
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Test;
@@ -127,7 +128,7 @@ public class DepositProcessorTest {
 
     @Test
     public void criFuncCriticalNoopNoDeposits() {
-        URI submissionUri = randomUri();
+        URI submissionUri = randomId();
 
         when(s.getId()).thenReturn(submissionUri);
         when(passClient.getIncoming(submissionUri)).thenReturn(Collections.emptyMap());
@@ -153,10 +154,10 @@ public class DepositProcessorTest {
 
     @Test
     public void criFuncCriticalJsonTypeCoercionException() {
-        URI submissionUri = randomUri();
-        URI depositUri1 = randomUri();
+        URI submissionUri = randomId();
+        URI depositUri1 = randomId();
         Deposit deposit1 = mock(Deposit.class);
-        URI depositUri2 = randomUri();
+        URI depositUri2 = randomId();
         Map<String, Collection<URI>> incoming = new HashMap<>();
         incoming.put(DepositProcessor.SUBMISSION_REL, Arrays.asList(depositUri1, depositUri2));
         DepositStatus depositStatus = DepositStatus.ACCEPTED;
@@ -196,7 +197,7 @@ public class DepositProcessorTest {
 
     @Test
     public void acceptDepositWithIntermediateStatus() {
-        URI depositUri = randomUri();
+        URI depositUri = randomId();
         Deposit intermediateDeposit = mock(Deposit.class);
         DepositStatus intermediateStatus = randomIntermediateDepositStatus.get();
 
@@ -213,10 +214,10 @@ public class DepositProcessorTest {
     }
 
     private void prepareCriFuncCriticalSuccess(DepositStatus depositStatus) {
-        URI submissionUri = randomUri();
-        URI depositUri1 = randomUri();
+        URI submissionUri = randomId();
+        URI depositUri1 = randomId();
         Deposit deposit1 = mock(Deposit.class);
-        URI depositUri2 = randomUri();
+        URI depositUri2 = randomId();
         Deposit deposit2 = mock(Deposit.class);
         Map<String, Collection<URI>> incoming = new HashMap<>();
         incoming.put(DepositProcessor.SUBMISSION_REL, Arrays.asList(depositUri1, depositUri2));
@@ -232,10 +233,10 @@ public class DepositProcessorTest {
 
     private void prepareCriFuncCriticalNoop(Supplier<DepositStatus> intermediateSupplier,
                                             Supplier<DepositStatus> terminalSupplier) {
-        URI submissionUri = randomUri();
-        URI depositUri1 = randomUri();
+        URI submissionUri = randomId();
+        URI depositUri1 = randomId();
         Deposit deposit1 = mock(Deposit.class);
-        URI depositUri2 = randomUri();
+        URI depositUri2 = randomId();
         Deposit deposit2 = mock(Deposit.class);
         DepositStatus intermediateStatus = intermediateSupplier.get();
         DepositStatus terminalStatus = terminalSupplier.get();

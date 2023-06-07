@@ -16,7 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomDepositStatusExcept;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -49,6 +49,7 @@ import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
@@ -215,15 +216,15 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPreconditionSuccess() {
-        URI repoUri = randomUri();
-        URI repoCopyUri = randomUri();
+        URI repoUri = randomId();
+        URI repoCopyUri = randomId();
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
-        when(d.getDepositStatusRef()).thenReturn(randomUri().toString());
+        when(d.getDepositStatusRef()).thenReturn(randomId().toString());
         when(d.getRepository()).thenReturn(repoUri);
         when(d.getRepositoryCopy()).thenReturn(repoCopyUri);
         when(passClient.readResource(repoCopyUri, RepositoryCopy.class)).thenReturn(repoCopy);
@@ -281,7 +282,7 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPreconditionFailRepository() {
-        URI statusRef = randomUri();
+        URI statusRef = randomId();
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
@@ -311,8 +312,8 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPreconditionFailNullRepoCopyUri() {
-        URI statusRef = randomUri();
-        URI repoUri = randomUri();
+        URI statusRef = randomId();
+        URI repoUri = randomId();
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
@@ -346,9 +347,9 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPreconditionFailNullRepoCopy() {
-        URI statusRef = randomUri();
-        URI repoUri = randomUri();
-        URI repoCopyUri = randomUri();
+        URI statusRef = randomId();
+        URI repoUri = randomId();
+        URI repoCopyUri = randomId();
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
@@ -467,8 +468,8 @@ public class DepositTaskHelperTest {
     public void depositCriFuncCriticalSuccessIntermediate() {
         DepositStatus statusProcessorResult = randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED);
 
-        URI repoUri = randomUri();
-        URI repoCopyUri = randomUri();
+        URI repoUri = randomId();
+        URI repoCopyUri = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         Repository repo = newRepositoryWithUri(repoUri.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoUri.toString(), statusProcessor);
@@ -496,7 +497,7 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncCriticalMissingRepositoryConfig() {
-        URI repoUri = randomUri();
+        URI repoUri = randomId();
 
         when(d.getRepository()).thenReturn(repoUri);
         when(passClient.readResource(repoUri, Repository.class)).thenReturn(r);
@@ -515,7 +516,7 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncCriticalNullDepositConfig() {
-        URI repoUri = randomUri();
+        URI repoUri = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         Repository repo = newRepositoryWithUri(repoUri.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoUri.toString(), statusProcessor);
@@ -532,7 +533,7 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncCriticalNullDepositProcessing() {
-        URI repoUri = randomUri();
+        URI repoUri = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         Repository repo = newRepositoryWithUri(repoUri.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoUri.toString(), statusProcessor);
@@ -549,7 +550,7 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncCriticalNullDepositStatusProcessor() {
-        URI repoUri = randomUri();
+        URI repoUri = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         Repository repo = newRepositoryWithUri(repoUri.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoUri.toString(), statusProcessor);
@@ -566,7 +567,7 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncCriticalDepositStatusProcessorProducesNullStatus() {
-        URI repoUri = randomUri();
+        URI repoUri = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         Repository repo = newRepositoryWithUri(repoUri.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoUri.toString(), statusProcessor);
@@ -634,8 +635,8 @@ public class DepositTaskHelperTest {
                                                             DepositStatus statusProcessorResult,
                                                             Deposit deposit,
                                                             PassClient passClient) {
-        URI repoUri = randomUri();
-        URI repoCopyUri = randomUri();
+        URI repoUri = randomId();
+        URI repoCopyUri = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         Repository repo = newRepositoryWithUri(repoUri.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoUri.toString(), statusProcessor);

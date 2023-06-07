@@ -16,7 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.policy;
 
 import org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,13 +24,13 @@ import org.springframework.stereotype.Component;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
-public class TerminalSubmissionStatusPolicy implements Policy<Submission.AggregatedDepositStatus> {
+public class TerminalSubmissionStatusPolicy implements Policy<AggregatedDepositStatus> {
 
-    private StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator;
+    private StatusEvaluator<AggregatedDepositStatus> submissionStatusEvaluator;
 
     @Autowired
     public TerminalSubmissionStatusPolicy(
-        StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator) {
+        StatusEvaluator<AggregatedDepositStatus> submissionStatusEvaluator) {
         this.submissionStatusEvaluator = submissionStatusEvaluator;
     }
 
@@ -44,7 +44,7 @@ public class TerminalSubmissionStatusPolicy implements Policy<Submission.Aggrega
      * @return true if the status is <em>terminal</em>
      */
     @Override
-    public boolean test(Submission.AggregatedDepositStatus status) {
+    public boolean test(AggregatedDepositStatus status) {
         return status != null && submissionStatusEvaluator.isTerminal(status);
     }
 

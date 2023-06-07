@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.dataconservancy.pass.model.Deposit;
 import org.springframework.stereotype.Component;
 
 /**

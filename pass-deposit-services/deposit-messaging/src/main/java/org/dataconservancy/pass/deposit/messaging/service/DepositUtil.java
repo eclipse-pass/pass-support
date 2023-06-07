@@ -16,7 +16,6 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import static java.time.Instant.ofEpochMilli;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.FAILED;
 
 import java.net.URI;
 import java.time.ZoneId;
@@ -31,12 +30,14 @@ import org.dataconservancy.pass.deposit.messaging.policy.TerminalSubmissionStatu
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusEvaluator;
 import org.dataconservancy.pass.deposit.messaging.status.SubmissionStatusEvaluator;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.jms.JmsProperties;
@@ -224,30 +225,30 @@ public class DepositUtil {
      * later marked as {@code FAILED} (even if the thread calling this method perceives a {@code Submission} as {@code
      * FAILED}, another thread may have succeeded in the interim).
      *
-     * @param submissionUri the URI of the submission
+     * @param submissionId the id of the submission
      * @param cri           the critical repository interaction
      * @return true if the {@code Submission} was marked {@code FAILED}
      */
-    public static boolean markSubmissionFailed(URI submissionUri, CriticalRepositoryInteraction cri) {
+    public static boolean markSubmissionFailed(String submissionId, CriticalRepositoryInteraction cri) {
         CriticalResult<Submission, Submission> updateResult = cri.performCritical(
-                submissionUri, Submission.class,
+                submissionId, Submission.class,
                 (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.test(submission.getAggregatedDepositStatus()),
-                (submission) -> submission.getAggregatedDepositStatus() == FAILED,
+                (submission) -> submission.getAggregatedDepositStatus() == AggregatedDepositStatus.FAILED,
                 (submission) -> {
-                    submission.setAggregatedDepositStatus(FAILED);
+                    submission.setAggregatedDepositStatus(AggregatedDepositStatus.FAILED);
                     return submission;
-                });
+                }, true);
 
         if (!updateResult.success()) {
             LOG.debug(
                     "Updating status of {} to {} failed: {}",
-                    submissionUri,
-                    FAILED,
+                    submissionId,
+                    AggregatedDepositStatus.FAILED,
                     updateResult.throwable().isPresent() ?
                             updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
                     updateResult.throwable().get());
         } else {
-            LOG.debug("Marked {} as FAILED.", submissionUri);
+            LOG.debug("Marked {} as FAILED.", submissionId);
         }
 
         return updateResult.success();
@@ -260,28 +261,28 @@ public class DepositUtil {
      * {@code FAILED} (even if the thread calling this method perceives a {@code Deposit} as {@code FAILED}, another
      * thread may have succeeded in the interim).
      *
-     * @param depositUri the URI of the deposit
+     * @param depositId the URI of the deposit
      * @param cri        the critical repository interaction
      * @return true if the {@code Deposit} was marked {@code FAILED}
      */
-    public static boolean markDepositFailed(URI depositUri, CriticalRepositoryInteraction cri) {
+    public static boolean markDepositFailed(String depositId, CriticalRepositoryInteraction cri) {
         CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(
-                depositUri, Deposit.class,
+                depositId, Deposit.class,
                 (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.test(deposit.getDepositStatus()),
-                (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.FAILED,
+                (deposit) -> deposit.getDepositStatus() == DepositStatus.FAILED,
                 (deposit) -> {
-                    deposit.setDepositStatus(Deposit.DepositStatus.FAILED);
+                    deposit.setDepositStatus(DepositStatus.FAILED);
                     return deposit;
-                });
+                }, true);
 
         if (!updateResult.success()) {
-            LOG.debug("Updating status of {} to {} failed: {}", depositUri, Deposit.DepositStatus.FAILED,
+            LOG.debug("Updating status of {} to {} failed: {}", depositId, DepositStatus.FAILED,
                       updateResult.throwable()
                                   .isPresent() ? updateResult.throwable().get()
                                                              .getMessage() : "(missing Throwable cause)",
                       updateResult.throwable().get());
         } else {
-            LOG.debug("Marked {} as FAILED.", depositUri);
+            LOG.debug("Marked {} as FAILED.", depositId);
         }
 
         return updateResult.success();

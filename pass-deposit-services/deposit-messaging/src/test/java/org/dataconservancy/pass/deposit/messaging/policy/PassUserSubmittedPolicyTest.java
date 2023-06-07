@@ -18,7 +18,8 @@ package org.dataconservancy.pass.deposit.messaging.policy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Source;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class PassUserSubmittedPolicyTest {
     public void passSourceNotSubmitted() throws Exception {
         Submission s = new Submission();
         s.setSubmitted(false);
-        s.setSource(Submission.Source.PASS);
+        s.setSource(Source.PASS);
 
         assertFalse(underTest.test(s));
     }
@@ -54,7 +55,7 @@ public class PassUserSubmittedPolicyTest {
     public void passSourceSubmitted() throws Exception {
         Submission s = new Submission();
         s.setSubmitted(true);
-        s.setSource(Submission.Source.PASS);
+        s.setSource(Source.PASS);
 
         assertTrue(underTest.test(s));
     }
@@ -63,7 +64,7 @@ public class PassUserSubmittedPolicyTest {
     public void otherSourceSubmitted() throws Exception {
         Submission s = new Submission();
         s.setSubmitted(true);
-        s.setSource(Submission.Source.OTHER);
+        s.setSource(Source.OTHER);
 
         assertFalse(underTest.test(s));
     }
@@ -72,7 +73,7 @@ public class PassUserSubmittedPolicyTest {
     public void otherSourceNotSubmitted() throws Exception {
         Submission s = new Submission();
         s.setSubmitted(false);
-        s.setSource(Submission.Source.OTHER);
+        s.setSource(Source.OTHER);
 
         assertFalse(underTest.test(s));
     }

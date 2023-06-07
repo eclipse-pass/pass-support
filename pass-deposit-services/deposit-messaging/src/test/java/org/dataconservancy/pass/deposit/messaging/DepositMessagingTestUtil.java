@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import java.net.URI;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,9 +22,10 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
-import org.dataconservancy.pass.model.Submission.SubmissionStatus;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
+
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -207,8 +207,8 @@ public class DepositMessagingTestUtil {
      *
      * @return
      */
-    public static URI randomUri() {
-        return URI.create("uri:uuid:" + UUID.randomUUID());
+    public static String randomId() {
+        return UUID.randomUUID().toString();
     }
 
     private static <T extends Enum<T>> T randomFromEnum(Class<T> enumClass) {

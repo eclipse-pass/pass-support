@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent;
 import org.dataconservancy.pass.support.messaging.constants.Constants.PassType;

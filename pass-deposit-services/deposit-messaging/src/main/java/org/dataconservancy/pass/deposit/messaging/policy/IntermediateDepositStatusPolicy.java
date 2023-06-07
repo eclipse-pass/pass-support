@@ -16,7 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.policy;
 
 import org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator;
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,17 +27,17 @@ import org.springframework.stereotype.Component;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
-public class IntermediateDepositStatusPolicy implements Policy<Deposit.DepositStatus> {
+public class IntermediateDepositStatusPolicy implements Policy<DepositStatus> {
 
-    private StatusEvaluator<Deposit.DepositStatus> statusEvaluator;
+    private StatusEvaluator<DepositStatus> statusEvaluator;
 
     @Autowired
-    public IntermediateDepositStatusPolicy(StatusEvaluator<Deposit.DepositStatus> statusEvaluator) {
+    public IntermediateDepositStatusPolicy(StatusEvaluator<DepositStatus> statusEvaluator) {
         this.statusEvaluator = statusEvaluator;
     }
 
     @Override
-    public boolean test(Deposit.DepositStatus o) {
+    public boolean test(DepositStatus o) {
         return o == null || !statusEvaluator.isTerminal(o);
     }
 }

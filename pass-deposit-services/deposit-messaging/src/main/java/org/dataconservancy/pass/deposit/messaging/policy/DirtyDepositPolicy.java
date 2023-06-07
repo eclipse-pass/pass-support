@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DirtyDepositPolicy implements Policy<Deposit.DepositStatus> {
+public class DirtyDepositPolicy implements Policy<DepositStatus> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DirtyDepositPolicy.class);
 
@@ -39,7 +39,7 @@ public class DirtyDepositPolicy implements Policy<Deposit.DepositStatus> {
      * @return {@code true} if the {@code DepositStatus} of {@code o} is {@code null}
      */
     @Override
-    public boolean test(Deposit.DepositStatus o) {
+    public boolean test(DepositStatus o) {
         if (o != null) {
             LOG.debug("Deposit will not be accepted for processing: status = '{}'", o);
             return false;

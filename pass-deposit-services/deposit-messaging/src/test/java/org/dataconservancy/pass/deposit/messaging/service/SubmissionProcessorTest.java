@@ -19,13 +19,11 @@ package org.dataconservancy.pass.deposit.messaging.service;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomAggregatedDepositStatusExcept;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.critical;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.postCondition;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.preCondition;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.getLookupKeys;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
-import static org.dataconservancy.pass.model.Repository.IntegrationType.WEB_LINK;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -63,18 +61,17 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -621,7 +618,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         when(s.getAggregatedDepositStatus()).thenReturn(AggregatedDepositStatus.IN_PROGRESS);
         when(ds.getFiles()).thenReturn(Collections.singletonList(df));
-        when(df.getLocation()).thenReturn(randomUri().toString());
+        when(df.getLocation()).thenReturn(randomId().toString());
 
         assertTrue(postCondition().test(s, ds));
 
@@ -684,7 +681,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         when(s.getAggregatedDepositStatus()).thenReturn(AggregatedDepositStatus.IN_PROGRESS);
         when(ds.getFiles()).thenReturn(Arrays.asList(file1, file2));
-        when(file1.getLocation()).thenReturn(randomUri().toString());
+        when(file1.getLocation()).thenReturn(randomId().toString());
         when(file2.getLocation()).thenReturn("  ");
 
         thrown.expect(IllegalStateException.class);
@@ -700,7 +697,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
     @Test
     public void criFuncCriticalSuccess() throws InvalidModel {
-        URI submissionUri = randomUri();
+        URI submissionUri = randomId();
         Submission s = mock(Submission.class);
         DepositSubmission ds = mock(DepositSubmission.class);
 
@@ -715,7 +712,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
     @Test
     public void criFuncCriticalFailsModelBuilderException() throws InvalidModel {
-        URI submissionUri = randomUri();
+        URI submissionUri = randomId();
         Submission s = mock(Submission.class);
 
         when(s.getId()).thenReturn(submissionUri);
