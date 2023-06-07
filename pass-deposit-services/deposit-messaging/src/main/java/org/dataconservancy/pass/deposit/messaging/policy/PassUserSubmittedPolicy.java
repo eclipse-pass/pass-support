@@ -15,10 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
-import static org.dataconservancy.pass.model.Submission.Source.PASS;
-
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.Source;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -62,17 +61,17 @@ public class PassUserSubmittedPolicy implements SubmissionPolicy {
             return false;
         }
 
-        if (submission.getSource() != PASS) {
+        if (submission.getSource() != Source.PASS) {
             LOG.debug("Submission {} will not be accepted for processing: source = {}, expected source = {}",
-                      submission.getId(), submission.getSource(), PASS);
+                      submission.getId(), submission.getSource(), Source.PASS);
             return false;
         }
 
         // Currently we dis-allow FAILED Submissions; the SubmissionProcessor is not capable of "re-processing"
         // failures.
-        if (submission.getAggregatedDepositStatus() != NOT_STARTED) {
+        if (submission.getAggregatedDepositStatus() != AggregatedDepositStatus.NOT_STARTED) {
             LOG.debug("Submission {} will not be accepted for processing: status = {}, expected status = {}",
-                      submission.getId(), submission.getAggregatedDepositStatus(), NOT_STARTED);
+                      submission.getId(), submission.getAggregatedDepositStatus(), AggregatedDepositStatus.NOT_STARTED);
             return false;
         }
 

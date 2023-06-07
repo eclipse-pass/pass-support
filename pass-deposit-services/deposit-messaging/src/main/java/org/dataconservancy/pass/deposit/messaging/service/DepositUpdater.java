@@ -20,8 +20,8 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,9 +60,9 @@ public class DepositUpdater {
 
     private static Collection<URI> depositUrisToUpdate(PassClient passClient) {
         Set<URI> depositUris = passClient.findAllByAttribute(
-            Deposit.class, STATUS_ATTRIBUTE, Deposit.DepositStatus.FAILED.toString());
+            Deposit.class, STATUS_ATTRIBUTE, DepositStatus.FAILED.toString());
         depositUris.addAll(passClient.findAllByAttribute(
-            Deposit.class, STATUS_ATTRIBUTE, Deposit.DepositStatus.SUBMITTED.toString()));
+            Deposit.class, STATUS_ATTRIBUTE, DepositStatus.SUBMITTED.toString()));
         return depositUris;
     }
 

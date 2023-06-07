@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,9 +26,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Predicate;
 
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,7 +57,7 @@ public class DepositServiceErrorHandlerTest {
     @SuppressWarnings("unchecked")
     public void handleDepositServiceReWithDeposit() {
         Deposit depositResource = new Deposit();
-        depositResource.setId(randomUri());
+        depositResource.setId(randomId());
         DepositServiceRuntimeException dsreWithDeposit =
             new DepositServiceRuntimeException("handleDepositServiceReWithDeposit", depositResource);
 
@@ -64,13 +66,13 @@ public class DepositServiceErrorHandlerTest {
         when(cri.performCritical(
             eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any()))
             .thenAnswer(inv -> {
-                depositResource.setDepositStatus(Deposit.DepositStatus.FAILED);
+                depositResource.setDepositStatus(DepositStatus.FAILED);
                 return cr;
             });
 
         underTest.handleError(dsreWithDeposit);
 
-        assertEquals(Deposit.DepositStatus.FAILED, depositResource.getDepositStatus());
+        assertEquals(DepositStatus.FAILED, depositResource.getDepositStatus());
         verify(cri).performCritical(eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any());
     }
 
@@ -82,7 +84,7 @@ public class DepositServiceErrorHandlerTest {
     @SuppressWarnings("unchecked")
     public void handleDepositServiceReWithSubmission() {
         Submission submissionResource = new Submission();
-        submissionResource.setId(randomUri());
+        submissionResource.setId(randomId());
         DepositServiceRuntimeException depositServiceReWithSubmission =
             new DepositServiceRuntimeException("handleDepositServiceReWithSubmission", submissionResource);
 
@@ -91,13 +93,13 @@ public class DepositServiceErrorHandlerTest {
         when(cri.performCritical(
             eq(submissionResource.getId()), eq(Submission.class), any(), any(Predicate.class), any()))
             .thenAnswer(inv -> {
-                submissionResource.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.FAILED);
+                submissionResource.setAggregatedDepositStatus(AggregatedDepositStatus.FAILED);
                 return cr;
             });
 
         underTest.handleError(depositServiceReWithSubmission);
 
-        assertEquals(Submission.AggregatedDepositStatus.FAILED, submissionResource.getAggregatedDepositStatus());
+        assertEquals(AggregatedDepositStatus.FAILED, submissionResource.getAggregatedDepositStatus());
         verify(cri).performCritical(eq(submissionResource.getId()), eq(Submission.class), any(), any(Predicate.class),
                                     any());
     }
@@ -134,7 +136,7 @@ public class DepositServiceErrorHandlerTest {
     @SuppressWarnings("unchecked")
     public void handleRteWithDsreCause() {
         Deposit depositResource = new Deposit();
-        depositResource.setId(randomUri());
+        depositResource.setId(randomId());
         DepositServiceRuntimeException dsreWithDeposit =
             new DepositServiceRuntimeException("handleRteWithDsreCause", depositResource);
         RuntimeException re = new RuntimeException("handleRteWithDsreCause", dsreWithDeposit);
@@ -143,13 +145,13 @@ public class DepositServiceErrorHandlerTest {
         when(cr.success()).thenReturn(true);
         when(cri.performCritical(eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any()))
             .thenAnswer(inv -> {
-                depositResource.setDepositStatus(Deposit.DepositStatus.FAILED);
+                depositResource.setDepositStatus(DepositStatus.FAILED);
                 return cr;
             });
 
         underTest.handleError(re);
 
-        assertEquals(Deposit.DepositStatus.FAILED, depositResource.getDepositStatus());
+        assertEquals(DepositStatus.FAILED, depositResource.getDepositStatus());
         verify(cri).performCritical(eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any());
     }
 }

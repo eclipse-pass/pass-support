@@ -17,7 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.policy;
 
 import static org.junit.Assert.assertTrue;
 
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Test;
 
 /**

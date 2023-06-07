@@ -17,7 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatus;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatusExcept;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -240,7 +240,7 @@ public class SubmissionStatusUpdaterTest {
     @Test
     @SuppressWarnings("unchecked")
     public void doUpdateInvokesCri() {
-        URI submissionUri = randomUri();
+        URI submissionUri = randomId();
         underTest.doUpdate(Collections.singleton(submissionUri));
 
         verify(cri, times(1)).performCritical(eq(submissionUri), eq(Submission.class), any(), (Predicate) any(), any());
@@ -253,7 +253,7 @@ public class SubmissionStatusUpdaterTest {
     @Test
     @SuppressWarnings("unchecked")
     public void doUpdateInvokesPassClientAndCri() {
-        URI submissionUri = randomUri();
+        URI submissionUri = randomId();
         when(passClient.findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any())).thenReturn(
             Collections.singleton(submissionUri));
 

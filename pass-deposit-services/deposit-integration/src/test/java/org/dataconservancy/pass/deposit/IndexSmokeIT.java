@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.nihms.integration.BaseIT;
+import org.eclipse.pass.support.client.PassClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

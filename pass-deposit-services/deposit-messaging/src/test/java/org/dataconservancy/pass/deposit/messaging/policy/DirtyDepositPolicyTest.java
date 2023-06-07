@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.stream.Stream;
 
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Test;
 
 /**
@@ -35,7 +35,7 @@ public class DirtyDepositPolicyTest {
 
     @Test
     public void testNonNullStatus() throws Exception {
-        Stream.of(Deposit.DepositStatus.values()).forEach(status ->
+        Stream.of(DepositStatus.values()).forEach(status ->
                                                               assertFalse(new DirtyDepositPolicy().test(status)));
     }
 }

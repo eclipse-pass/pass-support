@@ -16,7 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -41,6 +41,7 @@ import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptRes
 import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,7 +82,7 @@ public class DepositTaskTest {
         String prefix = "http://moo";
         String replacement = "http://foo";
 
-        URI dspaceItemUri = randomUri();
+        URI dspaceItemUri = randomId();
         SwordIdentifier dspaceItem = mock(SwordIdentifier.class);
         when(dspaceItem.getHref()).thenReturn(dspaceItemUri.toString());
         SwordIdentifier swordStatement = identifierFor(prefix);
@@ -109,7 +110,7 @@ public class DepositTaskTest {
         String prefix = "http://moo";
         String replacement = null;
 
-        URI dspaceItemUri = randomUri();
+        URI dspaceItemUri = randomId();
         SwordIdentifier dspaceItem = mock(SwordIdentifier.class);
         when(dspaceItem.getHref()).thenReturn(dspaceItemUri.toString());
         SwordIdentifier swordStatement = identifierFor(prefix);
@@ -138,7 +139,7 @@ public class DepositTaskTest {
         String prefix = "http://moo";
         String replacement = "http://foo";
 
-        URI dspaceItemUri = randomUri();
+        URI dspaceItemUri = randomId();
         SwordIdentifier dspaceItem = mock(SwordIdentifier.class);
         when(dspaceItem.getHref()).thenReturn(dspaceItemUri.toString());
         SwordIdentifier swordStatement = identifierFor(href);
@@ -170,16 +171,16 @@ public class DepositTaskTest {
     private static Deposit depositContext(DepositUtil.DepositWorkerContext depositContext, TransportResponse tr,
                                           PassClient passClient) {
         Repository r = new Repository();
-        r.setId(randomUri());
+        r.setId(randomId());
         depositContext.repository(r);
 
         Submission s = new Submission();
-        s.setId(randomUri());
+        s.setId(randomId());
         s.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.IN_PROGRESS);
         depositContext.submission(s);
 
         Deposit d = new Deposit();
-        d.setId(randomUri());
+        d.setId(randomId());
         d.setSubmission(s.getId());
         d.setDepositStatus(randomIntermediateDepositStatus.get());
         depositContext.deposit(d);

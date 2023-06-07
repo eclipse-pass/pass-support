@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator;
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ import org.junit.Test;
  */
 public class IntermediateDepositStatusPolicyTest {
 
-    private StatusEvaluator<Deposit.DepositStatus> evaluator;
+    private StatusEvaluator<DepositStatus> evaluator;
 
     private IntermediateDepositStatusPolicy underTest;
 
@@ -49,7 +49,7 @@ public class IntermediateDepositStatusPolicyTest {
 
     @Test
     public void testTerminalStatus() throws Exception {
-        Deposit.DepositStatus terminal = Deposit.DepositStatus.ACCEPTED;
+        DepositStatus terminal = DepositStatus.ACCEPTED;
         when(evaluator.isTerminal(terminal)).thenReturn(true);
 
         assertFalse(underTest.test(terminal));
@@ -58,7 +58,7 @@ public class IntermediateDepositStatusPolicyTest {
 
     @Test
     public void testIntermediateStatus() throws Exception {
-        Deposit.DepositStatus terminal = Deposit.DepositStatus.SUBMITTED;
+        DepositStatus terminal = DepositStatus.SUBMITTED;
         when(evaluator.isTerminal(terminal)).thenReturn(false);
 
         assertTrue(underTest.test(terminal));
@@ -67,7 +67,7 @@ public class IntermediateDepositStatusPolicyTest {
 
     @Test
     public void testFailedStatus() throws Exception {
-        Deposit.DepositStatus failed = Deposit.DepositStatus.FAILED;
+        DepositStatus failed = DepositStatus.FAILED;
         when(evaluator.isTerminal(failed)).thenReturn(false);
 
         assertTrue(underTest.test(failed));

@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Submission;
 
 /**
  * Determines if a {@link Submission} is to be processed by Deposit Services.
@@ -31,6 +31,6 @@ public interface SubmissionPolicy extends Policy<Submission> {
      * @param submission the Submission
      * @return {@code true} if the Submission is suitable for processing
      */
+    @Override
     boolean test(Submission submission);
-
 }

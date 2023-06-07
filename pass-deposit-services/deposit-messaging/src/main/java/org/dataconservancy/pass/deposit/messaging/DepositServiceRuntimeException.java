@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import org.dataconservancy.pass.model.PassEntity;
+import org.eclipse.pass.support.client.model.PassEntity;
 
 /**
  * Base {@code RuntimeException} thrown by deposit services.  Most, if not all, exceptions thrown by deposit services
@@ -26,6 +26,7 @@ import org.dataconservancy.pass.model.PassEntity;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DepositServiceRuntimeException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
 
     /**
      * The resource that was the subject of the interaction with the repository.

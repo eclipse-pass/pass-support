@@ -17,14 +17,12 @@ package org.dataconservancy.pass.deposit.messaging.runner;
 
 import static java.lang.String.format;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper.MISSING_PACKAGER;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
 import static org.dataconservancy.pass.support.messaging.constants.Constants.Indexer.DEPOSIT_STATUS;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -33,10 +31,10 @@ import org.dataconservancy.pass.deposit.messaging.policy.TerminalDepositStatusPo
 import org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +61,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * @see org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor
  */
 public class FailedDepositRunner {
-
     private static final Logger LOG = LoggerFactory.getLogger(FailedDepositRunner.class);
-
     private static final String FAILED_TO_PROCESS = "Failed to process {}: {}";
-
     private static final String URIS_PARAM = "uri";
 
     private enum MODE {

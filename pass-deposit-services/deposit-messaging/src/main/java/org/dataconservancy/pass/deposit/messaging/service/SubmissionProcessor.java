@@ -17,7 +17,6 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.IN_PROGRESS;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,7 +28,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
@@ -39,12 +37,11 @@ import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
-import org.dataconservancy.pass.support.messaging.json.JsonParser;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +87,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         this.depositTaskHelper = depositTaskHelper;
     }
 
+    @Override
     public void accept(Submission submission) {
 
         // Validates the incoming Submission, marks it as being IN_PROGRESS immediately.

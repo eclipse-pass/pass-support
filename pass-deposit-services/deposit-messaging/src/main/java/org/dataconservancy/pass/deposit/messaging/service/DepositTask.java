@@ -39,8 +39,10 @@ import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptRes
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,7 +213,7 @@ public class DepositTask implements Runnable {
             RepositoryCopy repoCopy = TransportResponseUpdateFunc.newRepositoryCopy(dc, "", CopyStatus.IN_PROGRESS)
                                                                  .get();
             dc.repoCopy(passClient.createAndReadResource(repoCopy, RepositoryCopy.class));
-            dc.deposit().setRepositoryCopy(dc.repoCopy().getId());
+            dc.deposit().setRepositoryCopy(dc.repoCopy());
             dc.deposit(passClient.updateAndReadResource(dc.deposit(), Deposit.class));
         }
 
@@ -313,7 +315,7 @@ public class DepositTask implements Runnable {
                 // Create a RepositoryCopy, which will record the URL of the Item in DSpace
                 RepositoryCopy repoCopy = newRepositoryCopy(dc, repoCopyExtId, CopyStatus.IN_PROGRESS).get();
                 repoCopy = passClient.createAndReadResource(repoCopy, RepositoryCopy.class);
-                criDeposit.setRepositoryCopy(repoCopy.getId());
+                criDeposit.setRepositoryCopy(repoCopy);
 
                 dc.repoCopy(repoCopy);
 
@@ -354,7 +356,7 @@ public class DepositTask implements Runnable {
                 RepositoryCopy repoCopy = new RepositoryCopy();
 
                 repoCopy.setCopyStatus(status);
-                repoCopy.setRepository(dc.repository().getId());
+                repoCopy.setRepository(dc.repository());
                 repoCopy.setPublication(dc.submission().getPublication());
                 if (extId != null && extId.trim().length() > 0) {
                     repoCopy.setExternalIds(Collections.singletonList(extId));
@@ -398,7 +400,7 @@ public class DepositTask implements Runnable {
          * @param intermediateDepositStatusPolicy
          * @return
          */
-        static Predicate<Deposit> depositPrecondition(Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy) {
+        static Predicate<Deposit> depositPrecondition(Policy<DepositStatus> intermediateDepositStatusPolicy) {
             return (deposit) -> {
                 boolean accept = intermediateDepositStatusPolicy.test(deposit.getDepositStatus());
                 if (!accept) {
@@ -444,7 +446,7 @@ public class DepositTask implements Runnable {
 
                 try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
                     TransportResponse tr = transport.send(packageStream, packagerConfig);
-                    deposit.setDepositStatus(SUBMITTED);
+                    deposit.setDepositStatus(DepositStatus.SUBMITTED);
                     return tr;
                 } catch (Exception e) {
                     throw new RuntimeException("Error closing transport session for deposit " +
