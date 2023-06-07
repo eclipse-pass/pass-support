@@ -22,11 +22,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.File;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.File;
+import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.Submission;
+
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

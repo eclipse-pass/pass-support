@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit;
 
-import static org.dataconservancy.pass.model.Submission.SubmissionStatus.SUBMITTED;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
@@ -24,11 +23,6 @@ import java.util.Collections;
 
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.nihms.integration.BaseIT;
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.client.PassClientDefault;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

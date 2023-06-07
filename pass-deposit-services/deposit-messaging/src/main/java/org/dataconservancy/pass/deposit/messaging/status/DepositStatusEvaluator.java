@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
-public class DepositStatusEvaluator implements StatusEvaluator<Deposit.DepositStatus> {
+public class DepositStatusEvaluator implements StatusEvaluator<DepositStatus> {
 
     /**
      * Determine if {@code status} is in a <em>terminal</em> state, {@link Deposit.DepositStatus#ACCEPTED} or
@@ -38,7 +38,7 @@ public class DepositStatusEvaluator implements StatusEvaluator<Deposit.DepositSt
      * @throws IllegalArgumentException if {@code status} is {@code null}
      */
     @Override
-    public boolean isTerminal(Deposit.DepositStatus status) {
+    public boolean isTerminal(DepositStatus status) {
         if (status == null) {
             throw new IllegalArgumentException("Deposit status must not be null.");
         }

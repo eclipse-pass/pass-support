@@ -35,6 +35,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.eclipse.pass</groupId>
+      <artifactId>pass-data-client</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>

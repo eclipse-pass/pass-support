@@ -42,14 +42,13 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.DepositProcessorCriFunc;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Test;
 
 /**

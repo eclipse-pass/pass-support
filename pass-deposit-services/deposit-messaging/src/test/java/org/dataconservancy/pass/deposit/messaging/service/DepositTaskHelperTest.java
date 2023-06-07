@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.RemedialDepositException;
 import org.dataconservancy.pass.deposit.messaging.config.repository.DepositProcessing;
@@ -48,13 +47,13 @@ import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper.DepositStatusCriFunc;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

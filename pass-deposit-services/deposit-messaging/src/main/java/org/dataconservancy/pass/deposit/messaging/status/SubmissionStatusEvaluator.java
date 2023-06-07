@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
-public class SubmissionStatusEvaluator implements StatusEvaluator<Submission.AggregatedDepositStatus> {
+public class SubmissionStatusEvaluator implements StatusEvaluator<AggregatedDepositStatus> {
 
     /**
      * Determine if {@code status} is in a <em>terminal</em> state, {@link Submission.AggregatedDepositStatus#ACCEPTED}
@@ -39,7 +39,7 @@ public class SubmissionStatusEvaluator implements StatusEvaluator<Submission.Agg
      * @throws IllegalArgumentException if {@code status} is {@code null}
      */
     @Override
-    public boolean isTerminal(Submission.AggregatedDepositStatus status) {
+    public boolean isTerminal(AggregatedDepositStatus status) {
         if (status == null) {
             throw new IllegalArgumentException("Submission status must not be null.");
         }
