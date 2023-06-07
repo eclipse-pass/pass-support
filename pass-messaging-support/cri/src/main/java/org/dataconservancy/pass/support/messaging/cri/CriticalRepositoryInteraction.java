@@ -111,6 +111,11 @@ public interface CriticalRepositoryInteraction {
             String id, Class<T> clazz, Predicate<T> precondition, Predicate<T> postcondition, Function<T, R> critical,
             boolean updatesEntity);
 
+    default <R, T extends PassEntity> CriticalResult<R, T> performCritical(
+            String id, Class<T> clazz, Predicate<T> precondition, Predicate<T> postcondition, Function<T, R> critical) {
+        return performCritical(id, clazz, precondition, postcondition, critical, true);
+    }
+
     /**
      * Execute a critical interaction with the repository, subject to {@code precondition}.  Success of the interaction
      * depends on the evaluation of {@code postcondition}.
@@ -134,6 +139,12 @@ public interface CriticalRepositoryInteraction {
             String id, Class<T> clazz, Predicate<T> precondition, BiPredicate<T, R> postcondition,
             Function<T, R> critical, boolean updatesEntity
     );
+
+    default <R, T extends PassEntity> CriticalResult<R, T> performCritical(
+            String id, Class<T> clazz, Predicate<T> precondition, BiPredicate<T, R> postcondition,
+            Function<T, R> critical) {
+        return performCritical(id, clazz, precondition, postcondition, critical, true);
+    }
 
     /**
      * Encapsulates the result of a critical interaction with the repository.
