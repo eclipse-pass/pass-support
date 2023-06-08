@@ -16,7 +16,6 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getFileUris;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static submissions.SubmissionResourceUtil.lookupStream;
@@ -27,13 +26,13 @@ import java.util.Set;
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
-import org.dataconservancy.pass.model.Submission.SubmissionStatus;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,7 +126,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         assertEquals(submission.getRepositories().size(), result.size());
         assertEquals(result.stream().filter(deposit -> deposit.getSubmission().equals(submission.getId())).count(),
                      submission.getRepositories().size());
-        assertTrue(result.stream().allMatch(deposit -> deposit.getDepositStatus() == ACCEPTED));
+        assertTrue(result.stream().allMatch(deposit -> deposit.getDepositStatus() == DepositStatus.ACCEPTED));
 
         Condition<Submission> statusVerification =
             new Condition<>(() -> passClient.readResource(submission.getId(), Submission.class),

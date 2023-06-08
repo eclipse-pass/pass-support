@@ -34,7 +34,8 @@ import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRea
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryDepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -86,11 +87,11 @@ public class DefaultDepositStatusProcessorTest {
         when(resolver.resolve(refUri, repositoryConfig)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
         when(mapping.getStatusMap()).thenReturn(new HashMap<String, String>() {
             {
-                put(SWORD_STATE_ARCHIVED.asUri().toString(), Deposit.DepositStatus.ACCEPTED.name().toLowerCase());
+                put(SWORD_STATE_ARCHIVED.asUri().toString(), DepositStatus.ACCEPTED.name().toLowerCase());
             }
         });
 
-        assertEquals(Deposit.DepositStatus.ACCEPTED,
+        assertEquals(DepositStatus.ACCEPTED,
                      underTest.process(deposit, repositoryConfig));
 
         verify(resolver).resolve(refUri, repositoryConfig);

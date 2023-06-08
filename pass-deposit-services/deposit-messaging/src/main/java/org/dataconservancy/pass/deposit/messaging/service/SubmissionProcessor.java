@@ -40,8 +40,12 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,10 +109,10 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
             if (result.throwable().isPresent()) {
                 Throwable cause = result.throwable().get();
-                String msg = format(msg_tmpl, submission.getId(), IN_PROGRESS, cause.getMessage());
+                String msg = format(msg_tmpl, submission.getId(), AggregatedDepositStatus.IN_PROGRESS, cause.getMessage());
                 throw new DepositServiceRuntimeException(msg, cause, submission);
             } else {
-                String msg = format(msg_tmpl, submission.getId(), IN_PROGRESS,
+                String msg = format(msg_tmpl, submission.getId(), AggregatedDepositStatus.IN_PROGRESS,
                                     "no cause was present, probably a pre- or post-condition was not satisfied.");
                 LOG.debug(msg);
                 return;
@@ -182,7 +186,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 } catch (InvalidModel invalidModel) {
                     throw new RuntimeException(invalidModel.getMessage(), invalidModel);
                 }
-                s.setAggregatedDepositStatus(IN_PROGRESS);
+                s.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
                 return ds;
             };
         }
@@ -200,10 +204,10 @@ public class SubmissionProcessor implements Consumer<Submission> {
          */
         static BiPredicate<Submission, DepositSubmission> postCondition() {
             return (s, ds) -> {
-                if (IN_PROGRESS != s.getAggregatedDepositStatus()) {
+                if (AggregatedDepositStatus.IN_PROGRESS != s.getAggregatedDepositStatus()) {
                     String msg = "Update postcondition failed for %s: expected status '%s' but actual status is " +
                                  "'%s'";
-                    throw new IllegalStateException(String.format(msg, s.getId(), IN_PROGRESS, s
+                    throw new IllegalStateException(String.format(msg, s.getId(), AggregatedDepositStatus.IN_PROGRESS, s
                         .getAggregatedDepositStatus()));
                 }
 

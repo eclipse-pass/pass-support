@@ -24,6 +24,11 @@ import java.util.Collections;
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Source;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
+import org.eclipse.pass.support.client.model.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -111,10 +116,10 @@ public class IndexSmokeIT extends BaseIT {
         assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoJsUri.getPath())));
 
         Submission submission = new Submission();
-        submission.setSource(Submission.Source.PASS);
+        submission.setSource(Source.PASS);
         submission.setSubmitted(Boolean.TRUE);
         submission.setSubmitter(userUri);
-        submission.setSubmissionStatus(SUBMITTED);
+        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
         submission.setMetadata("{ \"key\": \"value\" }");
         submission.setRepositories(Arrays.asList(repoNihUri, repoJsUri));
 

@@ -33,12 +33,12 @@ import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.SubmissionStatus;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.SubmissionStatusService;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

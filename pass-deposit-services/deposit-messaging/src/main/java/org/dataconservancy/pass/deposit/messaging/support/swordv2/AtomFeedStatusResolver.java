@@ -25,7 +25,6 @@ import org.apache.abdera.parser.Parser;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +72,7 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
      * @see
      * <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement_predicates_state">SWORDv2 Profile §11.1.2</a>
      */
+    @Override
     public URI resolve(URI atomStatementUri, RepositoryConfig repositoryConfig) {
         if (atomStatementUri == null) {
             throw new IllegalArgumentException("Atom statement URI must not be null.");

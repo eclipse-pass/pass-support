@@ -32,6 +32,7 @@ import org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;

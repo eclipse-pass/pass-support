@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import org.dataconservancy.pass.model.PassEntity;
+import org.eclipse.pass.support.client.model.PassEntity;
 
 /**
  * An exception that can be remediated, for example, by correcting a problem with the runtime configuration of Deposit

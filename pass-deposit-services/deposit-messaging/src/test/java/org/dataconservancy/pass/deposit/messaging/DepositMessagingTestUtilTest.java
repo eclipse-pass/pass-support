@@ -24,8 +24,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,16 +49,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class DepositMessagingTestUtilTest {
 
     @Autowired
-    private Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
+    private Policy<DepositStatus> intermediateDepositStatusPolicy;
 
     @Autowired
-    private Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
+    private Policy<DepositStatus> terminalDepositStatusPolicy;
 
     @Autowired
-    private Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy;
+    private Policy<AggregatedDepositStatus> terminalSubmissionStatusPolicy;
 
     @Autowired
-    private Policy<Submission.AggregatedDepositStatus> intermediateSubmissionStatusPolicy;
+    private Policy<AggregatedDepositStatus> intermediateSubmissionStatusPolicy;
 
     private int tries = 20;
 

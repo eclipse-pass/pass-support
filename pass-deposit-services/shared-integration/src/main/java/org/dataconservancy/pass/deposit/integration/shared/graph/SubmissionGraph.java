@@ -42,9 +42,9 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
-import org.dataconservancy.pass.model.Grant;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

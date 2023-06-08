@@ -21,11 +21,11 @@ import static org.junit.Assert.assertNotNull;
 
 import java.net.URI;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

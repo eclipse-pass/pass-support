@@ -37,11 +37,12 @@ import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositManifest;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.File;
-import org.dataconservancy.pass.model.Grant;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.User;
+import org.eclipse.pass.support.client.model.File;
+import org.eclipse.pass.support.client.model.FileRole;
+import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -380,8 +381,8 @@ abstract class ModelBuilder {
         return submission;
     }
 
-    private DepositFileType getTypeForRole(File.FileRole role) {
-        if (role.equals(File.FileRole.SUPPLEMENTAL)) {
+    private DepositFileType getTypeForRole(FileRole role) {
+        if (role.equals(FileRole.SUPPLEMENTAL)) {
             return DepositFileType.supplement;
         } else {
             return DepositFileType.valueOf(role.name().toLowerCase());
