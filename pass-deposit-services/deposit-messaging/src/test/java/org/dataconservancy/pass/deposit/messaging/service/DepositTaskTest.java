@@ -41,8 +41,11 @@ import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptRes
 import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
 import org.swordapp.client.DepositReceipt;
@@ -176,7 +179,7 @@ public class DepositTaskTest {
 
         Submission s = new Submission();
         s.setId(randomId());
-        s.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.IN_PROGRESS);
+        s.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
         depositContext.submission(s);
 
         Deposit d = new Deposit();

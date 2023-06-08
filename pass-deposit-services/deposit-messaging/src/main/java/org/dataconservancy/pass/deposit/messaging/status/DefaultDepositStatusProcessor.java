@@ -20,7 +20,8 @@ import java.util.Map;
 
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
      * @return the deposit status, may be {@code null}
      */
     @Override
-    public Deposit.DepositStatus process(Deposit deposit, RepositoryConfig repositoryConfig) {
+    public DepositStatus process(Deposit deposit, RepositoryConfig repositoryConfig) {
         if (deposit.getDepositStatusRef() == null || deposit.getDepositStatusRef().trim().length() == 0) {
             LOG.warn("Deposit {} is missing a depositStatusRef; the deposit status will not be processed.",
                      deposit.getId());
@@ -83,7 +84,7 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
         }
 
         try {
-            return Deposit.DepositStatus.of(status);
+            return DepositStatus.of(status);
         } catch (IllegalArgumentException e) {
             LOG.error("Status mapper returned an invalid Deposit.DepositStatus uri: '{}'", status);
             throw e;

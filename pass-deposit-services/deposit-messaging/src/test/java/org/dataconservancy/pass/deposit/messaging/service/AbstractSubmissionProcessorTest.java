@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 
 import java.net.URI;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -30,9 +29,9 @@ import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
-import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.support.messaging.json.JsonParser;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Before;
 import org.springframework.core.task.TaskExecutor;
 
@@ -51,9 +50,9 @@ public abstract class AbstractSubmissionProcessorTest {
 
     SubmissionPolicy submissionPolicy;
 
-    Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
+    Policy<DepositStatus> intermediateDepositStatusPolicy;
 
-    Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
+    Policy<DepositStatus> terminalDepositStatusPolicy;
 
     JmsMessagePolicy messagePolicy;
 

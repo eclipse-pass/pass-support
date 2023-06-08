@@ -23,7 +23,7 @@ import java.net.URI;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

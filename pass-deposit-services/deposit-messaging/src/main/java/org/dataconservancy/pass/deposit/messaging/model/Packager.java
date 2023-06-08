@@ -28,8 +28,6 @@ import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryCo
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

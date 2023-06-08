@@ -15,8 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.RepositoryCopy;
+import org.eclipse.pass.support.client.model.DepositStatus;
 
 /**
  * Accepts an object representing the status of some entity, and attempts to map the status to a

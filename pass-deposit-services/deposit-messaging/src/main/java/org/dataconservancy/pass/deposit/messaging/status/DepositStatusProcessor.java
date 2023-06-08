@@ -16,13 +16,14 @@
 package org.dataconservancy.pass.deposit.messaging.status;
 
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface DepositStatusProcessor {
 
-    Deposit.DepositStatus process(Deposit deposit, RepositoryConfig repositoryConfig);
+    DepositStatus process(Deposit deposit, RepositoryConfig repositoryConfig);
 
 }

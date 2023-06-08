@@ -38,7 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
-import org.dataconservancy.pass.model.PassEntity;
+import org.eclipse.pass.support.client.model.PassEntity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
@@ -36,9 +35,6 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
-import org.dataconservancy.pass.client.PassClientDefault;
-import org.dataconservancy.pass.client.SubmissionStatusService;
-import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
@@ -59,6 +55,7 @@ import org.dataconservancy.pass.deposit.messaging.support.swordv2.ResourceResolv
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.ResourceResolverImpl;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

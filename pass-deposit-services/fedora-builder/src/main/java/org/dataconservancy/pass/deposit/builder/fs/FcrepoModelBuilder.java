@@ -23,8 +23,8 @@ import java.util.HashMap;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.Submission;
 
 /**
  * Builds a submission from a file on a locally mounted filesystem.

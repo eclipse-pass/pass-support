@@ -24,14 +24,13 @@ import java.util.function.Consumer;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.constants.Constants;
-import org.dataconservancy.pass.support.messaging.json.JsonParser;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

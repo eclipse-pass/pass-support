@@ -22,10 +22,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.client.SubmissionStatusService;
-import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.SubmissionStatusService;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,9 +107,9 @@ public class SubmissionStatusUpdater {
      * @return the URIs of Submissions that may need their SubmissionStatus updated
      */
     static Collection<URI> toUpdate(PassClient passClient) {
-        return Stream.of(Submission.SubmissionStatus.values())
-                     .filter(status -> status != Submission.SubmissionStatus.COMPLETE)
-                     .filter(status -> status != Submission.SubmissionStatus.CANCELLED)
+        return Stream.of(SubmissionStatus.values())
+                     .filter(status -> status != SubmissionStatus.COMPLETE)
+                     .filter(status -> status != SubmissionStatus.CANCELLED)
                      .map(status -> status.name().toLowerCase())
                      .map(status -> passClient.findAllByAttribute(Submission.class, "submissionStatus", status))
                      .flatMap(Collection::stream)
@@ -131,8 +132,8 @@ public class SubmissionStatusUpdater {
          */
         static Predicate<Submission> preCondition = (submission) ->
                 submission.getSubmissionStatus() != null &&
-                submission.getSubmissionStatus() != Submission.SubmissionStatus.COMPLETE &&
-                submission.getSubmissionStatus() != Submission.SubmissionStatus.CANCELLED &&
+                submission.getSubmissionStatus() != SubmissionStatus.COMPLETE &&
+                submission.getSubmissionStatus() != SubmissionStatus.CANCELLED &&
                 Boolean.TRUE == submission.getSubmitted();
 
         /**

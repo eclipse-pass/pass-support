@@ -15,19 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.messaging.runner;
 
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.support.messaging.constants.Constants.Indexer.DEPOSIT_STATUS;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +103,7 @@ public class SubmittedUpdateRunner {
             // maintain the order of the uris as they were supplied on the CLI
             return args.getOptionValues(URIS_PARAM).stream().map(URI::create).collect(Collectors.toList());
         } else {
-            Collection<URI> uris = passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, SUBMITTED);
+            Collection<URI> uris = passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, DepositStatus.SUBMITTED);
             if (uris.size() < 1) {
                 throw new IllegalArgumentException("No URIs found to process.");
             }

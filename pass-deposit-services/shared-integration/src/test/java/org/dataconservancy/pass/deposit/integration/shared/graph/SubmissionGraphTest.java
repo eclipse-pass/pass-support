@@ -29,13 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.Rel;
-import org.dataconservancy.pass.model.File;
-import org.dataconservancy.pass.model.Funder;
-import org.dataconservancy.pass.model.Grant;
-import org.dataconservancy.pass.model.Policy;
-import org.dataconservancy.pass.model.Publication;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.User;
+import org.eclipse.pass.support.client.model.AwardStatus;
+import org.eclipse.pass.support.client.model.File;
+import org.eclipse.pass.support.client.model.Funder;
+import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.Policy;
+import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.User;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class SubmissionGraphTest {
         Grant grant = graphBuilder.addEntity(Grant.class)
                                   .set("awardNumber", "123456")
                                   .set("localKey", "edu.jhu:123456")
-                                  .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
+                                  .set("awardStatus", AwardStatus.class, AwardStatus.ACTIVE)
                                   .add("coPis", uriSupplier.get())
                                   .add("coPis", uriSupplier.get())
                                   .build();
@@ -66,7 +67,7 @@ public class SubmissionGraphTest {
 
         assertEquals("123456", grant.getAwardNumber());
         assertEquals("edu.jhu:123456", grant.getLocalKey());
-        assertEquals(Grant.AwardStatus.ACTIVE, grant.getAwardStatus());
+        assertEquals(AwardStatus.ACTIVE, grant.getAwardStatus());
 
         assertNotNull(grant.getId());
         assertNotNull(grant.getCoPis());
@@ -92,7 +93,7 @@ public class SubmissionGraphTest {
         Grant grant = graphBuilder.addEntity(Grant.class)
                                   .set("awardNumber", "123456")
                                   .set("localKey", "edu.jhu:123456")
-                                  .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
+                                  .set("awardStatus", AwardStatus.class, AwardStatus.ACTIVE)
                                   .build((submission, g) -> {
                                       // build(...) method accepts functions to manipulate the submission after build
                                       // Normally links between resources are handled by link instructions, so a

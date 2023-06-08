@@ -48,6 +48,7 @@ import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
@@ -183,7 +184,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() != null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                Deposit.DepositStatus.ACCEPTED == deposits.iterator().next()
+                                                DepositStatus.ACCEPTED == deposits.iterator().next()
                                                                                           .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         Deposit deposit = deposits.iterator().next();
@@ -222,7 +223,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                DepositStatus.FAILED == deposits.iterator().next()
                                                                                         .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());
@@ -243,7 +244,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                DepositStatus.FAILED == deposits.iterator().next()
                                                                                         .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());
@@ -263,7 +264,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                DepositStatus.FAILED == deposits.iterator().next()
                                                                                         .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());
@@ -294,7 +295,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                DepositStatus.FAILED == deposits.iterator().next()
                                                                                         .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());

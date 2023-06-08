@@ -41,8 +41,11 @@ import okhttp3.Response;
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Rule;
@@ -153,10 +156,10 @@ public abstract class AbstractSubmissionFixture {
 
         // verify state of the initial Submission
         assertEquals("Submission must have a Submission.source = Submission.Source.PASS",
-                     Submission.Source.PASS, submission.getSource());
+                     Source.PASS, submission.getSource());
         assertEquals("Submission must have a Submission.aggregatedDepositStatus = " +
                      "Submission.AggregatedDepositStatus.NOT_STARTED",
-                     NOT_STARTED, submission.getAggregatedDepositStatus());
+                     AggregatedDepositStatus.NOT_STARTED, submission.getAggregatedDepositStatus());
 
         // no Deposits pointing to the Submission
         assertTrue("Unexpected incoming links to " + submissionUri,
