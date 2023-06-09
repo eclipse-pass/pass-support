@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
-
 import java.io.BufferedReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +26,7 @@ import java.util.function.Consumer;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.slf4j.Logger;
@@ -152,7 +151,7 @@ public class NihmsCsvProcessor {
         if (row == null) {
             return;
         }
-        if (nullOrEmpty(row.get(PMID_COLNUM))) {
+        if (StringUtils.isEmpty(row.get(PMID_COLNUM))) {
             return;
         } //not a valid row
         recCount = recCount + 1;

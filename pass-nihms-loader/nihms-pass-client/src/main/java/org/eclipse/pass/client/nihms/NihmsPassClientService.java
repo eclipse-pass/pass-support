@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.client.nihms;
 
-import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.client.nihms.cache.GrantIdCache;
 import org.eclipse.pass.client.nihms.cache.NihmsDepositIdCache;
 import org.eclipse.pass.client.nihms.cache.NihmsRepositoryCopyIdCache;
@@ -171,7 +171,7 @@ public class NihmsPassClientService {
      * @throws IOException if there is an error reading the grant from the PassClient
      */
     public Grant findMostRecentGrantByAwardNumber(String awardNumber) throws IOException {
-        if (nullOrEmpty(awardNumber)) {
+        if (StringUtils.isEmpty(awardNumber)) {
             throw new IllegalArgumentException("awardNumber cannot be empty");
         }
 
@@ -298,7 +298,7 @@ public class NihmsPassClientService {
             PassClientResult<RepositoryCopy> repoCopyResult = passClient.selectObjects(repoCopySelector);
             List<RepositoryCopy> repositoryCopies = repoCopyResult.getObjects();
 
-            if (nullOrEmpty(repositoryCopies)) {
+            if (CollectionUtils.isEmpty(repositoryCopies)) {
                 return null;
             } else if (repositoryCopies.size() == 1) {
                 RepositoryCopy repoCopy = repositoryCopies.get(0);
@@ -379,10 +379,10 @@ public class NihmsPassClientService {
      * @throws IOException if there is an error reading the publication
      */
     private String findPublicationByArticleId(String articleId, String idFieldName) throws IOException {
-        if (nullOrEmpty(articleId)) {
+        if (StringUtils.isEmpty(articleId)) {
             throw new IllegalArgumentException("article ID cannot be empty");
         }
-        if (nullOrEmpty(idFieldName)) {
+        if (StringUtils.isEmpty(idFieldName)) {
             throw new IllegalArgumentException("idFieldName cannot be empty");
         }
 
@@ -408,10 +408,9 @@ public class NihmsPassClientService {
      * @throws IOException if there is an error reading the journal
      */
     public String findJournalByIssn(String issn) throws IOException {
-        if (nullOrEmpty(issn)) {
+        if (StringUtils.isEmpty(issn)) {
             return null;
         }
-        //TODO: equals needs to change to hasmember
         String journalFilter = RSQL.hasMember(ISSNS_FLD, issn);
         PassClientSelector<Journal> journalSelector = new PassClientSelector<>(Journal.class);
         journalSelector.setFilter(journalFilter);
@@ -453,7 +452,7 @@ public class NihmsPassClientService {
                 Deposit deposit = deposits.get(0);
                 nihmsDepositCache.put(deposit.getSubmission().getId(), deposit.getId());
                 return deposit;
-            } else if (!nullOrEmpty(deposits)) {
+            } else if (!CollectionUtils.isEmpty(deposits)) {
                 throw new RuntimeException(
                     String.format("There are multiple Deposits matching submissionId %s and repositoryId %s. "
                                   + "This indicates a data corruption, please check the data and try again.",

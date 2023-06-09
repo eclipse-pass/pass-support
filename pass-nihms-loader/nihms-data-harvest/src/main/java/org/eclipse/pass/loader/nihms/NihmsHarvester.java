@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,8 +29,10 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.joda.time.DateTime;
@@ -94,7 +94,7 @@ public class NihmsHarvester {
      * @param startDate          formatted as {@code yyyy-mm}, can be null to default to 1 year prior to harvest date
      */
     public void harvest(Set<NihmsStatus> statusesToDownload, String startDate) {
-        if (nullOrEmpty(statusesToDownload)) {
+        if (CollectionUtils.isEmpty(statusesToDownload)) {
             throw new RuntimeException("statusesToDownload list cannot be empty");
         }
         if (!validStartDate(startDate)) {
@@ -107,7 +107,7 @@ public class NihmsHarvester {
 
             Map<String, String> params = new HashMap<>();
 
-            if (!nullOrEmpty(startDate)) {
+            if (StringUtils.isNotEmpty(startDate)) {
                 startDate = startDate.replace("-", "/");
                 LOG.info("Filtering with Start Date " + startDate);
                 params.put("pdf", startDate);
@@ -169,7 +169,7 @@ public class NihmsHarvester {
      * @return true if valid start date (empty or formatted mm-yyyy)
      */
     public static boolean validStartDate(String startDate) {
-        return (nullOrEmpty(startDate) || startDate.matches("^(0?[1-9]|1[012])-(\\d{4})$"));
+        return (StringUtils.isEmpty(startDate) || startDate.matches("^(0?[1-9]|1[012])-(\\d{4})$"));
     }
 
     private File newFile(NihmsStatus status) {

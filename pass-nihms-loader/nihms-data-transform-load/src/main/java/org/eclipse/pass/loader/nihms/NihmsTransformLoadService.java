@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.client.nihms.NihmsPassClientService;
 import org.eclipse.pass.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
@@ -90,7 +90,7 @@ public class NihmsTransformLoadService {
         if (dataDirectory == null) {
             throw new RuntimeException("dataDirectory cannot be empty");
         }
-        if (nullOrEmpty(statusesToProcess)) {
+        if (CollectionUtils.isEmpty(statusesToProcess)) {
             statusesToProcess = new HashSet<NihmsStatus>();
             statusesToProcess.addAll(EnumSet.allOf(NihmsStatus.class));
         }
@@ -177,7 +177,7 @@ public class NihmsTransformLoadService {
         }
 
         if (pub.getNihmsStatus().equals(NihmsStatus.COMPLIANT)
-            && !nullOrEmpty(pub.getPmcId())) {
+            && StringUtils.isNotEmpty(pub.getPmcId())) {
             //add to cache so it doesn't check it again once it has been processed and has a pmcid assigned
             completedPubsCache.add(pub.getPmid(), pub.getGrantNumber());
             LOG.debug("Added pmid {} and grant \"{}\" to cache", pub.getPmid(), pub.getGrantNumber());
@@ -197,7 +197,7 @@ public class NihmsTransformLoadService {
             throw new RuntimeException(
                 String.format("A problem occurred while loading file paths from %s", downloadDirectory.toString()), e);
         }
-        if (nullOrEmpty(filepaths)) {
+        if (CollectionUtils.isEmpty(filepaths)) {
             throw new RuntimeException(
                 String.format("No file found to process at path %s", downloadDirectory.toString()));
         }

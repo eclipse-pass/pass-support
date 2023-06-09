@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -24,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 
@@ -73,7 +72,7 @@ public class CompletedPublicationsCache {
      * @param awardNumber award number
      */
     public synchronized void add(String pmid, String awardNumber) {
-        if (!nullOrEmpty(pmid) && !nullOrEmpty(awardNumber)
+        if (StringUtils.isNotEmpty(pmid) && StringUtils.isNotEmpty(awardNumber)
             && !contains(pmid, awardNumber)) {
             String cachevalue = pmid + "|" + awardNumber;
             try (PrintWriter output = new PrintWriter(new FileWriter(cacheFile, true))) {
@@ -93,7 +92,7 @@ public class CompletedPublicationsCache {
      * @return true if the id/award number combo is cached
      */
     public synchronized boolean contains(String pmid, String awardNumber) {
-        if (!nullOrEmpty(pmid) && !nullOrEmpty(awardNumber)) {
+        if (StringUtils.isNotEmpty(pmid) && StringUtils.isNotEmpty(awardNumber)) {
             String cachevalue = pmid + "|" + awardNumber;
             return completedPubsCache.contains(cachevalue);
         }

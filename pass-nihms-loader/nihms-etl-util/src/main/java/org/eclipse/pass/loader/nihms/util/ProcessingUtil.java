@@ -19,7 +19,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * General small utilities to tidy up data processing code.
@@ -35,26 +36,6 @@ public class ProcessingUtil {
     private static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd";
 
     /**
-     * Returns true if a string is empty or null
-     *
-     * @param str the string, may be {@code null}
-     * @return true if a string is empty or null
-     */
-    public static boolean nullOrEmpty(String str) {
-        return (str == null || str.isEmpty());
-    }
-
-    /**
-     * Returns true if a collection has 0 rows or is null
-     *
-     * @param collection the collection, may be {@code null}
-     * @return true if a collection has 0 rows or is null
-     */
-    public static boolean nullOrEmpty(Collection<?> collection) {
-        return (collection == null || collection.isEmpty());
-    }
-
-    /**
      * Formats a date to a ZonedDateTime according to pattern provided. If pattern is null, defaults to yyyy-MM-dd.
      * Returns null if no date passed in
      *
@@ -63,10 +44,10 @@ public class ProcessingUtil {
      * @return the DateTime for the supplied {@code date}
      */
     public static ZonedDateTime formatDate(String date, String pattern) {
-        if (nullOrEmpty(date)) {
+        if (StringUtils.isEmpty(date)) {
             return null;
         }
-        if (nullOrEmpty(pattern)) {
+        if (StringUtils.isEmpty(pattern)) {
             pattern = DEFAULT_DATE_PATTERN;
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);

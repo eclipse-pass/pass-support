@@ -16,7 +16,6 @@
 package org.eclipse.pass.loader.nihms;
 
 import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.formatDate;
-import static org.eclipse.pass.loader.nihms.util.ProcessingUtil.nullOrEmpty;
 import static org.eclipse.pass.support.client.SubmissionStatusCalculator.calculatePostSubmissionStatus;
 
 import java.io.IOException;
@@ -26,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.client.nihms.NihmsPassClientService;
 import org.eclipse.pass.entrez.PmidLookup;
 import org.eclipse.pass.entrez.PubMedEntrezRecord;
@@ -168,7 +169,7 @@ public class NihmsPublicationToSubmission {
         Publication publication = clientService.findPublicationByPmid(pmid);
 
         // get missing information from Entrez, if necessary
-        if (publication == null || nullOrEmpty(publication.getDoi())) {
+        if (publication == null || StringUtils.isEmpty(publication.getDoi())) {
             //NOTE: if this returns null, the request succeeded, but Entrez could not match the record so we should
             // proceed without one.
             //A RuntimeException would be thrown and the transform would fail if there was e.g. a config or
@@ -180,7 +181,7 @@ public class NihmsPublicationToSubmission {
         }
 
         // if there is no match pmid in database, check if there is a match for doi
-        if (publication == null && !nullOrEmpty(doi)) {
+        if (publication == null && StringUtils.isNotEmpty(doi)) {
             publication = clientService.findPublicationByDoi(doi, pmid);
         }
 
@@ -188,11 +189,11 @@ public class NihmsPublicationToSubmission {
             publication = initiateNewPublication(nihmsPub, pubmedRecord);
             submissionDTO.setUpdatePublication(true);
         } else {
-            if (nullOrEmpty(publication.getDoi()) && !nullOrEmpty(doi)) {
+            if (StringUtils.isEmpty(publication.getDoi()) && StringUtils.isNotEmpty(doi)) {
                 publication.setDoi(doi);
                 submissionDTO.setUpdatePublication(true);
             }
-            if (nullOrEmpty(publication.getPmid())) {
+            if (StringUtils.isEmpty(publication.getPmid())) {
                 publication.setPmid(pmid);
                 submissionDTO.setUpdatePublication(true);
             }
@@ -240,7 +241,7 @@ public class NihmsPublicationToSubmission {
             repoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
         }
         if (repoCopy == null
-            && (!nullOrEmpty(pub.getNihmsId()) || !nullOrEmpty(pub.getPmcId()))) {
+            && (StringUtils.isNotEmpty(pub.getNihmsId()) || StringUtils.isNotEmpty(pub.getPmcId()))) {
             //only create if there is at least a nihms ID indicating something is started
             repoCopy = initiateNewRepositoryCopy(pub, publicationId);
             submissionDTO.setUpdateRepositoryCopy(true);
@@ -248,13 +249,13 @@ public class NihmsPublicationToSubmission {
             //check external ids are updated
             List<String> externalIds = repoCopy.getExternalIds();
             String pmcId = pub.getPmcId();
-            if (!nullOrEmpty(pmcId) && !externalIds.contains(pmcId)) {
+            if (StringUtils.isNotEmpty(pmcId) && !externalIds.contains(pmcId)) {
                 externalIds.add(pmcId);
                 repoCopy.setAccessUrl(createAccessUrl(pmcId));
                 submissionDTO.setUpdateRepositoryCopy(true);
             }
             String nihmsId = pub.getNihmsId();
-            if (!nullOrEmpty(nihmsId) && !externalIds.contains(nihmsId)) {
+            if (StringUtils.isNotEmpty(nihmsId) && !externalIds.contains(nihmsId)) {
                 externalIds.add(nihmsId);
                 submissionDTO.setUpdateRepositoryCopy(true);
             }
@@ -285,11 +286,11 @@ public class NihmsPublicationToSubmission {
 
         List<String> externalIds = new ArrayList<String>();
         String pmcId = pub.getPmcId();
-        if (!nullOrEmpty(pmcId)) {
+        if (StringUtils.isNotEmpty(pmcId)) {
             externalIds.add(pmcId);
             repositoryCopy.setAccessUrl(createAccessUrl(pmcId));
         }
-        if (!nullOrEmpty(pub.getNihmsId())) {
+        if (StringUtils.isNotEmpty(pub.getNihmsId())) {
             externalIds.add(pub.getNihmsId());
         }
         repositoryCopy.setExternalIds(externalIds);
@@ -324,7 +325,7 @@ public class NihmsPublicationToSubmission {
             List<Submission> submissions = clientService.findSubmissionsByPublicationAndUserId(publicationId,
                                                                                                grant.getPi().getId());
 
-            if (!nullOrEmpty(submissions)) {
+            if (!CollectionUtils.isEmpty(submissions)) {
                 // is there already a nihms submission in the system for this publication? if so add to it instead of
                 // making a new one
                 List<Submission> nihmsSubmissions = submissions.stream()
@@ -375,7 +376,7 @@ public class NihmsPublicationToSubmission {
             submission.setSubmitted(true);
             submission.setSource(Source.OTHER);
             // in the absence of an alternative submittedDate, use the file deposited date from NIHMS data
-            if (!nullOrEmpty(depositedDate)) {
+            if (StringUtils.isNotEmpty(depositedDate)) {
                 submission.setSubmittedDate(formatDate(depositedDate, NIHMS_CSV_DATE_PATTERN));
             }
             submissionDTO.setUpdateSubmission(true);
@@ -457,11 +458,11 @@ public class NihmsPublicationToSubmission {
 
         CopyStatus newStatus = null;
 
-        if (pub.getNihmsStatus().equals(NihmsStatus.NON_COMPLIANT) && !nullOrEmpty(pub.getNihmsId())) {
+        if (pub.getNihmsStatus().equals(NihmsStatus.NON_COMPLIANT) && StringUtils.isNotEmpty(pub.getNihmsId())) {
             newStatus = CopyStatus.STALLED;
         } else if (pub.isTaggingComplete() || pub.hasInitialApproval()) {
             newStatus = CopyStatus.IN_PROGRESS;
-        } else if (!nullOrEmpty(pub.getNihmsId())) {
+        } else if (StringUtils.isNotEmpty(pub.getNihmsId())) {
             newStatus = CopyStatus.ACCEPTED;
         }
 
