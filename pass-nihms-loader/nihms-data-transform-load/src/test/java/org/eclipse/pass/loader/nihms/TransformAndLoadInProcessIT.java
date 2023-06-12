@@ -49,11 +49,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * @author Karen Hanson
  */
 @ExtendWith(MockitoExtension.class)
-public class TransformAndLoadInProcess extends NihmsSubmissionEtlITBase {
+public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
 
     private String pmid1 = "9999999999";
     private String grant1 = "R01 AB123456";
-    private String user1 = "http://test:8080/fcrepo/rest/users/55";
+    private String user1 = "55";
     private String nihmsId1 = "NIHMS987654321";
     private String dateval = "12/12/2017";
     private String title = "Article A";

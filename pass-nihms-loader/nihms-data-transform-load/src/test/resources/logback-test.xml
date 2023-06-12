@@ -8,7 +8,6 @@
   KIND, either express or implied. ~ See the License for the specific language 
   governing permissions and ~ limitations under the License. -->
 
-<!DOCTYPE configuration>
 
 <configuration>
 
@@ -21,12 +20,6 @@
     </encoder>
 
   </appender>
-
-  <logger name="org.fcrepo" additivity="false" level="WARN">
-
-    <appender-ref ref="STDOUT"/>
-
-  </logger>
 
   <logger name="org.eclipse" additivity="false" level="INFO">
 
