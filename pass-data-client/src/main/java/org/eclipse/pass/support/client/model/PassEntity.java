@@ -16,15 +16,14 @@
 package org.eclipse.pass.support.client.model;
 
 /**
- * Abstract method that all PASS model entities inherit from. All entities can include
- * a unique ID, type, and context
+ * Abstract interface for all PASS model entities.
  *
  * @author Karen Hanson
  */
 
 public interface PassEntity {
     /**
-     * Retrieves the unique URI representing the resource.
+     * Retrieves the unique id representing the resource.
      *
      * @return the id
      */
