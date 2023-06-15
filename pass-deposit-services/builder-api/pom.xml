@@ -28,10 +28,14 @@
   <name>Submission Model Builder</name>
 
   <dependencies>
-
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.pass</groupId>
+      <artifactId>pass-data-client</artifactId>
     </dependency>
 
     <dependency>
@@ -39,6 +43,5 @@
       <artifactId>deposit-model</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-
   </dependencies>
 </project>

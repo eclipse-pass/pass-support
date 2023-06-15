@@ -15,19 +15,18 @@
  */
 package org.dataconservancy.pass.deposit.messaging.runner;
 
-import static org.dataconservancy.pass.support.messaging.constants.Constants.Indexer.DEPOSIT_STATUS;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.PassEntity;
 
-import java.net.URI;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -35,7 +34,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
- * Accepts uris for, or searches for,
+ * Accepts ids for, or searches for,
  * <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Deposit.md">
  * Deposit</a> repository resources that have a deposit status of {@code submitted}. <p> Submitted deposits have had the
  * contents of their {@link Submission} successfully transferred to a {@link Repository}, but their <em>terminal</em>
@@ -45,10 +44,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmittedUpdateRunner {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SubmittedUpdateRunner.class);
-
-    private static final String URIS_PARAM = "uri";
+    private static final String IDS_PARAM = "id";
 
     @Autowired
     private DepositTaskHelper depositTaskHelper;
@@ -71,10 +67,10 @@ public class SubmittedUpdateRunner {
     @Bean
     public ApplicationRunner depositUpdate(PassClient passClient) {
         return (args) -> {
-            Collection<URI> deposits = depositsToUpdate(args, passClient);
-            deposits.forEach(depositUri -> {
+            Collection<String> deposits = depositsToUpdate(args, passClient);
+            deposits.forEach(depositId -> {
                 try {
-                    depositTaskHelper.processDepositStatus(depositUri);
+                    depositTaskHelper.processDepositStatus(depositId);
                 } catch (Exception e) {
                     errorHandler.handleError(e);
                 }
@@ -86,28 +82,38 @@ public class SubmittedUpdateRunner {
     }
 
     /**
-     * Parses command line arguments for the URIs to update, or searches the index for URIs of submitted deposits.
+     * Parses command line arguments for the idss to update, or searches the index for ids of submitted deposits.
      * <dl>
-     * <dt>--uris</dt><dd>space-separated list of Deposit URIs to be processed.  If the URI does not specify a Deposit,
+     * <dt>--ids</dt><dd>space-separated list of Deposit ids to be processed.  If the id does not specify a Deposit,
      * it is skipped (implies {@code --sync}, but can be overridden by supplying {@code --async})</dd> <dt>--sync</dt>
-     * <dd>the console remains attached as each URI is processed, allowing the end-user to examine the results of
-     * updated Deposits as they happen</dd> <dt>--async</dt> <dd>the console detaches immediately, with the Deposit URIs
+     * <dd>the console remains attached as each id is processed, allowing the end-user to examine the results of
+     * updated Deposits as they happen</dd> <dt>--async</dt> <dd>the console detaches immediately, with the Deposit ids
      * processed in the background</dd> </dl>
      *
      * @param args       the command line arguments
      * @param passClient used to search the index for dirty deposits
      * @return a {@code Collection} of URIs representing dirty deposits
      */
-    private Collection<URI> depositsToUpdate(ApplicationArguments args, PassClient passClient) {
-        if (args.containsOption(URIS_PARAM) && args.getOptionValues(URIS_PARAM).size() > 0) {
+    private Collection<String> depositsToUpdate(ApplicationArguments args, PassClient passClient) {
+        if (args.containsOption(IDS_PARAM) && args.getOptionValues(IDS_PARAM).size() > 0) {
             // maintain the order of the uris as they were supplied on the CLI
-            return args.getOptionValues(URIS_PARAM).stream().map(URI::create).collect(Collectors.toList());
+            return args.getOptionValues(IDS_PARAM);
         } else {
-            Collection<URI> uris = passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, DepositStatus.SUBMITTED);
-            if (uris.size() < 1) {
+            PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+            sel.setFilter(RSQL.equals(PassEntity.DEPOSIT_STATUS, DepositStatus.SUBMITTED.getValue()));
+
+            Collection<String> ids;
+            try {
+                ids = passClient.streamObjects(sel).map(Deposit::getId).toList();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to retrieve deposits", e);
+            }
+
+            if (ids.size() < 1) {
                 throw new IllegalArgumentException("No URIs found to process.");
             }
-            return uris;
+
+            return ids;
         }
     }
 

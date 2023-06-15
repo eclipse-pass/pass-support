@@ -15,15 +15,16 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import java.net.URI;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
@@ -69,32 +70,33 @@ public class SubmissionStatusUpdater {
 
     /**
      * Determines the Submissions to be updated, and updates the status of each in turn.
+     * @throws IOException
      */
-    public void doUpdate() {
+    public void doUpdate() throws IOException {
         doUpdate(toUpdate(passClient));
     }
 
     /**
      * Accepts a collection of Submissions to be updated, and updates the status of each in turn.
      *
-     * @param submissionUris a collection of Submission URIs to be updated
+     * @param submissionIds a collection of Submission IDs to be updated
      */
-    public void doUpdate(Collection<URI> submissionUris) {
-        if (submissionUris == null || submissionUris.size() == 0) {
+    public void doUpdate(Collection<String> submissionIds) {
+        if (submissionIds == null || submissionIds.size() == 0) {
             LOG.trace("No submissions to update.");
             return;
         } else {
-            LOG.trace("Updating the Submission.submissionStatus of {} Submission{}", submissionUris.size(),
-                      submissionUris.size() > 1 ? "s" : "");
+            LOG.trace("Updating the Submission.submissionStatus of {} Submission{}", submissionIds.size(),
+                      submissionIds.size() > 1 ? "s" : "");
         }
 
-        submissionUris.forEach(uri -> {
+        submissionIds.forEach(id -> {
             try {
-                LOG.trace("Updating Submission.submissionStatus for {}", uri);
-                cri.performCritical(uri, Submission.class, CriFunc.preCondition, CriFunc.postCondition,
+                LOG.trace("Updating Submission.submissionStatus for {}", id);
+                cri.performCritical(id, Submission.class, CriFunc.preCondition, CriFunc.postCondition,
                                     CriFunc.critical(statusService));
             } catch (Exception e) {
-                LOG.warn("Unable to update the 'submissionStatus' of {}", uri, e);
+                LOG.warn("Unable to update the 'submissionStatus' of {}", id, e);
             }
         });
     }
@@ -105,15 +107,19 @@ public class SubmissionStatusUpdater {
      *
      * @param passClient the client used to communicate with the index
      * @return the URIs of Submissions that may need their SubmissionStatus updated
+     * @throws IOException
      */
-    static Collection<URI> toUpdate(PassClient passClient) {
-        return Stream.of(SubmissionStatus.values())
-                     .filter(status -> status != SubmissionStatus.COMPLETE)
-                     .filter(status -> status != SubmissionStatus.CANCELLED)
-                     .map(status -> status.name().toLowerCase())
-                     .map(status -> passClient.findAllByAttribute(Submission.class, "submissionStatus", status))
-                     .flatMap(Collection::stream)
-                     .collect(Collectors.toSet());
+    static Collection<String> toUpdate(PassClient passClient) throws IOException {
+        PassClientSelector<Submission> sel = new PassClientSelector<>(Submission.class);
+
+        String[] values = Stream.of(SubmissionStatus.values())
+        .filter(status -> status != SubmissionStatus.COMPLETE)
+        .filter(status -> status != SubmissionStatus.CANCELLED)
+        .map(status -> status.getValue()).toArray(String[]::new);
+
+        sel.setFilter(RSQL.in("submissionStatus", values));
+
+        return passClient.streamObjects(sel).map(Submission::getId).toList();
     }
 
     /**

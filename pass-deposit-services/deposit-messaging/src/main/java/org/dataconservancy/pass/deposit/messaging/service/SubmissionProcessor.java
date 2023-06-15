@@ -18,6 +18,7 @@ package org.dataconservancy.pass.deposit.messaging.service;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,7 @@ import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.IntegrationType;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
@@ -65,8 +67,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected PassClient passClient;
 
-    protected JsonParser jsonParser;
-
     protected SubmissionBuilder fcrepoModelBuilder;
 
     protected Registry<Packager> packagerRegistry;
@@ -78,12 +78,11 @@ public class SubmissionProcessor implements Consumer<Submission> {
     protected DepositTaskHelper depositTaskHelper;
 
     @Autowired
-    public SubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder fcrepoModelBuilder,
+    public SubmissionProcessor(PassClient passClient, SubmissionBuilder fcrepoModelBuilder,
                                Registry<Packager> packagerRegistry, SubmissionPolicy passUserSubmittedPolicy,
                                DepositTaskHelper depositTaskHelper, CriticalRepositoryInteraction critical) {
 
         this.passClient = passClient;
-        this.jsonParser = jsonParser;
         this.fcrepoModelBuilder = fcrepoModelBuilder;
         this.packagerRegistry = packagerRegistry;
         this.submissionPolicy = passUserSubmittedPolicy;
@@ -133,8 +132,14 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         updatedS.getRepositories()
                 .stream()
-                .map(repoUri -> passClient.readResource(repoUri, Repository.class))
-                .filter(repo -> Repository.IntegrationType.WEB_LINK != repo.getIntegrationType())
+                .map(repo -> {
+                    try {
+                        return passClient.getObject(repo);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to retrieve reposigtory: " + repo.getId(), e);
+                    }
+                })
+                .filter(repo -> IntegrationType.WEB_LINK != repo.getIntegrationType())
                 .forEach(repo -> {
                     submitDeposit(updatedS, depositSubmission, repo);
                 });
@@ -158,7 +163,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                                                       submission.getId(), deposit.getId(), repo.getId(), repo.getName(),
                                                       repo.getRepositoryKey()));
             }
-            deposit = passClient.createAndReadResource(deposit, Deposit.class);
+            deposit = passClient.getObject(deposit);
         } catch (Exception e) {
             String msg = format(FAILED_TO_PROCESS_DEPOSIT, submission.getId(), repo.getId(),
                                 (deposit == null) ? "null" : deposit.getId(), e.getMessage());
@@ -256,21 +261,14 @@ public class SubmissionProcessor implements Consumer<Submission> {
         ofNullable(repo.getRepositoryKey()).ifPresent(keys::add);
         ofNullable(repo.getId()).map(Object::toString).ifPresent(keys::add);
 
-        String path = ofNullable(repo.getId()).map(URI::getPath).orElse("");
-
-        while (path.contains("/")) {
-            path = path.substring(path.indexOf("/") + 1);
-            keys.add(path);
-        }
-
         return keys;
     }
 
     private static Deposit createDeposit(Submission submission, Repository repo) {
         Deposit deposit;
         deposit = new Deposit();
-        deposit.setRepository(repo.getId());
-        deposit.setSubmission(submission.getId());
+        deposit.setRepository(repo);
+        deposit.setSubmission(submission);
         return deposit;
     }
 

@@ -16,11 +16,12 @@
 
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import java.net.URI;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Set;
 
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.slf4j.Logger;
@@ -45,11 +46,11 @@ public class DepositUpdater {
         this.depositHelper = depositHelper;
     }
 
-    public void doUpdate() {
-        doUpdate(depositUrisToUpdate(passClient));
+    public void doUpdate() throws IOException {
+        doUpdate(depositIdsToUpdate(passClient));
     }
 
-    void doUpdate(Collection<URI> depositUris) {
+    void doUpdate(Collection<String> depositUris) {
         depositUris.forEach(depositUri -> {
             try {
                 depositHelper.processDepositStatus(depositUri);
@@ -59,12 +60,11 @@ public class DepositUpdater {
         });
     }
 
-    private static Collection<URI> depositUrisToUpdate(PassClient passClient) {
-        Set<URI> depositUris = passClient.findAllByAttribute(
-            Deposit.class, STATUS_ATTRIBUTE, DepositStatus.FAILED.toString());
-        depositUris.addAll(passClient.findAllByAttribute(
-            Deposit.class, STATUS_ATTRIBUTE, DepositStatus.SUBMITTED.toString()));
-        return depositUris;
+    private static Collection<String> depositIdsToUpdate(PassClient passClient) throws IOException {
+        PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+        sel.setFilter(RSQL.in(STATUS_ATTRIBUTE, DepositStatus.FAILED.getValue(), DepositStatus.SUBMITTED.getValue()));
+
+        return passClient.streamObjects(sel).map(Deposit::getId).toList();
     }
 
 }
