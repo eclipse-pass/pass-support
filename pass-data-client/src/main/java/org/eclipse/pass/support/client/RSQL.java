@@ -91,6 +91,22 @@ public class RSQL {
         return comparison(name, "=hasmember=", value);
     }
 
+    /**
+     * @param name Name of field
+     * @return RSQL expression testing that object has a field with a null value
+     */
+    public static String isNull(String name) {
+        return comparison(name, "=isnull=", "true");
+    }
+
+    /**
+     * @param name Name of field
+     * @return RSQL expression testing that object does not have a field with a null value
+     */
+    public static String isNotNull(String name) {
+        return comparison(name, "=isnull=", "false");
+    }
+
     private static String group_expressions(String op, String...expressions) {
         StringBuilder result = new StringBuilder();
 
