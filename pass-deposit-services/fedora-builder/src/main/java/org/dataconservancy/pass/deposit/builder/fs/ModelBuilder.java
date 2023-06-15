@@ -89,8 +89,6 @@ abstract class ModelBuilder {
 
     private static final String NLMTA_KEY = "journal-NLMTA-ID";
 
-    private static final String METADATA_BLOB_KEY = "metadata";
-
     /**
      * Creates a DepositMetadata person with the person's context passed as parameters.
      *
@@ -124,20 +122,6 @@ abstract class ModelBuilder {
     }
 
     /**
-     * Convenience method for retrieving a boolean property.
-     *
-     * @param parent
-     * @param name
-     * @return
-     */
-    private Optional<Boolean> getBooleanProperty(JsonObject parent, String name) {
-        if (parent.has(name)) {
-            return Optional.of(parent.get(name).getAsBoolean());
-        }
-        return Optional.empty();
-    }
-
-    /**
      * Convenience method for retrieving a string property.
      *
      * @param parent
@@ -147,21 +131,6 @@ abstract class ModelBuilder {
     private Optional<String> getStringProperty(JsonObject parent, String name) {
         if (parent.has(name) && !parent.get(name).isJsonNull()) {
             return Optional.of(parent.get(name).getAsString());
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * Convenience method for retrieving an object property.
-     *
-     * @param parent
-     * @param name
-     * @return
-     */
-    private Optional<JsonObject> getObjectProperty(JsonObject parent, String name) {
-        if (parent.has(name) && !parent.get(name).isJsonNull() && parent.get(name).isJsonObject()) {
-            return Optional.of(parent.get(name).getAsJsonObject());
         }
 
         return Optional.empty();
@@ -342,14 +311,12 @@ abstract class ModelBuilder {
         processMetadata(metadata, submissionEntity.getMetadata());
 
         // Data from the Grant resources
-        for (URI grantUri : submissionEntity.getGrants()) {
-            Grant grantEntity = (Grant) entities.get(grantUri);
-
+        for (Grant grantEntity : submissionEntity.getGrants()) {
             // Data from the User resources for the PI and CoPIs
             User piEntity = (User) entities.get(grantEntity.getPi());
             persons.add(createPerson(piEntity, DepositMetadata.PERSON_TYPE.pi));
-            for (URI copiUri : grantEntity.getCoPis()) {
-                User copiEntity = (User) entities.get(copiUri);
+
+            for (User copiEntity : grantEntity.getCoPis()) {
                 persons.add(createPerson(copiEntity, DepositMetadata.PERSON_TYPE.copi));
             }
         }
