@@ -15,12 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.model;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 import com.google.gson.JsonObject;
-import org.joda.time.DateTime;
 
 /**
  * Encapsulates a submission to the target system, including the manuscript and supplement files, metadata describing
@@ -40,7 +40,7 @@ public class DepositSubmission {
      *
      * Set by Ember when the user clicks the Submit button
      */
-    private DateTime submissionDate;
+    private ZonedDateTime submissionDate;
 
     /**
      * Manifest containing an entry for each file in the submission
@@ -112,7 +112,7 @@ public class DepositSubmission {
      *
      * Set by Ember when the user clicks the Submit button
      */
-    public DateTime getSubmissionDate() {
+    public ZonedDateTime getSubmissionDate() {
         return submissionDate;
     }
 
@@ -121,7 +121,7 @@ public class DepositSubmission {
      *
      * Set by Ember when the user clicks the Submit button
      */
-    public void setSubmissionDate(DateTime submissionDate) {
+    public void setSubmissionDate(ZonedDateTime submissionDate) {
         this.submissionDate = submissionDate;
     }
 
