@@ -15,6 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.quartz;
 
+import java.io.IOException;
+
 import org.dataconservancy.pass.deposit.messaging.service.SubmissionStatusUpdater;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
@@ -44,7 +46,11 @@ public class SubmissionStatusUpdaterJob implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         LOG.trace("Starting {}", this.getClass().getSimpleName());
-        updater.doUpdate();
+        try {
+            updater.doUpdate();
+        } catch (IOException e) {
+            throw new JobExecutionException("Submission status updater failed", e);
+        }
         LOG.trace("Finished {}", this.getClass().getSimpleName());
     }
 

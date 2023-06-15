@@ -88,22 +88,9 @@ public final class Constants {
     }
 
     /**
-     * PASS types as represented by URIs in RDF
-     */
-    public static final class PassType {
-
-        public static final String SUBMISSION_RESOURCE = "http://oapass.org/ns/pass#Submission";
-
-        public static final String SUBMISSION_EVENT_RESOURCE = "http://oapass.org/ns/pass#SubmissionEvent";
-
-        public static final String DEPOSIT_RESOURCE = "http://oapass.org/ns/pass#Deposit";
-
-    }
-
-    /**
      * Names of PASS fields in the index
      */
-    public static final class Indexer {
+    public static final class PassEntity {
 
         /**
          * The field of the {@code org.dataconservancy.pass.model.Deposit} entity that carries
@@ -117,6 +104,9 @@ public final class Constants {
          */
         public static final String REPOSITORYCOPY_STATUS = "copyStatus";
 
+        public static final String SUBMISSION = "submission";
+
+        public static final String REPOSITORY = "repository";
     }
 
     /**

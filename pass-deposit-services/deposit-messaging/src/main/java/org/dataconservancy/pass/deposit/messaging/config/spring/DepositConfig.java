@@ -29,6 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -55,6 +57,7 @@ import org.dataconservancy.pass.deposit.messaging.support.swordv2.ResourceResolv
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.ResourceResolverImpl;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,21 +84,6 @@ public class DepositConfig {
 
     private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(0);
 
-    @Value("${pass.fedora.user}")
-    private String fedoraUser;
-
-    @Value("${pass.fedora.password}")
-    private String fedoraPass;
-
-    @Value("${pass.fedora.baseurl}")
-    private String fedoraBaseUrl;
-
-    @Value("${pass.elasticsearch.url}")
-    private String esUrl;
-
-    @Value("${pass.elasticsearch.limit}")
-    private int esLimit;
-
     @Value("${pass.deposit.workers.concurrency}")
     private int depositWorkersConcurrency;
 
@@ -106,45 +94,13 @@ public class DepositConfig {
     private Resource repositoryConfigResource;
 
     @Bean
-    public PassClientDefault passClient() {
-
-        // PassClientDefault can't be injected with configuration; requires system properties be set.
-        // If a system property is already set, allow it to override what is resolved by the Spring environment.
-        if (!System.getProperties().containsKey("pass.fedora.user")) {
-            System.setProperty("pass.fedora.user", fedoraUser);
-        }
-
-        if (!System.getProperties().containsKey("pass.fedora.password")) {
-            System.setProperty("pass.fedora.password", fedoraPass);
-        }
-
-        if (!System.getProperties().containsKey("pass.fedora.baseurl")) {
-            System.setProperty("pass.fedora.baseurl", fedoraBaseUrl);
-        }
-
-        if (!System.getProperties().containsKey("pass.elasticsearch.url")) {
-            System.setProperty("pass.elasticsearch.url", esUrl);
-        }
-
-        if (!System.getProperties().containsKey("pass.elasticsearch.limit")) {
-            System.setProperty("pass.elasticsearch.limit", String.valueOf(esLimit));
-        }
-
-        if (!System.getProperties().containsKey("http.agent")) {
-            System.setProperty("http.agent", passHttpAgent);
-        }
-
-        return new PassClientDefault();
+    public PassClient passClient() {
+        return PassClient.newInstance();
     }
 
     @Bean
     public SubmissionStatusService submissionStatusService() {
         return new SubmissionStatusService(passClient());
-    }
-
-    @Bean
-    public PassJsonAdapterBasic passJsonAdapter() {
-        return new PassJsonAdapterBasic();
     }
 
     @Bean
@@ -161,60 +117,6 @@ public class DepositConfig {
     @Bean
     public FilesystemModelBuilder fileSystemModelBuilder() {
         return new FilesystemModelBuilder(true);
-    }
-
-    @Bean
-    public OkHttpClient okHttpClient() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-
-        String builderName = builder.getClass().getSimpleName();
-        String builderHashcode = toHexString(identityHashCode(builder.getClass()));
-
-        if (fedoraUser != null) {
-            LOG.trace("{}:{} adding Authorization interceptor", builderName, builderHashcode);
-            builder.addInterceptor((chain) -> {
-                Request request = chain.request();
-                if (!request.url().toString().startsWith(fedoraBaseUrl)) {
-                    return chain.proceed(request);
-                }
-                Request.Builder reqBuilder = request.newBuilder();
-                byte[] bytes = String.format("%s:%s", fedoraUser, fedoraPass).getBytes();
-                return chain.proceed(reqBuilder
-                                         .addHeader("Authorization",
-                                                    "Basic " + getEncoder().encodeToString(bytes)).build());
-            });
-        }
-
-        LOG.trace("{}:{} adding Accept interceptor", builderName, builderHashcode);
-        builder.addInterceptor((chain) -> {
-            Request request = chain.request();
-            if (!request.url().toString().startsWith(fedoraBaseUrl)) {
-                return chain.proceed(request);
-            }
-            Request.Builder reqBuilder = request.newBuilder();
-            return chain.proceed(reqBuilder
-                                     .addHeader("Accept", "application/ld+json").build());
-        });
-
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("{}:{} adding Logging interceptor", builderName, builderHashcode);
-            HttpLoggingInterceptor httpLogger = new HttpLoggingInterceptor(LOG::trace);
-            builder.addInterceptor(httpLogger);
-        }
-
-        LOG.trace("{}:{} adding User-Agent interceptor", builderName, builderHashcode);
-        builder.addInterceptor((chain) -> {
-            Request.Builder reqBuilder = chain.request().newBuilder();
-            reqBuilder.removeHeader("User-Agent");
-            reqBuilder.addHeader("User-Agent", passHttpAgent);
-            return chain.proceed(reqBuilder.build());
-        });
-
-        OkHttpClient client = builder.build();
-        LOG.trace("{}:{} built OkHttpClient {}:{}", builderName, builderHashcode,
-                  client.getClass().getSimpleName(), toHexString(identityHashCode(client.getClass())));
-
-        return client;
     }
 
     @Bean

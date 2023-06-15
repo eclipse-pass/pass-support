@@ -16,18 +16,17 @@
 
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -39,8 +38,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DepositProcessor implements Consumer<Deposit> {
-
-    public static final String SUBMISSION_REL = "submission";
+    static final String SUBMISSION_REL = "submission.id";
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositProcessor.class);
 
@@ -72,7 +70,7 @@ public class DepositProcessor implements Consumer<Deposit> {
 
         if (terminalDepositStatusPolicy.test(deposit.getDepositStatus())) {
             // terminal Deposit status, so update its Submission aggregate deposit status.
-            cri.performCritical(deposit.getSubmission(), Submission.class,
+            cri.performCritical(deposit.getSubmission().getId(), Submission.class,
                                 DepositProcessorCriFunc.precondition(intermediateSubmissionStatusPolicy),
                                 DepositProcessorCriFunc.postcondition(),
                                 DepositProcessorCriFunc.critical(passClient, terminalDepositStatusPolicy));
@@ -83,11 +81,9 @@ public class DepositProcessor implements Consumer<Deposit> {
             // retrieve and invoke the DepositStatusProcessor from the RepositoryConfig
             //   - requires Collection<AuthRealm> and StatusMapping
 
-            // if result is still intermediate, add Deposit to queue for processing?  Or just process from an ES query?
-            //   - ES query prioritized?  What if ES query/queue is processed at the same time? Need to do w/in CRI
+            // if result is still intermediate, add Deposit to queue for processing?
 
-            // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy in
-            // the Fedora repository
+            // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy
             depositHelper.processDepositStatus(deposit.getId());
         }
     }
@@ -140,28 +136,15 @@ public class DepositProcessor implements Consumer<Deposit> {
         static Function<Submission, Submission> critical(PassClient passClient,
                                                          Policy<DepositStatus> terminalStatusPolicy) {
             return (criSubmission) -> {
+                PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+                sel.setFilter(RSQL.equals(SUBMISSION_REL,  criSubmission.getId()));
 
-                // Collect Deposits that are attached to the Submission using incoming links
-                // This avoids issues related to querying the index for Deposits
-                Collection<Deposit> deposits = passClient
-                        .getIncoming(criSubmission.getId())
-                        .getOrDefault(SUBMISSION_REL, Collections.emptySet())
-                        .stream()
-                        .map((uri) -> {
-                            try {
-                                return passClient.readResource(uri, Deposit.class);
-                            } catch (RuntimeException e) {
-                                // ignore exceptions whose cause is related to type
-                                // coercion of JSON objects
-                                if (!(e.getCause() instanceof InvalidTypeIdException)) {
-                                    throw e;
-                                }
-
-                                return null;
-                            }
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+                Collection<Deposit> deposits;
+                try {
+                    deposits = passClient.streamObjects(sel).toList();
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to retrieve deposits for submission " + criSubmission.getId(), e);
+                }
 
                 if (deposits.isEmpty()) {
                     return criSubmission;

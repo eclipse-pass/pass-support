@@ -17,10 +17,13 @@ package org.dataconservancy.pass.deposit.messaging.runner;
 
 import static java.lang.String.format;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper.MISSING_PACKAGER;
-import static org.dataconservancy.pass.support.messaging.constants.Constants.Indexer.DEPOSIT_STATUS;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.PassEntity;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
@@ -33,7 +36,9 @@ import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
@@ -45,7 +50,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
- * Accepts uris for, or searches for,
+ * Accepts identifiers for, or searches for,
  * <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Deposit.md">
  * Deposit</a> repository resources that have a {@code null} deposit status (so-called "dirty" deposits).
  * <p>
@@ -64,12 +69,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class FailedDepositRunner {
     private static final Logger LOG = LoggerFactory.getLogger(FailedDepositRunner.class);
     private static final String FAILED_TO_PROCESS = "Failed to process {}: {}";
-    private static final String URIS_PARAM = "uri";
-
-    private enum MODE {
-        SYNC,
-        ASYNC
-    }
+    private static final String IDS_PARAM = "id";
 
     @Autowired
     private SubmissionBuilder fcrepoModelBuilder;
@@ -79,9 +79,6 @@ public class FailedDepositRunner {
 
     @Autowired
     private Registry<Packager> packagerRegistry;
-
-    @Autowired
-    private TerminalDepositStatusPolicy terminalDepositStatusPolicy;
 
     @Autowired
     private CriticalRepositoryInteraction cri;
@@ -101,12 +98,12 @@ public class FailedDepositRunner {
     @Bean
     public ApplicationRunner retryDeposit(PassClient passClient) {
         return (args) -> {
-            Collection<URI> deposits = depositsToUpdate(args, passClient);
-            deposits.forEach(depositUri -> {
+            Collection<Deposit> deposits = depositsToUpdate(args, passClient);
+
+            deposits.forEach(deposit -> {
                 try {
-                    Deposit deposit = passClient.readResource(depositUri, Deposit.class);
-                    Submission submission = passClient.readResource(deposit.getSubmission(), Submission.class);
-                    Repository repo = passClient.readResource(deposit.getRepository(), Repository.class);
+                    Submission submission = deposit.getSubmission();
+                    Repository repo = deposit.getRepository();
 
                     final Packager[] packager = {null};
                     final DepositSubmission[] depositSubmission = {null};
@@ -125,10 +122,10 @@ public class FailedDepositRunner {
                              * taken on the Deposit or any other repository resource if one fails.
                              */
                             (d) -> {
-                                if (deposit.getDepositStatus() != FAILED && deposit.getDepositStatus() != null) {
+                                if (deposit.getDepositStatus() != DepositStatus.FAILED && deposit.getDepositStatus() != null) {
                                     LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
                                              "Deposit status must equal 'null' " +
-                                             "or '" + FAILED + "', but was '" + deposit.getDepositStatus() + "'");
+                                             "or '" + DepositStatus.FAILED + "', but was '" + deposit.getDepositStatus() + "'");
                                     return false;
                                 }
 
@@ -189,7 +186,7 @@ public class FailedDepositRunner {
 
                                 return null;
                             }
-                        );
+                        , false);
 
                     if (!cr.success()) {
                         if (cr.throwable().isPresent()) {
@@ -200,7 +197,7 @@ public class FailedDepositRunner {
                         }
                     }
                 } catch (Exception e) {
-                    LOG.warn(FAILED_TO_PROCESS, depositUri, e.getMessage(), e);
+                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(), e.getMessage(), e);
                 }
             });
 
@@ -212,65 +209,48 @@ public class FailedDepositRunner {
     /**
      * Parses command line arguments for the URIs to update, or searches the index for URIs of dirty deposits.
      * <dl>
-     *     <dt>--uris</dt>
-     *     <dd>space-separated list of Deposit URIs to be processed.  If the URI does not specify a Deposit, it is
-     *         skipped (implies {@code --sync}, but can be overridden by supplying {@code --async})</dd>
+     *     <dt>--ids</dt>
+     *     <dd>space-separated list of Deposit identifiers to be processed.
      *     <dt>--sync</dt>
-     *     <dd>the console remains attached as each URI is processed, allowing the end-user to examine the results of
+     *     <dd>the console remains attached as each id is processed, allowing the end-user to examine the results of
      *         updated Deposits as they happen</dd>
      *     <dt>--async</dt>
-     *     <dd>the console detaches immediately, with the Deposit URIs processed in the background</dd>
+     *     <dd>the console detaches immediately, with the ids processed in the background</dd>
      * </dl>
      *
      * @param args       the command line arguments
      * @param passClient used to search the index for dirty deposits
      * @return a {@code Collection} of URIs representing dirty deposits
      */
-    private Collection<URI> depositsToUpdate(ApplicationArguments args, PassClient passClient) {
-        if (args.containsOption(URIS_PARAM) && args.getOptionValues(URIS_PARAM).size() > 0) {
+    private Collection<Deposit> depositsToUpdate(ApplicationArguments args, PassClient passClient) {
+        if (args.containsOption(IDS_PARAM) && args.getOptionValues(IDS_PARAM).size() > 0) {
             // maintain the order of the uris as they were supplied on the CLI
-            return args.getOptionValues(URIS_PARAM).stream().map(URI::create).collect(Collectors.toList());
+            return args.getOptionValues(IDS_PARAM).stream().map(id -> {
+                try {
+                    return passClient.getObject(Deposit.class, id);
+                } catch (IOException e) {
+                    throw new IllegalArgumentException("Failed to load deposit " + id, e);
+                }
+            }).toList();
         } else {
-            Collection<URI> uris = passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, FAILED);
-            uris.addAll(passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, null));
-            if (uris.size() < 1) {
+            PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+
+            sel.setFilter(RSQL.or(RSQL.equals(PassEntity.DEPOSIT_STATUS, DepositStatus.FAILED.getValue()),
+                    RSQL.isNull(PassEntity.DEPOSIT_STATUS)));
+            sel.setInclude(PassEntity.SUBMISSION, PassEntity.REPOSITORY);
+
+            List<Deposit> deposits;
+            try {
+                deposits = passClient.streamObjects(sel).toList();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to search deposits", e);
+            }
+
+            if (deposits.size() < 1) {
                 throw new IllegalArgumentException("No URIs found to process.");
             }
-            return uris;
+
+            return deposits;
         }
     }
-
-    /**
-     * If {@code --sync} or {@code --async} are supplied, those win, no matter the values of other arguments.
-     * <p>
-     * If {@code --uris} are supplied, then {@code --sync} is implied.
-     * </p>
-     * <p>
-     * If no {@code --uris} are supplied, then {@cocde --async} is implied.
-     * </p>
-     *
-     * @param args
-     * @return
-     * @throws IllegalArgumentException if both {@code --sync} <em>and</em> {@code --async} are supplied
-     */
-    private MODE getMode(ApplicationArguments args) {
-        if (args.containsOption("sync") && args.containsOption("async")) {
-            throw new IllegalArgumentException("Arguments \"sync\" and \"async\" are mutually exclusive!");
-        }
-
-        if (args.containsOption("sync")) {
-            return MODE.SYNC;
-        }
-
-        if (args.containsOption("async")) {
-            return MODE.ASYNC;
-        }
-
-        if (args.containsOption("uris")) {
-            return MODE.SYNC;
-        }
-
-        return MODE.ASYNC;
-    }
-
 }

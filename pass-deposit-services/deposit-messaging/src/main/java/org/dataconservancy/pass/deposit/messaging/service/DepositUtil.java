@@ -17,11 +17,9 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import static java.time.Instant.ofEpochMilli;
 
-import java.net.URI;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
-import javax.jms.JMSException;
 import javax.jms.Session;
 
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -41,7 +39,6 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.jms.JmsProperties;
-import org.springframework.messaging.Message;
 
 /**
  * Utility methods for deposit messaging.
@@ -66,22 +63,6 @@ public class DepositUtil {
         TerminalSubmissionStatusPolicy(new SubmissionStatusEvaluator());
 
     static final String UNKNOWN_DATETIME = "UNKNOWN";
-
-    /**
-     * Returns true if the {@code Message} in the supplied {@link MessageContext} has the specified {@code eventType}
-     * and {@code resourceType}.  Useful for filtering creation events of Submission resources.
-     *
-     * @param eventType    the Fedora event type, may be a comma-delimited multi-value string
-     * @param resourceType the Fedora resource type, may be a comma-delimited multi-value string
-     * @param mc           the message context
-     * @return true if the message matches {@code eventType} and {@code resourceType}
-     */
-    public static boolean isMessageA(String eventType, String resourceType, MessageContext mc) {
-        if (!((csvStringContains(eventType, mc.eventType()) && csvStringContains(resourceType, mc.resourceType())))) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * Parses a timestamp into a formatted date and time string.
@@ -153,36 +134,6 @@ public class DepositUtil {
     }
 
     /**
-     * Creates a convenience object that holds references to the objects related to an incoming JMS message.
-     *
-     * @param resourceType the type of the resource in Fedora, comma-delimited multi-value
-     * @param eventType    the type of the event from Fedora, comma-delimited multi-value
-     * @param timestamp    the timestamp of the message
-     * @param id           the identifier of the message
-     * @param session      the JMS session that received the message
-     * @param message      the message, in the Spring domain model
-     * @param jmsMessage   the message, in the native JMS model
-     * @return an Object with references to the context of an incoming JMS message
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static MessageContext toMessageContext(String resourceType, String eventType, long timestamp, String id,
-                                                  Session
-                                                      session, Message message, javax.jms.Message jmsMessage) {
-        MessageContext mc = new MessageContext();
-        mc.resourceType = resourceType;
-        mc.eventType = eventType;
-        mc.timestamp = timestamp;
-        mc.dateTime = parseDateTime(timestamp);
-        mc.id = id;
-        mc.ackMode = parseAckMode(session, mc.dateTime, id);
-        mc.message = message;
-        mc.jmsMessage = jmsMessage;
-        mc.session = session;
-
-        return mc;
-    }
-
-    /**
      * Creates a convenience object that holds references to the objects related to performing a deposit.
      *
      * @param depositResource   the {@code Deposit} itself
@@ -202,20 +153,6 @@ public class DepositUtil {
         dc.packager = packager;
         dc.submission = submission;
         return dc;
-    }
-
-    /**
-     * {@link Session#CLIENT_ACKNOWLEDGE acknowledges} a JMS message.
-     *
-     * @param mc the MessageContext
-     */
-    public static void ackMessage(MessageContext mc) {
-        try {
-            LOG.trace("Acking JMS message {}", mc.id());
-            mc.jmsMessage().acknowledge();
-        } catch (JMSException e) {
-            LOG.error("Error acknowledging message (ack mode: {}): {} {}", mc.ackMode(), mc.dateTime(), mc.id(), e);
-        }
     }
 
     /**
@@ -286,102 +223,6 @@ public class DepositUtil {
         }
 
         return updateResult.success();
-    }
-
-    /**
-     * Holds references to objects related to an incoming JMS message.
-     */
-    public static class MessageContext {
-        private String resourceType;
-        private String eventType;
-        private long timestamp;
-        private String dateTime;
-        private String id;
-        private String ackMode;
-        private Session session;
-        private Message<String> message;
-        private javax.jms.Message jmsMessage;
-
-        /**
-         * The type of the resource in Fedora, comma-delimited multi-value
-         *
-         * @return the multi-valued Fedora resource type
-         */
-        public String resourceType() {
-            return resourceType;
-        }
-
-        /**
-         * The type of the event from Fedora, comma-delimited multi-value
-         *
-         * @return the multi-valued Fedora event type
-         */
-        public String eventType() {
-            return eventType;
-        }
-
-        /**
-         * The identifier of the message
-         *
-         * @return the message identifier
-         */
-        public String id() {
-            return id;
-        }
-
-        /**
-         * The JMS acknowledgement mode, as a String
-         *
-         * @return the JMS acknowledgement mode
-         */
-        public String ackMode() {
-            return ackMode;
-        }
-
-        /**
-         * The formatted timestamp of the message
-         *
-         * @return the formatted message timestamp
-         */
-        public String dateTime() {
-            return dateTime;
-        }
-
-        /**
-         * The timestamp of the message
-         *
-         * @return the message timestamp
-         */
-        public long timestamp() {
-            return timestamp;
-        }
-
-        /**
-         * The JMS session that received the message
-         *
-         * @return the JMS Session
-         */
-        public Session session() {
-            return session;
-        }
-
-        /**
-         * The message, in the Spring domain model
-         *
-         * @return the Spring JMS Message
-         */
-        public Message<String> message() {
-            return message;
-        }
-
-        /**
-         * The message, in the native JMS model
-         *
-         * @return the native JMS Message
-         */
-        public javax.jms.Message jmsMessage() {
-            return jmsMessage;
-        }
     }
 
     /**

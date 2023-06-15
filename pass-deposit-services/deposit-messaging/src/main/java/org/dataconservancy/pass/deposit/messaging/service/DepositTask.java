@@ -19,6 +19,7 @@ import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -212,13 +213,19 @@ public class DepositTask implements Runnable {
         if (dc.repoCopy() == null) {
             RepositoryCopy repoCopy = TransportResponseUpdateFunc.newRepositoryCopy(dc, "", CopyStatus.IN_PROGRESS)
                                                                  .get();
-            dc.repoCopy(passClient.createAndReadResource(repoCopy, RepositoryCopy.class));
-            dc.deposit().setRepositoryCopy(dc.repoCopy());
-            dc.deposit(passClient.updateAndReadResource(dc.deposit(), Deposit.class));
+            try {
+                passClient.createObject(repoCopy);
+                dc.repoCopy(repoCopy);
+
+                dc.deposit().setRepositoryCopy(dc.repoCopy());
+
+                passClient.updateObject(dc.deposit());
+            } catch (IOException e) {
+                throw new DepositServiceRuntimeException("Failed creating placeholder", e, dc.deposit());
+            }
         }
 
         transportResponse.onSuccess(dc.submission(), dc.deposit(), dc.repoCopy());
-
     }
 
     public String getPrefixToMatch() {
@@ -314,7 +321,13 @@ public class DepositTask implements Runnable {
 
                 // Create a RepositoryCopy, which will record the URL of the Item in DSpace
                 RepositoryCopy repoCopy = newRepositoryCopy(dc, repoCopyExtId, CopyStatus.IN_PROGRESS).get();
-                repoCopy = passClient.createAndReadResource(repoCopy, RepositoryCopy.class);
+
+                try {
+                    passClient.createObject(repoCopy);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to create repositoryCopy", e);
+                }
+
                 criDeposit.setRepositoryCopy(repoCopy);
 
                 dc.repoCopy(repoCopy);

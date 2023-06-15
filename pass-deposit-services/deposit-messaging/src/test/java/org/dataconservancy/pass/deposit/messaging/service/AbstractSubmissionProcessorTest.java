@@ -42,8 +42,6 @@ public abstract class AbstractSubmissionProcessorTest {
 
     PassClient passClient;
 
-    JsonParser jsonParser;
-
     SubmissionBuilder submissionBuilder;
 
     Registry<Packager> packagerRegistry;
@@ -72,7 +70,6 @@ public abstract class AbstractSubmissionProcessorTest {
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         passClient = mock(PassClient.class);
-        jsonParser = mock(JsonParser.class);
         submissionBuilder = mock(SubmissionBuilder.class);
         packagerRegistry = mock(Registry.class);
         submissionPolicy = mock(SubmissionPolicy.class);

@@ -18,7 +18,7 @@ package org.dataconservancy.pass.deposit.messaging.status;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.dataconservancy.pass.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,9 +36,9 @@ public class DepositStatusEvaluatorTest {
 
     @Test
     public void testIsTerminal() throws Exception {
-        assertTrue(underTest.isTerminal(Deposit.DepositStatus.ACCEPTED));
-        assertTrue(underTest.isTerminal(Deposit.DepositStatus.REJECTED));
-        assertFalse(underTest.isTerminal(Deposit.DepositStatus.SUBMITTED));
+        assertTrue(underTest.isTerminal(DepositStatus.ACCEPTED));
+        assertTrue(underTest.isTerminal(DepositStatus.REJECTED));
+        assertFalse(underTest.isTerminal(DepositStatus.SUBMITTED));
     }
 
     @Test(expected = IllegalArgumentException.class)

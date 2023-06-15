@@ -21,7 +21,6 @@ import static java.lang.System.identityHashCode;
 import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -80,8 +79,6 @@ public class DepositTaskHelper {
 
     private static final String PRECONDITION_FAILED = "Refusing to update {}, the following pre-condition failed: ";
 
-    private static final String POSTCONDITION_FAILED = "Refusing to update {}, the following post-condition failed: ";
-
     private static final String ERR_RESOLVE_REPOSITORY = "Unable to resolve Repository Configuration for Repository " +
                                                          "%s (%s).  Verify the Deposit Services runtime configuration" +
                                                          " location and " + "content.";
@@ -100,8 +97,6 @@ public class DepositTaskHelper {
 
     private Policy<DepositStatus> intermediateDepositStatusPolicy;
 
-    private Policy<DepositStatus> terminalDepositStatusPolicy;
-
     private CriticalRepositoryInteraction cri;
 
     @Value("${pass.deposit.transport.swordv2.sleep-time-ms}")
@@ -119,13 +114,11 @@ public class DepositTaskHelper {
     public DepositTaskHelper(PassClient passClient,
                              TaskExecutor depositWorkers,
                              Policy<DepositStatus> intermediateDepositStatusPolicy,
-                             Policy<DepositStatus> terminalDepositStatusPolicy,
                              CriticalRepositoryInteraction cri,
                              Repositories repositories) {
         this.passClient = passClient;
         this.taskExecutor = depositWorkers;
         this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
-        this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.cri = cri;
         this.repositories = repositories;
     }
@@ -174,9 +167,9 @@ public class DepositTaskHelper {
         }
     }
 
-    public void processDepositStatus(URI depositUri) {
+    public void processDepositStatus(String depositId) {
 
-        CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositUri, Deposit.class,
+        CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositId, Deposit.class,
                                                                          DepositStatusCriFunc.precondition(
                                                                              intermediateDepositStatusPolicy,
                                                                              passClient),
@@ -188,7 +181,7 @@ public class DepositTaskHelper {
             if (cr.throwable().isPresent()) {
                 Throwable t = cr.throwable().get();
                 if (t instanceof RemedialDepositException) {
-                    LOG.error(format("Failed to update Deposit %s", depositUri), t);
+                    LOG.error(format("Failed to update Deposit %s", depositId), t);
                     return;
                 }
 
@@ -198,17 +191,17 @@ public class DepositTaskHelper {
 
                 if (cr.resource().isPresent()) {
                     throw new DepositServiceRuntimeException(
-                        format("Failed to update Deposit %s: %s", depositUri, t.getMessage()),
+                        format("Failed to update Deposit %s: %s", depositId, t.getMessage()),
                         t, cr.resource().get());
                 }
             }
 
             LOG.debug(format("Failed to update Deposit %s: no cause was present, probably a pre- or post-condition " +
-                             "was not satisfied.", depositUri));
+                             "was not satisfied.", depositId));
             return;
         }
 
-        LOG.info("Successfully processed Deposit {}", depositUri);
+        LOG.info("Successfully processed Deposit {}", depositId);
     }
 
     String getStatementUriPrefix() {
@@ -238,27 +231,6 @@ public class DepositTaskHelper {
         // Look up the RepositoryConfig by the Repository Key
         if (repository.getRepositoryKey() != null && repositoryKeys.contains(repository.getRepositoryKey())) {
             return Optional.of(repositories.getConfig(repository.getRepositoryKey()));
-        }
-
-        // Look up the RepositoryConfig by a path component in the Repository URI
-        if (repository.getId() != null && repositoryKeys.contains(repository.getId().getPath())) {
-            return Optional.of(repositories.getConfig(repository.getId().getPath()));
-        }
-
-        if (repository.getId() != null) {
-            String path = repository.getId().getPath();
-            int idx;
-            while ((idx = path.indexOf("/")) > -1) {
-                path = path.substring(idx + 1);
-
-                if (repositoryKeys.contains("/" + path)) {
-                    return Optional.of(repositories.getConfig("/" + path));
-                }
-
-                if (repositoryKeys.contains(path)) {
-                    return Optional.of(repositories.getConfig(path));
-                }
-            }
         }
 
         return Optional.empty();
@@ -301,9 +273,9 @@ public class DepositTaskHelper {
                     return false;
                 }
 
-                URI repoCopy = deposit.getRepositoryCopy();
+                RepositoryCopy repoCopy = deposit.getRepositoryCopy();
 
-                if (repoCopy == null || passClient.readResource(repoCopy, RepositoryCopy.class) == null) {
+                if (repoCopy == null) {
                     LOG.debug(PRECONDITION_FAILED + " missing RepositoryCopy on the Deposit", deposit.getId());
                     return false;
                 }
@@ -346,7 +318,9 @@ public class DepositTaskHelper {
             return (deposit) -> {
                 AtomicReference<DepositStatus> status = new AtomicReference<>();
                 try {
-                    Repository repo = passClient.readResource(deposit.getRepository(), Repository.class);
+
+                    Repository repo = passClient.getObject(deposit.getRepository());
+
                     RepositoryConfig repoConfig = lookupConfig(repo, repositories)
                         .orElseThrow(() ->
                                          new RemedialDepositException(
@@ -369,15 +343,14 @@ public class DepositTaskHelper {
                 }
 
                 try {
-                    RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(),
-                                                                      RepositoryCopy.class);
+                    RepositoryCopy repoCopy = passClient.getObject(deposit.getRepositoryCopy());
 
                     switch (status.get()) {
                         case ACCEPTED: {
                             LOG.debug("Deposit {} was accepted.", deposit.getId());
                             deposit.setDepositStatus(DepositStatus.ACCEPTED);
                             repoCopy.setCopyStatus(CopyStatus.COMPLETE);
-                            repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
+                            passClient.updateObject(repoCopy);
                             break;
                         }
 
@@ -385,7 +358,7 @@ public class DepositTaskHelper {
                             LOG.debug("Deposit {} was rejected.", deposit.getId());
                             deposit.setDepositStatus(DepositStatus.REJECTED);
                             repoCopy.setCopyStatus(CopyStatus.REJECTED);
-                            repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
+                            passClient.updateObject(repoCopy);
                             break;
                         }
                         default:
