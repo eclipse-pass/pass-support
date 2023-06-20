@@ -81,26 +81,26 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
             <scope>test</scope>
         </dependency>
 
-4. Create your Assembler class that extends `shared.org.eclipse.pass.deposit.assembler.AbstractAssembler`
+4. Create your Assembler class that extends `org.eclipse.pass.deposit.assembler.shared.AbstractAssembler`
 5. Create your Package Provider class that
-   implements `shared.org.eclipse.pass.deposit.assembler.PackageProvider`
+   implements `org.eclipse.pass.deposit.assembler.shared.PackageProvider`
 
 To get started with testing:
-Create your package verifier that implements `shared.org.eclipse.pass.deposit.assembler.PackageVerifier`
-Extend and implement `shared.org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT`
+Create your package verifier that implements `org.eclipse.pass.deposit.assembler.shared.PackageVerifier`
+Extend and implement `org.eclipse.pass.deposit.assembler.shared.ThreadedAssemblyIT`
 
 # API Overview
 
 ## Assembler API
 
 The main entrypoint into the Assembler API is on
-the [`Assembler`](https://github.com/OA-PASS/deposit-services/blob/master/assembler-api/src/main/java/org/dataconservancy/pass/deposit/assembler/Assembler.java)
+the [`Assembler`](https://github.com/OA-PASS/deposit-services/blob/master/assembler-api/src/main/java/org/eclipse/pass/deposit/assembler/Assembler.java)
 interface:
 `PackageStream assemble(DepositSubmission, Map<String, Object>)`
 where the `DepositSubmission` is the internal representation of a `Submission`, and the `Map` is a set of package
 options read from `repositories.json`.
 
-The [`AbstractAssembler`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/AbstractAssembler.java)
+The [`AbstractAssembler`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/eclipse/pass/deposit/assembler/shared/AbstractAssembler.java)
 provides an implementation of `assemble(DepositSubmission, Map)`, and requires its subclasses to implement:
 
     PackageStream createPackageStream(DepositSubmission, List<DepositFileResource>, MetadataBuilder, ResourceBuilderFactory, Map<String, Object>)
@@ -114,20 +114,20 @@ submission and creating their representation as `List<DepositSubmission>` is sha
 must instantiate and return a `PackageStream`.
 
 Examples: [`DspaceMetsAssembler`](https://github.com/OA-PASS/jhu-package-providers/blob/master/jscholarship-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/j10p/J10PDspaceMetsAssembler.java)
-, [`NihmsAssembler`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsAssembler.java)
+, [`NihmsAssembler`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/eclipse/pass/deposit/provider/nihms/NihmsAssembler.java)
 , [`BagItAssembler`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/bagit/BagItAssembler.java)
 
 ## PackageStream API
 
 Assemblers are invoked by Deposit Services and return
-a [`PackageStream`](https://github.com/OA-PASS/deposit-services/blob/master/assembler-api/src/main/java/org/dataconservancy/pass/deposit/assembler/PackageStream.java)
+a [`PackageStream`](https://github.com/OA-PASS/deposit-services/blob/master/assembler-api/src/main/java/org/eclipse/pass/deposit/assembler/PackageStream.java)
 . The `PackageStream` represents the content to be sent to a downstream repository. Conceptually, the `PackageStream`
 behaves like a Java `InputStream`: the bytes for the stream can come from anywhere (memory, a file on disk, or retrieved
 from another network resource), and can generally only be read once.
 
 Practically, the `PackageStream` represents an archive file: either a ZIP, TAR, or some variant like TAR.GZ. This is
 encapsulated by
-the [`ArchivingPackageStream`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/ArchivingPackageStream.java)
+the [`ArchivingPackageStream`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/eclipse/pass/deposit/assembler/shared/ArchivingPackageStream.java)
 class. Re-using the `ArchivingPackageStream` class has the advantage that your package resources will be bundled up in a
 single archive file according to the options supplied to the `Assembler` (e.g. compression and archive type to use).
 
@@ -135,10 +135,10 @@ To instantiate an `ArchivingPackageStream` class requires an instance of `Packag
 
 ## PackageProvider API
 
-The [`PackageProvider`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/PackageProvider.java)
+The [`PackageProvider`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/eclipse/pass/deposit/assembler/shared/PackageProvider.java)
 interface was developed as an ad hoc lifecycle for streaming a package: there's a `start(...)` and `finish(...)` method,
 along with a `packagePath(...)` method.   `PackageProvider` also defines a new
-interface: [`SupplementalResource`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/PackageProvider.java#L84)
+interface: [`SupplementalResource`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/eclipse/pass/deposit/assembler/shared/PackageProvider.java#L84)
 . This interface is returned by the `finish(...)` method, allowing the `PackageProvider` implementation to generate
 supplemental (i.e. BagIt tag files or METS.xml files) content after the rest of the package has been streamed.
 
@@ -154,7 +154,7 @@ Therefore, any `PackageProvider` implementation can be used with any `Assembler`
 specification shared between the two is not violated.
 
 Examples: [`DspaceMetsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/shared-dspace-provider/src/main/java/edu/jhu/library/pass/deposit/provider/shared/dspace/DspaceMetsPackageProvider.java)
-, [`NihmsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsPackageProvider.java)
+, [`NihmsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/eclipse/pass/deposit/provider/nihms/NihmsPackageProvider.java)
 , [`BagItPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/bagit/BagItPackageProvider.java)
 
 ## Recap
@@ -173,7 +173,7 @@ When developing your own `Assembler`, you will need to:
 Here are three examples:
 
 * [`DspaceMetsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/shared-dspace-provider/src/main/java/edu/jhu/library/pass/deposit/provider/shared/dspace/DspaceMetsPackageProvider.java)
-* [`NihmsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsPackageProvider.java)
+* [`NihmsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/eclipse/pass/deposit/provider/nihms/NihmsPackageProvider.java)
 * [`BagItPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/bagit/BagItPackageProvider.java)
 
 # Concurrency
@@ -204,7 +204,7 @@ The factory objects may be kept in shared memory (i.e. as instance member variab
 factories are maintained in the Thread stack (as method variables). After a `PackageStream` has been opened and
 subsequently closed, these objects will be released and garbage collected by the JVM. To help insure thread safety,
 there is an integration test
-fixture, [`ThreadedAssemblyIT`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/test/java/org/dataconservancy/pass/deposit/assembler/shared/ThreadedAssemblyIT.java)
+fixture, [`ThreadedAssemblyIT`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/test/java/org/eclipse/pass/deposit/assembler/shared/ThreadedAssemblyIT.java)
 , which can be subclassed and used by `Assembler` integration tests to verify thread safety.
 
 # Testing
@@ -245,7 +245,7 @@ well written and test all aspects of a generated package.
 
 Example: [`BagItThreadedAssemblyIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/test/java/edu/jhu/library/pass/deposit/provider/bagit/BagItThreadedAssemblyIT.java)
 , [`J10PMetsThreadedAssemblyIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/jscholarship-package-provider/src/test/java/edu/jhu/library/pass/deposit/provider/j10p/J10PMetsThreadedAssemblyIT.java)
-, [`NihmsThreadedAssemblyIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/test/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsThreadedAssemblyIT.java)
+, [`NihmsThreadedAssemblyIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/test/java/org/eclipse/pass/deposit/provider/nihms/NihmsThreadedAssemblyIT.java)
 
 ## SubmitAndValidatePackagesIT
 
@@ -363,7 +363,7 @@ The verifier is responsible for:
 Essentially all aspects of a generated package must be verified through a `PackageVerifier`.
 
 The `PackageVerifier` interface does come with
-a [helper method](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/test/java/org/dataconservancy/pass/deposit/assembler/shared/PackageVerifier.java#L95)
+a [helper method](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/test/java/org/eclipse/pass/deposit/assembler/shared/PackageVerifier.java#L95)
 for ensuring that there is a custodial file in the package for each submitted file, and that there are no unexplained
 custodial files present in the package.
 `void verifyCustodialFiles(DepositSubmission, File, FileFilter, BiFunction<File, File, DepositFile>)`
@@ -372,7 +372,7 @@ exploded package, the `FileFilter` selects custodial files from the package dire
 a `DepositFile` from the submission and maps it to its expected location in the package directory.
 
 Examples: [`DspaceMetsPackageVerifier`](https://github.com/OA-PASS/jhu-package-providers/blob/master/shared-dspace-provider/src/test/java/edu/jhu/library/pass/deposit/provider/shared/dspace/DspaceMetsPackageVerifier.java)
-, [`NihmsPackageVerifier`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/test/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsPackageVerifier.java)
+, [`NihmsPackageVerifier`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/test/java/org/eclipse/pass/deposit/provider/nihms/NihmsPackageVerifier.java)
 
 # Runtime
 
@@ -417,7 +417,7 @@ files:
             ├── main
             │   ├── java
             │   │   └── org
-            │   │       └── dataconservancy
+            │   │       └── eclipse
             │   │           └── pass
             │   │               └── deposit
             │   │                   └── provider
@@ -439,9 +439,9 @@ files:
 
 An example `spring.factories` file and Auto Configuration class:
 
-    org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.dataconservancy.pass.deposit.provider.nihms.NihmsPackageProviderAutoConfiguration
+    org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.eclipse.pass.deposit.provider.nihms.NihmsPackageProviderAutoConfiguration
     
-    package org.dataconservancy.pass.deposit.provider.nihms;
+    package org.eclipse.pass.deposit.provider.nihms;
     
     import org.springframework.context.annotation.ComponentScan;
     import org.springframework.context.annotation.Configuration;
@@ -467,11 +467,11 @@ On boot, you should see information from the console indicating that your Assemb
     INFO - Starting DepositApp on provider-integration-its-1.its with PID 1 (/app/BOOT-INF/classes started by root in /app)
     INFO - Running with Spring Boot v2.1.2.RELEASE, Spring v5.1.4.RELEASE
     INFO - No active profile set, falling back to default profiles: default
-    INFO - >>>> Discovered Assembler implementation nihmsAssembler: org.dataconservancy.pass.deposit.provider.nihms.NihmsAssembler
+    INFO - >>>> Discovered Assembler implementation nihmsAssembler: org.eclipse.pass.deposit.provider.nihms.NihmsAssembler
     INFO - >>>> Discovered Assembler implementation dspaceMetsAssembler: edu.jhu.library.pass.deposit.provider.j10p.DspaceMetsAssembler
     INFO - >>>> Discovered Transport implementation filesystemTransport: org.eclipse.pass.deposit.transport.fs.FilesystemTransport
     INFO - >>>> Discovered Transport implementation ftpTransport: org.eclipse.pass.deposit.transport.ftp.FtpTransport
-    INFO - >>>> Discovered Transport implementation sword2Transport: sword2.transport.org.eclipse.pass.deposit.Sword2Transport
+    INFO - >>>> Discovered Transport implementation sword2Transport: org.eclipse.pass.deposit.transport.sword2.Sword2Transport
 
 ## Deployment
 
