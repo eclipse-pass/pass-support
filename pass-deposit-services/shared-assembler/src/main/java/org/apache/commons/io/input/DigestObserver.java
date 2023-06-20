@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
-import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
-import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
+import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
+import org.eclipse.pass.deposit.assembler.ResourceBuilder;
+import org.eclipse.pass.deposit.assembler.shared.ChecksumImpl;
 
 /**
  * Computes a digest over the observed bytes, and applies it to the {@link ResourceBuilder}.

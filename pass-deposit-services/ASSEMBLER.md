@@ -81,13 +81,13 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
             <scope>test</scope>
         </dependency>
 
-4. Create your Assembler class that extends `org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler`
+4. Create your Assembler class that extends `shared.org.eclipse.pass.deposit.assembler.AbstractAssembler`
 5. Create your Package Provider class that
-   implements `org.dataconservancy.pass.deposit.assembler.shared.PackageProvider`
+   implements `shared.org.eclipse.pass.deposit.assembler.PackageProvider`
 
 To get started with testing:
-Create your package verifier that implements `org.dataconservancy.pass.deposit.assembler.shared.PackageVerifier`
-Extend and implement `org.dataconservancy.pass.deposit.assembler.shared.ThreadedAssemblyIT`
+Create your package verifier that implements `shared.org.eclipse.pass.deposit.assembler.PackageVerifier`
+Extend and implement `shared.org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT`
 
 # API Overview
 
@@ -469,9 +469,9 @@ On boot, you should see information from the console indicating that your Assemb
     INFO - No active profile set, falling back to default profiles: default
     INFO - >>>> Discovered Assembler implementation nihmsAssembler: org.dataconservancy.pass.deposit.provider.nihms.NihmsAssembler
     INFO - >>>> Discovered Assembler implementation dspaceMetsAssembler: edu.jhu.library.pass.deposit.provider.j10p.DspaceMetsAssembler
-    INFO - >>>> Discovered Transport implementation filesystemTransport: org.dataconservancy.pass.deposit.transport.fs.FilesystemTransport
-    INFO - >>>> Discovered Transport implementation ftpTransport: org.dataconservancy.pass.deposit.transport.ftp.FtpTransport
-    INFO - >>>> Discovered Transport implementation sword2Transport: org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport
+    INFO - >>>> Discovered Transport implementation filesystemTransport: org.eclipse.pass.deposit.transport.fs.FilesystemTransport
+    INFO - >>>> Discovered Transport implementation ftpTransport: org.eclipse.pass.deposit.transport.ftp.FtpTransport
+    INFO - >>>> Discovered Transport implementation sword2Transport: sword2.transport.org.eclipse.pass.deposit.Sword2Transport
 
 ## Deployment
 
