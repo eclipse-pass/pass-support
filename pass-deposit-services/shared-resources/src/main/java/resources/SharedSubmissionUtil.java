@@ -19,9 +19,9 @@ import static submissions.SubmissionResourceUtil.lookupUri;
 
 import java.net.URI;
 
-import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.deposit.builder.InvalidModel;
+import org.eclipse.pass.deposit.builder.SubmissionBuilder;
+import org.eclipse.pass.deposit.model.DepositSubmission;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

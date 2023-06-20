@@ -88,7 +88,7 @@ The _default_ configuration is replicated below:
   "JScholarship": {
     "deposit-config": {
       "processing": {
-        "beanName": "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
+        "beanName": "status.org.eclipse.pass.deposit.messaging.DefaultDepositStatusProcessor"
       },
       "mapping": {
         "http://dspace.org/state/archived": "accepted",

@@ -56,13 +56,13 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
-  <logger name="org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor" additivity="false"
-          level="${org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.level:-INFO}">
+  <logger name="org.eclipse.pass.deposit.messaging.service.SubmissionProcessor" additivity="false"
+          level="${org.eclipse.pass.deposit.messaging.service.SubmissionProcessor.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 
-  <logger name="org.dataconservancy.pass.deposit.messaging.service.DepositProcessor" additivity="false"
-          level="${org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.level:-INFO}">
+  <logger name="org.eclipse.pass.deposit.messaging.service.DepositProcessor" additivity="false"
+          level="${org.eclipse.pass.deposit.messaging.service.DepositProcessor.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 

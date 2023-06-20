@@ -15,7 +15,7 @@
  */
 package resources;
 
-import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources;
+import org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources;
 import org.junit.Test;
 
 /**
