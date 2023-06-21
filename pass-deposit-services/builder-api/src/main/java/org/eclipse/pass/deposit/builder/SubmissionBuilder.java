@@ -17,6 +17,8 @@ package org.eclipse.pass.deposit.builder;
 
 import org.eclipse.pass.deposit.model.DepositSubmission;
 
+import java.io.IOException;
+
 /**
  * Responsible for creating an instance of a {@link DepositSubmission submission}.  Knowledgeable of the
  * view model (i.e. the model used by the forms collecting submission information), the
@@ -37,6 +39,6 @@ public interface SubmissionBuilder {
      * @return a submission for the NIHMS system based on the form data
      * @throws InvalidModel if the form data cannot be successfully parsed into a valid submission model
      */
-    DepositSubmission build(final String formDataUrl) throws InvalidModel;
+    DepositSubmission build(final String formDataUrl) throws InvalidModel, IOException;
 
 }

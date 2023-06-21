@@ -16,7 +16,7 @@
     "grants": [
       "fake:grant1"
     ],
-    "@id": "fake:submission15",
+    "id": "fake:submission15",
     "@type": "Submission"
   },
   {
@@ -27,7 +27,7 @@
     "journal": "fake:journal1",
     "volume": "123",
     "issue": "May 2015",
-    "@id": "fake:publication1",
+    "id": "fake:publication1",
     "@type": "Publication"
   },
   {
@@ -39,7 +39,7 @@
     "nlmta": "AAPS PharmSci",
     "pmcParticipation": "A",
     "publisher": "",
-    "@id": "fake:journal1",
+    "id": "fake:journal1",
     "@type": "Journal"
   },
   {
@@ -48,14 +48,14 @@
     "description": "Contains lots of medical papers",
     "url": "http://example.com",
     "formSchema": "{}",
-    "@id": "fake:repository1",
+    "id": "fake:repository1",
     "@type": "Repository"
   },
   {
     "name": "BagIt Repo",
     "repositoryKey": "BagIt",
     "description": "Repository for storing bags",
-    "@id": "fake:repository3",
+    "id": "fake:repository3",
     "@type": "Repository"
   },
   {
@@ -64,7 +64,7 @@
     "description": "Knowledge for the world",
     "url": "http://j10p.com",
     "formSchema": "{}",
-    "@id": "fake:repository2",
+    "id": "fake:repository2",
     "@type": "Repository"
   },
   {
@@ -82,7 +82,7 @@
       "fake:user3",
       "fake:user1"
     ],
-    "@id": "fake:grant1",
+    "id": "fake:grant1",
     "@type": "Grant"
   },
   {
@@ -90,7 +90,7 @@
     "url": "http://example.com/eyeguys",
     "localKey": "aabbcc",
     "policy": "fake:policy1",
-    "@id": "fake:funder1",
+    "id": "fake:funder1",
     "@type": "Funder"
   },
   {
@@ -102,7 +102,7 @@
     ],
     "institution": "fake:institution1",
     "funder": "fake:funder1",
-    "@id": "fake:policy1",
+    "id": "fake:policy1",
     "@type": "Policy"
   },
   {
@@ -110,7 +110,7 @@
     "url": "http://example.com/othereyeguys",
     "localKey": "ddeeff",
     "policy": "fake:policy1",
-    "@id": "fake:funder2",
+    "id": "fake:funder2",
     "@type": "Funder"
   },
   {
@@ -132,7 +132,7 @@
       "submitter",
       "admin"
     ],
-    "@id": "fake:user1",
+    "id": "fake:user1",
     "@type": "User"
   },
   {
@@ -153,7 +153,7 @@
     "roles": [
       "submitter"
     ],
-    "@id": "fake:user2",
+    "id": "fake:user2",
     "@type": "User"
   },
   {
@@ -174,7 +174,7 @@
     "roles": [
       "admin"
     ],
-    "@id": "fake:user3",
+    "id": "fake:user3",
     "@type": "User"
   },
   {
@@ -184,7 +184,7 @@
     "fileRole": "supplemental",
     "mimeType": "image/jpg",
     "submission": "fake:submission1",
-    "@id": "fake:file1",
+    "id": "fake:file1",
     "@type": "File"
   },
   {
@@ -194,7 +194,7 @@
     "fileRole": "figure",
     "mimeType": "image/tiff",
     "submission": "fake:submission1",
-    "@id": "fake:file2",
+    "id": "fake:file2",
     "@type": "File"
   },
   {
@@ -204,7 +204,7 @@
     "fileRole": "figure",
     "mimeType": "image/png",
     "submission": "fake:submission1",
-    "@id": "fake:file3",
+    "id": "fake:file3",
     "@type": "File"
   },
   {
@@ -214,7 +214,7 @@
     "fileRole": "manuscript",
     "mimeType": "application/msword",
     "submission": "fake:submission1",
-    "@id": "fake:file4",
+    "id": "fake:file4",
     "@type": "File"
   },
   {
@@ -224,7 +224,7 @@
     "fileRole": "table",
     "mimeType": "application/vnd.oasis.opendocument.spreadsheet",
     "submission": "fake:submission1",
-    "@id": "fake:file5",
+    "id": "fake:file5",
     "@type": "File"
   },
   {
@@ -234,7 +234,7 @@
     "fileRole": "supplemental",
     "mimeType": "application/xml",
     "submission": "fake:submission1",
-    "@id": "fake:file6",
+    "id": "fake:file6",
     "@type": "File"
   },
   {
@@ -244,7 +244,7 @@
     "fileRole": "supplemental",
     "mimeType": "text/plain",
     "submission": "fake:submission1",
-    "@id": "fake:file7",
+    "id": "fake:file7",
     "@type": "File"
   },
   {
@@ -254,7 +254,7 @@
     "fileRole": "supplemental",
     "mimeType": "text/plain",
     "submission": "fake:submission1",
-    "@id": "fake:file8",
+    "id": "fake:file8",
     "@type": "File"
   }
 ]

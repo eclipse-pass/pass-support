@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.builder;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ import org.eclipse.pass.deposit.model.DepositSubmission;
 /**
  * Responsible for creating an instance of a {@link DepositSubmission submission}.  Knowledgeable of the
  * view model (i.e. the model used by the forms collecting submission information), the {@link
- * org.dataconservancy.pass.deposit.model submission model}, and the required metadata needed for building a submission.
+ * org.eclipse.pass.deposit.model submission model}, and the required metadata needed for building a submission.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -39,6 +40,6 @@ public interface StreamingSubmissionBuilder {
      * @return a submission for the NIHMS system based on the form data
      * @throws InvalidModel if the form data cannot be successfully parsed into a valid submission model
      */
-    DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel;
+    DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel, IOException;
 
 }

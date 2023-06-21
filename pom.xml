@@ -74,7 +74,8 @@
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-remote-resources-plugin.version>3.1.0</maven-remote-resources-plugin.version>
     <git-commit-plugin.version>4.9.10</git-commit-plugin.version>
-    <spring-boot-maven-plugin.version>3.1.0</spring-boot-maven-plugin.version>
+    <!-- this overrides the spring-boot-maven-plugin.version property in the parent pom -->
+    <spring-boot-maven-plugin.version>3.0.7</spring-boot-maven-plugin.version>
   </properties>
 
   <dependencyManagement>

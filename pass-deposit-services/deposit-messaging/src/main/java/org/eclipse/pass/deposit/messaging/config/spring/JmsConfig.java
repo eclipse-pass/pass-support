@@ -62,7 +62,8 @@ public class JmsConfig {
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setErrorHandler(errorHandler);
         factory.setConcurrency(concurrency);
-        factory.setConnectionFactory(connectionFactory);
+        // TODO Deposit service port pending
+//        factory.setConnectionFactory(connectionFactory);
         factory.setAutoStartup(autoStart);
         return factory;
     }

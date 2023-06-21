@@ -190,26 +190,6 @@ public class SubmissionGraph {
     }
 
     /**
-     * Adds an entity to the graph.
-     *
-     * @param passEntity the entity
-     * @param <T>        the type of the entity
-     */
-    private <T extends PassEntity> void add(T passEntity) {
-        entities.put(passEntity.getId(), passEntity);
-    }
-
-    /**
-     * Retrieve an entity from the graph by its URI.
-     *
-     * @param u the URI of the entity
-     * @return the entity, or {@code null} if it can't be found
-     */
-    private PassEntity get(URI u) {
-        return entities.get(u);
-    }
-
-    /**
      * Removes the entity identified by the {@code URI} from the graph, and all references to the entity.
      *
      * @param u the {@code URI} identifying a member of the graph
@@ -218,12 +198,6 @@ public class SubmissionGraph {
     public SubmissionGraph remove(URI u) {
         removeEntity(u, entities);
         return this;
-    }
-
-    public InputStream asJson() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        adapter.passToJson(new HashMap<>(entities), out);
-        return new ByteArrayInputStream(out.toByteArray());
     }
 
     /**
@@ -383,33 +357,34 @@ public class SubmissionGraph {
      * @param source the source of the link
      * @param rel    the relationship
      */
-    private static void linkUsingRel(PassEntity target, PassEntity source, Rel rel) {
-        switch (rel) {
-            case PI:
-                ((Grant) target).setPi(source.getId());
-                break;
-            case COPI:
-                ((Grant) target).getCoPis().add(source.getId());
-                break;
-            case PREPARER:
-                ((Submission) target).getPreparers().add(source.getId());
-                break;
-            case SUBMITTER:
-                ((Submission) target).setSubmitter(source.getId());
-                break;
-            case DIRECT_FUNDER:
-                ((Grant) target).setDirectFunder(source.getId());
-                break;
-            case PRIMARY_FUNDER:
-                ((Grant) target).setPrimaryFunder(source.getId());
-                break;
-            case EFFECTIVE_POLICY:
-                ((Submission) target).getEffectivePolicies().add(source.getId());
-                break;
-            default:
-                throw new RuntimeException("Unknown or unhandled relationship: " + rel);
-        }
-    }
+    // TODO Deposit service port pending
+//    private static void linkUsingRel(PassEntity target, PassEntity source, Rel rel) {
+//        switch (rel) {
+//            case PI:
+//                ((Grant) target).setPi(source.getId());
+//                break;
+//            case COPI:
+//                ((Grant) target).getCoPis().add(source.getId());
+//                break;
+//            case PREPARER:
+//                ((Submission) target).getPreparers().add(source.getId());
+//                break;
+//            case SUBMITTER:
+//                ((Submission) target).setSubmitter(source.getId());
+//                break;
+//            case DIRECT_FUNDER:
+//                ((Grant) target).setDirectFunder(source.getId());
+//                break;
+//            case PRIMARY_FUNDER:
+//                ((Grant) target).setPrimaryFunder(source.getId());
+//                break;
+//            case EFFECTIVE_POLICY:
+//                ((Submission) target).getEffectivePolicies().add(source.getId());
+//                break;
+//            default:
+//                throw new RuntimeException("Unknown or unhandled relationship: " + rel);
+//        }
+//    }
 
     /**
      * Encapsulates the state and operations necessary to initialize, link, and build a submission graph.
@@ -454,7 +429,8 @@ public class SubmissionGraph {
          */
         public static GraphBuilder newGraph(InputStream in, PassJsonFedoraAdapter adapter) {
             HashMap<URI, PassEntity> entities = new HashMap<>();
-            adapter.jsonToPass(in, entities);
+            // TODO Deposit service port pending
+//            adapter.jsonToPass(in, entities);
             return new GraphBuilder(new ConcurrentHashMap<URI, PassEntity>(entities));
         }
 
@@ -466,8 +442,9 @@ public class SubmissionGraph {
             this.entities = new ConcurrentHashMap<>();
             this.linkInstructions = new ArrayList<>();
             this.submission = new Submission();
-            this.submission.setId(uriSupplier.get());
-            this.entities.put(submission.getId(), submission);
+            // TODO Deposit service port pending
+//            this.submission.setId(uriSupplier.get());
+//            this.entities.put(submission.getId(), submission);
         }
 
         /**
@@ -585,11 +562,12 @@ public class SubmissionGraph {
                 LOG.trace("    Linking {} ({}) to {} ({}) using {}", target.getClass().getSimpleName(),
                           target.getId(), source.getClass().getSimpleName(), source.getId(), li.rel);
 
-                try {
-                    linkUsingRel(target, source, Rel.valueOf(li.rel));
-                } catch (IllegalArgumentException e) {
-                    linkUsingField(target, source, li.rel);
-                }
+                // TODO Deposit service port pending
+//                try {
+//                    linkUsingRel(target, source, Rel.valueOf(li.rel));
+//                } catch (IllegalArgumentException e) {
+//                    linkUsingField(target, source, li.rel);
+//                }
 
                 // Remove successfully processed LinkInstructions
                 iterator.remove();
@@ -614,7 +592,8 @@ public class SubmissionGraph {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                instance.setId(uriSupplier.get());
+                // TODO Deposit service port pending
+//                instance.setId(uriSupplier.get());
                 return instance;
             }, entities, linkInstructions);
         }
@@ -874,7 +853,8 @@ public class SubmissionGraph {
          */
         public T build(BiFunction<Submission, T, T> func) {
             func = func.andThen(built -> {
-                entities.put(built.getId(), built);
+                // TODO Deposit service port pending
+//                entities.put(built.getId(), built);
                 return built;
             });
             return func.apply(submission, toBuild);
@@ -882,7 +862,8 @@ public class SubmissionGraph {
 
         public T build(TertiaryFunction<Submission, Map<URI, ? super PassEntity>, T, T> func) {
             func = func.andThen(built -> {
-                entities.put(built.getId(), built);
+                // TODO Deposit service port pending
+//                entities.put(built.getId(), built);
                 return built;
             });
             return func.apply(submission, entities, toBuild);

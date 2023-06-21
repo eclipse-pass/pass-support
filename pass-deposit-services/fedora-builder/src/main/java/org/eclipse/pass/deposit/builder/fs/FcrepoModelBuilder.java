@@ -45,7 +45,7 @@ public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilde
     public DepositSubmission build(String formDataUrl) throws InvalidModel {
         try {
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-            HashMap<URI, PassEntity> entities = new HashMap<>();
+            HashMap<String, PassEntity> entities = new HashMap<>();
             Submission submissionEntity = reader.fcrepoToPass(new URI(formDataUrl), entities);
             return createDepositSubmission(submissionEntity, entities);
         } catch (URISyntaxException e) {

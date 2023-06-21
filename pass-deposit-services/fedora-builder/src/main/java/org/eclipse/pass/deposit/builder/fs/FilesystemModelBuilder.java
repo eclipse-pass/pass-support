@@ -142,39 +142,19 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
      * @throws InvalidModel if the JSON data cannot be successfully parsed into a valid submission model
      */
     @Override
-    public DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel {
+    public DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel, IOException {
         PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
         Submission submissionEntity;
 
         if (useFedora) {
-            HashMap<URI, PassEntity> fedoraEntityMap = new HashMap<>();
+            HashMap<String, PassEntity> fedoraEntityMap = new HashMap<>();
             submissionEntity = adapter.jsonToFcrepo(stream, fedoraEntityMap);
             return createDepositSubmission(submissionEntity, fedoraEntityMap);
         } else {
-            HashMap<URI, PassEntity> entities = new HashMap<>();
+            HashMap<String, PassEntity> entities = new HashMap<>();
             submissionEntity = adapter.jsonToPass(stream, entities);
             return createDepositSubmission(submissionEntity, entities);
         }
-    }
-
-    /**
-     * If {@code true}, then this builder will deposit each locally built resource to Fedora, and build the
-     * {@code DepositSubmission} from the resources in Fedora.
-     *
-     * @return whether or not build the {@code DepositSubmission} using Fedora resources
-     */
-    public boolean isUseFedora() {
-        return useFedora;
-    }
-
-    /**
-     * If {@code true}, then this builder will deposit each locally built resource to Fedora, and build the
-     * {@code DepositSubmission} from the resources in Fedora.
-     *
-     * @param useFedora whether or not build the {@code DepositSubmission} using Fedora resources
-     */
-    public void setUseFedora(boolean useFedora) {
-        this.useFedora = useFedora;
     }
 
 }

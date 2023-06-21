@@ -161,7 +161,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
      * @return
      */
     @Before
-    public void submit() {
+    public void submit() throws IOException {
         submission = findSubmission(createSubmission(lookupStream(URI.create("fake:submission2"))));
     }
 

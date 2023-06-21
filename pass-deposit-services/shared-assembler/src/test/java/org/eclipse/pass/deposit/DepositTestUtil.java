@@ -127,7 +127,7 @@ public class DepositTestUtil {
 
         try {
             return util.asDepositSubmission(URI.create("fake:submission3"), fsModelBuilder);
-        } catch (InvalidModel invalidModel) {
+        } catch (InvalidModel | IOException invalidModel) {
             throw new RuntimeException(invalidModel.getMessage(), invalidModel);
         }
     }
@@ -138,7 +138,7 @@ public class DepositTestUtil {
 
         try {
             return util.asDepositSubmission(submissionUri, fsModelBuilder);
-        } catch (InvalidModel invalidModel) {
+        } catch (InvalidModel | IOException invalidModel) {
             throw new RuntimeException(invalidModel.getMessage(), invalidModel);
         }
     }

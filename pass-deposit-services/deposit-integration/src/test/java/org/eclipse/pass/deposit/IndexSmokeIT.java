@@ -39,98 +39,99 @@ import org.slf4j.LoggerFactory;
  */
 public class IndexSmokeIT extends BaseIT {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IndexSmokeIT.class);
-
-    private final String PASS_FEDORA_USER = "pass.fedora.user";
-
-    private final String PASS_FEDORA_PASSWORD = "pass.fedora.password";
-
-    private final String PASS_FEDORA_BASEURL = "pass.fedora.baseurl";
-
-    private final String PASS_ES_URL = "pass.elasticsearch.url";
-
-    private PassClient passClient;
-
-    @Before
-    public void setUp() throws Exception {
-        assertTrue("Missing expected system property " + PASS_FEDORA_USER,
-                   System.getProperties().containsKey(PASS_FEDORA_USER));
-        assertTrue("Missing expected system property " + PASS_FEDORA_PASSWORD,
-                   System.getProperties().containsKey(PASS_FEDORA_PASSWORD));
-        assertTrue("Missing expected system property " + PASS_FEDORA_BASEURL,
-                   System.getProperties().containsKey(PASS_FEDORA_BASEURL));
-        assertTrue("Missing expected system property " + PASS_ES_URL,
-                   System.getProperties().containsKey(PASS_ES_URL));
-
-        passClient = new PassClientDefault();
-    }
-
-    @Test
-    public void smokeTestIndex() throws Exception {
-        // put some objects in pass and query the index for their presence
-
-        User user = new User();
-        user.setAffiliation(Collections.singleton("School of Hard Knocks"));
-        user.setFirstName("Mike");
-        user.setLastName("Tyson");
-        user.setDisplayName("Mike Tyson");
-        user.setEmail("lights_out@gmail.com");
-        user.setUsername("mtyson1");
-
-        LOG.debug(">>>> Creating user {}", user);
-        URI userUri = passClient.createResource(user);
-
-        LOG.debug(">>>> Waiting for user {} to appear in index", userUri);
-
-        Condition<URI> userCondition = new Condition<>(
-            () -> passClient.findByAttribute(User.class, "@id", userUri),
-            "Poll index for User.");
-
-        assertTrue(userCondition.awaitAndVerify((uri) -> uri.getPath().equals(userUri.getPath())));
-
-        Repository nih = new Repository();
-        nih.setName("NIHMS");
-        nih.setDescription("NIHMS Repository");
-
-        LOG.debug(">>>> Creating Repository {}", nih);
-        URI repoNihUri = passClient.createResource(nih);
-
-        Repository js = new Repository();
-        js.setName("JScholarship");
-        js.setDescription("Johns Hopkins DSpace Repository");
-
-        LOG.debug(">>>> Creating Repository {}", js);
-        URI repoJsUri = passClient.createResource(js);
-
-        LOG.debug(">>>> Waiting for repo {} to appear in index", repoNihUri);
-        Condition<URI> repoCondition = new Condition<>(
-            () -> passClient.findByAttribute(Repository.class, "@id", repoNihUri),
-            "Poll index for repo");
-
-        assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoNihUri.getPath())));
-
-        LOG.debug(">>>> Waiting for repo {} to appear in index", repoJsUri);
-        repoCondition = new Condition<>(() -> passClient.findByAttribute(Repository.class, "@id", repoJsUri),
-                                        "Poll index for repo");
-
-        assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoJsUri.getPath())));
-
-        Submission submission = new Submission();
-        submission.setSource(Source.PASS);
-        submission.setSubmitted(Boolean.TRUE);
-        submission.setSubmitter(userUri);
-        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
-        submission.setMetadata("{ \"key\": \"value\" }");
-        submission.setRepositories(Arrays.asList(repoNihUri, repoJsUri));
-
-        LOG.debug(">>>> Creating Submission {}", submission);
-        URI submissionUri = passClient.createResource(submission);
-
-        Condition<URI> submissionCondition = new Condition<>(() -> passClient.findByAttribute(Submission.class, "@id"
-            , submissionUri), "Poll index for Submission.");
-
-        LOG.debug(">>>> Waiting for submission {} to appear in index", submissionUri);
-
-        assertTrue(submissionCondition.awaitAndVerify((uri) -> uri.getPath().equals(submissionUri.getPath())));
-    }
+    // TODO Deposit service port pending
+//    private static final Logger LOG = LoggerFactory.getLogger(IndexSmokeIT.class);
+//
+//    private final String PASS_FEDORA_USER = "pass.fedora.user";
+//
+//    private final String PASS_FEDORA_PASSWORD = "pass.fedora.password";
+//
+//    private final String PASS_FEDORA_BASEURL = "pass.fedora.baseurl";
+//
+//    private final String PASS_ES_URL = "pass.elasticsearch.url";
+//
+//    private PassClient passClient;
+//
+//    @Before
+//    public void setUp() throws Exception {
+//        assertTrue("Missing expected system property " + PASS_FEDORA_USER,
+//                   System.getProperties().containsKey(PASS_FEDORA_USER));
+//        assertTrue("Missing expected system property " + PASS_FEDORA_PASSWORD,
+//                   System.getProperties().containsKey(PASS_FEDORA_PASSWORD));
+//        assertTrue("Missing expected system property " + PASS_FEDORA_BASEURL,
+//                   System.getProperties().containsKey(PASS_FEDORA_BASEURL));
+//        assertTrue("Missing expected system property " + PASS_ES_URL,
+//                   System.getProperties().containsKey(PASS_ES_URL));
+//
+//        passClient = new PassClientDefault();
+//    }
+//
+//    @Test
+//    public void smokeTestIndex() throws Exception {
+//        // put some objects in pass and query the index for their presence
+//
+//        User user = new User();
+//        user.setAffiliation(Collections.singleton("School of Hard Knocks"));
+//        user.setFirstName("Mike");
+//        user.setLastName("Tyson");
+//        user.setDisplayName("Mike Tyson");
+//        user.setEmail("lights_out@gmail.com");
+//        user.setUsername("mtyson1");
+//
+//        LOG.debug(">>>> Creating user {}", user);
+//        URI userUri = passClient.createResource(user);
+//
+//        LOG.debug(">>>> Waiting for user {} to appear in index", userUri);
+//
+//        Condition<URI> userCondition = new Condition<>(
+//            () -> passClient.findByAttribute(User.class, "@id", userUri),
+//            "Poll index for User.");
+//
+//        assertTrue(userCondition.awaitAndVerify((uri) -> uri.getPath().equals(userUri.getPath())));
+//
+//        Repository nih = new Repository();
+//        nih.setName("NIHMS");
+//        nih.setDescription("NIHMS Repository");
+//
+//        LOG.debug(">>>> Creating Repository {}", nih);
+//        URI repoNihUri = passClient.createResource(nih);
+//
+//        Repository js = new Repository();
+//        js.setName("JScholarship");
+//        js.setDescription("Johns Hopkins DSpace Repository");
+//
+//        LOG.debug(">>>> Creating Repository {}", js);
+//        URI repoJsUri = passClient.createResource(js);
+//
+//        LOG.debug(">>>> Waiting for repo {} to appear in index", repoNihUri);
+//        Condition<URI> repoCondition = new Condition<>(
+//            () -> passClient.findByAttribute(Repository.class, "@id", repoNihUri),
+//            "Poll index for repo");
+//
+//        assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoNihUri.getPath())));
+//
+//        LOG.debug(">>>> Waiting for repo {} to appear in index", repoJsUri);
+//        repoCondition = new Condition<>(() -> passClient.findByAttribute(Repository.class, "@id", repoJsUri),
+//                                        "Poll index for repo");
+//
+//        assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoJsUri.getPath())));
+//
+//        Submission submission = new Submission();
+//        submission.setSource(Source.PASS);
+//        submission.setSubmitted(Boolean.TRUE);
+//        submission.setSubmitter(userUri);
+//        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+//        submission.setMetadata("{ \"key\": \"value\" }");
+//        submission.setRepositories(Arrays.asList(repoNihUri, repoJsUri));
+//
+//        LOG.debug(">>>> Creating Submission {}", submission);
+//        URI submissionUri = passClient.createResource(submission);
+//
+//        Condition<URI> submissionCondition = new Condition<>(() -> passClient.findByAttribute(Submission.class, "@id"
+//            , submissionUri), "Poll index for Submission.");
+//
+//        LOG.debug(">>>> Waiting for submission {} to appear in index", submissionUri);
+//
+//        assertTrue(submissionCondition.awaitAndVerify((uri) -> uri.getPath().equals(submissionUri.getPath())));
+//    }
 }

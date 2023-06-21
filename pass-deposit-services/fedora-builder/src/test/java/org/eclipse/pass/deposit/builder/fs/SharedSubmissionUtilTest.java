@@ -22,6 +22,8 @@ import org.junit.Test;
 import resources.SharedSubmissionUtil;
 import submissions.SubmissionResourceUtil;
 
+import java.io.IOException;
+
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -38,7 +40,7 @@ public class SharedSubmissionUtilTest {
         SubmissionResourceUtil.submissionUris().forEach(submissionUri -> {
             try {
                 assertNotNull(String.format(msg, submissionUri), underTest.asDepositSubmission(submissionUri, builder));
-            } catch (InvalidModel invalidModel) {
+            } catch (InvalidModel | IOException invalidModel) {
                 throw new RuntimeException(String.format(msg, submissionUri), invalidModel);
             }
         });

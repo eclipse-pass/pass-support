@@ -18,6 +18,7 @@ package org.eclipse.pass.deposit.messaging.service;
 import static org.hamcrest.CoreMatchers.isA;
 import static submissions.SubmissionResourceUtil.lookupStream;
 
+import java.io.IOException;
 import java.net.URI;
 
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
@@ -46,7 +47,7 @@ public class EmptySubmissionIT extends AbstractSubmissionIT {
     private Submission submission;
 
     @Before
-    public void submit() {
+    public void submit() throws IOException {
         submission = findSubmission(createSubmission(lookupStream(SUBMISSION_RESOURCES)));
     }
 

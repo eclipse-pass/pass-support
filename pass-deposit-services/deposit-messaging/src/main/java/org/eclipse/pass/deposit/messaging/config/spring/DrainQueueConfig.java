@@ -65,13 +65,14 @@ public class DrainQueueConfig {
         }
     }
 
+    // TODO Deposit service port pending
     @Bean
-    public DefaultJmsListenerContainerFactory drainQueueJmsListenerContainerFactory(
-        ConnectionFactory connectionFactory) {
+    public DefaultJmsListenerContainerFactory drainQueueJmsListenerContainerFactory() {
+//        ConnectionFactory connectionFactory) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setConcurrency("2");
-        factory.setConnectionFactory(connectionFactory);
+//        factory.setConnectionFactory(connectionFactory);
         factory.setAutoStartup(true);
         return factory;
     }

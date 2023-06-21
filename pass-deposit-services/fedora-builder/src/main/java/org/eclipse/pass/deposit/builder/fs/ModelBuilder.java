@@ -259,11 +259,10 @@ abstract class ModelBuilder {
      * copying the desired source data into a new DepositSubmission data model.
      *
      * @param submissionEntity
-     * @param entities
      * @return
      * @throws InvalidModel
      */
-    DepositSubmission createDepositSubmission(Submission submissionEntity, HashMap<URI, PassEntity> entities)
+    DepositSubmission createDepositSubmission(Submission submissionEntity, HashMap<String, PassEntity> entities)
         throws InvalidModel {
 
         // The submission object to populate
@@ -283,9 +282,9 @@ abstract class ModelBuilder {
         metadata.setPersons(persons);
 
         // Data from the Submission resource
-        submission.setId(submissionEntity.getId().toString());
+        submission.setId(submissionEntity.getId());
         // The deposit data model requires a "name" - for now we use the ID.
-        submission.setName(submissionEntity.getId().toString());
+        submission.setName(submissionEntity.getId());
 
         submission.setSubmissionDate(submissionEntity.getSubmittedDate());
 
@@ -295,13 +294,7 @@ abstract class ModelBuilder {
             throw new InvalidModel("Submitter is undefined for submission " + submissionEntity.getId());
         }
 
-        User userEntity = (User) entities.get(submissionEntity.getSubmitter());
-
-        if (userEntity == null) {
-            throw new InvalidModel("Could not find User entity for " + submissionEntity.getSubmitter());
-        }
-
-        persons.add(createPerson(userEntity, DepositMetadata.PERSON_TYPE.submitter));
+        persons.add(createPerson(submissionEntity.getSubmitter(), DepositMetadata.PERSON_TYPE.submitter));
 
         // As of 5/14/18, the following data is available from both the Submission metadata
         // and as a member of one of the PassEntity objects referenced by the Submission:
@@ -313,7 +306,7 @@ abstract class ModelBuilder {
         // Data from the Grant resources
         for (Grant grantEntity : submissionEntity.getGrants()) {
             // Data from the User resources for the PI and CoPIs
-            User piEntity = (User) entities.get(grantEntity.getPi());
+            User piEntity = grantEntity.getPi();
             persons.add(createPerson(piEntity, DepositMetadata.PERSON_TYPE.pi));
 
             for (User copiEntity : grantEntity.getCoPis()) {
@@ -328,22 +321,23 @@ abstract class ModelBuilder {
         submission.setFiles(files);
         manifest.setFiles(files);
 
-        for (URI key : entities.keySet()) {
-            PassEntity entity = entities.get(key);
-            if (entity instanceof File) {
-                File file = (File) entity;
-                // Ignore any Files that do not reference this Submission
-                if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
-                    DepositFile depositFile = new DepositFile();
-                    depositFile.setName(file.getName());
-                    depositFile.setLocation(file.getUri().toString());
-                    // TODO - The client model currently only has "manuscript" and "supplement" roles.
-                    depositFile.setType(getTypeForRole(file.getFileRole()));
-                    depositFile.setLabel(file.getDescription());
-                    files.add(depositFile);
-                }
-            }
-        }
+        // TODO Deposit service port pending
+        // TODO check file creation
+//        for (URI key : submissionEntity.get.keySet()) {
+//            PassEntity entity = entities.get(key);
+//            if (entity instanceof File file) {
+//                // Ignore any Files that do not reference this Submission
+//                if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
+//                    DepositFile depositFile = new DepositFile();
+//                    depositFile.setName(file.getName());
+//                    depositFile.setLocation(file.getUri().toString());
+//                    // TODO - The client model currently only has "manuscript" and "supplement" roles.
+//                    depositFile.setType(getTypeForRole(file.getFileRole()));
+//                    depositFile.setLabel(file.getDescription());
+//                    files.add(depositFile);
+//                }
+//            }
+//        }
 
         return submission;
     }

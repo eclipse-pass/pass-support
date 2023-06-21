@@ -47,18 +47,20 @@ public class SubmissionUtil {
 
     private static Collection<URI> getIncomingUris(Submission submission, PassClient passClient,
                                                    Class<? extends PassEntity> incomingResourceClass) {
-        Map<String, Collection<URI>> incoming = passClient.getIncoming(submission.getId());
-        if (!incoming.containsKey("submission")) {
-            return Collections.emptySet();
-        }
-
-        return incoming.get("submission").stream().filter(uri -> {
-            try {
-                passClient.readResource(uri, incomingResourceClass);
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        }).collect(toSet());
+        // TODO Deposit service port pending
+//        Map<String, Collection<URI>> incoming = passClient.getIncoming(submission.getId());
+//        if (!incoming.containsKey("submission")) {
+//            return Collections.emptySet();
+//        }
+//
+//        return incoming.get("submission").stream().filter(uri -> {
+//            try {
+//                passClient.readResource(uri, incomingResourceClass);
+//                return true;
+//            } catch (Exception e) {
+//                return false;
+//            }
+//        }).collect(toSet());
+        return null;
     }
 }
