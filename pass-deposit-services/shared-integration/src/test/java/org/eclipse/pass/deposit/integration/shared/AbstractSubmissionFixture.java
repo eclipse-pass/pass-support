@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -141,12 +143,12 @@ public abstract class AbstractSubmissionFixture {
      *         Submission.AggregatedDepositStatus.NOT_STARTED}</li>
      * </ul>
      */
-    public Map<String, PassEntity> createSubmission(InputStream submissionGraph) throws IOException {
-        PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
-        HashMap<String, PassEntity> uriMap = new HashMap<>();
+    public List<PassEntity> createSubmission(InputStream submissionGraph) throws IOException {
+        PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter(passClient);
+        List<PassEntity> entities = new LinkedList<>();
 
         // Upload sample data to Fedora repository to get its Submission URI.
-        String submissionId = passAdapter.jsonToFcrepo(submissionGraph, uriMap).getId();
+        String submissionId = passAdapter.jsonToFcrepo(submissionGraph, entities).getId();
 
         // Find the Submission entity that was uploaded
         // TODO Deposit service port pending
@@ -164,7 +166,7 @@ public abstract class AbstractSubmissionFixture {
         assertTrue("Unexpected incoming links to " + submissionId,
                    SubmissionUtil.getDepositUris(submission, passClient).isEmpty());
 
-        return uriMap;
+        return entities;
     }
 
     /**
@@ -179,11 +181,10 @@ public abstract class AbstractSubmissionFixture {
      * @throws AssertionError if zero or more than one {@code Submission} is contained in the supplied entity {@code
      *                        Map}
      */
-    public static Submission findSubmission(Map<String, PassEntity> entities) {
+    public static Submission findSubmission(List<PassEntity> entities) {
         Predicate<PassEntity> submissionFilter = (entity) -> entity instanceof Submission;
 
         long count = entities
-            .values()
             .stream()
             .filter(submissionFilter)
             .count();
@@ -191,7 +192,6 @@ public abstract class AbstractSubmissionFixture {
         assertEquals("Found " + count + " Submission resources, expected exactly 1", count, 1);
 
         return (Submission) entities
-            .values()
             .stream()
             .filter(submissionFilter)
             .findAny()

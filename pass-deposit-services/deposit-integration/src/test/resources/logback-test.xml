@@ -13,43 +13,17 @@
   <logger name="org.springframework" additivity="false" level="${org.springframework.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.fcrepo.client" additivity="false" level="WARN">
+  <logger name="org.eclipse" additivity="false" level="${org.eclipse.nihms.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.nihms.level:-WARN}">
+  <logger name="org.eclipse.pass.client" additivity="false" level="${org.eclipse.pass.level:-ERROR}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.level:-ERROR}">
+  <logger name="org.eclipse.pass.deposit" additivity="false"
+          level="${org.eclipse.pass.deposit.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false"
-          level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
+  <logger name="org.testcontainers" additivity="false" level="${org.testcontainers.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <!-- the rest client is noisy, and detracts from looking at test logging output -->
-  <logger name="org.elasticsearch.client.RestClient" additivity="false"
-          level="${org.elasticsearch.client.level:-ERROR}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-  <!--<logger name="org.swordapp.client" additivity="false" level="${org.swordapp.client.level:-DEBUG}">-->
-  <!--<appender-ref ref="STDERR"/>-->
-  <!--</logger>-->
-  <!-- org.apache.commons.httpclient -->
-  <!--<logger name="org.apache.commons.httpclient" additivity="false" level="${org.apache.commons.httpclient.level:-DEBUG}">-->
-  <!--<appender-ref ref="STDERR"/>-->
-  <!--</logger>-->
-  <!-- httpclient.wire -->
-  <!--<logger name="httpclient.wire" additivity="false"-->
-  <!--level="${httpclient.wire.level:-DEBUG}">-->
-  <!--<appender-ref ref="STDERR"/>-->
-  <!--</logger>-->
-  <!-- org.apache.http.wire -->
-  <!--<logger name="org.apache.http.wire" additivity="false"-->
-  <!--level="${org.apache.http.wire.level:-TRACE}">-->
-  <!--<appender-ref ref="STDERR"/>-->
-  <!--</logger>-->
-  <!--<logger name="org.apache.commons.http.wire" additivity="false"-->
-  <!--level="${org.apache.commons.http.wire.level:-TRACE}">-->
-  <!--<appender-ref ref="STDERR"/>-->
-  <!--</logger>-->
 </configuration>

@@ -68,56 +68,56 @@ public class QuartzTestExecutionListener extends AbstractTestExecutionListener {
     public void beforeTestClass(TestContext testContext) throws Exception {
         super.beforeTestClass(testContext);
 
-        ApplicationContext appCtx = testContext.getApplicationContext();
-        Environment env = appCtx.getEnvironment();
-        SchedulerFactoryBean quartzScheduler = getSchedulerFactoryBean(appCtx);
-
-        if (quartzScheduler == null) {
-            return;
-        }
-
-        boolean isDisabled = Boolean.parseBoolean(env.getProperty(DISABLED));
-        boolean isEnabled = !isDisabled;
-
-        if (!quartzScheduler.isRunning()) {
-            if (isEnabled) {
-                LOG.debug("Starting {} ({}): the scheduler is not running, and it is enabled ({}={})",
-                          classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
-                quartzScheduler.start();
-            } else {
-                LOG.debug("{} ({}) taking no action: the scheduler is not running, and it is disabled ({}={})",
-                          classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
-            }
-
-            return;
-        }
-
-        if (isDisabled) {
-            LOG.debug("Stopping {} ({}): the scheduler is running, and it is disabled ({}={})",
-                      classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
-            quartzScheduler.stop();
-        } else {
-            LOG.debug("{} ({}) taking no action: the scheduler is running, and it is enabled ({}={})",
-                      classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
-        }
+//        ApplicationContext appCtx = testContext.getApplicationContext();
+//        Environment env = appCtx.getEnvironment();
+//        SchedulerFactoryBean quartzScheduler = getSchedulerFactoryBean(appCtx);
+//
+//        if (quartzScheduler == null) {
+//            return;
+//        }
+//
+//        boolean isDisabled = Boolean.parseBoolean(env.getProperty(DISABLED));
+//        boolean isEnabled = !isDisabled;
+//
+//        if (!quartzScheduler.isRunning()) {
+//            if (isEnabled) {
+//                LOG.debug("Starting {} ({}): the scheduler is not running, and it is enabled ({}={})",
+//                          classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+//                quartzScheduler.start();
+//            } else {
+//                LOG.debug("{} ({}) taking no action: the scheduler is not running, and it is disabled ({}={})",
+//                          classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+//            }
+//
+//            return;
+//        }
+//
+//        if (isDisabled) {
+//            LOG.debug("Stopping {} ({}): the scheduler is running, and it is disabled ({}={})",
+//                      classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+//            quartzScheduler.stop();
+//        } else {
+//            LOG.debug("{} ({}) taking no action: the scheduler is running, and it is enabled ({}={})",
+//                      classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+//        }
     }
 
     @Override
     public void afterTestClass(TestContext testContext) throws Exception {
         super.afterTestClass(testContext);
 
-        ApplicationContext appCtx = testContext.getApplicationContext();
-        SchedulerFactoryBean quartzScheduler = getSchedulerFactoryBean(appCtx);
-
-        if (quartzScheduler == null) {
-            return;
-        }
-
-        if (quartzScheduler.isRunning()) {
-            LOG.debug("Stopping the {} ({}) so the running jobs do not act on future tests.",
-                      classString(quartzScheduler), classString(appCtx));
-            quartzScheduler.stop();
-        }
+//        ApplicationContext appCtx = testContext.getApplicationContext();
+//        SchedulerFactoryBean quartzScheduler = getSchedulerFactoryBean(appCtx);
+//
+//        if (quartzScheduler == null) {
+//            return;
+//        }
+//
+//        if (quartzScheduler.isRunning()) {
+//            LOG.debug("Stopping the {} ({}) so the running jobs do not act on future tests.",
+//                      classString(quartzScheduler), classString(appCtx));
+//            quartzScheduler.stop();
+//        }
     }
 
     private SchedulerFactoryBean getSchedulerFactoryBean(ApplicationContext appCtx) {

@@ -16,15 +16,17 @@
 
 package org.eclipse.pass.deposit.builder.fs;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.pass.deposit.builder.InvalidModel;
 import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Builds a submission from a file on a locally mounted filesystem.
@@ -33,7 +35,15 @@ import org.eclipse.pass.support.client.model.Submission;
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
+@Component
 public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilder {
+
+    private final PassJsonFedoraAdapter passJsonFedoraAdapter;
+
+    @Autowired
+    public FcrepoModelBuilder(PassJsonFedoraAdapter passJsonFedoraAdapter) {
+        this.passJsonFedoraAdapter = passJsonFedoraAdapter;
+    }
 
     /***
      * Build a DepositSubmission from the JSON data in named file.
@@ -42,15 +52,10 @@ public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilde
      * @throws InvalidModel if the JSON data cannot be successfully parsed into a valid submission model
      */
     @Override
-    public DepositSubmission build(String formDataUrl) throws InvalidModel {
-        try {
-            PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-            HashMap<String, PassEntity> entities = new HashMap<>();
-            Submission submissionEntity = reader.fcrepoToPass(new URI(formDataUrl), entities);
-            return createDepositSubmission(submissionEntity, entities);
-        } catch (URISyntaxException e) {
-            throw new InvalidModel(String.format("Data file location '%s' is an invalid URI.", formDataUrl), e);
-        }
+    public DepositSubmission build(String submissionId) throws InvalidModel, IOException {
+        List<PassEntity> entities = new LinkedList<>();
+        Submission submissionEntity = passJsonFedoraAdapter.fcrepoToPass(submissionId, entities);
+        return createDepositSubmission(submissionEntity, entities);
     }
 
 }

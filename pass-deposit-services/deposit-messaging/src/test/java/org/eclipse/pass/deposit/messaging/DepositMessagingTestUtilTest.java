@@ -25,7 +25,6 @@ import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -41,7 +40,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @PropertySource("classpath:/application.properties")
 @TestPropertySource(properties = "pass.deposit.jobs.disabled=true")
 @Import(DepositConfig.class)
-@ComponentScan(basePackages = "org.dataconservancy.pass")
 public class DepositMessagingTestUtilTest {
 
     @Autowired

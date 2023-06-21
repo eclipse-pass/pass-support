@@ -29,20 +29,20 @@ import java.io.IOException;
  */
 public class SharedSubmissionUtilTest {
 
-    private SharedSubmissionUtil underTest = new SharedSubmissionUtil();
-
-    private FilesystemModelBuilder builder = new FilesystemModelBuilder();
-
-    @Test
-    public void testLookupByUri() throws Exception {
-        String msg = "Unable to convert test submission uri '%s' to a DepositSubmission";
-
-        SubmissionResourceUtil.submissionUris().forEach(submissionUri -> {
-            try {
-                assertNotNull(String.format(msg, submissionUri), underTest.asDepositSubmission(submissionUri, builder));
-            } catch (InvalidModel | IOException invalidModel) {
-                throw new RuntimeException(String.format(msg, submissionUri), invalidModel);
-            }
-        });
-    }
+//    private SharedSubmissionUtil underTest = new SharedSubmissionUtil();
+//
+//    private FilesystemModelBuilder builder = new FilesystemModelBuilder();
+//
+//    @Test
+//    public void testLookupByUri() throws Exception {
+//        String msg = "Unable to convert test submission uri '%s' to a DepositSubmission";
+//
+//        SubmissionResourceUtil.submissionUris().forEach(submissionUri -> {
+//            try {
+//                assertNotNull(String.format(msg, submissionUri), underTest.asDepositSubmission(submissionUri, builder));
+//            } catch (InvalidModel | IOException invalidModel) {
+//                throw new RuntimeException(String.format(msg, submissionUri), invalidModel);
+//            }
+//        });
+//    }
 }

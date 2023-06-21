@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -38,31 +40,33 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
 import org.eclipse.pass.deposit.messaging.config.spring.DrainQueueConfig;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DepositConfig.class)
-@ComponentScan("org.dataconservancy.pass.deposit")
 @Import(DrainQueueConfig.class)
 @DirtiesContext
 public class PassJsonFedoraAdapterIT {
 
     private URI SAMPLE_DATA_FILE = URI.create("fake:submission1");
     private PassJsonFedoraAdapter adapter;
-    private HashMap<String, PassEntity> entities = new HashMap<>();
+    private List<PassEntity> entities = new LinkedList<>();
+
+    @Autowired private PassClient passClient;
 
     @Before
     public void setup() {
-        adapter = new PassJsonFedoraAdapter();
+        adapter = new PassJsonFedoraAdapter(passClient);
     }
 
     @Test

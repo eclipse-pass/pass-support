@@ -76,6 +76,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -209,12 +210,14 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
     /**
      * Used to submit a Submission graph (i.e. a Submission and all linked entities) to the Fedora PASS repository
      */
-    private PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
+    @Autowired
+    private PassJsonFedoraAdapter passAdapter;
 
     /**
      * Builds DepositSubmission from a Submission resource.
      */
-    private SubmissionBuilder builder = new FcrepoModelBuilder();
+    @Autowired
+    private SubmissionBuilder builder;
 
     /**
      * A Map of each DepositSubmission to its location on the filesystem.
