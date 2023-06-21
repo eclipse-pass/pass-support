@@ -137,7 +137,7 @@ public class FailedDepositRunner {
                                 try {
                                     depositSubmission[0] =
                                         fcrepoModelBuilder.build(submission.getId().toString());
-                                } catch (InvalidModel invalidModel) {
+                                } catch (InvalidModel | IOException invalidModel) {
                                     LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
                                              "Failed to build the DepositSubmission model",
                                              invalidModel);

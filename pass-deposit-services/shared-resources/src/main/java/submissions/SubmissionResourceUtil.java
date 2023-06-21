@@ -101,7 +101,7 @@ import resources.SharedResourceUtil;
  * <pre>
  * [
  *   {
- *     "@id" : "fake:submission10",
+ *     "id" : "fake:submission10",
  *     "@type" : "Submission",
  *     "source" : "pass",
  *     "submitted" : true,
@@ -250,7 +250,7 @@ public class SubmissionResourceUtil {
 
             JsonNode submissionNode = getSubmissionNode(nodeStream);
 
-            URI submissionUri = URI.create(submissionNode.get("@id").asText());
+            URI submissionUri = URI.create(submissionNode.get("id").asText());
 
             if (submissionUris.contains(submissionUri)) {
                 throw new IllegalArgumentException("Each test submission resource must have a unique submission " +
@@ -307,7 +307,7 @@ public class SubmissionResourceUtil {
             Stream<JsonNode> nodeStream = asStream(jsonNode);
             JsonNode submissionNode = getSubmissionNode(nodeStream);
 
-            URI candidateUri = URI.create(submissionNode.get("@id").asText());
+            URI candidateUri = URI.create(submissionNode.get("id").asText());
             if (submissionUri.equals(candidateUri)) {
                 assertNull("Found duplicate submission URI '" + submissionUri + "' in test resource '" + cpElt + "', " +
                            "'" + relativePath + "'", submissionResource.get());
@@ -376,8 +376,8 @@ public class SubmissionResourceUtil {
                      submissionNodes.size(), 1, submissionNodes.size());
 
         JsonNode submissionNode = submissionNodes.get(0);
-        assertTrue("Submission node must have a value for '@id'", submissionNode.has("@id"));
-        assertFalse("Submission node must have a value for '@id', cannot be null", submissionNode.get("@id").isNull());
+        assertTrue("Submission node must have a value for 'id'", submissionNode.has("id"));
+        assertFalse("Submission node must have a value for 'id', cannot be null", submissionNode.get("id").isNull());
 
         return submissionNode;
     }

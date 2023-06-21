@@ -48,12 +48,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+@TestPropertySource(properties = {
+    "pass.client.url=http://localhost:8080",
+    "pass.client.user=backend",
+    "pass.client.password=backend"
+})
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DepositConfig.class)
-@ComponentScan("org.dataconservancy.pass.deposit")
-@Import(DrainQueueConfig.class)
+//@Import(DrainQueueConfig.class)
 @DirtiesContext
 public class FcrepoModelBuilderIT {
 
@@ -84,28 +89,28 @@ public class FcrepoModelBuilderIT {
     private DepositSubmission submission;
     private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
     private static final URI SAMPLE_SUBMISSION_RESOURCE = URI.create("fake:submission1");
-    private HashMap<URI, PassEntity> entities = new HashMap<>();
+    private HashMap<String, PassEntity> entities = new HashMap<>();
     private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
     private Submission submissionEntity = null;
 
     @Before
     public void setup() throws Exception {
         // Upload sample data to Fedora repository to get its Submission URI.
-        URI submissionUri;
+        String submissionId;
         try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)) {
-            submissionUri = adapter.jsonToFcrepo(is, entities).getId();
+            submissionId = adapter.jsonToFcrepo(is, entities).getId();
         }
 
         // Find the Submission entity that was uploaded
-        for (URI key : entities.keySet()) {
-            PassEntity entity = entities.get(key);
-            if (entity.getId() == submissionUri) {
+        for (String entityId : entities.keySet()) {
+            PassEntity entity = entities.get(entityId);
+            if (entity.getId().equals(submissionId)) {
                 submissionEntity = (Submission) entity;
                 break;
             }
         }
 
-        submission = underTest.build(submissionUri.toString());
+        submission = underTest.build(submissionId);
     }
 
     @Test
@@ -200,10 +205,10 @@ public class FcrepoModelBuilderIT {
         assertTrue(agreement.has("JScholarship"));
     }
 
-    @After
-    public void tearDown() {
-        // Clean up the server
-        adapter.deleteFromFcrepo(entities);
-    }
+//    @After
+//    public void tearDown() {
+//        // Clean up the server
+//        adapter.deleteFromFcrepo(entities);
+//    }
 
 }

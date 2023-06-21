@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static submissions.SubmissionResourceUtil.lookupStream;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Set;
 
@@ -61,7 +62,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
     private Submission submission;
 
     @Before
-    public void submit() {
+    public void submit() throws IOException {
         submission = findSubmission(createSubmission(lookupStream(SUBMISSION_RESOURCES)));
     }
 
@@ -73,7 +74,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         triggerSubmission(submission.getId());
 
-        submission = passClient.readResource(submission.getId(), Submission.class);
+        submission = passClient.getObject(Submission.class, submission.getId());
         assertEquals(SubmissionStatus.SUBMITTED, submission.getSubmissionStatus());
 
         // After the SubmissionProcessor successfully processing a submission we should observe:
@@ -106,8 +107,13 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                         return false;
                     }
 
-                    RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(),
-                            RepositoryCopy.class);
+                    RepositoryCopy repoCopy = null;
+                    try {
+                        repoCopy = passClient.getObject(RepositoryCopy.class,
+                            deposit.getRepositoryCopy().getId());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     LOG.debug("  RepositoryCopy: {} {} {} {}", repoCopy.getCopyStatus(), repoCopy.getAccessUrl(),
                         String.join(",", repoCopy.getExternalIds()), repoCopy.getId());
@@ -129,7 +135,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         assertTrue(result.stream().allMatch(deposit -> deposit.getDepositStatus() == DepositStatus.ACCEPTED));
 
         Condition<Submission> statusVerification =
-            new Condition<>(() -> passClient.readResource(submission.getId(), Submission.class),
+            new Condition<>(() -> passClient.getObject(Submission.class, submission.getId()),
                             "Get updated Submission");
 
         statusVerification.awaitAndVerify(

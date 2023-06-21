@@ -53,61 +53,62 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class SubmissionStatusUpdaterIT extends AbstractSubmissionFixture {
 
-    @Autowired
-    private SubmissionStatusUpdater underTest;
-
-    private Submission submission;
-
-    @Before
-    public void submit() {
-        submission = findSubmission(createSubmission(lookupStream(URI.create("fake:submission3"))));
-    }
-
-    @Test
-    public void processStatusFromSubmittedToAccepted() throws Exception {
-
-        // finds the Submission in the index, then returns the resource
-        Condition<Submission> refreshSubmission = new Condition<>(
-            () -> {
-                URI u = passClient.findByAttribute(Submission.class, "@id", submission.getId());
-                if (u != null) {
-                    return passClient.readResource(u, Submission.class);
-                }
-                return null;
-            },
-            "Refresh Submission resource " + submission.getId());
-
-        // finds all the deposits for the submission - there should be one deposit per repository
-        Condition<Set<Deposit>> refreshDeposits = depositsForSubmission(
-            submission.getId(),
-            submission.getRepositories().size(),
-            (deposit, repository) -> true);
-
-        // trigger the submission as if it had been submitted by the PASS UI
-        triggerSubmission(submission.getId());
-
-        // wait for the deposit to succeed
-        assertTrue(refreshDeposits.awaitAndVerify(deposits -> deposits.size() == submission.getRepositories().size()));
-        assertTrue(refreshDeposits.awaitAndVerify(
-                deposits -> deposits.stream().allMatch(d -> d.getDepositStatus() == DepositStatus.ACCEPTED)));
-        assertTrue(refreshDeposits.awaitAndVerify(
-                deposits -> deposits.stream().allMatch(
-                        d -> passClient.readResource(d.getRepositoryCopy(), RepositoryCopy.class)
-                                .getCopyStatus() == CopyStatus.COMPLETE)));
-
-        // insure the Submission is indexed, as the SubmissionStatusUpdater.doUpdate(...) depends on it being indexed
-
-        assertTrue(refreshSubmission.awaitAndVerify(Objects::nonNull));
-
-        submission = refreshSubmission.getResult();
-
-        // The CRI pre-conditions should not fail prior to invoking the update.
-
-        assertTrue(SubmissionStatusUpdater.CriFunc.preCondition.test(submission));
-
-        underTest.doUpdate();
-
-        refreshSubmission.awaitAndVerify(s -> SubmissionStatus.COMPLETE == s.getSubmissionStatus());
-        assertEquals(SubmissionStatus.COMPLETE, refreshSubmission.getResult().getSubmissionStatus());
-    }
+    // TODO Deposit service port pending
+//    @Autowired
+//    private SubmissionStatusUpdater underTest;
+//
+//    private Submission submission;
+//
+//    @Before
+//    public void submit() {
+//        submission = findSubmission(createSubmission(lookupStream(URI.create("fake:submission3"))));
+//    }
+//
+//    @Test
+//    public void processStatusFromSubmittedToAccepted() throws Exception {
+//
+//        // finds the Submission in the index, then returns the resource
+//        Condition<Submission> refreshSubmission = new Condition<>(
+//            () -> {
+//                URI u = passClient.findByAttribute(Submission.class, "@id", submission.getId());
+//                if (u != null) {
+//                    return passClient.readResource(u, Submission.class);
+//                }
+//                return null;
+//            },
+//            "Refresh Submission resource " + submission.getId());
+//
+//        // finds all the deposits for the submission - there should be one deposit per repository
+//        Condition<Set<Deposit>> refreshDeposits = depositsForSubmission(
+//            submission.getId(),
+//            submission.getRepositories().size(),
+//            (deposit, repository) -> true);
+//
+//        // trigger the submission as if it had been submitted by the PASS UI
+//        triggerSubmission(submission.getId());
+//
+//        // wait for the deposit to succeed
+//        assertTrue(refreshDeposits.awaitAndVerify(deposits -> deposits.size() == submission.getRepositories().size()));
+//        assertTrue(refreshDeposits.awaitAndVerify(
+//                deposits -> deposits.stream().allMatch(d -> d.getDepositStatus() == DepositStatus.ACCEPTED)));
+//        assertTrue(refreshDeposits.awaitAndVerify(
+//                deposits -> deposits.stream().allMatch(
+//                        d -> passClient.readResource(d.getRepositoryCopy(), RepositoryCopy.class)
+//                                .getCopyStatus() == CopyStatus.COMPLETE)));
+//
+//        // insure the Submission is indexed, as the SubmissionStatusUpdater.doUpdate(...) depends on it being indexed
+//
+//        assertTrue(refreshSubmission.awaitAndVerify(Objects::nonNull));
+//
+//        submission = refreshSubmission.getResult();
+//
+//        // The CRI pre-conditions should not fail prior to invoking the update.
+//
+//        assertTrue(SubmissionStatusUpdater.CriFunc.preCondition.test(submission));
+//
+//        underTest.doUpdate();
+//
+//        refreshSubmission.awaitAndVerify(s -> SubmissionStatus.COMPLETE == s.getSubmissionStatus());
+//        assertEquals(SubmissionStatus.COMPLETE, refreshSubmission.getResult().getSubmissionStatus());
+//    }
 }

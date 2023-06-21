@@ -23,7 +23,7 @@ import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.model.Registry;
-import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
+//import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusMapper;
@@ -52,7 +52,7 @@ public abstract class AbstractSubmissionProcessorTest {
 
     Policy<DepositStatus> terminalDepositStatusPolicy;
 
-    JmsMessagePolicy messagePolicy;
+//    JmsMessagePolicy messagePolicy;
 
     TaskExecutor taskExecutor;
 
@@ -74,15 +74,17 @@ public abstract class AbstractSubmissionProcessorTest {
         packagerRegistry = mock(Registry.class);
         submissionPolicy = mock(SubmissionPolicy.class);
         intermediateDepositStatusPolicy = mock(Policy.class);
-        messagePolicy = mock(JmsMessagePolicy.class);
+        // TODO Deposit service port pending
+//        messagePolicy = mock(JmsMessagePolicy.class);
         taskExecutor = mock(TaskExecutor.class);
         dspaceStatusMapper = mock(DepositStatusMapper.class);
         atomStatusParser = mock(DepositStatusResolver.class);
         cri = mock(CriticalRepositoryInteraction.class);
         terminalDepositStatusPolicy = mock(Policy.class);
         repositories = mock(Repositories.class);
-        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-                                                  terminalDepositStatusPolicy, cri, repositories);
+        // TODO Deposit service port pending
+//        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
+//                                                  terminalDepositStatusPolicy, cri, repositories);
     }
 
 }

@@ -36,33 +36,34 @@ public class PolicyTestUtil {
     private PolicyTestUtil() {
     }
 
-    static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType)
-        throws IOException {
-        return withResourceAndEventType(resourceType, eventType, "software-agent-web-browser.json");
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType, String
-        messageBodyResource) throws IOException {
-        DepositUtil.MessageContext mc = mock(DepositUtil.MessageContext.class);
-
-        when(mc.eventType()).thenReturn(eventType);
-        when(mc.resourceType()).thenReturn(resourceType);
-
-        Instant now = Instant.now();
-        when(mc.timestamp()).thenReturn(now.toEpochMilli());
-        String formattedNow = DateTimeFormatter.ISO_DATE_TIME.format(now.atZone(ZoneId.of("UTC")));
-        when(mc.dateTime()).thenReturn(formattedNow);
-
-        when(mc.id()).thenReturn(UUID.randomUUID().toString());
-
-        Message message = mock(Message.class);
-        when(mc.message()).thenReturn(message);
-
-        when(message.getPayload()).thenReturn(
-            IOUtils.toString(
-                SubmissionMessagePolicyTest.class.getResourceAsStream(messageBodyResource), "UTF-8"));
-
-        return mc;
-    }
+    // TODO Deposit service port pending
+//    static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType)
+//        throws IOException {
+//        return withResourceAndEventType(resourceType, eventType, "software-agent-web-browser.json");
+//    }
+//
+//    @SuppressWarnings({"unchecked", "rawtypes"})
+//    static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType, String
+//        messageBodyResource) throws IOException {
+//        DepositUtil.MessageContext mc = mock(DepositUtil.MessageContext.class);
+//
+//        when(mc.eventType()).thenReturn(eventType);
+//        when(mc.resourceType()).thenReturn(resourceType);
+//
+//        Instant now = Instant.now();
+//        when(mc.timestamp()).thenReturn(now.toEpochMilli());
+//        String formattedNow = DateTimeFormatter.ISO_DATE_TIME.format(now.atZone(ZoneId.of("UTC")));
+//        when(mc.dateTime()).thenReturn(formattedNow);
+//
+//        when(mc.id()).thenReturn(UUID.randomUUID().toString());
+//
+//        Message message = mock(Message.class);
+//        when(mc.message()).thenReturn(message);
+//
+//        when(message.getPayload()).thenReturn(
+//            IOUtils.toString(
+//                SubmissionMessagePolicyTest.class.getResourceAsStream(messageBodyResource), "UTF-8"));
+//
+//        return mc;
+//    }
 }

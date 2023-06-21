@@ -74,14 +74,6 @@ public class EncodingClassPathResource extends ClassPathResource {
         this.decodedPath = decodePath(this.encodedPath);
     }
 
-    public EncodingClassPathResource(String encodedPath, @Nullable ClassLoader classLoader, @Nullable Class<?> clazz) {
-        super(encodedPath, classLoader, clazz);
-        this.clazz = clazz;
-        this.classLoader = classLoader;
-        this.encodedPath = StringUtils.cleanPath(encodedPath);
-        this.decodedPath = decodePath(this.encodedPath);
-    }
-
     /**
      * Returns the URL of the resource, which will be encoded per normal URL encoding rules.
      * <p>

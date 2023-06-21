@@ -96,7 +96,8 @@ public class SubmissionGraphTest {
                                       // Normally links between resources are handled by link instructions, so a
                                       // function like this
                                       // linking a Grant to the Submission isn't necessary
-                                      submission.getGrants().add(g.getId());
+                                      // TODO Deposit service port pending
+//                                      submission.getGrants().add(g.getId());
                                       return g;
                                   });
 

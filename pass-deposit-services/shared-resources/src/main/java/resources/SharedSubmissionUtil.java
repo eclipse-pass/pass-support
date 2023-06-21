@@ -17,6 +17,7 @@ package resources;
 
 import static submissions.SubmissionResourceUtil.lookupUri;
 
+import java.io.IOException;
 import java.net.URI;
 
 import org.eclipse.pass.deposit.builder.InvalidModel;
@@ -28,7 +29,7 @@ import org.eclipse.pass.deposit.model.DepositSubmission;
  */
 public class SharedSubmissionUtil {
 
-    public DepositSubmission asDepositSubmission(URI submissionUri, SubmissionBuilder builder) throws InvalidModel {
+    public DepositSubmission asDepositSubmission(URI submissionUri, SubmissionBuilder builder) throws InvalidModel, IOException {
         URI submissionJsonUri = lookupUri(submissionUri);
 
         if (submissionJsonUri == null) {

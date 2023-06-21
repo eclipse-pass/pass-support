@@ -14,7 +14,7 @@
     "grants": [
       "fake:grant1"
     ],
-    "@id": "fake:submission2",
+    "id": "fake:submission2",
     "@type": "Submission"
   },
   {
@@ -25,7 +25,7 @@
     "journal": "fake:journal1",
     "volume": "123",
     "issue": "May 2015",
-    "@id": "fake:publication1",
+    "id": "fake:publication1",
     "@type": "Publication"
   },
   {
@@ -37,7 +37,7 @@
     "nlmta": "AAPS PharmSci",
     "pmcParticipation": "A",
     "publisher": "",
-    "@id": "fake:journal1",
+    "id": "fake:journal1",
     "@type": "Journal"
   },
   {
@@ -46,7 +46,7 @@
     "url": "http://example.com",
     "repositoryKey": "pmc",
     "formSchema": "{}",
-    "@id": "fake:repository1",
+    "id": "fake:repository1",
     "@type": "Repository"
   },
   {
@@ -63,7 +63,7 @@
     "coPis": [
       "fake:user3"
     ],
-    "@id": "fake:grant1",
+    "id": "fake:grant1",
     "@type": "Grant"
   },
   {
@@ -71,7 +71,7 @@
     "url": "http://example.com/eyeguys",
     "localKey": "aabbcc",
     "policy": "fake:policy1",
-    "@id": "fake:funder1",
+    "id": "fake:funder1",
     "@type": "Funder"
   },
   {
@@ -83,7 +83,7 @@
     ],
     "institution": "fake:institution1",
     "funder": "fake:funder1",
-    "@id": "fake:policy1",
+    "id": "fake:policy1",
     "@type": "Policy"
   },
   {
@@ -91,7 +91,7 @@
     "url": "http://example.com/othereyeguys",
     "localKey": "ddeeff",
     "policy": "fake:policy1",
-    "@id": "fake:funder2",
+    "id": "fake:funder2",
     "@type": "Funder"
   },
   {
@@ -113,7 +113,7 @@
       "submitter",
       "admin"
     ],
-    "@id": "fake:user1",
+    "id": "fake:user1",
     "@type": "User"
   },
   {
@@ -134,7 +134,7 @@
     "roles": [
       "submitter"
     ],
-    "@id": "fake:user2",
+    "id": "fake:user2",
     "@type": "User"
   },
   {
@@ -155,7 +155,7 @@
     "roles": [
       "admin"
     ],
-    "@id": "fake:user3",
+    "id": "fake:user3",
     "@type": "User"
   },
   {
@@ -165,7 +165,7 @@
     "fileRole": "supplemental",
     "mimeType": "application/pdf",
     "submission": "fake:submission2",
-    "@id": "fake:file1",
+    "id": "fake:file1",
     "@type": "File"
   },
   {
@@ -175,7 +175,7 @@
     "fileRole": "manuscript",
     "mimeType": "application/pdf",
     "submission": "fake:submission2",
-    "@id": "fake:file2",
+    "id": "fake:file2",
     "@type": "File"
   }
 ]

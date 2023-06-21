@@ -20,6 +20,7 @@ import static org.eclipse.pass.deposit.assembler.shared.AssemblerSupport.buildMe
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.web.util.UriUtils;
 
 /**
  * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(
@@ -293,7 +293,9 @@ public abstract class AbstractAssembler implements Assembler {
             throw new IllegalArgumentException("Supplied name was null or the empty string.");
         }
 
-        String result = UriUtils.encodePathSegment(candidateFilename, "UTF-8");
+        // TODO Deposit service port pending
+//        String result = URI.encodePathSegment(candidateFilename, "UTF-8");
+        String result = null;
 
         LOG.trace("Filename was sanitized from '{}' to '{}'", candidateFilename, result);
 

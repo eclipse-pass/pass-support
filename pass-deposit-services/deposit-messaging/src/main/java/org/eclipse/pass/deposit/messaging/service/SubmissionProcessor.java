@@ -185,7 +185,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 DepositSubmission ds = null;
                 try {
                     ds = modelBuilder.build(s.getId().toString());
-                } catch (InvalidModel invalidModel) {
+                } catch (InvalidModel | IOException invalidModel) {
                     throw new RuntimeException(invalidModel.getMessage(), invalidModel);
                 }
                 s.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);

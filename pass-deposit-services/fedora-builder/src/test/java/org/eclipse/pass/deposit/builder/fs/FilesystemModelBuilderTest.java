@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static submissions.SubmissionResourceUtil.lookupStream;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -112,7 +113,7 @@ public class FilesystemModelBuilderTest {
     public void testElementValues() throws Exception {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
-        HashMap<URI, PassEntity> entities = new HashMap<>();
+        HashMap<String, PassEntity> entities = new HashMap<>();
 
         try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)) {
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
@@ -243,7 +244,7 @@ public class FilesystemModelBuilderTest {
     }
 
     @Test
-    public void buildWithIncompleteIssnInfo() throws InvalidModel {
+    public void buildWithIncompleteIssnInfo() throws InvalidModel, IOException {
         // Create submission data with incomplete ISSNs: there should be one ISSN in the submission for 2042-650X
         submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_INCOMPLETE_ISSN), emptyMap());
         assertNotNull(submission);

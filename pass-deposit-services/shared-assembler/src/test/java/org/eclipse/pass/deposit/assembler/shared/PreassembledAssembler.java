@@ -214,20 +214,20 @@ public class PreassembledAssembler implements Assembler {
                     @Override
                     public String mimeType() {
                         switch (compression()) {
-                            case PackageOptions.Compression.OPTS.ZIP:
+                            case ZIP:
                                 return "application/zip";
-                            case PackageOptions.Compression.OPTS.GZIP:
+                            case GZIP:
                                 return "application/gzip";
-                            case PackageOptions.Compression.OPTS.BZIP2:
+                            case BZIP2:
                                 return "application/bzip2";
                             default:
                                 break;
                         }
 
                         switch (archive()) {
-                            case PackageOptions.Archive.OPTS.ZIP:
+                            case ZIP:
                                 return "application/zip";
-                            case PackageOptions.Archive.OPTS.TAR:
+                            case TAR:
                                 return "application/tar";
                             default:
                                 break;

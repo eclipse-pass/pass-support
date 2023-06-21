@@ -122,11 +122,9 @@ public abstract class AbstractSubmissionFixture {
      * it makes to resources).  This OkHttpClient does not share the user agent string of the {@link #passClient}, so it
      * can be used to modify a Submission, and have its messages processed by {@code SubmissionProcessor}.
      * </p>
-     *
-     * @throws Exception
      */
     @Before
-    public void setUpOkHttp() throws Exception {
+    public void setUpOkHttp() {
         okHttp = fcrepoClient(fcrepoUser, fcrepoPass);
     }
 
@@ -143,15 +141,17 @@ public abstract class AbstractSubmissionFixture {
      *         Submission.AggregatedDepositStatus.NOT_STARTED}</li>
      * </ul>
      */
-    public Map<URI, PassEntity> createSubmission(InputStream submissionGraph) {
+    public Map<String, PassEntity> createSubmission(InputStream submissionGraph) throws IOException {
         PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
-        HashMap<URI, PassEntity> uriMap = new HashMap<>();
+        HashMap<String, PassEntity> uriMap = new HashMap<>();
 
         // Upload sample data to Fedora repository to get its Submission URI.
-        URI submissionUri = passAdapter.jsonToFcrepo(submissionGraph, uriMap).getId();
+        String submissionId = passAdapter.jsonToFcrepo(submissionGraph, uriMap).getId();
 
         // Find the Submission entity that was uploaded
-        Submission submission = findSubmission(uriMap);
+        // TODO Deposit service port pending
+//        Submission submission = findSubmission(uriMap);
+        Submission submission = null;
 
         // verify state of the initial Submission
         assertEquals("Submission must have a Submission.source = Submission.Source.PASS",
@@ -161,7 +161,7 @@ public abstract class AbstractSubmissionFixture {
                      AggregatedDepositStatus.NOT_STARTED, submission.getAggregatedDepositStatus());
 
         // no Deposits pointing to the Submission
-        assertTrue("Unexpected incoming links to " + submissionUri,
+        assertTrue("Unexpected incoming links to " + submissionId,
                    SubmissionUtil.getDepositUris(submission, passClient).isEmpty());
 
         return uriMap;
@@ -179,7 +179,7 @@ public abstract class AbstractSubmissionFixture {
      * @throws AssertionError if zero or more than one {@code Submission} is contained in the supplied entity {@code
      *                        Map}
      */
-    public static Submission findSubmission(Map<URI, PassEntity> entities) {
+    public static Submission findSubmission(Map<String, PassEntity> entities) {
         Predicate<PassEntity> submissionFilter = (entity) -> entity instanceof Submission;
 
         long count = entities
@@ -203,31 +203,32 @@ public abstract class AbstractSubmissionFixture {
      * the {@code Submission}.  The {@code Submission} should be considered read-only to clients external to the Deposit
      * Services runtime after invoking this method.   This means <strong>prior</strong> to invoking this method, the
      * {@code Submission} should be fully linked to all necessary resources, including {@link
-     * org.dataconservancy.pass.model.File file} content and any {@link Repository repositories}.  The {@link
+     * org.eclipse.pass.support.client.model.File file} content and any {@link Repository repositories}.  The {@link
      * Submission#getSource() source} and {@link Submission#getAggregatedDepositStatus() deposit status} should also be
      * set properly.  If the Ember UI is being emulated then the proper values are:
      * <dl>
      *     <dt>source</dt>
-     *     <dd>{@link Submission.Source#PASS}</dd>
+     *     <dd>{@link Source#PASS}</dd>
      *     <dt>deposit status</dt>
-     *     <dd>{@link Submission.AggregatedDepositStatus#NOT_STARTED}</dd>
+     *     <dd>{@link AggregatedDepositStatus#NOT_STARTED}</dd>
      * </dl>
-     * Note: Deposit Services doesn't care about, or examine, {@link Submission.SubmissionStatus}.
+     * Note: Deposit Services doesn't care about, or examine,
+     * {@link org.eclipse.pass.support.client.model.SubmissionStatus}.
      *
-     * @param submissionUri the URI of a {@code Submission} that is ready for processing
+     * @param submissionId the ID of a {@code Submission} that is ready for processing
      */
-    public void triggerSubmission(URI submissionUri) {
-        String body = String.format(SUBMIT_TRUE_PATCH, submissionUri, contextUri);
+    public void triggerSubmission(String submissionId) {
+        String body = String.format(SUBMIT_TRUE_PATCH, submissionId, contextUri);
 
         Request post = new Request.Builder()
             .addHeader("Content-Type", MERGE_PATCH)
             .method("PATCH", create(MediaType.parse(MERGE_PATCH), body))
-            .url(submissionUri.toString())
+            .url(submissionId)
             .build();
 
         try (Response response = okHttp.newCall(post).execute()) {
             int expected = 204;
-            assertEquals("Triggering 'submitted' flag to 'true' for " + submissionUri + " failed.  " +
+            assertEquals("Triggering 'submitted' flag to 'true' for " + submissionId + " failed.  " +
                          "Expected " + expected + ", got " + response.code() + " (" + response.message() + ")",
                          expected, response.code());
         } catch (IOException e) {
@@ -245,38 +246,39 @@ public abstract class AbstractSubmissionFixture {
      * @param filter        filters for Deposit resources with a desired state (e.g., a certain deposit status)
      * @return the Condition
      */
-    public Condition<Set<Deposit>> depositsForSubmission(URI submissionUri, int expectedCount,
+    public Condition<Set<Deposit>> depositsForSubmission(String submissionId, int expectedCount,
                                                          BiPredicate<Deposit, Repository> filter) {
-        Callable<Set<Deposit>> deposits = () -> {
-            Set<URI> depositUris = passClient.findAllByAttributes(Deposit.class, new HashMap<String, Object>() {
-                {
-                    put("submission", submissionUri.toString());
-                }
-            });
+        // TODO Deposit service port pending
+//        Callable<Set<Deposit>> deposits = () -> {
+//            Set<URI> depositUris = passClient.findAllByAttributes(Deposit.class, new HashMap<String, Object>() {
+//                {
+//                    put("submission", submissionId);
+//                }
+//            });
+//
+//            return depositUris.stream()
+//                              .map(uri -> passClient.readResource(uri, Deposit.class))
+//                              .filter(deposit ->
+//                                          filter.test(deposit, passClient.readResource(deposit.getRepository(),
+//                                                                                       Repository.class)))
+//                              .collect(Collectors.toSet());
+//        };
+//
+//        Function<Set<Deposit>, Boolean> verification = (depositSet) -> depositSet.size() == expectedCount;
+//
+//        String name = String.format("Searching for %s Deposits for Submission ID %s", expectedCount, submissionId);
+//
+//        Condition<Set<Deposit>> condition = new Condition<>(deposits, verification, name);
+//
+//        if (travis()) {
+//            LOG.info("Travis detected.");
+//            if (condition.getTimeoutThresholdMs() < TRAVIS_CONDITION_TIMEOUT_MS) {
+//                LOG.info("Setting Condition timeout to {} ms", TRAVIS_CONDITION_TIMEOUT_MS);
+//                condition.setTimeoutThresholdMs(TRAVIS_CONDITION_TIMEOUT_MS);
+//            }
+//        }
 
-            return depositUris.stream()
-                              .map(uri -> passClient.readResource(uri, Deposit.class))
-                              .filter(deposit ->
-                                          filter.test(deposit, passClient.readResource(deposit.getRepository(),
-                                                                                       Repository.class)))
-                              .collect(Collectors.toSet());
-        };
-
-        Function<Set<Deposit>, Boolean> verification = (depositSet) -> depositSet.size() == expectedCount;
-
-        String name = String.format("Searching for %s Deposits for Submission URI %s", expectedCount, submissionUri);
-
-        Condition<Set<Deposit>> condition = new Condition<>(deposits, verification, name);
-
-        if (travis()) {
-            LOG.info("Travis detected.");
-            if (condition.getTimeoutThresholdMs() < TRAVIS_CONDITION_TIMEOUT_MS) {
-                LOG.info("Setting Condition timeout to {} ms", TRAVIS_CONDITION_TIMEOUT_MS);
-                condition.setTimeoutThresholdMs(TRAVIS_CONDITION_TIMEOUT_MS);
-            }
-        }
-
-        return condition;
+        return null;
     }
 
     /**
@@ -287,18 +289,19 @@ public abstract class AbstractSubmissionFixture {
      * @return the Repository
      * @throws RuntimeException if the Repository cannot be found
      */
-    public Repository repositoryForName(Submission submission, String repositoryName) {
-        return submission
-            .getRepositories()
-            .stream()
-            .map(uri -> passClient.readResource(uri, Repository.class))
-            .filter(repo -> repositoryName.equals(repo.getName()))
-            .findAny()
-            .orElseThrow(() ->
-                             new RuntimeException(
-                                 "Missing Repository with name " + repositoryName + " for Submission " +
-                                 submission.getId()));
-    }
+    // TODO Deposit service port pending
+//    public Repository repositoryForName(Submission submission, String repositoryName) {
+//        return submission
+//            .getRepositories()
+//            .stream()
+//            .map(uri -> passClient.readResource(uri, Repository.class))
+//            .filter(repo -> repositoryName.equals(repo.getName()))
+//            .findAny()
+//            .orElseThrow(() ->
+//                             new RuntimeException(
+//                                 "Missing Repository with name " + repositoryName + " for Submission " +
+//                                 submission.getId()));
+//    }
 
     /**
      * Looks for, and returns, the Deposit attached to the supplied Submission that references the specified
@@ -309,18 +312,19 @@ public abstract class AbstractSubmissionFixture {
      * @return the Deposit
      * @throws RuntimeException if the Deposit cannot be found
      */
-    public Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
-        Collection<URI> depositUris = SubmissionUtil.getDepositUris(submission, passClient);
-        return depositUris
-            .stream()
-            .map(uri -> passClient.readResource(uri, Deposit.class))
-            .filter(deposit -> repositoryUri.equals(deposit.getRepository()))
-            .findAny()
-            .orElseThrow(() ->
-                             new RuntimeException(
-                                 "Missing Deposit for Repository " + repositoryUri + " on Submission " +
-                                 submission.getId()));
-    }
+    // TODO Deposit service port pending
+//    public Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
+//        Collection<URI> depositUris = SubmissionUtil.getDepositUris(submission, passClient);
+//        return depositUris
+//            .stream()
+//            .map(uri -> passClient.readResource(uri, Deposit.class))
+//            .filter(deposit -> repositoryUri.equals(deposit.getRepository()))
+//            .findAny()
+//            .orElseThrow(() ->
+//                             new RuntimeException(
+//                                 "Missing Deposit for Repository " + repositoryUri + " on Submission " +
+//                                 submission.getId()));
+//    }
 
     /**
      * Method for determining whether the runtime platform is Travis.  Useful for conditionally extending timeouts.

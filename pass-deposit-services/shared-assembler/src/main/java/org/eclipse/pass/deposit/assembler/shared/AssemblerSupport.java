@@ -74,10 +74,10 @@ public class AssemblerSupport {
         // Set the IANA mime type of the package stream based on the archive type or compression type
 
         switch (md.archive()) {
-            case PackageOptions.Archive.OPTS.ZIP:
+            case ZIP:
                 mdb.mimeType(APPLICATION_ZIP.toString());
                 break;
-            case PackageOptions.Archive.OPTS.TAR:
+            case TAR:
                 mdb.mimeType(MediaType.application("x-tar").toString());
                 break;
             default:
@@ -86,13 +86,13 @@ public class AssemblerSupport {
         }
 
         switch (md.compression()) {
-            case PackageOptions.Compression.OPTS.ZIP:
+            case ZIP:
                 mdb.mimeType(APPLICATION_ZIP.toString());
                 break;
-            case PackageOptions.Compression.OPTS.BZIP2:
+            case BZIP2:
                 mdb.mimeType(MediaType.application("x-bzip2").toString());
                 break;
-            case PackageOptions.Compression.OPTS.GZIP:
+            case GZIP:
                 mdb.mimeType(MediaType.application("gzip").toString());
                 break;
             default:

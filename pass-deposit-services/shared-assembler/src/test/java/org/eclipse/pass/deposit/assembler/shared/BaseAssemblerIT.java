@@ -141,11 +141,11 @@ public abstract class BaseAssemblerIT {
 
     protected abstract Map<String, Object> getOptions();
 
-    protected void prepareSubmission() throws InvalidModel {
+    protected void prepareSubmission() throws InvalidModel, IOException {
         prepareSubmission(URI.create("fake:submission1"));
     }
 
-    protected void prepareSubmission(URI submissionUri) throws InvalidModel {
+    protected void prepareSubmission(URI submissionUri) throws InvalidModel, IOException {
         submission = submissionUtil.asDepositSubmission(submissionUri, builder);
     }
 

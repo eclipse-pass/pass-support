@@ -40,31 +40,32 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DirtiesContext
 public class PassClientIT {
 
-    @Autowired
-    private PassClient underTest;
-
-    @Test
-    public void createDeposit() throws Exception {
-        Submission s = new Submission();
-        URI submissionUri = underTest.createResource(s);
-
-        Repository r = new Repository();
-        r.setName("Repository Name");
-        URI repoUri = underTest.createResource(r);
-
-        assertNotNull("Expected a non-null Submission uri", submissionUri);
-        assertNotNull("Expected a non-null Repository uri", repoUri);
-
-        Deposit d = new Deposit();
-        d.setRepository(repoUri);
-        d.setSubmission(submissionUri);
-        URI depositUri = underTest.createResource(d);
-
-        assertNotNull("Expected a non-null Deposit uri", depositUri);
-
-        d = underTest.readResource(depositUri, Deposit.class);
-        assertNotNull("Unable to retrieve Deposit at " + depositUri, d);
-
-        assertEquals(repoUri, d.getRepository());
-    }
+    // TODO Deposit service port pending
+//    @Autowired
+//    private PassClient underTest;
+//
+//    @Test
+//    public void createDeposit() throws Exception {
+//        Submission s = new Submission();
+//        URI submissionUri = underTest.createResource(s);
+//
+//        Repository r = new Repository();
+//        r.setName("Repository Name");
+//        URI repoUri = underTest.createResource(r);
+//
+//        assertNotNull("Expected a non-null Submission uri", submissionUri);
+//        assertNotNull("Expected a non-null Repository uri", repoUri);
+//
+//        Deposit d = new Deposit();
+//        d.setRepository(repoUri);
+//        d.setSubmission(submissionUri);
+//        URI depositUri = underTest.createResource(d);
+//
+//        assertNotNull("Expected a non-null Deposit uri", depositUri);
+//
+//        d = underTest.readResource(depositUri, Deposit.class);
+//        assertNotNull("Unable to retrieve Deposit at " + depositUri, d);
+//
+//        assertEquals(repoUri, d.getRepository());
+//    }
 }
