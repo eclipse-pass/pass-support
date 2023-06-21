@@ -24,6 +24,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.pass.deposit.builder.InvalidModel;
@@ -32,6 +34,7 @@ import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
+import org.springframework.stereotype.Component;
 
 /**
  * Builds an instance of the Deposit Services model (i.e. a {@link DepositSubmission} from a file on a locally mounted
@@ -51,32 +54,13 @@ import org.eclipse.pass.support.client.model.Submission;
  * @author Ben Trumbore (wbt3@cornell.edu)
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBuilder, StreamingSubmissionBuilder {
 
-    /**
-     * Indicates whether or not the DepositSubmission should be created from Fedora representations
-     */
-    private boolean useFedora = false;
+    private final PassJsonFedoraAdapter passJsonFedoraAdapter;
 
-    /**
-     * Constructs a builder that uses local resources to build a DepositSubmission
-     */
-    public FilesystemModelBuilder() {
-
-    }
-
-    /**
-     * Constructs a builder that uses Fedora resources to build a DepositSubmission
-     *
-     * @param useFedora when {@code true} this builder will first deposit resources to Fedora, then use the Fedora
-     *                  resources to build the {@code DepositSubmission}
-     */
-    public FilesystemModelBuilder(boolean useFedora) {
-        this.useFedora = useFedora;
-        if (useFedora) {
-            LOG.info("{} will build DepositSubmission objects using Fedora resources instead of local resources",
-                     this.getClass().getSimpleName());
-        }
+    public FilesystemModelBuilder(PassJsonFedoraAdapter passJsonFedoraAdapter) {
+        this.passJsonFedoraAdapter = passJsonFedoraAdapter;
     }
 
     /***
@@ -143,18 +127,9 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
      */
     @Override
     public DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel, IOException {
-        PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
-        Submission submissionEntity;
-
-        if (useFedora) {
-            HashMap<String, PassEntity> fedoraEntityMap = new HashMap<>();
-            submissionEntity = adapter.jsonToFcrepo(stream, fedoraEntityMap);
-            return createDepositSubmission(submissionEntity, fedoraEntityMap);
-        } else {
-            HashMap<String, PassEntity> entities = new HashMap<>();
-            submissionEntity = adapter.jsonToPass(stream, entities);
-            return createDepositSubmission(submissionEntity, entities);
-        }
+        List<PassEntity> entities = new LinkedList<>();
+        Submission submissionEntity = passJsonFedoraAdapter.jsonToFcrepo(stream, entities);
+        return createDepositSubmission(submissionEntity, entities);
     }
 
 }

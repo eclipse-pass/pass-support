@@ -117,16 +117,6 @@ public class DepositConfig {
     }
 
     @Bean
-    public FcrepoModelBuilder fcrepoModelBuilder() {
-        return new FcrepoModelBuilder();
-    }
-
-    @Bean
-    public FilesystemModelBuilder fileSystemModelBuilder() {
-        return new FilesystemModelBuilder(true);
-    }
-
-    @Bean
     public Registry<Packager> packagerRegistry(Map<String, Packager> packagers) {
         return new InMemoryMapRegistry<>(packagers);
     }

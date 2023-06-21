@@ -198,7 +198,7 @@ public class SubmissionGraphTest {
     @Test
     public void streamingGraph() {
         InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
-        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter()).build();
+        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
 
         assertEquals("fake:submission1", graph.submission().getId().toString());
         LOG.info("Graph contains:");
@@ -209,7 +209,7 @@ public class SubmissionGraphTest {
     @Test
     public void remove() {
         InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
-        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter()).build();
+        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
 
         AtomicInteger count = new AtomicInteger(0);
         graph.walk(entity -> entity instanceof File, (s, f) -> count.getAndIncrement());
@@ -245,7 +245,7 @@ public class SubmissionGraphTest {
     @Test
     public void walk() {
         InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
-        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter()).build();
+        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
 
         AtomicInteger count = new AtomicInteger(0);
         graph.walk(entity -> entity instanceof File, (s, f) -> count.getAndIncrement());

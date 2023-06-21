@@ -97,7 +97,7 @@ public class SubmissionGraph {
     /**
      * Adapter used to convert between JSON serialization and Fedora
      */
-    private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
+    private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter(null);
 
     /**
      * Creates a new instance of a graph, using the supplied map for the members of the graph.  Wraps the {@code

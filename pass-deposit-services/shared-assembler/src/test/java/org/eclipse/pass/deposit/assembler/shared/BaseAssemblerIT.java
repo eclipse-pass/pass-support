@@ -121,7 +121,7 @@ public abstract class BaseAssemblerIT {
     @Before
     public void setUp() throws Exception {
         submissionUtil = new SharedSubmissionUtil();
-        builder = new FilesystemModelBuilder();
+        builder = new FilesystemModelBuilder(null);
         mbf = metadataBuilderFactory();
         rbf = resourceBuilderFactory();
         AbstractAssembler underTest = assemblerUnderTest();

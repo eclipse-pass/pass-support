@@ -45,10 +45,6 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PassEntity;
-import org.eclipse.pass.support.client.model.Policy;
-import org.eclipse.pass.support.client.model.Publication;
-import org.eclipse.pass.support.client.model.Publisher;
-import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
 import org.slf4j.Logger;
@@ -58,6 +54,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.stereotype.Component;
 
 /**
  * Converts and transports PassEntity data between local JSON files, indexed lists and Fedora repositories.
@@ -71,9 +68,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
+@Component
 public class PassJsonFedoraAdapter {
-
     private static final Logger LOG = LoggerFactory.getLogger(PassJsonFedoraAdapter.class);
+
+    private final PassClient passClient;
+
+    public PassJsonFedoraAdapter(PassClient passClient) {
+        this.passClient = passClient;
+    }
 
     /**
      * Extract PassEntity data from a JSON input stream and fill a collection of PassEntity objects.
@@ -82,7 +85,7 @@ public class PassJsonFedoraAdapter {
      * @param entities the map that will contain the parsed PassEntity objects, indexed by their IDs.
      * @return the PassEntity Submission object that is the root of the data tree.
      */
-    public Submission jsonToPass(InputStream is, HashMap<String, PassEntity> entities) {
+    public Submission jsonToPass(InputStream is, List<PassEntity> entities) {
         Submission submission = null;
         try {
             // Read JSON stream that defines the sample repo data
@@ -104,7 +107,7 @@ public class PassJsonFedoraAdapter {
                 byte[] entityJsonBytes = entityJson.toString().getBytes();
                 try {
                     PassEntity entity = objectMapper.readValue(entityJsonBytes, type);
-                    entities.put(entity.getId(), entity);
+                    entities.add(entity);
                     if (entity instanceof Submission) {
                         submission = (Submission) entity;
                     }
@@ -181,73 +184,25 @@ public class PassJsonFedoraAdapter {
      * @param entities the PassEntity objects to upload.  Keys are updated to be URIs on the Fedora server.
      * @return the newly created Submission resource from Fedora.
      */
-    private Submission passToFcrepo(HashMap<String, PassEntity> entities) throws IOException {
-        PassClient client = PassClient.newInstance();
-        HashMap<String, String> idMap = new HashMap<>();
-        String submissionId = null;
+    private Submission passToFcrepo(List<PassEntity> entities) {
 
-        // Create each entity as a resource on the Fedora server, remembering their URIs.
-        for (String oldId : entities.keySet()) {
-            PassEntity entity = entities.get(oldId);
-            entity.setId(null); // Clear out before pushing to repo
-            client.createObject(entity);
-            idMap.put(oldId, entity.getId());
-        }
+        entities.forEach(entity -> {
+            try {
+                passClient.createObject(entity);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
-        // Update links between resources using collected information
-//        for (String oldId : entities.keySet()) {
-//            PassEntity entity = entities.get(oldId);
-//            boolean needUpdate = true;
-//            if (entity instanceof Submission) {
-//                submissionId = idMap.get(oldId);
-//                Submission submission = (Submission) entity;
-//                submission.setPublication(idMap.get(submission.getPublication()));
-//                submission.setSubmitter(idMap.get(submission.getSubmitter()));
-//                submission.setRepositories(getUpdatedUris(idMap, submission.getRepositories()));
-//                submission.setGrants(getUpdatedUris(idMap, submission.getGrants()));
-//            } else if (entity instanceof Grant) {
-//                Grant grant = (Grant) entity;
-//                grant.setPrimaryFunder(idMap.get(grant.getPrimaryFunder()));
-//                grant.setDirectFunder(idMap.get(grant.getDirectFunder()));
-//                grant.setPi(idMap.get(grant.getPi()));
-//                grant.setCoPis(getUpdatedUris(idMap, grant.getCoPis()));
-//            } else if (entity instanceof Funder) {
-//                Funder funder = (Funder) entity;
-//                funder.setPolicy(idMap.get(funder.getPolicy()));
-//            } else if (entity instanceof Policy) {
-//                Policy policy = (Policy) entity;
-//                policy.setInstitution(idMap.get(policy.getInstitution()));
-//                policy.setRepositories(getUpdatedUris(idMap, policy.getRepositories()));
-//            } else if (entity instanceof Journal) {
-//                Journal journal = (Journal) entity;
-//                journal.setPublisher(idMap.get(journal.getPublisher()));
-//            } else if (entity instanceof Publication) {
-//                Publication publication = (Publication) entity;
-//                publication.setJournal(idMap.get(publication.getJournal()));
-//            } else if (entity instanceof File) {
-//                File file = (File) entity;
-//                file.setSubmission(idMap.get(file.getSubmission()));
-//            } else {
-//                needUpdate = false;
-//            }
-//            if (needUpdate) {
-//                client.updateObject(entity);
-//            }
-//        }
-//
-//        // Update URIs in entities list
-//        for (URI oldUri : uriMap.keySet()) {
-//            entities.put(uriMap.get(oldUri), entities.get(oldUri));
-//            entities.remove(oldUri);
-//        }
-//
 //        // Upload the File binary content to the Submission, and update the File.uri field
 //        Submission repoSubmission = (Submission) entities.get(submissionUri);
 //        entities.values().stream().filter(e -> e instanceof File)
 //                .forEach(f -> uploadBinaryToSubmission(repoSubmission, (File) f, client));
 
-//        return repoSubmission;
-        return null;
+        return entities.stream().filter(entity -> entity instanceof Submission)
+            .map(passEntity -> (Submission) passEntity)
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Submission not found"));
     }
 
     /**
@@ -342,15 +297,13 @@ public class PassJsonFedoraAdapter {
      * Credentials on the server are specified with the
      * pass.fedora.user and pass.fedora.password system properties.
      *
-     * @param submissionUri the URI of the root Submission resource to download.
+     * @param submissionId the URI of the root Submission resource to download.
      * @param entities the collection of PassEntity objects that is created.
      * @return the Submission entity that corresponds to the provided URI.
      */
-    // TODO Deposit service port pending
-    public Submission fcrepoToPass(URI submissionUri, HashMap<String, PassEntity> entities) {
-//        PassClient client = PassClientFactory.getPassClient();
-//
-//        Submission submission = client.readResource(submissionUri, Submission.class);
+    public Submission fcrepoToPass(String submissionId, List<PassEntity> entities) throws IOException {
+
+        Submission submission = passClient.getObject(Submission.class, submissionId);
 //        entities.put(submissionUri, submission);
 //        User user = client.readResource(submission.getSubmitter(), User.class);
 //        entities.put(submission.getSubmitter(), user);
@@ -416,7 +369,7 @@ public class PassJsonFedoraAdapter {
 //        }
 //
 //        return submission;
-        return null;
+        return submission;
     }
 
     /***
@@ -434,8 +387,7 @@ public class PassJsonFedoraAdapter {
      * @param entities a map which will be filled with all uploaded PassEntities.
      * @return the root Submission resource on the Fedora server.
      */
-    // TODO Can be replaced with curl data loader?
-    public Submission jsonToFcrepo(InputStream is, HashMap<String, PassEntity> entities) throws IOException {
+    public Submission jsonToFcrepo(InputStream is, List<PassEntity> entities) throws IOException {
         entities.clear();
         jsonToPass(is, entities);
         return passToFcrepo(entities);

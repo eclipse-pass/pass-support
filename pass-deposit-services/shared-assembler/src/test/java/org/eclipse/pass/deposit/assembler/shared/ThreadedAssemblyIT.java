@@ -135,7 +135,7 @@ public abstract class ThreadedAssemblyIT {
     /**
      * Builds sample Submission graphs present on the classpath (in concert with {@link #submissionUtil})
      */
-    protected SubmissionBuilder builder = new FilesystemModelBuilder();
+    protected SubmissionBuilder builder = new FilesystemModelBuilder(null);
 
     /**
      * The factory used to create instances of {@link MetadataBuilder}.

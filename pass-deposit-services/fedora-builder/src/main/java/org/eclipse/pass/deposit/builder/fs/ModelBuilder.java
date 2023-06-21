@@ -26,6 +26,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import com.google.gson.JsonArray;
@@ -262,7 +263,7 @@ abstract class ModelBuilder {
      * @return
      * @throws InvalidModel
      */
-    DepositSubmission createDepositSubmission(Submission submissionEntity, HashMap<String, PassEntity> entities)
+    DepositSubmission createDepositSubmission(Submission submissionEntity, List<PassEntity> fileEntities)
         throws InvalidModel {
 
         // The submission object to populate
@@ -317,25 +318,21 @@ abstract class ModelBuilder {
         // Add Manifest and Files
         DepositManifest manifest = new DepositManifest();
         submission.setManifest(manifest);
-        ArrayList<DepositFile> files = new ArrayList<>();
-        submission.setFiles(files);
-        manifest.setFiles(files);
+        ArrayList<DepositFile> depositFiles = new ArrayList<>();
+        submission.setFiles(depositFiles);
+        manifest.setFiles(depositFiles);
 
         // TODO Deposit service port pending
-        // TODO check file creation
-//        for (URI key : submissionEntity.get.keySet()) {
-//            PassEntity entity = entities.get(key);
-//            if (entity instanceof File file) {
-//                // Ignore any Files that do not reference this Submission
-//                if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
-//                    DepositFile depositFile = new DepositFile();
-//                    depositFile.setName(file.getName());
-//                    depositFile.setLocation(file.getUri().toString());
-//                    // TODO - The client model currently only has "manuscript" and "supplement" roles.
-//                    depositFile.setType(getTypeForRole(file.getFileRole()));
-//                    depositFile.setLabel(file.getDescription());
-//                    files.add(depositFile);
-//                }
+//        for (File file : fileEntities) {
+//            // Ignore any Files that do not reference this Submission
+//            if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
+//                DepositFile depositFile = new DepositFile();
+//                depositFile.setName(file.getName());
+//                depositFile.setLocation(file.getUri().toString());
+//                // TODO - The client model currently only has "manuscript" and "supplement" roles.
+//                depositFile.setType(getTypeForRole(file.getFileRole()));
+//                depositFile.setLabel(file.getDescription());
+//                depositFiles.add(depositFile);
 //            }
 //        }
 

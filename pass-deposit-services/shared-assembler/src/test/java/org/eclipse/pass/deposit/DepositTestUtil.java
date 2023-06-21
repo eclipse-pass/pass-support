@@ -123,7 +123,7 @@ public class DepositTestUtil {
      */
     public static DepositSubmission composeSubmission() {
         SharedSubmissionUtil util = new SharedSubmissionUtil();
-        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder();
+        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder(null);
 
         try {
             return util.asDepositSubmission(URI.create("fake:submission3"), fsModelBuilder);
@@ -134,7 +134,7 @@ public class DepositTestUtil {
 
     public static DepositSubmission composeSubmission(URI submissionUri) {
         SharedSubmissionUtil util = new SharedSubmissionUtil();
-        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder();
+        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder(null);
 
         try {
             return util.asDepositSubmission(submissionUri, fsModelBuilder);

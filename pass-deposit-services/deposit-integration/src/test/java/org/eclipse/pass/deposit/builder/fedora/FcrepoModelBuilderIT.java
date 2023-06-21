@@ -22,100 +22,108 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static submissions.SubmissionResourceUtil.lookupStream;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
+import org.eclipse.pass.deposit.builder.InvalidModel;
 import org.eclipse.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.eclipse.pass.deposit.builder.fs.PassJsonFedoraAdapter;
+import org.eclipse.pass.deposit.messaging.DepositApp;
 import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
-import org.eclipse.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.Submission;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = DepositApp.class)
 @TestPropertySource(properties = {
     "pass.client.url=http://localhost:8080",
     "pass.client.user=backend",
     "pass.client.password=backend"
 })
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = DepositConfig.class)
-//@Import(DrainQueueConfig.class)
+@Testcontainers
 @DirtiesContext
 public class FcrepoModelBuilderIT {
 
-    private static final String EXPECTED_JOURNAL_TITLE = "Food & Function";
+    private static final DockerImageName PASS_CORE_IMG =
+        DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main");
 
+//    @Container
+    static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
+        .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
+        .withEnv("PASS_CORE_BACKEND_USER", "backend")
+        .withEnv("PASS_CORE_BACKEND_PASSWORD", "backend")
+        .waitingFor(Wait.forHttp("/data/grant"))
+        .withExposedPorts(8080);
+
+    private static final String EXPECTED_JOURNAL_TITLE = "Food & Function";
+    private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
+    private static final String EXPECTED_EMBARGO_END_DATE = "2018-06-30";
+    private static final int EXPECTED_SUBMITER_COUNT = 1;
+    private static final int EXPECTED_PI_COUNT = 1;
+    private static final int EXPECTED_CO_PI_COUNT = 2;
+    private static final int EXPECTED_AUTHOR_COUNT = 6;
+    private static final String EXPECTED_NLMTA = "Food Funct";
     private static final Map<String, DepositMetadata.IssnPubType> EXPECTED_ISSNS =
-        new HashMap<String, DepositMetadata.IssnPubType>() {
+        new HashMap<>() {
             {
                 put("2042-650X", new DepositMetadata.IssnPubType("2042-650X", JournalPublicationType.OPUB));
                 put("2042-6496", new DepositMetadata.IssnPubType("2042-6496", JournalPublicationType.PPUB));
             }
         };
 
-    private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
+//    @DynamicPropertySource
+//    static void updateProperties(DynamicPropertyRegistry registry) {
+//        registry.add("pass.client.url",
+//            () -> "http://localhost:" + PASS_CORE_CONTAINER.getMappedPort(8080));
+//    }
 
-    private static final String EXPECTED_EMBARGO_END_DATE = "2018-06-30";
-
-    private static final int EXPECTED_SUBMITER_COUNT = 1;
-
-    private static final int EXPECTED_PI_COUNT = 1;
-
-    private static final int EXPECTED_CO_PI_COUNT = 2;
-
-    private static final int EXPECTED_AUTHOR_COUNT = 6;
-
-    private static final String EXPECTED_NLMTA = "Food Funct";
-
-    private DepositSubmission submission;
-    private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
-    private static final URI SAMPLE_SUBMISSION_RESOURCE = URI.create("fake:submission1");
-    private HashMap<String, PassEntity> entities = new HashMap<>();
-    private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
-    private Submission submissionEntity = null;
-
-    @Before
-    public void setup() throws Exception {
-        // Upload sample data to Fedora repository to get its Submission URI.
-        String submissionId;
-        try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)) {
-            submissionId = adapter.jsonToFcrepo(is, entities).getId();
-        }
-
-        // Find the Submission entity that was uploaded
-        for (String entityId : entities.keySet()) {
-            PassEntity entity = entities.get(entityId);
-            if (entity.getId().equals(submissionId)) {
-                submissionEntity = (Submission) entity;
-                break;
-            }
-        }
-
-        submission = underTest.build(submissionId);
-    }
+    @Autowired private PassJsonFedoraAdapter passJsonFedoraAdapter;
+    @Autowired private FcrepoModelBuilder fcrepoModelBuilder;
 
     @Test
-    public void testElementValues() {
-        assertNotNull("Could not find Submission entity", submissionEntity);
+    public void testElementValues() throws IOException, InvalidModel {
+        // GIVEN
+        List<PassEntity> entities = new LinkedList<>();
+        Submission submissionEntity;
+        try (InputStream is = new ClassPathResource("/submissions/sample1.json").getInputStream()) {
+            submissionEntity = passJsonFedoraAdapter.jsonToFcrepo(is, entities);
+        }
+
+        // WHEN
+        DepositSubmission submission = fcrepoModelBuilder.build(submissionEntity.getId());
+
+        // THEN
+        assertNotNull(submissionEntity);
 
         // Check that some basic things are in order
         assertNotNull(submission.getManifest());
@@ -127,7 +135,7 @@ public class FcrepoModelBuilderIT {
         assertNotNull(submission.getSubmissionMeta());
 
         // Cannot compare ID strings, as they change when uploading to a Fedora server.
-        Publication publication = (Publication) entities.get(submissionEntity.getPublication());
+//        Publication publication = (Publication) entities.get(submissionEntity.getPublication().getId());
         assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
@@ -204,11 +212,5 @@ public class FcrepoModelBuilderIT {
         JsonObject agreement = submission.getSubmissionMeta().getAsJsonObject("agreements");
         assertTrue(agreement.has("JScholarship"));
     }
-
-//    @After
-//    public void tearDown() {
-//        // Clean up the server
-//        adapter.deleteFromFcrepo(entities);
-//    }
 
 }
