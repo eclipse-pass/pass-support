@@ -40,7 +40,6 @@ public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilde
 
     private final PassJsonFedoraAdapter passJsonFedoraAdapter;
 
-    @Autowired
     public FcrepoModelBuilder(PassJsonFedoraAdapter passJsonFedoraAdapter) {
         this.passJsonFedoraAdapter = passJsonFedoraAdapter;
     }
