@@ -45,8 +45,7 @@ import org.springframework.core.env.Environment;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @SpringBootApplication
-@Import(DepositConfig.class)
-@ComponentScan("org.dataconservancy.pass")
+@ComponentScan(basePackages = {"org.eclipse.pass", "org.dataconservancy.pass"})
 public class DepositApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositApp.class);
