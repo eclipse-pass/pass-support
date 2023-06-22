@@ -77,7 +77,7 @@ public class FcrepoModelBuilderIT {
     private static final DockerImageName PASS_CORE_IMG =
         DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main");
 
-//    @Container
+    @Container
     static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
         .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
         .withEnv("PASS_CORE_BACKEND_USER", "backend")
@@ -101,11 +101,11 @@ public class FcrepoModelBuilderIT {
             }
         };
 
-//    @DynamicPropertySource
-//    static void updateProperties(DynamicPropertyRegistry registry) {
-//        registry.add("pass.client.url",
-//            () -> "http://localhost:" + PASS_CORE_CONTAINER.getMappedPort(8080));
-//    }
+    @DynamicPropertySource
+    static void updateProperties(DynamicPropertyRegistry registry) {
+        registry.add("pass.client.url",
+            () -> "http://localhost:" + PASS_CORE_CONTAINER.getMappedPort(8080));
+    }
 
     @Autowired private PassJsonFedoraAdapter passJsonFedoraAdapter;
     @Autowired private FcrepoModelBuilder fcrepoModelBuilder;
