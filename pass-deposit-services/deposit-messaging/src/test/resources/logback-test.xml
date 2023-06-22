@@ -28,15 +28,19 @@
   <logger name="org.springframework" additivity="false" level="WARN">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.level:-WARN}">
+  <logger name="org.eclipse" additivity="false" level="${org.eclipse.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false"
-          level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
+  <logger name="org.eclipse.pass.deposit" additivity="false"
+          level="${org.eclipse.pass.deposit.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.client" additivity="false"
-          level="${org.dataconservancy.pass.client.level:-ERROR}">
+  <logger name="org.eclipse.pass.client" additivity="false"
+          level="${org.eclipse.pass.client.level:-ERROR}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.testcontainers" additivity="false"
+          level="${org.testcontainers:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 </configuration>
