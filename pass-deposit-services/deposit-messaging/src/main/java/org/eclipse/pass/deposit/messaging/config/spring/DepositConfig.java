@@ -34,7 +34,7 @@ import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.eclipse.pass.support.messaging.cri.CriticalPath;
 import org.eclipse.pass.deposit.assembler.Assembler;
-import org.eclipse.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
+import org.eclipse.pass.deposit.assembler.ExceptionHandlingThreadPoolExecutor;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;

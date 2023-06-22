@@ -36,7 +36,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.eclipse.pass.deposit.assembler.shared.AuthenticatedResource;
+import org.eclipse.pass.deposit.assembler.AuthenticatedResource;
 import org.eclipse.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.junit.Before;
