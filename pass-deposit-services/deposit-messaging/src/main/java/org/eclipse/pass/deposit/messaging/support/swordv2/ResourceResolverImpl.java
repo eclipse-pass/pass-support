@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 
-import org.eclipse.pass.deposit.assembler.shared.AuthenticatedResource;
+import org.eclipse.pass.deposit.assembler.AuthenticatedResource;
 import org.eclipse.pass.deposit.messaging.config.repository.AuthRealm;
 import org.eclipse.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;

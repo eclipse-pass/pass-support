@@ -81,13 +81,13 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
             <scope>test</scope>
         </dependency>
 
-4. Create your Assembler class that extends `org.eclipse.pass.deposit.assembler.shared.AbstractAssembler`
+4. Create your Assembler class that extends `org.eclipse.pass.deposit.assembler.AbstractAssembler`
 5. Create your Package Provider class that
-   implements `org.eclipse.pass.deposit.assembler.shared.PackageProvider`
+   implements `org.eclipse.pass.deposit.assembler.PackageProvider`
 
 To get started with testing:
-Create your package verifier that implements `org.eclipse.pass.deposit.assembler.shared.PackageVerifier`
-Extend and implement `org.eclipse.pass.deposit.assembler.shared.ThreadedAssemblyIT`
+Create your package verifier that implements `org.eclipse.pass.deposit.assembler.PackageVerifier`
+Extend and implement `org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT`
 
 # API Overview
 

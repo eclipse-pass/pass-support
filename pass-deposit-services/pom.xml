@@ -51,18 +51,14 @@
   <modules>
     <module>deposit-model</module>
     <module>builder-api</module>
-    <module>fedora-builder</module>
     <module>assembler-api</module>
     <module>transport-api</module>
     <module>ftp-transport</module>
-    <module>deposit-integration</module>
     <module>deposit-util</module>
     <module>sword2-transport</module>
-    <module>shared-assembler</module>
     <module>deposit-messaging</module>
     <module>shared-resources</module>
     <module>filesystem-transport</module>
-    <module>shared-integration</module>
   </modules>
 
   <scm>
