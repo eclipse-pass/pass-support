@@ -194,6 +194,7 @@ public class PassJsonFedoraAdapter {
             }
         });
 
+        // TODO Deposit service port pending
 //        // Upload the File binary content to the Submission, and update the File.uri field
 //        Submission repoSubmission = (Submission) entities.get(submissionUri);
 //        entities.values().stream().filter(e -> e instanceof File)
@@ -303,43 +304,18 @@ public class PassJsonFedoraAdapter {
      */
     public Submission fcrepoToPass(String submissionId, List<PassEntity> entities) throws IOException {
 
-        Submission submission = passClient.getObject(Submission.class, submissionId);
-//        entities.put(submissionUri, submission);
-//        User user = client.readResource(submission.getSubmitter(), User.class);
-//        entities.put(submission.getSubmitter(), user);
-//
-//        Publication publication = client.readResource(submission.getPublication(), Publication.class);
-//        entities.put(submission.getPublication(), publication);
-//        Journal journal = client.readResource(publication.getJournal(), Journal.class);
-//        entities.put(publication.getJournal(), journal);
-//
-//        // It is valid for a Journal to not link to a Publisher
-//        if (journal.getPublisher() != null) {
-//            Publisher publisher = client.readResource(journal.getPublisher(), Publisher.class);
-//            entities.put(journal.getPublisher(), publisher);
-//        }
-//
-//        // Assume all repositories are unique
-//        for (URI repoURI : submission.getRepositories()) {
-//            Repository repository = client.readResource(repoURI, Repository.class);
-//            entities.put(repoURI, repository);
-//        }
-//
-//        // Assume all grants are unique, but funders, policies and people may be duplicated.
-//        for (URI grantUri : submission.getGrants()) {
-//            Grant grant = client.readResource(grantUri, Grant.class);
-//            entities.put(grantUri, grant);
-//            funderFcrepoToPass(entities, client, grant.getPrimaryFunder());
-//            funderFcrepoToPass(entities, client, grant.getDirectFunder());
-//            User pi = client.readResource(grant.getPi(), User.class);
-//            entities.put(grant.getPi(), pi);
-//            for (URI copiUri : grant.getCoPis()) {
-//                if (!entities.containsKey(copiUri)) {
-//                    User copi = client.readResource(copiUri, User.class);
-//                    entities.put(copiUri, copi);
-//                }
-//            }
-//        }
+        Submission submission = passClient.getObject(Submission.class, submissionId, "publication",
+            "repositories", "submitter", "preparers", "grants", "effectivePolicies");
+
+        List<Grant> populatedGrants = submission.getGrants().stream()
+            .map(grant -> {
+                try {
+                    return passClient.getObject(grant, "primaryFunder", "directFunder", "pi", "coPis");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+        submission.setGrants(populatedGrants);
 //
 //        // Add File resources that reference this Submission to the entity list.
 //        Map<String, Collection<URI>> incomingLinks = client.getIncoming(submissionUri);
@@ -398,6 +374,7 @@ public class PassJsonFedoraAdapter {
      *
      * @param entities the PASS entities to be deleted
      */
+    // TODO Deposit service port pending
 //    public void deleteFromFcrepo(HashMap<URI, PassEntity> entities) {
 //        PassClient client = PassClientFactory.getPassClient();
 //        for (URI key : entities.keySet()) {
