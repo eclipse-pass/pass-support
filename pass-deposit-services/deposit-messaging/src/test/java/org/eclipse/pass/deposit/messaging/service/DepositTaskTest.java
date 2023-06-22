@@ -15,43 +15,16 @@
  */
 package org.eclipse.pass.deposit.messaging.service;
 
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.abdera.i18n.iri.IRI;
-import org.eclipse.pass.deposit.assembler.Assembler;
-import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
-import org.eclipse.pass.deposit.transport.Transport;
-import org.eclipse.pass.deposit.transport.TransportResponse;
-import org.eclipse.pass.deposit.transport.TransportSession;
-import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
-import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.eclipse.pass.support.client.model.Repository;
-import org.eclipse.pass.support.client.model.Submission;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.swordapp.client.DepositReceipt;
-import org.swordapp.client.SWORDClientException;
-import org.swordapp.client.SwordIdentifier;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

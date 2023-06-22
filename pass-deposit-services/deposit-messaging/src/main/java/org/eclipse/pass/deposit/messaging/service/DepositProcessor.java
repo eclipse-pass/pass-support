@@ -23,7 +23,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.eclipse.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;

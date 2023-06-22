@@ -22,8 +22,8 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.pass.deposit.messaging.config.spring.DrainQueueConfig;
-import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalPath;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;

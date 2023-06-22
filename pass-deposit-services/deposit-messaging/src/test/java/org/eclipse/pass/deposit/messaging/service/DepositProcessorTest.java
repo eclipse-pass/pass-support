@@ -16,38 +16,21 @@
 package org.eclipse.pass.deposit.messaging.service;
 
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus;
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus;
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalDepositStatus;
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.messaging.service.DepositProcessor.DepositProcessorCriFunc;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
-import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Test;

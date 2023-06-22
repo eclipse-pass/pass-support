@@ -37,8 +37,8 @@ import org.eclipse.pass.deposit.messaging.service.DepositUtil.DepositWorkerConte
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;

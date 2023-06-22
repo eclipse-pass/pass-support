@@ -16,7 +16,7 @@
 package org.eclipse.pass.deposit.messaging.runner;
 
 import static java.lang.String.format;
-import static org.dataconservancy.pass.support.messaging.constants.Constants.PassEntity;
+import static org.eclipse.pass.support.messaging.constants.Constants.PassEntity;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import org.eclipse.pass.deposit.messaging.model.Registry;
 import org.eclipse.pass.deposit.messaging.service.DepositTaskHelper;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.messaging.service.SubmissionProcessor;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;import org.eclipse.pass.support.client.RSQL;

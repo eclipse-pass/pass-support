@@ -17,24 +17,19 @@ package org.eclipse.pass.deposit.messaging.service;
 
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatus;
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatusExcept;
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.Submission;
