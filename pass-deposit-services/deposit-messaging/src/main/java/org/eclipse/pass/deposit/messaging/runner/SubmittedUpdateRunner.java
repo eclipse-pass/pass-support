@@ -15,7 +15,7 @@
  */
 package org.eclipse.pass.deposit.messaging.runner;
 
-import static org.dataconservancy.pass.support.messaging.constants.Constants.PassEntity;
+import static org.eclipse.pass.support.messaging.constants.Constants.PassEntity;
 
 import java.io.IOException;
 import java.util.Collection;

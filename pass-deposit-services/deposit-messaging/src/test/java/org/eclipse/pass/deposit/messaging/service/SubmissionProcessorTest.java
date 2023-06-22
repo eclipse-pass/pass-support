@@ -16,15 +16,8 @@
 
 package org.eclipse.pass.deposit.messaging.service;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomAggregatedDepositStatusExcept;
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
-import static org.eclipse.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.critical;
-import static org.eclipse.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.postCondition;
-import static org.eclipse.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.preCondition;
-import static org.eclipse.pass.deposit.messaging.service.SubmissionProcessor.getLookupKeys;
-import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,50 +26,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static submissions.SubmissionResourceUtil.asJson;
-import static submissions.SubmissionResourceUtil.asStream;
-import static submissions.SubmissionResourceUtil.lookupUri;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.eclipse.pass.deposit.builder.InvalidModel;
-import org.eclipse.pass.deposit.builder.fs.FilesystemModelBuilder;
-import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
-import org.eclipse.pass.deposit.messaging.model.Packager;
-import org.eclipse.pass.deposit.model.DepositFile;
-import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
-import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
-import org.eclipse.pass.support.client.model.Deposit;
-import org.eclipse.pass.support.client.model.Repository;
-import org.eclipse.pass.support.client.model.Submission;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.springframework.core.task.TaskRejectedException;
 
 public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 

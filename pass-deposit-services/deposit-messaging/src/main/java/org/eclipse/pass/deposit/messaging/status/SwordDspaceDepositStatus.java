@@ -18,7 +18,7 @@ package org.eclipse.pass.deposit.messaging.status;
 import java.net.URI;
 import java.util.stream.Stream;
 
-import org.dataconservancy.pass.support.messaging.constants.Constants;
+import org.eclipse.pass.support.messaging.constants.Constants;
 
 /**
  * Possible states of a deposit to DSpace via SWORD.

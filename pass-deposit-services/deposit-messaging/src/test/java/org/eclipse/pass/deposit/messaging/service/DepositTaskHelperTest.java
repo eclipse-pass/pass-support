@@ -16,8 +16,6 @@
 package org.eclipse.pass.deposit.messaging.service;
 
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomDepositStatusExcept;
-import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
-import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,40 +24,21 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
-import java.net.URI;
-
-import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
-import org.eclipse.pass.deposit.messaging.RemedialDepositException;
-import org.eclipse.pass.deposit.messaging.config.repository.DepositProcessing;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
-import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.eclipse.pass.deposit.messaging.config.repository.RepositoryDepositConfig;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
-import org.eclipse.pass.deposit.messaging.service.DepositTaskHelper.DepositStatusCriFunc;
-import org.eclipse.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
-import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
 import org.springframework.core.task.TaskExecutor;
 
 /**

@@ -16,7 +16,7 @@
  *
  */
 
-package org.dataconservancy.pass.support.messaging.constants;
+package org.eclipse.pass.support.messaging.constants;
 
 /**
  * Deposit and Notification Services constants.
@@ -93,14 +93,14 @@ public final class Constants {
     public static final class PassEntity {
 
         /**
-         * The field of the {@code org.dataconservancy.pass.model.Deposit} entity that carries
+         * The field of the {@code org.eclipse.pass.support.client.model.Deposit} entity that carries
          * {@code Deposit#getDepositStatus() status} information.
          */
         public static final String DEPOSIT_STATUS = "depositStatus";
 
         /**
-         * The field of the {@code org.dataconservancy.pass.model.RepositoryCopy} entity that carries
-         * {@code org.dataconservancy.pass.model.RepositoryCopy#copyStatus status} information.
+         * The field of the {@code org.eclipse.pass.support.client.model.RepositoryCopy} entity that carries
+         * {@code org.eclipse.pass.support.client.model.RepositoryCopy#copyStatus status} information.
          */
         public static final String REPOSITORYCOPY_STATUS = "copyStatus";
 

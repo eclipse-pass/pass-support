@@ -16,7 +16,7 @@
  *
  */
 
-package org.dataconservancy.pass.support.messaging.cri;
+package org.eclipse.pass.support.messaging.cri;
 
 import java.util.Optional;
 import java.util.function.BiPredicate;
