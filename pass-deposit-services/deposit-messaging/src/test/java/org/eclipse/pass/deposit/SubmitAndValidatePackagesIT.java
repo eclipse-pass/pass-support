@@ -35,7 +35,6 @@ import okhttp3.OkHttpClient;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.ExplodedPackage;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
-import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.builder.PassJsonFedoraAdapter;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.junit.BeforeClass;
@@ -178,12 +177,6 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      */
     @Autowired
     private PassJsonFedoraAdapter passAdapter;
-
-    /**
-     * Builds DepositSubmission from a Submission resource.
-     */
-    @Autowired
-    private SubmissionBuilder builder;
 
     /**
      * A Map of each DepositSubmission to its location on the filesystem.

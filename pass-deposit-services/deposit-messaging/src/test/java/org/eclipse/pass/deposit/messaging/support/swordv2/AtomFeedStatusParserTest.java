@@ -32,8 +32,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static resources.SharedResourceUtil.findStreamByName;
-import static resources.SharedResourceUtil.findUriByName;
+import static org.eclipse.pass.deposit.util.SharedResourceUtil.findStreamByName;
+import static org.eclipse.pass.deposit.util.SharedResourceUtil.findUriByName;
 
 import java.io.InputStream;
 import java.net.URI;

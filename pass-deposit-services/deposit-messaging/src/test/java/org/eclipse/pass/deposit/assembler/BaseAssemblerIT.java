@@ -18,9 +18,9 @@ package org.eclipse.pass.deposit.assembler;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.eclipse.pass.deposit.DepositTestUtil.openArchive;
-import static org.eclipse.pass.deposit.DepositTestUtil.packageFile;
-import static org.eclipse.pass.deposit.DepositTestUtil.savePackage;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.openArchive;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.packageFile;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.savePackage;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -29,18 +29,16 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.pass.deposit.builder.InvalidModel;
-import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.builder.FilesystemModelBuilder;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.deposit.util.SubmissionUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import resources.SharedSubmissionUtil;
 
 /**
  * Abstract integration test for {@link AbstractAssembler} implementations.
@@ -61,9 +59,7 @@ public abstract class BaseAssemblerIT {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BaseAssemblerIT.class);
 
-    protected SharedSubmissionUtil submissionUtil;
-
-    protected SubmissionBuilder builder;
+    protected FilesystemModelBuilder builder;
 
     /**
      * The custodial resources that are to be packaged up by {@link #setUp()}.  They should be present in the extracted
@@ -118,7 +114,6 @@ public abstract class BaseAssemblerIT {
      */
     @Before
     public void setUp() throws Exception {
-        submissionUtil = new SharedSubmissionUtil();
         builder = new FilesystemModelBuilder(null);
         mbf = metadataBuilderFactory();
         rbf = resourceBuilderFactory();
@@ -139,12 +134,12 @@ public abstract class BaseAssemblerIT {
 
     protected abstract Map<String, Object> getOptions();
 
-    protected void prepareSubmission() throws InvalidModel, IOException {
+    protected void prepareSubmission() {
         prepareSubmission(URI.create("fake:submission1"));
     }
 
-    protected void prepareSubmission(URI submissionUri) throws InvalidModel, IOException {
-        submission = submissionUtil.asDepositSubmission(submissionUri, builder);
+    protected void prepareSubmission(URI submissionUri) {
+        submission = SubmissionUtil.asDepositSubmission(submissionUri, builder);
     }
 
     /**

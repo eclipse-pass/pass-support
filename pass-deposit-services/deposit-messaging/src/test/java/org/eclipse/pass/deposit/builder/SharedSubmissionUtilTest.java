@@ -17,13 +17,6 @@ package org.eclipse.pass.deposit.builder;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.eclipse.pass.deposit.builder.InvalidModel;
-import org.junit.Test;
-import resources.SharedSubmissionUtil;
-import submissions.SubmissionResourceUtil;
-
-import java.io.IOException;
-
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */

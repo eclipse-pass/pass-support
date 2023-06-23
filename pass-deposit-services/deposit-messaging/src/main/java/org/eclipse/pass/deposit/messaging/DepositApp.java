@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
 import org.eclipse.pass.deposit.messaging.runner.FailedDepositRunner;
 import org.eclipse.pass.deposit.messaging.runner.ListenerRunner;
 import org.eclipse.pass.deposit.messaging.runner.SubmittedUpdateRunner;
@@ -37,7 +36,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
 

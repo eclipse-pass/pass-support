@@ -16,39 +16,20 @@
 
 package org.eclipse.pass.deposit.builder;
 
-import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static submissions.SubmissionResourceUtil.lookupStream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import jsonapi.Link;
-import org.eclipse.pass.deposit.builder.InvalidModel;
-import org.eclipse.pass.deposit.model.DepositFile;
-import org.eclipse.pass.deposit.model.DepositFileType;
-import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
-import org.eclipse.pass.support.client.model.PassEntity;
-import org.eclipse.pass.support.client.model.Submission;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.junit.Before;
-import org.junit.Test;
-import submissions.SubmissionResourceUtil;
 
 public class FilesystemModelBuilderTest {
 

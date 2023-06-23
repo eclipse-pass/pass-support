@@ -26,7 +26,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static submissions.SubmissionResourceUtil.lookupStream;
+import static org.eclipse.pass.deposit.util.SubmissionResourceUtil.lookupStream;
 
 import java.io.IOException;
 import java.io.InputStream;

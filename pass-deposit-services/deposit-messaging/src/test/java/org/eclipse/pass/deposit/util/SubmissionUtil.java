@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.deposit;
+package org.eclipse.pass.deposit.util;
 
 import static java.util.stream.Collectors.toSet;
+import static org.eclipse.pass.deposit.util.SubmissionResourceUtil.lookupUri;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import org.eclipse.pass.deposit.builder.FilesystemModelBuilder;
+import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.File;
@@ -35,6 +39,11 @@ import org.eclipse.pass.support.client.model.Submission;
 public class SubmissionUtil {
 
     private SubmissionUtil() {
+    }
+
+    public static DepositSubmission asDepositSubmission(URI submissionUri, FilesystemModelBuilder builder) {
+        URI submissionJsonUri = lookupUri(submissionUri);
+        return builder.build(submissionJsonUri.toString());
     }
 
     public static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {

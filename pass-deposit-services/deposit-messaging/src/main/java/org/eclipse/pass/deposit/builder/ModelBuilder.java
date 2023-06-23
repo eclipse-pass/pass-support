@@ -31,7 +31,7 @@ import java.util.Optional;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.eclipse.pass.deposit.builder.InvalidModel;
+import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositManifest;
@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /***
- * Base class for copying deposit-submission data from Fedora-based sources into the deposit data model.
+ * Base class for copying deposit-submission data from Pass-Core sources into the deposit data model.
  * Copies relevant fields from a collection of PassEntity objects, starting with the Submission entity
  * that is the root of the data tree.
  *
@@ -150,8 +150,7 @@ abstract class ModelBuilder {
         return Optional.empty();
     }
 
-    private void processCommonMetadata(DepositMetadata metadata, JsonObject submissionData)
-        throws InvalidModel {
+    private void processCommonMetadata(DepositMetadata metadata, JsonObject submissionData) {
 
         // Is this tile for manuscript or article or both?
         getStringProperty(submissionData, MANUSCRIPT_TITLE_KEY)
@@ -213,9 +212,8 @@ abstract class ModelBuilder {
                 ZonedDateTime zonedEndDate = localEndDate.atZone(ZoneId.of("America/New_York"));
                 metadata.getArticleMetadata().setEmbargoLiftDate(zonedEndDate);
             } catch (Exception e) {
-                InvalidModel im = new InvalidModel(String.format("Data file contained an invalid Date: '%s'.",
-                                                                 endDate), e);
-                throw new RuntimeException(im.getMessage(), im);
+                throw new DepositServiceRuntimeException(
+                    String.format("Data file contained an invalid Date: '%s'.", endDate), e);
             }
         });
     }
@@ -226,8 +224,8 @@ abstract class ModelBuilder {
                 doi = doi.trim();
                 metadata.getArticleMetadata().setDoi(URI.create(doi));
             } catch (Exception e) {
-                InvalidModel im = new InvalidModel(String.format("Data file contained an invalid DOI: '%s'", doi), e);
-                throw new RuntimeException(im.getMessage(), im);
+                throw new DepositServiceRuntimeException(
+                    String.format("Data file contained an invalid DOI: '%s'", doi), e);
             }
         });
     }
@@ -243,10 +241,8 @@ abstract class ModelBuilder {
      *
      * @param depositMetadata
      * @param metadataStr
-     * @throws InvalidModel
      */
-    void processMetadata(DepositMetadata depositMetadata, String metadataStr)
-        throws InvalidModel {
+    void processMetadata(DepositMetadata depositMetadata, String metadataStr) {
         JsonObject json = new JsonParser().parse(metadataStr).getAsJsonObject();
         processCommonMetadata(depositMetadata, json);
         processPmcMetadata(depositMetadata, json);
@@ -259,10 +255,8 @@ abstract class ModelBuilder {
      *
      * @param submissionEntity
      * @return
-     * @throws InvalidModel
      */
-    DepositSubmission createDepositSubmission(Submission submissionEntity, List<PassEntity> fileEntities)
-        throws InvalidModel {
+    DepositSubmission createDepositSubmission(Submission submissionEntity, List<PassEntity> fileEntities) {
 
         // The submission object to populate
         DepositSubmission submission = new DepositSubmission();
@@ -290,7 +284,8 @@ abstract class ModelBuilder {
         // Data from the Submission's user resource
 
         if (submissionEntity.getSubmitter() == null) {
-            throw new InvalidModel("Submitter is undefined for submission " + submissionEntity.getId());
+            throw new DepositServiceRuntimeException("Submitter is undefined for submission " +
+                submissionEntity.getId());
         }
 
         persons.add(createPerson(submissionEntity.getSubmitter(), DepositMetadata.PERSON_TYPE.submitter));

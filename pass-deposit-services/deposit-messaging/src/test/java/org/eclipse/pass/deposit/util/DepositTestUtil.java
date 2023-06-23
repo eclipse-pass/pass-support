@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.deposit;
+package org.eclipse.pass.deposit.util;
 
 import static org.junit.Assert.assertTrue;
 
@@ -42,7 +42,6 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.builder.FilesystemModelBuilder;
-import org.eclipse.pass.deposit.builder.InvalidModel;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositManifest;
@@ -55,7 +54,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import resources.SharedSubmissionUtil;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -122,25 +120,13 @@ public class DepositTestUtil {
      * @return a mocked {@code DepositSubmission}
      */
     public static DepositSubmission composeSubmission() {
-        SharedSubmissionUtil util = new SharedSubmissionUtil();
         FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder(null);
-
-        try {
-            return util.asDepositSubmission(URI.create("fake:submission3"), fsModelBuilder);
-        } catch (InvalidModel | IOException invalidModel) {
-            throw new RuntimeException(invalidModel.getMessage(), invalidModel);
-        }
+        return SubmissionUtil.asDepositSubmission(URI.create("fake:submission3"), fsModelBuilder);
     }
 
     public static DepositSubmission composeSubmission(URI submissionUri) {
-        SharedSubmissionUtil util = new SharedSubmissionUtil();
         FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder(null);
-
-        try {
-            return util.asDepositSubmission(submissionUri, fsModelBuilder);
-        } catch (InvalidModel | IOException invalidModel) {
-            throw new RuntimeException(invalidModel.getMessage(), invalidModel);
-        }
+        return SubmissionUtil.asDepositSubmission(submissionUri, fsModelBuilder);
     }
 
     /**

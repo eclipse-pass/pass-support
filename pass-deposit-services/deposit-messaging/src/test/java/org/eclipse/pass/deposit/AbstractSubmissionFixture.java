@@ -34,6 +34,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.builder.PassJsonFedoraAdapter;
+import org.eclipse.pass.deposit.util.SubmissionUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;

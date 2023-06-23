@@ -33,6 +33,14 @@ public class DepositServiceRuntimeException extends RuntimeException {
      */
     private PassEntity resource;
 
+    public DepositServiceRuntimeException(String message) {
+        super(message);
+    }
+
+    public DepositServiceRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     /**
      * Constructs a new exception that relates to the supplied {@code resource}
      *

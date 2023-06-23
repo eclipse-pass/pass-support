@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package submissions;
+package org.eclipse.pass.deposit.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,11 +41,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.utils.ClasspathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import resources.SharedResourceUtil;
 
 /**
  * A specialized class used to look up <em>local</em> JSON representations of submission graphs.  Local means that
@@ -203,6 +200,7 @@ import resources.SharedResourceUtil;
  * @author Elliot Metsger (emetsger@jhu.edu)
  * @see <a href="https://github.com/OA-PASS/pass-data-model">PASS Data Model</a>
  */
+// TODO Candidate for removal, just used spring classpath resource class
 public class SubmissionResourceUtil {
 
     private SubmissionResourceUtil () {
@@ -229,44 +227,45 @@ public class SubmissionResourceUtil {
      *
      * @return A Collection of submission URIs available for testing
      */
-    public static Collection<URI> submissionUris() {
-        Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
-        Set<URI> submissionUris = new HashSet<>();
-        ObjectMapper mapper = new ObjectMapper();
-        FastClasspathScanner scanner = new FastClasspathScanner(SubmissionResourceUtil.class.getPackage().getName());
-        scanner.matchFilenamePattern(".*.json", (classpathElement, relativePath, in, length) -> {
-            LOG.trace("Processing match '{}', '{}'", classpathElement, relativePath);
-            SharedResourceUtil.ElementPathPair pathPair = new SharedResourceUtil.ElementPathPair(classpathElement,
-                                                                                                 relativePath);
-            if (seen.contains(pathPair)) {
-                // We have already scanned classpath element/path pair; it probably appears on the classpath twice.
-                return;
-            }
-
-            seen.add(pathPair);
-
-            JsonNode jsonNode = mapper.readTree(in);
-            Stream<JsonNode> nodeStream = asStream(jsonNode);
-
-            JsonNode submissionNode = getSubmissionNode(nodeStream);
-
-            URI submissionUri = URI.create(submissionNode.get("id").asText());
-
-            if (submissionUris.contains(submissionUri)) {
-                throw new IllegalArgumentException("Each test submission resource must have a unique submission " +
-                                                   "URI.  Found duplicate uri '" + submissionUri + "' in test " +
-                                                   "resource '" + relativePath + "'");
-            }
-
-            submissionUris.add(submissionUri);
-        });
-
-        scanner.scan();
-
-        assertTrue("Did not find any test submission resources.", submissionUris.size() > 0);
-
-        return submissionUris;
-    }
+    // TODO Deposit service port pending
+//    public static Collection<URI> submissionUris() {
+//        Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
+//        Set<URI> submissionUris = new HashSet<>();
+//        ObjectMapper mapper = new ObjectMapper();
+//        FastClasspathScanner scanner = new FastClasspathScanner(SubmissionResourceUtil.class.getPackage().getName());
+//        scanner.matchFilenamePattern(".*.json", (classpathElement, relativePath, in, length) -> {
+//            LOG.trace("Processing match '{}', '{}'", classpathElement, relativePath);
+//            SharedResourceUtil.ElementPathPair pathPair = new SharedResourceUtil.ElementPathPair(classpathElement,
+//                                                                                                 relativePath);
+//            if (seen.contains(pathPair)) {
+//                // We have already scanned classpath element/path pair; it probably appears on the classpath twice.
+//                return;
+//            }
+//
+//            seen.add(pathPair);
+//
+//            JsonNode jsonNode = mapper.readTree(in);
+//            Stream<JsonNode> nodeStream = asStream(jsonNode);
+//
+//            JsonNode submissionNode = getSubmissionNode(nodeStream);
+//
+//            URI submissionUri = URI.create(submissionNode.get("id").asText());
+//
+//            if (submissionUris.contains(submissionUri)) {
+//                throw new IllegalArgumentException("Each test submission resource must have a unique submission " +
+//                                                   "URI.  Found duplicate uri '" + submissionUri + "' in test " +
+//                                                   "resource '" + relativePath + "'");
+//            }
+//
+//            submissionUris.add(submissionUri);
+//        });
+//
+//        scanner.scan();
+//
+//        assertTrue("Did not find any test submission resources.", submissionUris.size() > 0);
+//
+//        return submissionUris;
+//    }
 
     /**
      * Convenience method which opens an {@code InputStream} to the classpath resource containing the {@code
@@ -298,24 +297,25 @@ public class SubmissionResourceUtil {
         Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
         ObjectMapper mapper = new ObjectMapper();
         AtomicReference<URL> submissionResource = new AtomicReference<>();
-        FastClasspathScanner scanner = new FastClasspathScanner(SubmissionResourceUtil.class.getPackage().getName());
-        scanner.matchFilenamePattern(".*\\.json", (cpElt, relativePath, in, length) -> {
-            if (SharedResourceUtil.seen(seen, cpElt, relativePath)) {
-                return;
-            }
-            JsonNode jsonNode = mapper.readTree(in);
-            Stream<JsonNode> nodeStream = asStream(jsonNode);
-            JsonNode submissionNode = getSubmissionNode(nodeStream);
-
-            URI candidateUri = URI.create(submissionNode.get("id").asText());
-            if (submissionUri.equals(candidateUri)) {
-                assertNull("Found duplicate submission URI '" + submissionUri + "' in test resource '" + cpElt + "', " +
-                           "'" + relativePath + "'", submissionResource.get());
-                submissionResource.set(ClasspathUtils.getClasspathResourceURL(cpElt, relativePath));
-            }
-        });
-
-        scanner.scan();
+        // TODO Deposit service port pending
+//        FastClasspathScanner scanner = new FastClasspathScanner(SubmissionResourceUtil.class.getPackage().getName());
+//        scanner.matchFilenamePattern(".*\\.json", (cpElt, relativePath, in, length) -> {
+//            if (SharedResourceUtil.seen(seen, cpElt, relativePath)) {
+//                return;
+//            }
+//            JsonNode jsonNode = mapper.readTree(in);
+//            Stream<JsonNode> nodeStream = asStream(jsonNode);
+//            JsonNode submissionNode = getSubmissionNode(nodeStream);
+//
+//            URI candidateUri = URI.create(submissionNode.get("id").asText());
+//            if (submissionUri.equals(candidateUri)) {
+//                assertNull("Found duplicate submission URI '" + submissionUri + "' in test resource '" + cpElt + "', " +
+//                           "'" + relativePath + "'", submissionResource.get());
+//                submissionResource.set(ClasspathUtils.getClasspathResourceURL(cpElt, relativePath));
+//            }
+//        });
+//
+//        scanner.scan();
 
         assertNotNull("Unable to find a JSON submission resource containing submission uri '" + submissionUri + "'",
                       submissionResource.get());

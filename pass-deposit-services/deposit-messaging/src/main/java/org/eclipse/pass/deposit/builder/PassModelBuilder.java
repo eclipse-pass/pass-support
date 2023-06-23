@@ -20,37 +20,29 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.pass.deposit.builder.InvalidModel;
-import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
 import org.springframework.stereotype.Component;
 
 /**
- * Builds a submission from a file on a locally mounted filesystem.
- * The file contains JSON data representing PassEntity objects that have unique IDs and link to each other.
- * The file must contain a single Submission object, which is the root of the data tree for a deposit.
- *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
 @Component
-public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilder {
+public class PassModelBuilder extends ModelBuilder {
 
     private final PassJsonFedoraAdapter passJsonFedoraAdapter;
 
-    public FcrepoModelBuilder(PassJsonFedoraAdapter passJsonFedoraAdapter) {
+    public PassModelBuilder(PassJsonFedoraAdapter passJsonFedoraAdapter) {
         this.passJsonFedoraAdapter = passJsonFedoraAdapter;
     }
 
     /***
-     * Build a DepositSubmission from the JSON data in named file.
-     * @param formDataUrl url to the local file containing the JSON data
+     * Build a DepositSubmission using a Submission from PASS with the ID of submissionId.
+     * @param submissionId id of the PASS Submission
      * @return a deposit submission data model
-     * @throws InvalidModel if the JSON data cannot be successfully parsed into a valid submission model
      */
-    @Override
-    public DepositSubmission build(String submissionId) throws InvalidModel, IOException {
+    public DepositSubmission build(String submissionId) throws IOException {
         List<PassEntity> entities = new LinkedList<>();
         Submission submissionEntity = passJsonFedoraAdapter.fcrepoToPass(submissionId, entities);
         return createDepositSubmission(submissionEntity, entities);

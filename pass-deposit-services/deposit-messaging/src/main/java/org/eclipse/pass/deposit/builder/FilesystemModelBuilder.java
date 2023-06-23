@@ -27,9 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.pass.deposit.builder.InvalidModel;
-import org.eclipse.pass.deposit.builder.StreamingSubmissionBuilder;
-import org.eclipse.pass.deposit.builder.SubmissionBuilder;
+import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
@@ -54,7 +52,7 @@ import org.springframework.stereotype.Component;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
-public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBuilder, StreamingSubmissionBuilder {
+public class FilesystemModelBuilder extends ModelBuilder {
 
     private final PassJsonFedoraAdapter passJsonFedoraAdapter;
 
@@ -79,10 +77,8 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
      *
      * @param formDataUrl url containing the JSON data
      * @return a deposit submission data model
-     * @throws InvalidModel if the JSON data cannot be successfully parsed into a valid submission model
      */
-    @Override
-    public DepositSubmission build(String formDataUrl) throws InvalidModel {
+    public DepositSubmission build(String formDataUrl) {
         InputStream is = null;
         try {
             URI resource = new URI(formDataUrl);
@@ -94,17 +90,19 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
                        resource.getScheme().startsWith("jar")) {
                 is = resource.toURL().openStream();
             } else {
-                throw new InvalidModel(String.format("Unknown scheme '%s' for URL '%s'",
-                                                     resource.getScheme(), formDataUrl));
+                throw new DepositServiceRuntimeException(
+                    String.format("Unknown scheme '%s' for URL '%s'", resource.getScheme(), formDataUrl));
             }
 
             return build(is, Collections.emptyMap());
         } catch (FileNotFoundException e) {
-            throw new InvalidModel(String.format("Could not open the data file '%s'.", formDataUrl), e);
+            throw new DepositServiceRuntimeException(
+                String.format("Could not open the data file '%s'.", formDataUrl), e);
         } catch (IOException e) {
-            throw new InvalidModel(String.format("Failed to close the data file '%s'.", formDataUrl), e);
+            throw new DepositServiceRuntimeException(
+                String.format("Failed to close the data file '%s'.", formDataUrl), e);
         } catch (URISyntaxException e) {
-            throw new InvalidModel(String.format("Malformed URL '%s'.", formDataUrl), e);
+            throw new DepositServiceRuntimeException(String.format("Malformed URL '%s'.", formDataUrl), e);
         } finally {
             if (is != null) {
                 try {
@@ -122,10 +120,8 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
      *
      * @param stream the InputStream containing the submission graph
      * @return a deposit submission data model
-     * @throws InvalidModel if the JSON data cannot be successfully parsed into a valid submission model
      */
-    @Override
-    public DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel, IOException {
+    public DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws IOException {
         List<PassEntity> entities = new LinkedList<>();
         Submission submissionEntity = passJsonFedoraAdapter.jsonToFcrepo(stream, entities);
         return createDepositSubmission(submissionEntity, entities);
