@@ -51,8 +51,7 @@ public class SubmissionTestUtil {
     @Autowired private DepositSubmissionMapper depositSubmissionMapper;
 
     public DepositSubmission asDepositSubmission(String submissionJsonName) throws IOException {
-        InputStream inputStream = new ClassPathResource("/submissions/" + submissionJsonName + ".json")
-            .getInputStream();
+        InputStream inputStream = ResourceTestUtil.readSubmissionJson(submissionJsonName);
         List<PassEntity> entities = new LinkedList<>();
         Submission submissionEntity = readSubmissionJsonAndAddToPass(inputStream, entities);
         return depositSubmissionMapper.createDepositSubmission(submissionEntity, entities);

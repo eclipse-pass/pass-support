@@ -26,11 +26,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.eclipse.pass.deposit.util.SubmissionResourceUtil.lookupStream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -47,6 +45,7 @@ import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
 import org.eclipse.pass.deposit.messaging.config.spring.JmsConfig;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.deposit.transport.sword2.Sword2Transport;
+import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
@@ -162,7 +161,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
      */
     @Before
     public void submit() throws IOException {
-        submission = findSubmission(createSubmission(lookupStream(URI.create("fake:submission2"))));
+        submission = findSubmission(createSubmission(ResourceTestUtil.readSubmissionJson("sample2")));
     }
 
     /**

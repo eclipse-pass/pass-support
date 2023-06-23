@@ -26,14 +26,13 @@ import static org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources.M
 import static org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources.MULTIPLE_STATUS_RESOURCE;
 import static org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources.UNKNOWN_STATUS_RESOURCE;
 import static org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources.WITHDRAWN_STATUS_RESOURCE;
+import static org.eclipse.pass.deposit.util.ResourceTestUtil.findByName;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.eclipse.pass.deposit.util.SharedResourceUtil.findStreamByName;
-import static org.eclipse.pass.deposit.util.SharedResourceUtil.findUriByName;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -41,7 +40,6 @@ import java.net.URI;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
-//import org.apache.http.ParseException;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.junit.Before;
 import org.junit.Rule;
@@ -91,49 +89,49 @@ public class AtomFeedStatusParserTest {
      */
     @Test
     public void mapArchived() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
+        Document<Feed> feed = AtomTestUtil.parseFeed(findByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_ARCHIVED.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapInProgress() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(INPROGRESS_STATUS_RESOURCE, AtomResources.class));
+        Document<Feed> feed = AtomTestUtil.parseFeed(findByName(INPROGRESS_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_INPROGRESS.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapInReview() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(INREVIEW_STATUS_RESOURCE, AtomResources.class));
+        Document<Feed> feed = AtomTestUtil.parseFeed(findByName(INREVIEW_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_INREVIEW.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapMissing() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(MISSING_STATUS_RESOURCE, AtomResources.class));
+        Document<Feed> feed = AtomTestUtil.parseFeed(findByName(MISSING_STATUS_RESOURCE, AtomResources.class));
         assertEquals(null, AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapMultiple() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(MULTIPLE_STATUS_RESOURCE, AtomResources.class));
+        Document<Feed> feed = AtomTestUtil.parseFeed(findByName(MULTIPLE_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_ARCHIVED.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapUnknown() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(UNKNOWN_STATUS_RESOURCE, AtomResources.class));
+        Document<Feed> feed = AtomTestUtil.parseFeed(findByName(UNKNOWN_STATUS_RESOURCE, AtomResources.class));
         assertEquals(URI.create("http://dspace.org/state/moo"), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapWithdrawn() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(WITHDRAWN_STATUS_RESOURCE, AtomResources.class));
+        Document<Feed> feed = AtomTestUtil.parseFeed(findByName(WITHDRAWN_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_WITHDRAWN.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void parseWithRuntimeException() throws Exception {
-        URI uri = findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class);
+        URI uri = URI.create("file:testing");
 
         Resource resource = mock(Resource.class);
         when(resource.getInputStream()).thenReturn(mock(InputStream.class));
@@ -149,7 +147,6 @@ public class AtomFeedStatusParserTest {
         underTest.resolve(uri, repositoryConfig);
     }
 
-    // TODO Deposit service port pending
 //    @Test
 //    public void parseWithParseException() throws Exception {
 //        URI uri = findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class);
