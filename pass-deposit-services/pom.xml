@@ -50,14 +50,12 @@
 
   <modules>
     <module>deposit-model</module>
-    <module>builder-api</module>
     <module>assembler-api</module>
     <module>transport-api</module>
     <module>ftp-transport</module>
     <module>deposit-util</module>
     <module>sword2-transport</module>
     <module>deposit-messaging</module>
-    <module>shared-resources</module>
     <module>filesystem-transport</module>
   </modules>
 

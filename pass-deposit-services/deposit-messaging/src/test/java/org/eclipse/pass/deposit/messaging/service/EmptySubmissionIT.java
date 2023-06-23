@@ -16,7 +16,7 @@
 package org.eclipse.pass.deposit.messaging.service;
 
 import static org.hamcrest.CoreMatchers.isA;
-import static submissions.SubmissionResourceUtil.lookupStream;
+import static org.eclipse.pass.deposit.util.SubmissionResourceUtil.lookupStream;
 
 import java.io.IOException;
 import java.net.URI;

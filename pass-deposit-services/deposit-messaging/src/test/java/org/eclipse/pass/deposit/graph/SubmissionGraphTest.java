@@ -37,7 +37,7 @@ import org.eclipse.pass.support.client.model.User;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import submissions.SubmissionResourceUtil;
+import org.eclipse.pass.deposit.util.SubmissionResourceUtil;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

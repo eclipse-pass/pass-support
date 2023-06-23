@@ -16,10 +16,9 @@
 package org.eclipse.pass.deposit.assembler;
 
 import static java.lang.Math.floorDiv;
-import static org.eclipse.pass.deposit.DepositTestUtil.openArchive;
-import static org.eclipse.pass.deposit.DepositTestUtil.packageFile;
-import static org.eclipse.pass.deposit.DepositTestUtil.savePackage;
-import static org.junit.Assert.assertEquals;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.openArchive;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.packageFile;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.savePackage;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -40,9 +39,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.builder.FilesystemModelBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.deposit.util.SubmissionUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -53,7 +52,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import resources.SharedSubmissionUtil;
 
 /**
  * Invokes a single instance of an {@link Assembler} by multiple threads, insuring that the {@code Assembler} does not
@@ -123,14 +121,9 @@ public abstract class ThreadedAssemblyIT {
     protected static Logger LOG = LoggerFactory.getLogger(ThreadedAssemblyIT.class);
 
     /**
-     * Provides access to classpath resources as a {@link DepositSubmission}.
+     * Builds sample Submission graphs present on the classpath
      */
-    protected SharedSubmissionUtil submissionUtil = new SharedSubmissionUtil();
-
-    /**
-     * Builds sample Submission graphs present on the classpath (in concert with {@link #submissionUtil})
-     */
-    protected SubmissionBuilder builder = new FilesystemModelBuilder(null);
+    protected FilesystemModelBuilder builder = new FilesystemModelBuilder(null);
 
     /**
      * The factory used to create instances of {@link MetadataBuilder}.
@@ -236,7 +229,7 @@ public abstract class ThreadedAssemblyIT {
             } while (submissionId < 1 || submissionId == 5 || submissionId == 7);
 
             URI submissionUri = URI.create("fake:submission" + submissionId);
-            DepositSubmission submission = submissionUtil.asDepositSubmission(submissionUri, builder);
+            DepositSubmission submission = SubmissionUtil.asDepositSubmission(submissionUri, builder);
             LOG.info("Submitting package {}", submissionUri);
             LOG.info(".");
             results.put(submission, itExecutorService.submit(() -> underTest.assemble(submission, packageOptions)));

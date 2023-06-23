@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.deposit.util.spring.EncodingClassPathResource;
-import org.eclipse.pass.deposit.builder.SubmissionBuilder;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
@@ -130,8 +129,6 @@ public abstract class AbstractAssembler implements Assembler {
      * </p>
      *
      * @param submission         the submission of content and metadata, typically derived from the
-     * {@link SubmissionBuilder
-     *                           submission builder API}
      * @param custodialResources the custodial content to be included in the returned {@code PackageStream}
      * @param mdb                the interface for adding metadata describing the {@code PackageStream}
      * @param rbf                the interface for adding metadata for individual resources in the package stream

@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package resources;
+package org.eclipse.pass.deposit.util;
 
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.utils.ClasspathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +32,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+// TODO Candidate for removal, just used spring classpath resource class
 public class SharedResourceUtil {
 
     private SharedResourceUtil() {
@@ -66,28 +64,29 @@ public class SharedResourceUtil {
         Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
         AtomicReference<URL> resourceUrl = new AtomicReference<>();
         AtomicReference<InputStream> resource = new AtomicReference<>();
-        FastClasspathScanner scanner = scannerForBaseClass(baseClass);
-
-        scanner.matchFilenamePath(resourceName, (cpElt, relativePath, in, length) -> {
-            LOG.trace("Matching '{}', '{}'", relativePath, cpElt);
-
-            if (SharedResourceUtil.seen(seen, cpElt, relativePath)) {
-                return;
-            }
-
-            URL foundUrl = ClasspathUtils.getClasspathResourceURL(cpElt, relativePath);
-
-            if (resource.get() != null) {
-                LOG.warn("Ignoring resource at '{}', already found '{}'", foundUrl, resourceUrl.get());
-            } else {
-                LOG.trace("Found resource '{}' matching name '{}'", foundUrl, resourceName);
-                // open the stream ourselves, as the supplied stream is closed by the caller
-                resource.set(foundUrl.openStream());
-                resourceUrl.set(foundUrl);
-            }
-        });
-
-        scanner.scan();
+        // TODO Deposit service port pending
+//        FastClasspathScanner scanner = scannerForBaseClass(baseClass);
+//
+//        scanner.matchFilenamePath(resourceName, (cpElt, relativePath, in, length) -> {
+//            LOG.trace("Matching '{}', '{}'", relativePath, cpElt);
+//
+//            if (SharedResourceUtil.seen(seen, cpElt, relativePath)) {
+//                return;
+//            }
+//
+//            URL foundUrl = ClasspathUtils.getClasspathResourceURL(cpElt, relativePath);
+//
+//            if (resource.get() != null) {
+//                LOG.warn("Ignoring resource at '{}', already found '{}'", foundUrl, resourceUrl.get());
+//            } else {
+//                LOG.trace("Found resource '{}' matching name '{}'", foundUrl, resourceName);
+//                // open the stream ourselves, as the supplied stream is closed by the caller
+//                resource.set(foundUrl.openStream());
+//                resourceUrl.set(foundUrl);
+//            }
+//        });
+//
+//        scanner.scan();
 
         assertFound(resourceName, resource);
         return resource.get();
@@ -114,46 +113,48 @@ public class SharedResourceUtil {
         Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
         AtomicReference<URL> resourceUrl = new AtomicReference<>();
         AtomicReference<URI> resource = new AtomicReference<>();
-        FastClasspathScanner scanner = scannerForBaseClass(baseClass);
-
-        scanner.matchFilenamePath(resourceName, (cpElt, relativePath, in, length) -> {
-            LOG.trace("Matching '{}', '{}'", relativePath, cpElt);
-
-            if (SharedResourceUtil.seen(seen, cpElt, relativePath)) {
-                return;
-            }
-
-            URL foundUrl = ClasspathUtils.getClasspathResourceURL(cpElt, relativePath);
-
-            if (resource.get() != null) {
-                LOG.warn("Ignoring resource at '{}', already found '{}'", foundUrl, resourceUrl.get());
-            } else {
-                LOG.trace("Found resource '{}' matching name '{}'", foundUrl, resourceName);
-                try {
-                    resource.set(foundUrl.toURI());
-                    resourceUrl.set(foundUrl);
-                } catch (URISyntaxException e) {
-                    LOG.warn("Unable to compose a URI from resource URL '" + foundUrl + "'");
-                }
-            }
-        });
-
-        scanner.scan();
+        // TODO Deposit service port pending
+//        FastClasspathScanner scanner = scannerForBaseClass(baseClass);
+//
+//        scanner.matchFilenamePath(resourceName, (cpElt, relativePath, in, length) -> {
+//            LOG.trace("Matching '{}', '{}'", relativePath, cpElt);
+//
+//            if (SharedResourceUtil.seen(seen, cpElt, relativePath)) {
+//                return;
+//            }
+//
+//            URL foundUrl = ClasspathUtils.getClasspathResourceURL(cpElt, relativePath);
+//
+//            if (resource.get() != null) {
+//                LOG.warn("Ignoring resource at '{}', already found '{}'", foundUrl, resourceUrl.get());
+//            } else {
+//                LOG.trace("Found resource '{}' matching name '{}'", foundUrl, resourceName);
+//                try {
+//                    resource.set(foundUrl.toURI());
+//                    resourceUrl.set(foundUrl);
+//                } catch (URISyntaxException e) {
+//                    LOG.warn("Unable to compose a URI from resource URL '" + foundUrl + "'");
+//                }
+//            }
+//        });
+//
+//        scanner.scan();
 
         assertFound(resourceName, resource);
 
         return resource.get();
     }
+// TODO Deposit service port pending
 
-    private static FastClasspathScanner scannerForBaseClass(Class<?> baseClass) {
-        FastClasspathScanner scanner = null;
-        if (baseClass == null) {
-            scanner = new FastClasspathScanner("");
-        } else {
-            scanner = new FastClasspathScanner(baseClass.getPackage().getName());
-        }
-        return scanner;
-    }
+//    private static FastClasspathScanner scannerForBaseClass(Class<?> baseClass) {
+//        FastClasspathScanner scanner = null;
+//        if (baseClass == null) {
+//            scanner = new FastClasspathScanner("");
+//        } else {
+//            scanner = new FastClasspathScanner(baseClass.getPackage().getName());
+//        }
+//        return scanner;
+//    }
 
     private static void assertFound(String resourceName, AtomicReference<?> resource) {
         assertNotNull("Unable to find a resource named '" + resourceName + "'", resource.get());

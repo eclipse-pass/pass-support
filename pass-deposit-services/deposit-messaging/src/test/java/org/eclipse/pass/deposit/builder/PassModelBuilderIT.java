@@ -61,7 +61,7 @@ import org.testcontainers.utility.DockerImageName;
 })
 @Testcontainers
 @DirtiesContext
-public class FcrepoModelBuilderIT {
+public class PassModelBuilderIT {
 
     private static final DockerImageName PASS_CORE_IMG =
         DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main");
@@ -97,10 +97,10 @@ public class FcrepoModelBuilderIT {
     }
 
     @Autowired private PassJsonFedoraAdapter passJsonFedoraAdapter;
-    @Autowired private FcrepoModelBuilder fcrepoModelBuilder;
+    @Autowired private PassModelBuilder passModelBuilder;
 
     @Test
-    public void testElementValues() throws IOException, InvalidModel {
+    public void testElementValues() throws IOException {
         // GIVEN
         List<PassEntity> entities = new LinkedList<>();
         Submission submissionEntity;
@@ -109,7 +109,7 @@ public class FcrepoModelBuilderIT {
         }
 
         // WHEN
-        DepositSubmission submission = fcrepoModelBuilder.build(submissionEntity.getId());
+        DepositSubmission submission = passModelBuilder.build(submissionEntity.getId());
 
         // THEN
         assertNotNull(submissionEntity);

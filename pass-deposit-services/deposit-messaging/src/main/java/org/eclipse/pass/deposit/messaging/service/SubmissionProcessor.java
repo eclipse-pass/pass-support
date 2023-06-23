@@ -28,8 +28,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.eclipse.pass.deposit.builder.InvalidModel;
-import org.eclipse.pass.deposit.builder.SubmissionBuilder;
+import org.eclipse.pass.deposit.builder.PassModelBuilder;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.model.Registry;
@@ -64,7 +63,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected PassClient passClient;
 
-    protected SubmissionBuilder fcrepoModelBuilder;
+    protected PassModelBuilder passModelBuilder;
 
     protected Registry<Packager> packagerRegistry;
 
@@ -75,12 +74,12 @@ public class SubmissionProcessor implements Consumer<Submission> {
     protected DepositTaskHelper depositTaskHelper;
 
     @Autowired
-    public SubmissionProcessor(PassClient passClient, SubmissionBuilder fcrepoModelBuilder,
+    public SubmissionProcessor(PassClient passClient, PassModelBuilder passModelBuilder,
                                Registry<Packager> packagerRegistry, SubmissionPolicy passUserSubmittedPolicy,
                                DepositTaskHelper depositTaskHelper, CriticalRepositoryInteraction critical) {
 
         this.passClient = passClient;
-        this.fcrepoModelBuilder = fcrepoModelBuilder;
+        this.passModelBuilder = passModelBuilder;
         this.packagerRegistry = packagerRegistry;
         this.submissionPolicy = passUserSubmittedPolicy;
         this.critical = critical;
@@ -97,7 +96,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
             critical.performCritical(submission.getId(), Submission.class,
                                      CriFunc.preCondition(submissionPolicy),
                                      CriFunc.postCondition(),
-                                     CriFunc.critical(fcrepoModelBuilder));
+                                     CriFunc.critical(passModelBuilder));
 
         if (!result.success()) {
             // Throw DepositServiceRuntimeException, which will be processed by the DepositServiceErrorHandler
@@ -180,13 +179,13 @@ public class SubmissionProcessor implements Consumer<Submission> {
          * @return the Function that builds the DepositSubmission and sets the aggregated deposit status on the
          * Submission
          */
-        static Function<Submission, DepositSubmission> critical(SubmissionBuilder modelBuilder) {
+        static Function<Submission, DepositSubmission> critical(PassModelBuilder modelBuilder) {
             return (s) -> {
                 DepositSubmission ds = null;
                 try {
                     ds = modelBuilder.build(s.getId().toString());
-                } catch (InvalidModel | IOException invalidModel) {
-                    throw new RuntimeException(invalidModel.getMessage(), invalidModel);
+                } catch (IOException ex) {
+                    throw new DepositServiceRuntimeException("Error building deposit submission", ex);
                 }
                 s.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
                 return ds;

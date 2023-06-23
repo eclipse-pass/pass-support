@@ -15,10 +15,10 @@
  */
 package org.eclipse.pass.deposit.messaging.service;
 
-import static org.eclipse.pass.deposit.SubmissionUtil.getFileUris;
+import static org.eclipse.pass.deposit.util.SubmissionUtil.getFileUris;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static submissions.SubmissionResourceUtil.lookupStream;
+import static org.eclipse.pass.deposit.util.SubmissionResourceUtil.lookupStream;
 
 import java.io.IOException;
 import java.net.URI;
