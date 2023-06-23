@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.pass.deposit.builder.PassModelBuilder;
+import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.model.Registry;
 import org.eclipse.pass.deposit.messaging.service.DepositTaskHelper;
@@ -68,7 +68,7 @@ public class FailedDepositRunner {
     private static final String IDS_PARAM = "id";
 
     @Autowired
-    private PassModelBuilder passModelBuilder;
+    private DepositSubmissionModelBuilder depositSubmissionModelBuilder;
 
     @Autowired
     private DepositTaskHelper depositTaskHelper;
@@ -135,7 +135,7 @@ public class FailedDepositRunner {
 
                                 try {
                                     depositSubmission[0] =
-                                        passModelBuilder.build(submission.getId().toString());
+                                        depositSubmissionModelBuilder.build(submission.getId().toString());
                                 } catch (IOException invalidModel) {
                                     LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
                                              "Failed to build the DepositSubmission model",

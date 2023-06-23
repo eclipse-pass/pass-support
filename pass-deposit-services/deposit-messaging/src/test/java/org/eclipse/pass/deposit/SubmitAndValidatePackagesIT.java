@@ -35,8 +35,8 @@ import okhttp3.OkHttpClient;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.ExplodedPackage;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
-import org.eclipse.pass.deposit.builder.PassJsonFedoraAdapter;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -172,11 +172,8 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      */
     private static URL passIndexUrl;
 
-    /**
-     * Used to submit a Submission graph (i.e. a Submission and all linked entities) to the Fedora PASS repository
-     */
     @Autowired
-    private PassJsonFedoraAdapter passAdapter;
+    private SubmissionTestUtil submissionTestUtil;
 
     /**
      * A Map of each DepositSubmission to its location on the filesystem.

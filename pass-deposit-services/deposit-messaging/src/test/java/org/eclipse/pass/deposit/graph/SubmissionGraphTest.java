@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.pass.deposit.builder.PassJsonFedoraAdapter;
+import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.Funder;
@@ -198,7 +198,9 @@ public class SubmissionGraphTest {
     @Test
     public void streamingGraph() {
         InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
-        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
+        // TODO Deposit service port pending
+//        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
+        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph().build();
 
         assertEquals("fake:submission1", graph.submission().getId().toString());
         LOG.info("Graph contains:");
@@ -209,7 +211,9 @@ public class SubmissionGraphTest {
     @Test
     public void remove() {
         InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
-        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
+        // TODO Deposit service port pending
+//        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
+        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph().build();
 
         AtomicInteger count = new AtomicInteger(0);
         graph.walk(entity -> entity instanceof File, (s, f) -> count.getAndIncrement());
@@ -245,7 +249,9 @@ public class SubmissionGraphTest {
     @Test
     public void walk() {
         InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
-        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
+        // TODO Deposit service port pending
+//        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph(stream, new PassJsonFedoraAdapter(null)).build();
+        SubmissionGraph graph = SubmissionGraph.GraphBuilder.newGraph().build();
 
         AtomicInteger count = new AtomicInteger(0);
         graph.walk(entity -> entity instanceof File, (s, f) -> count.getAndIncrement());

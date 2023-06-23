@@ -15,7 +15,7 @@
  */
 package org.eclipse.pass.deposit.messaging.service;
 
-import static org.eclipse.pass.deposit.util.SubmissionUtil.getFileUris;
+import static org.eclipse.pass.deposit.util.SubmissionTestUtil.getFileUris;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.eclipse.pass.deposit.util.SubmissionResourceUtil.lookupStream;
