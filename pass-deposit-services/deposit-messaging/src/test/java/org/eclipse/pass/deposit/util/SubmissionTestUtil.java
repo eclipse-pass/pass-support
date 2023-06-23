@@ -38,7 +38,6 @@ import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 /**
