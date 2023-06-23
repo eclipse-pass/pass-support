@@ -25,19 +25,12 @@ public class AtomResources {
     }
 
     public static final String BASE_PATH = "org/dataconservancy/pass/deposit/messaging/support/swordv2";
-
     public static final String ARCHIVED_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-archived.xml";
-
     public static final String INPROGRESS_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-inprogress.xml";
-
     public static final String INREVIEW_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-inreview.xml";
-
     public static final String MISSING_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-missing.xml";
-
     public static final String MULTIPLE_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-multiple.xml";
-
     public static final String UNKNOWN_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-unknown.xml";
-
     public static final String WITHDRAWN_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-withdrawn.xml";
 
 }

@@ -16,7 +16,6 @@
 package org.eclipse.pass.deposit.messaging.service;
 
 import static org.hamcrest.CoreMatchers.isA;
-import static org.eclipse.pass.deposit.util.SubmissionResourceUtil.lookupStream;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,6 +23,7 @@ import java.net.URI;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
 import org.eclipse.pass.deposit.messaging.config.spring.DrainQueueConfig;
+import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,13 +42,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DirtiesContext
 public class EmptySubmissionIT extends AbstractSubmissionIT {
 
-    private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission10");
-
     private Submission submission;
 
     @Before
     public void submit() throws IOException {
-        submission = findSubmission(createSubmission(lookupStream(SUBMISSION_RESOURCES)));
+        submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample1-no-files")));
     }
 
     @Test
