@@ -65,7 +65,8 @@ public class DepositSubmissionModelBuilder {
                 }
             }).toList();
         submission.setGrants(populatedGrants);
-//
+        // TODO Deposit service port pending
+
 //        // Add File resources that reference this Submission to the entity list.
 //        Map<String, Collection<URI>> incomingLinks = client.getIncoming(submissionUri);
 //        Collection<URI> uris = incomingLinks.get(Submission.class.getSimpleName().toLowerCase());

@@ -114,7 +114,7 @@ public class DepositProcessor implements Consumer<Deposit> {
         }
 
         /**
-         * Answers a Function that updates the {@link Submission.AggregatedDepositStatus} of the {@code Submission} if
+         * Answers a Function that updates the {@link AggregatedDepositStatus} of the {@code Submission} if
          * all of the Deposits attached to the Submission are in a terminal state.
          * <p>
          * If any Deposit attached to the Submission is in an intermediate state, no modifications are made to the
