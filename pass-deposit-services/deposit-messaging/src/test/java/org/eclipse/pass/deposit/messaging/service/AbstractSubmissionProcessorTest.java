@@ -19,7 +19,7 @@ import static org.mockito.Mockito.mock;
 
 import java.net.URI;
 
-import org.eclipse.pass.deposit.builder.PassModelBuilder;
+import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.model.Registry;
@@ -42,7 +42,7 @@ public abstract class AbstractSubmissionProcessorTest {
 
     PassClient passClient;
 
-    PassModelBuilder passModelBuilder;
+    DepositSubmissionModelBuilder depositSubmissionModelBuilder;
 
     Registry<Packager> packagerRegistry;
 
@@ -70,7 +70,7 @@ public abstract class AbstractSubmissionProcessorTest {
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         passClient = mock(PassClient.class);
-        passModelBuilder = mock(PassModelBuilder.class);
+        depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         packagerRegistry = mock(Registry.class);
         submissionPolicy = mock(SubmissionPolicy.class);
         intermediateDepositStatusPolicy = mock(Policy.class);

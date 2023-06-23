@@ -44,6 +44,7 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /***
  * Base class for copying deposit-submission data from Pass-Core sources into the deposit data model.
@@ -52,41 +53,110 @@ import org.slf4j.LoggerFactory;
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
-abstract class ModelBuilder {
+@Component
+public class DepositSubmissionMapper {
 
-    static final Logger LOG = LoggerFactory.getLogger(ModelBuilder.class);
+    static final Logger LOG = LoggerFactory.getLogger(DepositSubmissionMapper.class);
 
     private static final String ISSNS = "issns";
-
     private static final String ISSN = "issn";
-
     private static final String MANUSCRIPT_TITLE_KEY = "title";
-
     private static final String ABSTRACT_KEY = "abstract";
-
     private static final String JOURNAL_TITLE_KEY = "journal-title";
-
     private static final String VOLUME_KEY = "volume";
-
     private static final String ISSUE_KEY = "issue";
-
     private static final String DOI_KEY = "doi";
-
     private static final String PUBLISHER_KEY = "publisher";
-
     private static final String PUBLICATION_DATE_KEY = "publicationDate";
-
     private static final String EMBARGO_END_DATE_KEY = "Embargo-end-date";
-
     private static final String AUTHORS_KEY = "authors";
-
     private static final String AUTHOR_KEY = "author";
-
     private static final String PUB_TYPE_KEY = "pubType";
-
     private static final String EMBARGO_END_DATE_PATTERN = "yyyy-MM-dd";
-
     private static final String NLMTA_KEY = "journal-NLMTA-ID";
+
+    /**
+     * Creates a DepositSubmission by walking the tree of PassEntity objects, starting with the Submission entity,
+     * copying the desired source data into a new DepositSubmission data model.
+     *
+     * @param submissionEntity
+     * @return
+     */
+    public DepositSubmission createDepositSubmission(Submission submissionEntity, List<PassEntity> fileEntities) {
+
+        // The submission object to populate
+        DepositSubmission submission = new DepositSubmission();
+
+        // Prepare for Metadata
+        DepositMetadata metadata = new DepositMetadata();
+        submission.setMetadata(metadata);
+        submission.setSubmissionMeta(new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonObject());
+        DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
+        metadata.setManuscriptMetadata(manuscript);
+        DepositMetadata.Article article = new DepositMetadata.Article();
+        metadata.setArticleMetadata(article);
+        DepositMetadata.Journal journal = new DepositMetadata.Journal();
+        metadata.setJournalMetadata(journal);
+        ArrayList<DepositMetadata.Person> persons = new ArrayList<>();
+        metadata.setPersons(persons);
+
+        // Data from the Submission resource
+        submission.setId(submissionEntity.getId());
+        // The deposit data model requires a "name" - for now we use the ID.
+        submission.setName(submissionEntity.getId());
+
+        submission.setSubmissionDate(submissionEntity.getSubmittedDate());
+
+        // Data from the Submission's user resource
+
+        if (submissionEntity.getSubmitter() == null) {
+            throw new DepositServiceRuntimeException("Submitter is undefined for submission " +
+                submissionEntity.getId());
+        }
+
+        persons.add(createPerson(submissionEntity.getSubmitter(), DepositMetadata.PERSON_TYPE.submitter));
+
+        // As of 5/14/18, the following data is available from both the Submission metadata
+        // and as a member of one of the PassEntity objects referenced by the Submission:
+        //      manuscript: title, abstract, volume, issue
+        //      journal: title, issn, NLMTA-ID
+        // The metadata values are processed AFTER the PassEntity objects so they have precedence.
+        processMetadata(metadata, submissionEntity.getMetadata());
+
+        // Data from the Grant resources
+        for (Grant grantEntity : submissionEntity.getGrants()) {
+            // Data from the User resources for the PI and CoPIs
+            User piEntity = grantEntity.getPi();
+            persons.add(createPerson(piEntity, DepositMetadata.PERSON_TYPE.pi));
+
+            for (User copiEntity : grantEntity.getCoPis()) {
+                persons.add(createPerson(copiEntity, DepositMetadata.PERSON_TYPE.copi));
+            }
+        }
+
+        // Add Manifest and Files
+        DepositManifest manifest = new DepositManifest();
+        submission.setManifest(manifest);
+        ArrayList<DepositFile> depositFiles = new ArrayList<>();
+        submission.setFiles(depositFiles);
+        manifest.setFiles(depositFiles);
+
+        // TODO Deposit service port pending
+//        for (File file : fileEntities) {
+//            // Ignore any Files that do not reference this Submission
+//            if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
+//                DepositFile depositFile = new DepositFile();
+//                depositFile.setName(file.getName());
+//                depositFile.setLocation(file.getUri().toString());
+//                // TODO - The client model currently only has "manuscript" and "supplement" roles.
+//                depositFile.setType(getTypeForRole(file.getFileRole()));
+//                depositFile.setLabel(file.getDescription());
+//                depositFiles.add(depositFile);
+//            }
+//        }
+
+        return submission;
+    }
 
     /**
      * Creates a DepositMetadata person with the person's context passed as parameters.
@@ -247,89 +317,6 @@ abstract class ModelBuilder {
         processCommonMetadata(depositMetadata, json);
         processPmcMetadata(depositMetadata, json);
         processCrossrefMetadata(depositMetadata, json);
-    }
-
-    /**
-     * Creates a DepositSubmission by walking the tree of PassEntity objects, starting with the Submission entity,
-     * copying the desired source data into a new DepositSubmission data model.
-     *
-     * @param submissionEntity
-     * @return
-     */
-    DepositSubmission createDepositSubmission(Submission submissionEntity, List<PassEntity> fileEntities) {
-
-        // The submission object to populate
-        DepositSubmission submission = new DepositSubmission();
-
-        // Prepare for Metadata
-        DepositMetadata metadata = new DepositMetadata();
-        submission.setMetadata(metadata);
-        submission.setSubmissionMeta(new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonObject());
-        DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
-        metadata.setManuscriptMetadata(manuscript);
-        DepositMetadata.Article article = new DepositMetadata.Article();
-        metadata.setArticleMetadata(article);
-        DepositMetadata.Journal journal = new DepositMetadata.Journal();
-        metadata.setJournalMetadata(journal);
-        ArrayList<DepositMetadata.Person> persons = new ArrayList<>();
-        metadata.setPersons(persons);
-
-        // Data from the Submission resource
-        submission.setId(submissionEntity.getId());
-        // The deposit data model requires a "name" - for now we use the ID.
-        submission.setName(submissionEntity.getId());
-
-        submission.setSubmissionDate(submissionEntity.getSubmittedDate());
-
-        // Data from the Submission's user resource
-
-        if (submissionEntity.getSubmitter() == null) {
-            throw new DepositServiceRuntimeException("Submitter is undefined for submission " +
-                submissionEntity.getId());
-        }
-
-        persons.add(createPerson(submissionEntity.getSubmitter(), DepositMetadata.PERSON_TYPE.submitter));
-
-        // As of 5/14/18, the following data is available from both the Submission metadata
-        // and as a member of one of the PassEntity objects referenced by the Submission:
-        //      manuscript: title, abstract, volume, issue
-        //      journal: title, issn, NLMTA-ID
-        // The metadata values are processed AFTER the PassEntity objects so they have precedence.
-        processMetadata(metadata, submissionEntity.getMetadata());
-
-        // Data from the Grant resources
-        for (Grant grantEntity : submissionEntity.getGrants()) {
-            // Data from the User resources for the PI and CoPIs
-            User piEntity = grantEntity.getPi();
-            persons.add(createPerson(piEntity, DepositMetadata.PERSON_TYPE.pi));
-
-            for (User copiEntity : grantEntity.getCoPis()) {
-                persons.add(createPerson(copiEntity, DepositMetadata.PERSON_TYPE.copi));
-            }
-        }
-
-        // Add Manifest and Files
-        DepositManifest manifest = new DepositManifest();
-        submission.setManifest(manifest);
-        ArrayList<DepositFile> depositFiles = new ArrayList<>();
-        submission.setFiles(depositFiles);
-        manifest.setFiles(depositFiles);
-
-        // TODO Deposit service port pending
-//        for (File file : fileEntities) {
-//            // Ignore any Files that do not reference this Submission
-//            if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
-//                DepositFile depositFile = new DepositFile();
-//                depositFile.setName(file.getName());
-//                depositFile.setLocation(file.getUri().toString());
-//                // TODO - The client model currently only has "manuscript" and "supplement" roles.
-//                depositFile.setType(getTypeForRole(file.getFileRole()));
-//                depositFile.setLabel(file.getDescription());
-//                depositFiles.add(depositFile);
-//            }
-//        }
-
-        return submission;
     }
 
     private DepositFileType getTypeForRole(FileRole role) {

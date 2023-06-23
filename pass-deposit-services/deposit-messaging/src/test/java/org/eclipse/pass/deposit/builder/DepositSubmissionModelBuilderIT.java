@@ -34,6 +34,7 @@ import org.eclipse.pass.deposit.messaging.DepositApp;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
+import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
@@ -61,7 +62,7 @@ import org.testcontainers.utility.DockerImageName;
 })
 @Testcontainers
 @DirtiesContext
-public class PassModelBuilderIT {
+public class DepositSubmissionModelBuilderIT {
 
     private static final DockerImageName PASS_CORE_IMG =
         DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main");
@@ -96,8 +97,8 @@ public class PassModelBuilderIT {
             () -> "http://localhost:" + PASS_CORE_CONTAINER.getMappedPort(8080));
     }
 
-    @Autowired private PassJsonFedoraAdapter passJsonFedoraAdapter;
-    @Autowired private PassModelBuilder passModelBuilder;
+    @Autowired private SubmissionTestUtil submissionTestUtil;
+    @Autowired private DepositSubmissionModelBuilder depositSubmissionModelBuilder;
 
     @Test
     public void testElementValues() throws IOException {
@@ -105,11 +106,11 @@ public class PassModelBuilderIT {
         List<PassEntity> entities = new LinkedList<>();
         Submission submissionEntity;
         try (InputStream is = new ClassPathResource("/submissions/sample1.json").getInputStream()) {
-            submissionEntity = passJsonFedoraAdapter.jsonToFcrepo(is, entities);
+            submissionEntity = submissionTestUtil.readSubmissionJsonAndAddToPass(is, entities);
         }
 
         // WHEN
-        DepositSubmission submission = passModelBuilder.build(submissionEntity.getId());
+        DepositSubmission submission = depositSubmissionModelBuilder.build(submissionEntity.getId());
 
         // THEN
         assertNotNull(submissionEntity);

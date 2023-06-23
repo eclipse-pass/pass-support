@@ -26,32 +26,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.pass.deposit.assembler.Extension;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.builder.FilesystemModelBuilder;
-import org.eclipse.pass.deposit.model.DepositFile;
-import org.eclipse.pass.deposit.model.DepositFileType;
-import org.eclipse.pass.deposit.model.DepositManifest;
-import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -65,113 +53,6 @@ public class DepositTestUtil {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositTestUtil.class);
-
-    /**
-     * List files that are present under {@code classpath}.
-     * <p>
-     * Resolve the {@code classpath} to a directory on the filesystem, and
-     * recursively list all files under the directory.
-     * </p>
-     *
-     * @param classpath a classpath resource which must resolve to a directory on the filesystem
-     * @return a {@code List} of Spring {@code Resource}s present under the {@code classpath}
-     */
-    public static List<Resource> fromClasspath(String classpath) {
-        ClassPathResource base = new ClassPathResource(classpath);
-        assertTrue("Classpath resource cannot be found on the filesystem: '" + classpath + "'", base.exists());
-
-        File baseDir = null;
-        try {
-            baseDir = new File(base.getURL().getPath());
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        assertTrue(
-            "Classpath resource '" + classpath + "' cannot be resolved as a filesystem resource '" + baseDir + "'",
-            baseDir.exists());
-        assertTrue("Filesystem resource '" + baseDir + "' is expected to be a directory", baseDir.isDirectory());
-
-        Collection<File> files = FileUtils.listFiles(baseDir, null, true);
-
-        return files.stream()
-                    .map(FileSystemResource::new)
-                    .collect(Collectors.toList());
-    }
-
-    /**
-     * Convert the {@link Class#getPackage() package} of the supplied class to a resource path.
-     *
-     * @param c the class
-     * @return the package of the class as a classpath resource
-     */
-    public static String packageToClasspath(Class c) {
-        return c.getPackage().getName().replace(".", "/");
-    }
-
-    /**
-     * Mocks a {@link DepositSubmission}.  The mock submission includes:
-     * <ul>
-     *     <li>article metadata, including doi and embargo (this embargo is the one that "counts")</li>
-     *     <li>manuscript metadata, including title and embargo md (TODO remove embargo MD)</li>
-     *     <li>journal metadata, not really used</li>
-     *     <li>two Persons, ostensibly the authors of the article</li>
-     * </ul>
-     *
-     * @return a mocked {@code DepositSubmission}
-     */
-    public static DepositSubmission composeSubmission() {
-        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder(null);
-        return SubmissionUtil.asDepositSubmission(URI.create("fake:submission3"), fsModelBuilder);
-    }
-
-    public static DepositSubmission composeSubmission(URI submissionUri) {
-        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder(null);
-        return SubmissionUtil.asDepositSubmission(submissionUri, fsModelBuilder);
-    }
-
-    /**
-     * Mocks a {@link DepositSubmission}.  The mock submission includes:
-     * <ul>
-     *     <li>article metadata, including doi and embargo (this embargo is the one that "counts")</li>
-     *     <li>manuscript metadata, including title and embargo md (TODO remove embargo MD)</li>
-     *     <li>journal metadata, not really used</li>
-     *     <li>two Persons, ostensibly the authors of the article</li>
-     *     <li>the custodial content provided</li>
-     * </ul>
-     *
-     * @return a mocked {@code DepositSubmission}
-     */
-    public static DepositSubmission composeSubmission(String submissionName,
-                                                      Map<File, DepositFileType> custodialContent) {
-        DepositSubmission submission = composeSubmission();
-
-        // need a DepositFile for each file
-        List<DepositFile> depositFiles = custodialContent.entrySet().stream().map(entry -> {
-            File file = entry.getKey();
-            DepositFileType type = entry.getValue();
-            DepositFile dFile = new DepositFile();
-            dFile.setName(file.getName());
-            try {
-                dFile.setLocation(file.toURI().toURL().toString());
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-            dFile.setType(type);
-            dFile.setLabel(type.name());
-            return dFile;
-        }).collect(Collectors.toList());
-        submission.setFiles(depositFiles);
-
-        // need a DepositManifest
-        DepositManifest manifest = new DepositManifest();
-        manifest.setFiles(depositFiles);
-        submission.setManifest(manifest);
-
-        // need a Submission name
-        submission.setName(submissionName);
-
-        return submission;
-    }
 
     public static File tmpFile(Class testClass, TestName testName, String suffix) throws IOException {
         String nameFmt = "%s-%s-";

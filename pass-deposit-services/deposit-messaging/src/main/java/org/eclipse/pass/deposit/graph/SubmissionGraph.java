@@ -39,7 +39,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.eclipse.pass.deposit.builder.PassJsonFedoraAdapter;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
@@ -90,11 +89,6 @@ public class SubmissionGraph {
      * Members of the graph indexed by their URI
      */
     private ConcurrentHashMap<URI, PassEntity> entities;
-
-    /**
-     * Adapter used to convert between JSON serialization and Fedora
-     */
-    private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter(null);
 
     /**
      * Creates a new instance of a graph, using the supplied map for the members of the graph.  Wraps the {@code
@@ -410,25 +404,6 @@ public class SubmissionGraph {
          */
         public static GraphBuilder newGraph() {
             return new GraphBuilder();
-        }
-
-        /**
-         * Answers a GraphBuilder populated with entities supplied by a InputStream.  The InputStream is a JSON encoded
-         * stream of PassEntities. The {@link org.dataconservancy.pass.client.PassJsonAdapter} is used deserialize the
-         * JSON into PassEntity instances.
-         * <p>
-         * The stream must have exactly one Submission.
-         * </p>
-         *
-         * @param in      an InputStream of PASS entities encoded as JSON
-         * @param adapter deserializes the stream into PassEntity instances
-         * @return the GraphBuilder populated by members deserialized from the sream
-         */
-        public static GraphBuilder newGraph(InputStream in, PassJsonFedoraAdapter adapter) {
-            HashMap<URI, PassEntity> entities = new HashMap<>();
-            // TODO Deposit service port pending
-//            adapter.jsonToPass(in, entities);
-            return new GraphBuilder(new ConcurrentHashMap<URI, PassEntity>(entities));
         }
 
         /**

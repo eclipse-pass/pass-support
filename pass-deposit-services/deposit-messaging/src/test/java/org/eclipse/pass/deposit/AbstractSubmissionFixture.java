@@ -33,8 +33,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.eclipse.deposit.util.async.Condition;
-import org.eclipse.pass.deposit.builder.PassJsonFedoraAdapter;
-import org.eclipse.pass.deposit.util.SubmissionUtil;
+import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -94,6 +93,8 @@ public abstract class AbstractSubmissionFixture {
 
     private static final long TRAVIS_CONDITION_TIMEOUT_MS = 180 * 1000;
 
+    @Autowired private SubmissionTestUtil submissionTestUtil;
+
     @Autowired
     protected PassClient passClient;
 
@@ -138,11 +139,10 @@ public abstract class AbstractSubmissionFixture {
      * </ul>
      */
     public List<PassEntity> createSubmission(InputStream submissionGraph) throws IOException {
-        PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter(passClient);
         List<PassEntity> entities = new LinkedList<>();
 
         // Upload sample data to Fedora repository to get its Submission URI.
-        String submissionId = passAdapter.jsonToFcrepo(submissionGraph, entities).getId();
+        String submissionId = submissionTestUtil.readSubmissionJsonAndAddToPass(submissionGraph, entities).getId();
 
         // Find the Submission entity that was uploaded
         // TODO Deposit service port pending
@@ -158,7 +158,7 @@ public abstract class AbstractSubmissionFixture {
 
         // no Deposits pointing to the Submission
         assertTrue("Unexpected incoming links to " + submissionId,
-                   SubmissionUtil.getDepositUris(submission, passClient).isEmpty());
+                   SubmissionTestUtil.getDepositUris(submission, passClient).isEmpty());
 
         return entities;
     }
