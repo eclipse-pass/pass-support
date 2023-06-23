@@ -19,7 +19,7 @@ import org.eclipse.pass.support.client.model.DepositStatus;
 import org.springframework.stereotype.Component;
 
 /**
- * Determines if a PASS {@link org.dataconservancy.pass.model.Deposit.DepositStatus} is <em>terminal</em> or not.
+ * Determines if a PASS {@link org.eclipse.pass.support.client.model.DepositStatus} is <em>terminal</em> or not.
  * <p>
  * <strong>N.B.</strong> {@code null} is <em>not</em> considered a status to be evaluated
  * </p>
@@ -30,8 +30,8 @@ import org.springframework.stereotype.Component;
 public class DepositStatusEvaluator implements StatusEvaluator<DepositStatus> {
 
     /**
-     * Determine if {@code status} is in a <em>terminal</em> state, {@link Deposit.DepositStatus#ACCEPTED} or
-     * {@link Deposit.DepositStatus#REJECTED}
+     * Determine if {@code status} is in a <em>terminal</em> state, {@link DepositStatus#ACCEPTED} or
+     * {@link DepositStatus#REJECTED}
      *
      * @param status the status the PASS {@code DepositStatus}
      * @return {@code true} if the status is terminal

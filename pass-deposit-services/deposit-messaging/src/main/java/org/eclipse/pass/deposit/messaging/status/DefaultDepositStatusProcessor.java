@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Resolves the {@link Deposit#getDepositStatusRef() Deposit status reference}, parses the resolved document, and
- * returns a {@link Deposit.DepositStatus}.
+ * returns a {@link DepositStatus}.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement">SWORD v2 Profile §11</a>
@@ -43,7 +43,7 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
     }
 
     /**
-     * Parses the SWORD statement at {@code depositStatusRef}, and returns a corresponding {@link Deposit.DepositStatus}
+     * Parses the SWORD statement at {@code depositStatusRef}, and returns a corresponding {@link DepositStatus}
      *
      * @param deposit          the Deposit
      * @param repositoryConfig the configuration for the repository containing the Deposit

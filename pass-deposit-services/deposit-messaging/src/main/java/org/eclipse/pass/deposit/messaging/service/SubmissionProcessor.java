@@ -173,7 +173,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         /**
          * Answers the critical function which builds a {@link DepositSubmission} from the Submission, then sets the
-         * {@link Submission.AggregatedDepositStatus} to {@code IN_PROGRESS}.
+         * {@link AggregatedDepositStatus} to {@code IN_PROGRESS}.
          *
          * @param modelBuilder the model builder used to build the {@code DepositSubmission}
          * @return the Function that builds the DepositSubmission and sets the aggregated deposit status on the

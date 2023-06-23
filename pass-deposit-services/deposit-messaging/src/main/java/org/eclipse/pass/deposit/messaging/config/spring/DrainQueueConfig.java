@@ -68,10 +68,12 @@ public class DrainQueueConfig {
     // TODO Deposit service port pending
     @Bean
     public DefaultJmsListenerContainerFactory drainQueueJmsListenerContainerFactory() {
+        // TODO Deposit service port pending
 //        ConnectionFactory connectionFactory) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setConcurrency("2");
+        // TODO Deposit service port pending
 //        factory.setConnectionFactory(connectionFactory);
         factory.setAutoStartup(true);
         return factory;
