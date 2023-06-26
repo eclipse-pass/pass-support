@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 import java.util.stream.Stream;
 
 import org.eclipse.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
-import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.Submission;
