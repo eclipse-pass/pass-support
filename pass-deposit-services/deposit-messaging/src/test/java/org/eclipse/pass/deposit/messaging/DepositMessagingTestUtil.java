@@ -169,7 +169,7 @@ public class DepositMessagingTestUtil {
      * @return
      */
     public static <T extends Enum<T>> T random(Class<T> clazz) {
-        Enum anEnum = randomFromEnum(clazz);
+        Enum<?> anEnum = randomFromEnum(clazz);
         return T.valueOf(clazz, anEnum.name());
     }
 
@@ -185,7 +185,7 @@ public class DepositMessagingTestUtil {
     public static <T extends Enum<T>> T random(Class<T> clazz, T... excludes) {
         Predicate<String> excludesPredicate =
             (statusName) -> Stream.of(excludes).anyMatch(toExclude -> toExclude.name().equals(statusName));
-        Enum anEnum = randomFromEnumExcludes(clazz, excludesPredicate);
+        Enum<?> anEnum = randomFromEnumExcludes(clazz, excludesPredicate);
         return T.valueOf(clazz, anEnum.name());
     }
 
@@ -198,7 +198,7 @@ public class DepositMessagingTestUtil {
      * @return
      */
     public static <T extends Enum<T>> T random(Class<T> clazz, Predicate<T> excludes) {
-        Enum anEnum = randomFromEnumExcludesPredicate(clazz, excludes);
+        Enum<?> anEnum = randomFromEnumExcludesPredicate(clazz, excludes);
         return T.valueOf(clazz, anEnum.name());
     }
 
@@ -216,8 +216,8 @@ public class DepositMessagingTestUtil {
         return values[RANDOM.nextInt(values.length)];
     }
 
-    private static <T extends Enum<T>> Enum randomFromEnumExcludes(Class<T> enumClass, Predicate<String> excludes) {
-        AtomicReference<Enum> result = new AtomicReference<>();
+    private static <T extends Enum<T>> Enum<?> randomFromEnumExcludes(Class<T> enumClass, Predicate<String> excludes) {
+        AtomicReference<Enum<?>> result = new AtomicReference<>();
         do {
             result.set(randomFromEnum(enumClass));
         } while (excludes.test(result.get().name()));
@@ -225,7 +225,7 @@ public class DepositMessagingTestUtil {
         return result.get();
     }
 
-    private static <T extends Enum<T>> Enum randomFromEnumExcludesPredicate(Class<T> enumClass, Predicate<T> excludes) {
+    private static <T extends Enum<T>> Enum<?> randomFromEnumExcludesPredicate(Class<T> enumClass, Predicate<T> excludes) {
         AtomicReference<T> result = new AtomicReference<>();
         do {
             result.set(randomFromEnum(enumClass));
