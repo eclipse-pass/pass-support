@@ -140,7 +140,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see PackageVerifier
  */
 @RunWith(SpringRunner.class)
-public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixture {
+public abstract class SubmitAndValidatePackagesIT extends AbstractDepositSubmissionIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmitAndValidatePackagesIT.class);
 

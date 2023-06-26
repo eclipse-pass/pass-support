@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.deposit.util.async.Condition;
-import org.eclipse.pass.deposit.AbstractSubmissionFixture;
+import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.PreassembledAssembler;
@@ -87,7 +87,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Import({DepositConfig.class, JmsConfig.class, QuartzConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 // the repository configuration json pollutes the context
-public class DepositTaskIT extends AbstractSubmissionFixture {
+public class DepositTaskIT extends AbstractDepositSubmissionIT {
 
     /**
      * Package specification URI identifying a DSpace SIP with METS metadata
@@ -151,7 +151,7 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
 
     /**
      * Streams a Submission graph from shared-resources.  Each object in the graph is persisted in Fedora by the
-     * {@link AbstractSubmissionFixture} super class.  The Submission in Fedora will have the {@code submitted} flag
+     * {@link AbstractDepositSubmissionIT} super class.  The Submission in Fedora will have the {@code submitted} flag
      * set to {@code false} so that Deposit Services won't act.
      *
      * Note that the 'repositoryKey' field on the Repository present in the graph has a value of 'pmc', used to

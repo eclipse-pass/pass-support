@@ -15,50 +15,32 @@
  */
 package org.eclipse.pass.deposit.messaging.service;
 
-import static org.hamcrest.CoreMatchers.isA;
-
-import java.io.IOException;
-import java.net.URI;
-
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
-import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
-import org.eclipse.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Submission;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@Import({DepositConfig.class, DrainQueueConfig.class})
-@DirtiesContext
 public class EmptySubmissionIT extends AbstractSubmissionIT {
 
-    private Submission submission;
-
-    @Before
-    public void submit() throws IOException {
-        submission = findSubmission(createSubmission(
-            ResourceTestUtil.readSubmissionJson("sample1-no-files")));
-    }
-
     @Test
-    public void submissionWithNoFiles() throws Exception {
+    public void submissionWithNoFiles() {
+        DepositServiceRuntimeException ex = assertThrows(DepositServiceRuntimeException.class, () -> {
+            Submission submission = findSubmission(createSubmission(
+                ResourceTestUtil.readSubmissionJson("sample1-no-files")));
 
-        thrown.expect(DepositServiceRuntimeException.class);
-        thrown.expectCause(isA(IllegalStateException.class));
-        thrown.expectMessage("no files attached");
+            // This submission should fail off the bat because there's no files in the submission.
+            submissionProcessor.accept(submission);
+        });
 
-        // This submission should fail off the bat because there's no files in the submission.
-        underTest.accept(submission);
+        assertEquals("Unable to update status of 13 to 'IN_PROGRESS': Update postcondition failed for 13: " +
+            "the DepositSubmission has no files attached! (Hint: check the incoming links to the Submission)",
+            ex.getMessage());
     }
 
 }

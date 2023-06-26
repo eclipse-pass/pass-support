@@ -15,10 +15,10 @@
  */
 package org.eclipse.pass.deposit.builder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,50 +29,20 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
-import org.eclipse.pass.deposit.messaging.DepositApp;
+import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
-import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = DepositApp.class)
-@TestPropertySource(properties = {
-    "pass.client.url=http://localhost:8080",
-    "pass.client.user=backend",
-    "pass.client.password=backend"
-})
-@Testcontainers
-@DirtiesContext
-public class DepositSubmissionModelBuilderIT {
-
-    private static final DockerImageName PASS_CORE_IMG =
-        DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main");
-
-    @Container
-    static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
-        .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
-        .withEnv("PASS_CORE_BACKEND_USER", "backend")
-        .withEnv("PASS_CORE_BACKEND_PASSWORD", "backend")
-        .waitingFor(Wait.forHttp("/data/grant"))
-        .withExposedPorts(8080);
+/**
+ * @author Russ Poetker
+ */
+public class DepositSubmissionModelBuilderIT extends AbstractDepositSubmissionIT {
 
     private static final String EXPECTED_JOURNAL_TITLE = "Food & Function";
     private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
@@ -90,13 +60,6 @@ public class DepositSubmissionModelBuilderIT {
             }
         };
 
-    @DynamicPropertySource
-    static void updateProperties(DynamicPropertyRegistry registry) {
-        registry.add("pass.client.url",
-            () -> "http://localhost:" + PASS_CORE_CONTAINER.getMappedPort(8080));
-    }
-
-    @Autowired private SubmissionTestUtil submissionTestUtil;
     @Autowired private DepositSubmissionModelBuilder depositSubmissionModelBuilder;
 
     @Test

@@ -62,15 +62,10 @@ public class SubmissionProcessor implements Consumer<Submission> {
     private final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
 
     protected PassClient passClient;
-
     protected DepositSubmissionModelBuilder depositSubmissionModelBuilder;
-
     protected Registry<Packager> packagerRegistry;
-
     protected SubmissionPolicy submissionPolicy;
-
     protected CriticalRepositoryInteraction critical;
-
     protected DepositTaskHelper depositTaskHelper;
 
     @Autowired
