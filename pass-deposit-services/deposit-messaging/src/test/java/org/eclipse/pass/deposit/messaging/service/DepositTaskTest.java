@@ -22,7 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import org.eclipse.pass.deposit.messaging.policy.Policy;
-import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.DepositStatus;
 

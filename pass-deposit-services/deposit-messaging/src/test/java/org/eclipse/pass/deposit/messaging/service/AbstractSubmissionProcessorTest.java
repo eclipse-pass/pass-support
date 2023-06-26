@@ -29,7 +29,7 @@ import org.eclipse.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusMapper;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusResolver;
 import org.eclipse.pass.deposit.messaging.status.SwordDspaceDepositStatus;
-import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.Before;
