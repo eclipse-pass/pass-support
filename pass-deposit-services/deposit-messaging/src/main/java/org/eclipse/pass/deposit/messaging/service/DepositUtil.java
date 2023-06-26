@@ -174,7 +174,7 @@ public class DepositUtil {
                 (submission) -> {
                     submission.setAggregatedDepositStatus(AggregatedDepositStatus.FAILED);
                     return submission;
-                }, true);
+                });
 
         if (!updateResult.success()) {
             LOG.debug(
@@ -210,7 +210,7 @@ public class DepositUtil {
                 (deposit) -> {
                     deposit.setDepositStatus(DepositStatus.FAILED);
                     return deposit;
-                }, true);
+                });
 
         if (!updateResult.success()) {
             LOG.debug("Updating status of {} to {} failed: {}", depositId, DepositStatus.FAILED,
