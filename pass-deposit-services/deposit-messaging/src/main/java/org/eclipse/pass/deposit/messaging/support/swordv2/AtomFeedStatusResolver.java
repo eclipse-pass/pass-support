@@ -25,7 +25,7 @@ import org.apache.abdera.parser.Parser;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusResolver;
 import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.eclipse.pass.support.messaging.constants.Constants;
+import org.eclipse.pass.deposit.messaging.Constants;
 import org.eclipse.pass.deposit.messaging.service.DepositTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

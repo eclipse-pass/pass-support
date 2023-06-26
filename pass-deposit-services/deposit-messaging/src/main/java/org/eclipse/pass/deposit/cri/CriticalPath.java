@@ -16,7 +16,7 @@
  *
  */
 
-package org.eclipse.pass.support.messaging.cri;
+package org.eclipse.pass.deposit.cri;
 
 import java.util.function.BiPredicate;
 import java.util.function.Function;

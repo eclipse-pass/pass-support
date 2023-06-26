@@ -15,7 +15,7 @@
  */
 package org.eclipse.pass.deposit.messaging.support.swordv2;
 
-import static org.eclipse.pass.support.messaging.constants.Constants.SWORD.SWORD_STATE;
+import static org.eclipse.pass.deposit.messaging.Constants.SWORD.SWORD_STATE;
 
 import java.net.URI;
 
