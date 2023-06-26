@@ -25,10 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
-import org.eclipse.pass.deposit.assembler.Assembler;
-import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.springframework.stereotype.Component;
 
 /**
