@@ -16,7 +16,7 @@
 package org.eclipse.pass.deposit.messaging.service;
 
 
-import org.eclipse.pass.deposit.AbstractSubmissionFixture;
+import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
 import org.eclipse.pass.deposit.messaging.config.spring.JmsConfig;
 import org.junit.runner.RunWith;
@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @TestPropertySource(properties = {"pass.deposit.jobs.disabled=true"})
 @Import({DepositConfig.class, JmsConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class SubmissionStatusUpdaterIT extends AbstractSubmissionFixture {
+public class SubmissionStatusUpdaterIT extends AbstractDepositSubmissionIT {
 
     // TODO Deposit service port pending
 //    @Autowired

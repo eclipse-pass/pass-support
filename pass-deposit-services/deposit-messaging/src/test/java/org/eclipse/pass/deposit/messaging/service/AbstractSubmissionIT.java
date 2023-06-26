@@ -15,14 +15,14 @@
  */
 package org.eclipse.pass.deposit.messaging.service;
 
-import org.eclipse.pass.deposit.AbstractSubmissionFixture;
+import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public abstract class AbstractSubmissionIT extends AbstractSubmissionFixture {
+public abstract class AbstractSubmissionIT extends AbstractDepositSubmissionIT {
 
     protected static final String J10P_REPO_NAME = "JScholarship";
 
@@ -30,6 +30,6 @@ public abstract class AbstractSubmissionIT extends AbstractSubmissionFixture {
 
     @Autowired
     @Qualifier("submissionProcessor")
-    protected SubmissionProcessor underTest;
+    protected SubmissionProcessor submissionProcessor;
 
 }
