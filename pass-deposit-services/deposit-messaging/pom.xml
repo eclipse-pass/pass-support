@@ -28,15 +28,6 @@
   <name>PASS messaging integration</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.eclipse.pass.support.messaging</groupId>
-      <artifactId>cri</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.pass.support.messaging</groupId>
-      <artifactId>constants</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -92,6 +83,12 @@
     <dependency>
       <groupId>org.eclipse.pass</groupId>
       <artifactId>pass-data-client</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.pass.deposit</groupId>
+      <artifactId>deposit-cri</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>

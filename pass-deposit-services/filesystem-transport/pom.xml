@@ -30,6 +30,12 @@
   <dependencies>
 
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <version>${spring-boot-maven-plugin.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -41,8 +47,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.eclipse.pass.support.messaging</groupId>
-      <artifactId>cri</artifactId>
+      <groupId>org.eclipse.pass.deposit</groupId>
+      <artifactId>deposit-cri</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     
     <dependency>

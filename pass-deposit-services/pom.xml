@@ -57,6 +57,7 @@
     <module>sword2-transport</module>
     <module>deposit-messaging</module>
     <module>filesystem-transport</module>
+    <module>deposit-cri</module>
   </modules>
 
   <scm>
@@ -104,18 +105,6 @@
       <dependency>
         <groupId>org.eclipse.pass.support.messaging</groupId>
         <artifactId>json</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.eclipse.pass.support.messaging</groupId>
-        <artifactId>cri</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.eclipse.pass.support.messaging</groupId>
-        <artifactId>constants</artifactId>
         <version>${project.version}</version>
       </dependency>
 

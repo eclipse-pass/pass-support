@@ -16,7 +16,7 @@
  *
  */
 
-package org.eclipse.pass.support.messaging.constants;
+package org.eclipse.pass.deposit.messaging;
 
 /**
  * Deposit and Notification Services constants.

@@ -32,7 +32,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
-import org.eclipse.pass.support.messaging.cri.CriticalPath;
+import org.eclipse.pass.deposit.cri.CriticalPath;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.ExceptionHandlingThreadPoolExecutor;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;

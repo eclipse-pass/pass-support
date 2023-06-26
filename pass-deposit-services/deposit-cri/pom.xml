@@ -15,32 +15,25 @@
   ~ limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.eclipse.pass.support.messaging</groupId>
-        <artifactId>messaging-support</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>org.eclipse.pass.deposit</groupId>
+    <artifactId>deposit-parent</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>cri</artifactId>
+  <artifactId>deposit-cri</artifactId>
 
-    <name>Critical Repository Interaction</name>
+  <name>Critical Repository Interaction</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
+  <dependencies>
 
-        <dependency>
-            <groupId>org.eclipse.pass</groupId>
-            <artifactId>pass-data-client</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.eclipse.pass</groupId>
+      <artifactId>pass-data-client</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
-    </dependencies>
+  </dependencies>
+
 </project>
