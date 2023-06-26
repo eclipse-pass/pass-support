@@ -18,17 +18,12 @@ package org.eclipse.pass.deposit.messaging;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * Tests insuring that the Suppliers created by {@link DepositMessagingTestUtil} are congruent with the concrete
@@ -36,10 +31,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@RunWith(SpringRunner.class)
-@PropertySource("classpath:/application.properties")
-@TestPropertySource(properties = "pass.deposit.jobs.disabled=true")
-@Import(DepositConfig.class)
+
+@SpringBootTest(properties = { "pass.deposit.jobs.disabled=true", "pass.client.url=http://localhost:8080/", "pass.client.user=test", "pass.client.password=test" })
 public class DepositMessagingTestUtilTest {
 
     @Autowired

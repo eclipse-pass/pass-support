@@ -16,23 +16,23 @@
 package org.eclipse.pass.deposit.messaging;
 
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.function.Predicate;
 
 import org.eclipse.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -43,7 +43,7 @@ public class DepositServiceErrorHandlerTest {
 
     private DepositServiceErrorHandler underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         cri = mock(CriticalRepositoryInteraction.class);
         underTest = new DepositServiceErrorHandler(cri);
@@ -61,7 +61,7 @@ public class DepositServiceErrorHandlerTest {
         DepositServiceRuntimeException dsreWithDeposit =
             new DepositServiceRuntimeException("handleDepositServiceReWithDeposit", depositResource);
 
-        CriticalRepositoryInteraction.CriticalResult cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
+        CriticalRepositoryInteraction.CriticalResult<?,?> cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
         when(cr.success()).thenReturn(true);
         when(cri.performCritical(
             eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any()))
@@ -88,7 +88,7 @@ public class DepositServiceErrorHandlerTest {
         DepositServiceRuntimeException depositServiceReWithSubmission =
             new DepositServiceRuntimeException("handleDepositServiceReWithSubmission", submissionResource);
 
-        CriticalRepositoryInteraction.CriticalResult cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
+        CriticalRepositoryInteraction.CriticalResult<?,?> cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
         when(cr.success()).thenReturn(true);
         when(cri.performCritical(
             eq(submissionResource.getId()), eq(Submission.class), any(), any(Predicate.class), any()))
@@ -113,7 +113,7 @@ public class DepositServiceErrorHandlerTest {
 
         underTest.handleError(t);
 
-        verifyZeroInteractions(cri);
+        verifyNoInteractions(cri);
     }
 
     /**
@@ -125,7 +125,7 @@ public class DepositServiceErrorHandlerTest {
 
         underTest.handleError(re);
 
-        verifyZeroInteractions(cri);
+        verifyNoInteractions(cri);
     }
 
     /**
@@ -141,7 +141,7 @@ public class DepositServiceErrorHandlerTest {
             new DepositServiceRuntimeException("handleRteWithDsreCause", depositResource);
         RuntimeException re = new RuntimeException("handleRteWithDsreCause", dsreWithDeposit);
 
-        CriticalRepositoryInteraction.CriticalResult cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
+        CriticalRepositoryInteraction.CriticalResult<?,?> cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
         when(cr.success()).thenReturn(true);
         when(cri.performCritical(eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any()))
             .thenAnswer(inv -> {
