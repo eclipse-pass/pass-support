@@ -17,14 +17,14 @@
 package org.eclipse.pass.deposit.assembler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,8 +33,8 @@ import org.apache.commons.io.input.CharSequenceInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.mime.MediaType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AssemblerSupportTest {
 
@@ -44,7 +44,7 @@ public class AssemblerSupportTest {
 
     private MarkUnsupportedInputStream markUnsupportedIn;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         detector = new DefaultDetector();
         markUnsupportedIn = new MarkUnsupportedInputStream(sizeL, false);
@@ -87,7 +87,7 @@ public class AssemblerSupportTest {
         // MediaType.OCTET_STREAM is returned by default.
 
         assertEquals(MediaType.OCTET_STREAM, AssemblerSupport.detectMediaType(markUnsupportedIn, detector));
-        verifyZeroInteractions(detector);
+        verifyNoInteractions(detector);
     }
 
     /**

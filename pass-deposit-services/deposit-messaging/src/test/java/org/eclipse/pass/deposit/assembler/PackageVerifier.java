@@ -108,7 +108,7 @@ public interface PackageVerifier {
             }
 
             @Override
-            protected void handleFile(File file, int depth, Collection ignored) throws IOException {
+            protected void handleFile(File file, int depth, Collection<File> ignored) throws IOException {
                 if (custodialFilter.accept(file)) {
                     custodialFiles.add(file);
                     DepositFile depositFile = packageFileMapper.andThen(df -> {

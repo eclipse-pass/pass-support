@@ -17,7 +17,7 @@
 package org.eclipse.pass.deposit.assembler;
 
 import static java.util.Base64.getEncoder;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -29,8 +29,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AuthenticatedResourceTest {
 
@@ -46,7 +46,7 @@ public class AuthenticatedResourceTest {
 
     private AuthenticatedResource underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         resourceUrl = mock(URL.class);
         in = mock(InputStream.class);
