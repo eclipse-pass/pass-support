@@ -275,7 +275,7 @@ public class DepositConfig {
 
     @Bean({
         "defaultDepositStatusProcessor",
-        "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
+        "org.eclipse.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
     })
     public DefaultDepositStatusProcessor defaultDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {
         return new DefaultDepositStatusProcessor(statusResolver);

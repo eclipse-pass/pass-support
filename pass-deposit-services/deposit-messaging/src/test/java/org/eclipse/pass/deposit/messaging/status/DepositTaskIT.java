@@ -15,10 +15,10 @@
  */
 package org.eclipse.pass.deposit.messaging.status;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -29,37 +29,36 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.abdera.i18n.iri.IRI;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.deposit.util.async.Condition;
-import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.PreassembledAssembler;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
-import org.eclipse.pass.deposit.messaging.config.quartz.QuartzConfig;
-import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
-import org.eclipse.pass.deposit.messaging.config.spring.JmsConfig;
+import org.eclipse.pass.deposit.messaging.service.AbstractSubmissionIT;
+import org.eclipse.pass.deposit.messaging.service.DepositProcessor;
 import org.eclipse.pass.deposit.transport.TransportSession;
+import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.eclipse.pass.deposit.transport.sword2.Sword2Transport;
+import org.eclipse.pass.deposit.transport.sword2.Sword2TransportSession;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.swordapp.client.DepositReceipt;
+import org.swordapp.client.SwordIdentifier;
 
 /**
  * This IT insures that the SWORD transport properly handles the Deposit.depositStatusRef field by updating the
@@ -80,14 +79,15 @@ import org.springframework.test.context.junit4.SpringRunner;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@TestPropertySource(properties = {"pass.deposit.repository.configuration=" +
-                                  "classpath:org/dataconservancy/pass/deposit/messaging/status/DepositTaskIT.json"})
-@Import({DepositConfig.class, JmsConfig.class, QuartzConfig.class})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@TestPropertySource(properties = {
+    "pass.deposit.repository.configuration=classpath:org/eclipse/pass/deposit/messaging/status/DepositTaskIT.json",
+    "dspace.username=testuser",
+    "dspace.password=testuserpassword",
+    "dspace.baseuri=http://localhost",
+    "dspace.collection.handle=foobartest"
+})
 // the repository configuration json pollutes the context
-public class DepositTaskIT extends AbstractDepositSubmissionIT {
+public class DepositTaskIT extends AbstractSubmissionIT {
 
     /**
      * Package specification URI identifying a DSpace SIP with METS metadata
@@ -110,10 +110,8 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
 
     private final ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
 
-    private Submission submission;
-
-    @Autowired
-    private PreassembledAssembler assembler;
+    @Autowired private PreassembledAssembler assembler;
+    @Autowired private DepositProcessor depositProcessor;
 
     // N.B. the name of this bean and field are important, they must be named 'errorHandler' for the spy to be
     // properly injected into the Application Context, and into this test class.  Otherwise multiple beans are
@@ -133,7 +131,7 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      *
      * @throws Exception
      */
-    @Before
+    @BeforeEach
     public void setUpSuccess() throws Exception {
         InputStream packageFile = this.getClass().getResourceAsStream(PACKAGE_PATH);
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
@@ -150,38 +148,49 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
     }
 
     /**
-     * Streams a Submission graph from shared-resources.  Each object in the graph is persisted in Fedora by the
-     * {@link AbstractDepositSubmissionIT} super class.  The Submission in Fedora will have the {@code submitted} flag
-     * set to {@code false} so that Deposit Services won't act.
-     *
-     * Note that the 'repositoryKey' field on the Repository present in the graph has a value of 'pmc', used to
-     * configure the repository in 'DepositTaskIT.json'.
-     *
-     * @return
-     */
-    @Before
-    public void submit() throws IOException {
-        submission = findSubmission(createSubmission(ResourceTestUtil.readSubmissionJson("sample2")));
-    }
-
-    /**
      * A submission with a valid package should result in success.
      */
     @Test
     public void success() throws IOException {
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample2")));
+
         // Configure a spy on the TransportSession returned by the Transport
         AtomicReference<TransportSession> transportSessionSpy = new AtomicReference<>();
         doAnswer(inv -> {
-            transportSessionSpy.set((TransportSession) spy(inv.callRealMethod()));
+            Sword2TransportSession mockSwordSession = mock(Sword2TransportSession.class);
+            Sword2DepositReceiptResponse mockSwordResp = mock(Sword2DepositReceiptResponse.class);
+            when(mockSwordResp.success()).thenReturn(true);
+            DepositReceipt mockReciept = mock(DepositReceipt.class);
+            when(mockReciept.getSplashPageLink()).thenReturn(mock(SwordIdentifier.class));
+            when(mockReciept.getSplashPageLink().getHref()).thenReturn("http://foobarsplashlink");
+            when(mockReciept.getAtomStatementLink()).thenReturn(mock(SwordIdentifier.class));
+            when(mockReciept.getAtomStatementLink().getIRI()).thenReturn(mock(IRI.class));
+            when(mockReciept.getAtomStatementLink().getIRI().toURI()).thenReturn(mock(URI.class));
+            when(mockReciept.getAtomStatementLink().getIRI().toURI().toString())
+                .thenReturn("http://foobaratomstatement");
+            when(mockSwordResp.getReceipt()).thenReturn(mockReciept);
+            when(mockSwordSession.send(any(), any())).thenReturn(mockSwordResp);
+            transportSessionSpy.set(mockSwordSession);
             return transportSessionSpy.get();
         }).when(sword2Transport).open(any());
 
         // "Click" submit
         triggerSubmission(submission);
+        final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
+
+        // WHEN
+        submissionProcessor.accept(actualSubmission);
 
         // Wait for the Deposit resource to show up as ACCEPTED (terminal state)
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() != null);
+
+        assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1
+            && DepositStatus.SUBMITTED == deposits.iterator().next().getDepositStatus()));
+
+        c.getResult().forEach(deposit -> depositProcessor.accept(deposit));
+
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                                                 DepositStatus.ACCEPTED == deposits.iterator().next()
                                                                                           .getDepositStatus()));
@@ -212,6 +221,8 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      */
     @Test
     public void invalidChecksum() throws IOException {
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample2")));
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
         when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.OPTS.MD5);
         when(checksum.asHex()).thenReturn("invalid checksum");
@@ -237,6 +248,8 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      */
     @Test
     public void invalidSpec() throws IOException {
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample2")));
         assembler.setSpec("invalid spec");
         triggerSubmission(submission);
 
@@ -257,6 +270,8 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      */
     @Test
     public void invalidLength() throws IOException {
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample2")));
         assembler.setPackageLength(3);
         triggerSubmission(submission);
 
@@ -279,6 +294,8 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      */
     @Test
     public void missingFile() throws IOException {
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample2")));
         InputStream packageFile = this.getClass().getResourceAsStream(MISSING_FILE_PACKAGE_PATH);
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
         when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.OPTS.MD5);

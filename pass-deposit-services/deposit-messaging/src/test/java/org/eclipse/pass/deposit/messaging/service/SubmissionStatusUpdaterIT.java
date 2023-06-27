@@ -29,11 +29,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest
 @TestPropertySource(properties = {"pass.deposit.jobs.disabled=true"})
-@Import({DepositConfig.class, JmsConfig.class})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class SubmissionStatusUpdaterIT extends AbstractDepositSubmissionIT {
 
     // TODO Deposit service port pending

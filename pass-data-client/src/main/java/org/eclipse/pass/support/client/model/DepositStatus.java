@@ -27,13 +27,13 @@ public enum DepositStatus {
      */
     SUBMITTED("submitted"),
     /**
-     * The target Repository has rejected the Deposit
-     */
-    ACCEPTED("accepted"),
-    /**
      * The target Repository has accepted the files into the repository. More steps may be performed by the
      * Repository, but the
      * requirements of the Deposit have been satisfied
+     */
+    ACCEPTED("accepted"),
+    /**
+     * The target Repository has rejected the Deposit
      */
     REJECTED("rejected"),
     /**
