@@ -18,7 +18,9 @@ package org.eclipse.pass.deposit.messaging.config.repository;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
 
@@ -90,12 +92,16 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapRepositoryConfigFromJsonRoundTrip() throws Exception {
+        mapper = new ObjectMapper();
+
         RepositoryConfig config = mapper.readValue(SWORD_REPOSITORY_JSON, RepositoryConfig.class);
         assertRoundTrip(config, RepositoryConfig.class);
     }
 
     @Test
     public void mapRepositoryConfigFromJavaRoundTrip() throws Exception {
+        mapper = new ObjectMapper();
+
         RepositoryConfig repoConfig = new RepositoryConfig();
         TransportConfig tsConfig = new TransportConfig();
         SwordV2Binding swordV2Binding = new SwordV2Binding();

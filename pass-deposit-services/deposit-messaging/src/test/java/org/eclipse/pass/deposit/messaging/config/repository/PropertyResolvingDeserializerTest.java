@@ -16,20 +16,18 @@
 
 package org.eclipse.pass.deposit.messaging.config.repository;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = { "pass.client.url=http://localhost:8080/", "pass.client.user=test", "pass.client.password=test" })
 public class PropertyResolvingDeserializerTest extends RepositoryConfigMappingTest {
 
     @Autowired
@@ -46,7 +44,6 @@ public class PropertyResolvingDeserializerTest extends RepositoryConfigMappingTe
 
     @Test
     public void noPropertyResolutionTest() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
         RepositoryConfig config = mapper.readValue(SWORD_REPOSITORY_JSON, RepositoryConfig.class);
         assertTrue(config.getTransportConfig().getProtocolBinding().getProtocol().equals(SwordV2Binding.PROTO));
         SwordV2Binding swordV2Binding = (SwordV2Binding) config.getTransportConfig().getProtocolBinding();
