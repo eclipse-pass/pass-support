@@ -17,18 +17,20 @@ package org.eclipse.pass.deposit.messaging.status;
 
 import static org.eclipse.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_ARCHIVED;
 import static org.eclipse.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INPROGRESS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
@@ -36,19 +38,13 @@ import org.eclipse.pass.deposit.messaging.config.repository.RepositoryDepositCon
 import org.eclipse.pass.deposit.messaging.config.repository.StatusMapping;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DefaultDepositStatusProcessorTest {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     private DefaultDepositStatusProcessor underTest;
 
     private DepositStatusResolver<URI, URI> resolver;
@@ -64,7 +60,7 @@ public class DefaultDepositStatusProcessorTest {
 
     private RepositoryConfig repositoryConfig;
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         resolver = mock(DepositStatusResolver.class);
@@ -85,11 +81,9 @@ public class DefaultDepositStatusProcessorTest {
     public void processingOk() throws Exception {
         URI refUri = URI.create(depositStatusRef);
         when(resolver.resolve(refUri, repositoryConfig)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
-        when(mapping.getStatusMap()).thenReturn(new HashMap<String, String>() {
-            {
-                put(SWORD_STATE_ARCHIVED.asUri().toString(), DepositStatus.ACCEPTED.name().toLowerCase());
-            }
-        });
+        when(mapping.getStatusMap()).thenReturn(
+                Map.of(SWORD_STATE_ARCHIVED.asUri().toString(),
+                        DepositStatus.ACCEPTED.name().toLowerCase()));
 
         assertEquals(DepositStatus.ACCEPTED,
                      underTest.process(deposit, repositoryConfig));
@@ -101,21 +95,19 @@ public class DefaultDepositStatusProcessorTest {
     @Test
     public void mappingReturnsUnknownDepositStatus() throws Exception {
         String badDepositStatusUri = "http://foo/uri";
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(badDepositStatusUri);
 
         URI refUri = URI.create(depositStatusRef);
         when(resolver.resolve(refUri, repositoryConfig)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
-        when(mapping.getStatusMap()).thenReturn(new HashMap<String, String>() {
-            {
+        when(mapping.getStatusMap()).thenReturn(
+                Map.of(SWORD_STATE_ARCHIVED.asUri().toString(), badDepositStatusUri));
 
-                put(SWORD_STATE_ARCHIVED.asUri().toString(), badDepositStatusUri);
-            }
+        Exception e = assertThrows(IllegalArgumentException.class, () -> {
+            underTest.process(deposit, repositoryConfig);
         });
 
-        underTest.process(deposit, repositoryConfig);
+        assertTrue(e.getMessage().contains(badDepositStatusUri));
         verify(resolver).resolve(refUri, repositoryConfig);
-        verify(mapping);
+        verify(mapping).getStatusMap();
     }
 
     @Test
@@ -125,7 +117,7 @@ public class DefaultDepositStatusProcessorTest {
         assertNull(underTest.process(deposit, repositoryConfig));
 
         verify(resolver).resolve(any(), eq(repositoryConfig));
-        verifyZeroInteractions(mapping);
+        verifyNoInteractions(mapping);
     }
 
     @Test
@@ -144,24 +136,26 @@ public class DefaultDepositStatusProcessorTest {
     @Test
     public void parsingThrowsRuntimeException() throws Exception {
         when(resolver.resolve(any(), eq(repositoryConfig))).thenThrow(new RuntimeException("Expected"));
-        expectedException.expectMessage("Expected");
-        expectedException.expect(RuntimeException.class);
 
-        underTest.process(deposit, repositoryConfig);
+        Exception e = assertThrows(RuntimeException.class, () -> {
+            underTest.process(deposit, repositoryConfig);
+        });
 
-        verify(resolver).resolve(any(), repositoryConfig);
-        verifyZeroInteractions(mapping);
+        assertEquals("Expected", e.getMessage());
+        verify(resolver).resolve(any(), eq(repositoryConfig));
+        verifyNoInteractions(mapping);
     }
 
     @Test
     public void mappingThrowsRuntimeException() throws Exception {
         when(resolver.resolve(any(), eq(repositoryConfig))).thenReturn(SWORD_STATE_INPROGRESS.asUri());
         when(mapping.getStatusMap()).thenThrow(new RuntimeException("Expected"));
-        expectedException.expectMessage("Expected");
-        expectedException.expect(RuntimeException.class);
 
-        assertNull(underTest.process(deposit, repositoryConfig));
+        Exception e = assertThrows(RuntimeException.class, () -> {
+            assertNull(underTest.process(deposit, repositoryConfig));
+        });
 
-        verify(resolver).resolve(any(), repositoryConfig);
+        assertEquals("Expected", e.getMessage());
+        verify(resolver).resolve(any(), eq(repositoryConfig));
     }
 }
