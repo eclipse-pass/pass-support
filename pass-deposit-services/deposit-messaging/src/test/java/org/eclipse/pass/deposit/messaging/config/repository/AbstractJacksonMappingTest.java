@@ -16,18 +16,17 @@
 
 package org.eclipse.pass.deposit.messaging.config.repository;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-
+import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
 
 public abstract class AbstractJacksonMappingTest {
 
     protected ObjectMapper mapper;
 
-    @Before
+    @BeforeEach
     public void setUpObjectMapper() throws Exception {
         mapper = new ObjectMapper();
     }

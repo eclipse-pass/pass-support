@@ -16,17 +16,16 @@
 
 package org.eclipse.pass.deposit.messaging.config.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
@@ -198,12 +197,7 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
         String covid = "https://jscholarship.library.jhu.edu/handle/1774.2/58585";
         String nobel = "https://jscholarship.library.jhu.edu/handle/1774.2/33532";
-        Map<String, String> hints = new HashMap<String, String>() {
-            {
-                put("covid", covid);
-                put("nobel", nobel);
-            }
-        };
+        Map<String, String> hints = Map.of("covid", covid, "nobel", nobel);
         swordV2Binding.setCollectionHints(hints);
 
         realm1.setRealmName("Realm 1");

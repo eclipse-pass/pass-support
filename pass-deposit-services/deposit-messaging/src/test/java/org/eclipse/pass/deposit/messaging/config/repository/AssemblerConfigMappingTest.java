@@ -15,12 +15,12 @@
  */
 package org.eclipse.pass.deposit.messaging.config.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

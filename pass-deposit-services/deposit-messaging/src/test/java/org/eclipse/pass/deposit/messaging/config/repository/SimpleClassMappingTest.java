@@ -16,21 +16,16 @@
 
 package org.eclipse.pass.deposit.messaging.config.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.Test;
 
 public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleClassMappingTest.class);
-
     private static final String AUTH_REALM_JSON = "" +
                                                   "{\n" +
                                                   "          \"mech\": \"basic\",\n" +
