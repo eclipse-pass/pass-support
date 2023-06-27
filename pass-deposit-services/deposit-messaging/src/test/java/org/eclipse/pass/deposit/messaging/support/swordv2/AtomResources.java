@@ -24,7 +24,7 @@ public class AtomResources {
         //never called
     }
 
-    public static final String BASE_PATH = "org/dataconservancy/pass/deposit/messaging/support/swordv2";
+    public static final String BASE_PATH = "/org/eclipse/pass/deposit/messaging/support/swordv2";
     public static final String ARCHIVED_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-archived.xml";
     public static final String INPROGRESS_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-inprogress.xml";
     public static final String INREVIEW_STATUS_RESOURCE = BASE_PATH + "/AtomStatusParser-inreview.xml";
