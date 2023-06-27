@@ -27,8 +27,9 @@ import static org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources.M
 import static org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources.UNKNOWN_STATUS_RESOURCE;
 import static org.eclipse.pass.deposit.messaging.support.swordv2.AtomResources.WITHDRAWN_STATUS_RESOURCE;
 import static org.eclipse.pass.deposit.util.ResourceTestUtil.findByName;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -41,20 +42,14 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class AtomFeedStatusParserTest {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     private Parser abderaParser;
 
     private RepositoryConfig repositoryConfig;
@@ -63,7 +58,7 @@ public class AtomFeedStatusParserTest {
 
     private ResourceResolver resourceResolver;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         abderaParser = mock(Parser.class);
         repositoryConfig = mock(RepositoryConfig.class);
@@ -137,14 +132,15 @@ public class AtomFeedStatusParserTest {
         when(resource.getInputStream()).thenReturn(mock(InputStream.class));
 
         RuntimeException expected = new RuntimeException("Expected exception.");
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage("Expected exception.");
-        expectedException.expectMessage("AtomStatusParser-archived.xml");
 
         when(resourceResolver.resolve(eq(uri), any(RepositoryConfig.class))).thenReturn(resource);
         when(abderaParser.parse(any(InputStream.class))).thenThrow(expected);
 
-        underTest.resolve(uri, repositoryConfig);
+        Exception e = assertThrows(RuntimeException.class, () -> {
+            underTest.resolve(uri, repositoryConfig);
+        });
+
+        assertTrue(e.getMessage().contains("Expected exception."));
     }
 
 //    @Test

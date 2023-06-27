@@ -15,8 +15,8 @@
  */
 package org.eclipse.pass.deposit.messaging.support.swordv2;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,8 +27,8 @@ import java.net.URI;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
 
 /**
@@ -44,7 +44,7 @@ public class AtomFeedStatusResolverTest {
 
     private Resource resource;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         abdera = new FOMParserFactory().getParser();
         resolver = mock(ResourceResolver.class);

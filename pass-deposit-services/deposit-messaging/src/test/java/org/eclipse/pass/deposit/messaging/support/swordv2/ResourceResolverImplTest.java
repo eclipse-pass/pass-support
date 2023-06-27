@@ -16,10 +16,10 @@
 package org.eclipse.pass.deposit.messaging.support.swordv2;
 
 import static org.eclipse.pass.deposit.messaging.support.swordv2.ResourceResolverImpl.isRedirect;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -39,9 +39,9 @@ import java.util.Optional;
 import org.eclipse.pass.deposit.assembler.AuthenticatedResource;
 import org.eclipse.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -68,7 +68,7 @@ public class ResourceResolverImplTest {
 
     private ResourceResolverImpl resolver;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         repoConfig = mock(RepositoryConfig.class, RETURNS_DEEP_STUBS);
         url = mock(URL.class);
@@ -188,7 +188,7 @@ public class ResourceResolverImplTest {
     }
 
     @Test
-    @Ignore("Can't be done, '*' is an illegal character for a URI scheme")
+    @Disabled("Can't be done, '*' is an illegal character for a URI scheme")
     public void withClasspathStarUri() {
         URI uri = URI.create("classpath*:/path/to/resource");
         Resource resource = resolver.resolve(uri, repoConfig);
