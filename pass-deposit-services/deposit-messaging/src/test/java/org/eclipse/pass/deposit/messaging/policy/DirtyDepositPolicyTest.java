@@ -15,13 +15,13 @@
  */
 package org.eclipse.pass.deposit.messaging.policy;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.stream.Stream;
 
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -36,6 +36,6 @@ public class DirtyDepositPolicyTest {
     @Test
     public void testNonNullStatus() throws Exception {
         Stream.of(DepositStatus.values()).forEach(status ->
-                                                              assertFalse(new DirtyDepositPolicy().test(status)));
+            assertFalse(new DirtyDepositPolicy().test(status)));
     }
 }

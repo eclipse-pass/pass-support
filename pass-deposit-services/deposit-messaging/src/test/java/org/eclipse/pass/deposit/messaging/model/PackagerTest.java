@@ -15,8 +15,8 @@
  */
 package org.eclipse.pass.deposit.messaging.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,10 +25,9 @@ import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.messaging.config.repository.AssemblerConfig;
 import org.eclipse.pass.deposit.messaging.config.repository.AssemblerOptions;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.eclipse.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.transport.Transport;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -39,15 +38,12 @@ public class PackagerTest {
 
     private Transport transport;
 
-    private DepositStatusProcessor dsp;
-
     private RepositoryConfig repositoryConfig;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         assembler = mock(Assembler.class);
         transport = mock(Transport.class);
-        dsp = mock(DepositStatusProcessor.class);
         repositoryConfig = mock(RepositoryConfig.class);
     }
 
