@@ -15,17 +15,17 @@
  */
 package org.eclipse.pass.deposit.messaging.policy;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import org.eclipse.pass.deposit.messaging.status.StatusEvaluator;
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -36,7 +36,7 @@ public class TerminalDepositStatusPolicyTest {
 
     private TerminalDepositStatusPolicy underTest;
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         evaluator = mock(StatusEvaluator.class);
@@ -46,7 +46,7 @@ public class TerminalDepositStatusPolicyTest {
     @Test
     public void testNullStatus() throws Exception {
         assertFalse(underTest.test(null));
-        verifyZeroInteractions(evaluator);
+        verifyNoInteractions(evaluator);
     }
 
     @Test
