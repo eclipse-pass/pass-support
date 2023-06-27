@@ -18,23 +18,31 @@ package org.eclipse.pass.deposit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.messaging.DepositApp;
 import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientResult;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -116,16 +124,13 @@ public abstract class AbstractDepositSubmissionIT {
                      "Submission.AggregatedDepositStatus.NOT_STARTED",
                      AggregatedDepositStatus.NOT_STARTED, submission.getAggregatedDepositStatus());
 
-        // no Deposits pointing to the Submission
-        // TODO Deposit service port pending
-//        assertTrue("Unexpected incoming links to " + submissionId,
-//                   SubmissionTestUtil.getDepositUris(submission, passClient).isEmpty());
-
         return entities;
     }
 
-    public void triggerSubmission(String submissionId) {
-
+    public void triggerSubmission(Submission submission) throws IOException {
+        submission.setSubmitted(true);
+        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+        passClient.updateObject(submission);
     }
 
     /**
@@ -161,7 +166,7 @@ public abstract class AbstractDepositSubmissionIT {
      * Answers a Condition that will await the creation of {@code expectedCount} {@code Deposit} resources that meet
      * the requirements of the supplied {@code filter}.
      *
-     * @param submissionUri the URI of the Submission
+     * @param submissionId the ID of the Submission
      * @param expectedCount the number of Deposit resources expected for the Submission (normally equal to the number of
      *                      Repository resources present on the Submission)
      * @param filter        filters for Deposit resources with a desired state (e.g., a certain deposit status)
@@ -169,37 +174,22 @@ public abstract class AbstractDepositSubmissionIT {
      */
     public Condition<Set<Deposit>> depositsForSubmission(String submissionId, int expectedCount,
                                                          BiPredicate<Deposit, Repository> filter) {
-        // TODO Deposit service port pending
-//        Callable<Set<Deposit>> deposits = () -> {
-//            Set<URI> depositUris = passClient.findAllByAttributes(Deposit.class, new HashMap<String, Object>() {
-//                {
-//                    put("submission", submissionId);
-//                }
-//            });
-//
-//            return depositUris.stream()
-//                              .map(uri -> passClient.readResource(uri, Deposit.class))
-//                              .filter(deposit ->
-//                                          filter.test(deposit, passClient.readResource(deposit.getRepository(),
-//                                                                                       Repository.class)))
-//                              .collect(Collectors.toSet());
-//        };
-//
-//        Function<Set<Deposit>, Boolean> verification = (depositSet) -> depositSet.size() == expectedCount;
-//
-//        String name = String.format("Searching for %s Deposits for Submission ID %s", expectedCount, submissionId);
-//
-//        Condition<Set<Deposit>> condition = new Condition<>(deposits, verification, name);
-//
-//        if (travis()) {
-//            LOG.info("Travis detected.");
-//            if (condition.getTimeoutThresholdMs() < TRAVIS_CONDITION_TIMEOUT_MS) {
-//                LOG.info("Setting Condition timeout to {} ms", TRAVIS_CONDITION_TIMEOUT_MS);
-//                condition.setTimeoutThresholdMs(TRAVIS_CONDITION_TIMEOUT_MS);
-//            }
-//        }
+        Callable<Set<Deposit>> deposits = () -> {
+            PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
+            depositSelector.setFilter(RSQL.equals("submission.id", submissionId));
+            depositSelector.setInclude("repository");
+            PassClientResult<Deposit> resultDeposits = passClient.selectObjects(depositSelector);
 
-        return null;
+            return resultDeposits.getObjects().stream()
+                .filter(deposit -> filter.test(deposit, deposit.getRepository()))
+                .collect(Collectors.toSet());
+        };
+
+        Function<Set<Deposit>, Boolean> verification = (depositSet) -> depositSet.size() == expectedCount;
+
+        String name = String.format("Searching for %s Deposits for Submission ID %s", expectedCount, submissionId);
+
+        return new Condition<>(deposits, verification, name);
     }
 
     /**

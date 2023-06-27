@@ -168,7 +168,7 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      * A submission with a valid package should result in success.
      */
     @Test
-    public void success() {
+    public void success() throws IOException {
         // Configure a spy on the TransportSession returned by the Transport
         AtomicReference<TransportSession> transportSessionSpy = new AtomicReference<>();
         doAnswer(inv -> {
@@ -177,7 +177,7 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
         }).when(sword2Transport).open(any());
 
         // "Click" submit
-        triggerSubmission(submission.getId());
+        triggerSubmission(submission);
 
         // Wait for the Deposit resource to show up as ACCEPTED (terminal state)
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
@@ -211,13 +211,13 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      * carry a message to that effect.
      */
     @Test
-    public void invalidChecksum() {
+    public void invalidChecksum() throws IOException {
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
         when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.OPTS.MD5);
         when(checksum.asHex()).thenReturn("invalid checksum");
         assembler.setChecksum(checksum);
 
-        triggerSubmission(submission.getId());
+        triggerSubmission(submission);
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
@@ -236,9 +236,9 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      * exception should carry a message to that effect.
      */
     @Test
-    public void invalidSpec() {
+    public void invalidSpec() throws IOException {
         assembler.setSpec("invalid spec");
-        triggerSubmission(submission.getId());
+        triggerSubmission(submission);
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
@@ -256,9 +256,9 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
      * A submission with an invalid length results in mismatched checksums.
      */
     @Test
-    public void invalidLength() {
+    public void invalidLength() throws IOException {
         assembler.setPackageLength(3);
-        triggerSubmission(submission.getId());
+        triggerSubmission(submission);
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
@@ -289,7 +289,7 @@ public class DepositTaskIT extends AbstractDepositSubmissionIT {
         assembler.setChecksum(checksum);
         assembler.setPackageLength(23095);
 
-        triggerSubmission(submission.getId());
+        triggerSubmission(submission);
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);

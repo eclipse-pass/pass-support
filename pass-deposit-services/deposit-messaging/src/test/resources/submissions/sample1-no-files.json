@@ -130,7 +130,6 @@
     "id": "10",
     "@type": "Funder"
   },
-
   {
     "name": "International Eye Institute",
     "url": "http://example.com/othereyeguys",
@@ -164,7 +163,7 @@
     "submittedDate": "2017-06-02T00:00:00.000Z",
     "aggregatedDepositStatus": "NOT_STARTED",
     "submissionStatus": "SUBMITTED",
-    "publication": null,
+    "publication": "8",
     "repositories": [
       "4",
       "5",

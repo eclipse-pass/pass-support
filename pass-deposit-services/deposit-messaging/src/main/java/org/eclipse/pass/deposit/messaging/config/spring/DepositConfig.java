@@ -20,12 +20,13 @@ import static java.lang.System.identityHashCode;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -44,6 +45,7 @@ import org.eclipse.pass.deposit.messaging.model.Registry;
 import org.eclipse.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.eclipse.pass.deposit.messaging.service.DepositTask;
 import org.eclipse.pass.deposit.messaging.status.DefaultDepositStatusProcessor;
+import org.eclipse.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusResolver;
 import org.eclipse.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
 import org.eclipse.pass.deposit.messaging.support.swordv2.ResourceResolver;
@@ -120,69 +122,66 @@ public class DepositConfig {
                                            @Value("#{transports}") Map<String, Transport> transports,
                                            Repositories repositories,
                                            ApplicationContext appCtx) {
-        // TODO Deposit service port pending
+        Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
+              .map(repoConfig -> {
+                  String dspBeanName = null;
+                  DepositStatusProcessor dsp = null;
+                  if (repoConfig.getRepositoryDepositConfig() != null &&
+                          repoConfig.getRepositoryDepositConfig().getDepositProcessing() != null) {
+                      dspBeanName = repoConfig.getRepositoryDepositConfig()
+                                              .getDepositProcessing()
+                                              .getBeanName();
+                      dsp = null;
+                      if (dspBeanName != null) {
+                          dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
+                          repoConfig.getRepositoryDepositConfig()
+                                    .getDepositProcessing().setProcessor(dsp);
+                      }
+                  }
 
-//        Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
-//              .map(repoConfig -> {
-//                  String dspBeanName = null;
-//                  DepositStatusProcessor dsp = null;
-//                  if (repoConfig.getRepositoryDepositConfig() != null &&
-//                          repoConfig.getRepositoryDepositConfig().getDepositProcessing() != null) {
-//                      dspBeanName = repoConfig.getRepositoryDepositConfig()
-//                                              .getDepositProcessing()
-//                                              .getBeanName();
-//                      dsp = null;
-//                      if (dspBeanName != null) {
-//                          dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
-//                          repoConfig.getRepositoryDepositConfig()
-//                                    .getDepositProcessing().setProcessor(dsp);
-//                      }
-//                  }
-//
-//                  String repositoryKey = repoConfig.getRepositoryKey();
-//                  String transportProtocol = repoConfig.getTransportConfig()
-//                                                       .getProtocolBinding()
-//                                                       .getProtocol();
-//                  String assemblerBean = repoConfig.getAssemblerConfig()
-//                                                   .getBeanName();
-//
-//                  // Resolve the Transport impl from the protocol binding,
-//                  // currently assumes a 1:1 protocol binding to transport impl
-//                  Transport transport = transports.values()
-//                      .stream()
-//                      .filter(
-//                          candidate -> candidate.protocol()
-//                                                .name()
-//                                                .equalsIgnoreCase(
-//                                                    transportProtocol))
-//                      .findAny()
-//                      .orElseThrow(() ->
-//                                       new RuntimeException(
-//                                           "Missing Transport implementation for protocol binding " +
-//                                           transportProtocol));
-//
-//                  LOG.info(
-//                      "Configuring Packager for Repository configuration {}",
-//                      repoConfig.getRepositoryKey());
-//                  LOG.info("  Repository Key: {}", repositoryKey);
-//                  LOG.info("  Assembler: {}", assemblerBean);
-//                  LOG.info("  Transport Binding: {}", transportProtocol);
-//                  LOG.info("  Transport Implementation: {}", transport);
-//                  if (dspBeanName != null) {
-//                      LOG.info("  Deposit Status Processor: {}", dspBeanName);
-//                  }
-//
-//                  return new Packager(repositoryKey,
-//                                      assemblers.get(assemblerBean),
-//                                      transport,
-//                                      repoConfig,
-//                                      dsp);
-//              })
-//              .collect(
-//                  Collectors.toMap(Packager::getName, Function.identity()));
-//
-//        return packagers;
-        return new HashMap<>();
+                  String repositoryKey = repoConfig.getRepositoryKey();
+                  String transportProtocol = repoConfig.getTransportConfig()
+                                                       .getProtocolBinding()
+                                                       .getProtocol();
+                  String assemblerBean = repoConfig.getAssemblerConfig()
+                                                   .getBeanName();
+
+                  // Resolve the Transport impl from the protocol binding,
+                  // currently assumes a 1:1 protocol binding to transport impl
+                  Transport transport = transports.values()
+                      .stream()
+                      .filter(
+                          candidate -> candidate.protocol()
+                                                .name()
+                                                .equalsIgnoreCase(
+                                                    transportProtocol))
+                      .findAny()
+                      .orElseThrow(() ->
+                                       new RuntimeException(
+                                           "Missing Transport implementation for protocol binding " +
+                                           transportProtocol));
+
+                  LOG.info(
+                      "Configuring Packager for Repository configuration {}",
+                      repoConfig.getRepositoryKey());
+                  LOG.info("  Repository Key: {}", repositoryKey);
+                  LOG.info("  Assembler: {}", assemblerBean);
+                  LOG.info("  Transport Binding: {}", transportProtocol);
+                  LOG.info("  Transport Implementation: {}", transport);
+                  if (dspBeanName != null) {
+                      LOG.info("  Deposit Status Processor: {}", dspBeanName);
+                  }
+
+                  return new Packager(repositoryKey,
+                                      assemblers.get(assemblerBean),
+                                      transport,
+                                      repoConfig,
+                                      dsp);
+              })
+              .collect(
+                  Collectors.toMap(Packager::getName, Function.identity()));
+
+        return packagers;
     }
 
     @Bean

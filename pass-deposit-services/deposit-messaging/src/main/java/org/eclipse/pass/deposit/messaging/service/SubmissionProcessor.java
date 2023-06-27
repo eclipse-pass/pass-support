@@ -154,7 +154,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                                                       submission.getId(), deposit.getId(), repo.getId(), repo.getName(),
                                                       repo.getRepositoryKey()));
             }
-            deposit = passClient.getObject(deposit);
+            passClient.createObject(deposit);
         } catch (Exception e) {
             String msg = format(FAILED_TO_PROCESS_DEPOSIT, submission.getId(), repo.getId(),
                                 (deposit == null) ? "null" : deposit.getId(), e.getMessage());

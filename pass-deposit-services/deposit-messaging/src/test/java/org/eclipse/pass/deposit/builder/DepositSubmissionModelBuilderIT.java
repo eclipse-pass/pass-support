@@ -63,7 +63,7 @@ public class DepositSubmissionModelBuilderIT extends AbstractDepositSubmissionIT
     @Autowired private DepositSubmissionModelBuilder depositSubmissionModelBuilder;
 
     @Test
-    public void testElementValues() throws IOException {
+    public void testBuildDepositSubmission() throws IOException {
         // GIVEN
         List<PassEntity> entities = new LinkedList<>();
         Submission submissionEntity;
@@ -89,7 +89,7 @@ public class DepositSubmissionModelBuilderIT extends AbstractDepositSubmissionIT
         assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
-//        assertEquals(8, submission.getFiles().size());
+        assertEquals(8, submission.getFiles().size());
 
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();

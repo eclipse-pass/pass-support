@@ -21,6 +21,10 @@ import java.util.List;
 
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientResult;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
@@ -65,36 +69,11 @@ public class DepositSubmissionModelBuilder {
                 }
             }).toList();
         submission.setGrants(populatedGrants);
-        // TODO Deposit service port pending
 
-//        // Add File resources that reference this Submission to the entity list.
-//        Map<String, Collection<URI>> incomingLinks = client.getIncoming(submissionUri);
-//        Collection<URI> uris = incomingLinks.get(Submission.class.getSimpleName().toLowerCase());
-//        if (uris != null) {
-//            for (URI uri : uris) {
-//                try {
-//                    File file = client.readResource(uri, File.class);
-//                    entities.put(uri, file);
-//                } catch (RuntimeException e) {
-//                    // Ignore non-File entities, which throw invalid type exceptions.
-//                    boolean tolerate = false;
-//                    Throwable cause = e.getCause();
-//                    while (cause != null) {
-//                        if (cause instanceof InvalidTypeIdException) {
-//                            tolerate = true;
-//                            break;
-//                        }
-//                        cause = cause.getCause();
-//                    }
-//                    if (!tolerate) {
-//                        // There was some other kind of exception
-//                        throw e;
-//                    }
-//                }
-//            }
-//        }
-//
-//        return submission;
+        PassClientSelector<File> fileSelector = new PassClientSelector<>(File.class);
+        fileSelector.setFilter(RSQL.equals("submission.id", submission.getId()));
+        PassClientResult<File> resultFile = passClient.selectObjects(fileSelector);
+        entities.addAll(resultFile.getObjects());
         return submission;
     }
 
