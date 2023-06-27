@@ -115,83 +115,11 @@ public class SubmissionTestUtil {
             }
         });
 
-        // TODO Deposit service port pending
-//        // Upload the File binary content to the Submission, and update the File.uri field
-//        Submission repoSubmission = (Submission) entities.get(submissionUri);
-//        entities.values().stream().filter(e -> e instanceof File)
-//                .forEach(f -> uploadBinaryToSubmission(repoSubmission, (File) f, client));
-
         return entities.stream().filter(entity -> entity instanceof Submission)
             .map(passEntity -> (Submission) passEntity)
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Submission not found"));
     }
-
-    /**
-     * Resolves the content referenced by {@link File#getUri()}, uploads the binary to Fedora, and then updates the
-     * {@code File uri} with the location of the binary in the repository.
-     *
-     */
-    // TODO Deposit service port pending
-//    private void uploadBinaryToSubmission(Submission s, File f, PassClient client) {
-//        // attempt to upload binary content to fedora as a child resource of the Submission
-//
-//        // If the file has no URI, there's nothing for us to do.
-//        if (f.getUri() == null) {
-//            return;
-//        }
-//
-//        String contentUri = f.getUri().toString();
-//
-//        Resource contentResource = null;
-//        if (contentUri.startsWith("http") || contentUri.startsWith("file:")) {
-//            try {
-//                contentResource = new UrlResource(f.getUri());
-//            } catch (MalformedURLException e) {
-//                throw new RuntimeException(e.getMessage(), e);
-//            }
-//        }
-//
-//        if (contentUri.startsWith("classpath*:")) {
-//            contentResource = new ClassPathResource(
-//                contentUri.substring("classpath*:".length()), this.getClass().getClassLoader());
-//        }
-//
-//        if (contentUri.startsWith("classpath:")) {
-//            contentResource = new ClassPathResource(contentUri.substring("classpath:".length()));
-//        }
-//
-//        if (contentUri.startsWith(EncodingClassPathResource.RESOURCE_KEY)) {
-//            contentResource = new EncodingClassPathResource(contentUri.substring(
-//                EncodingClassPathResource.RESOURCE_KEY.length()));
-//        }
-//
-//        if (contentResource == null) {
-//            return;
-//        }
-//
-//        HashMap<String, String> params = new HashMap<>();
-//
-//        if (f.getName() != null) {
-//            params.put("filename", f.getName());
-//        }
-//
-//        if (f.getMimeType() != null) {
-//            params.put("content-type", f.getMimeType());
-//        }
-//
-//        try (InputStream in = contentResource.getInputStream()) {
-//            URI binaryUri = client.upload(s.getId(), in, params);
-//            f.setUri(binaryUri);
-//            f.setSubmission(s.getId());
-//            client.updateResource(f);
-//            LOG.trace("Uploaded binary {} for {} to {}.  Updating File 'uri' field to {} from {}",
-//                      contentUri, f.getId(), s.getId(), binaryUri, contentUri);
-//        } catch (Exception e) {
-//            throw new RuntimeException("Error uploading resource " + contentResource + " to " + f.getId() +
-//                                       ": " + e.getMessage(), e);
-//        }
-//    }
 
     public static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {
         return getIncomingUris(submission, passClient, Deposit.class);

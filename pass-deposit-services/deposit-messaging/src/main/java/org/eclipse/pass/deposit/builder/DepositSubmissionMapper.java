@@ -37,6 +37,7 @@ import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositManifest;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.FileRole;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
@@ -82,7 +83,7 @@ public class DepositSubmissionMapper {
      * @param submissionEntity
      * @return
      */
-    public DepositSubmission createDepositSubmission(Submission submissionEntity, List<PassEntity> fileEntities) {
+    public DepositSubmission createDepositSubmission(Submission submissionEntity, List<PassEntity> entities) {
 
         // The submission object to populate
         DepositSubmission submission = new DepositSubmission();
@@ -141,23 +142,25 @@ public class DepositSubmissionMapper {
         submission.setFiles(depositFiles);
         manifest.setFiles(depositFiles);
 
-        // TODO Deposit service port pending
-//        for (File file : fileEntities) {
-//            // Ignore any Files that do not reference this Submission
-//            if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
-//                DepositFile depositFile = new DepositFile();
-//                depositFile.setName(file.getName());
-//                depositFile.setLocation(file.getUri().toString());
-//                // TODO - The client model currently only has "manuscript" and "supplement" roles.
-//                depositFile.setType(getTypeForRole(file.getFileRole()));
-//                depositFile.setLabel(file.getDescription());
-//                depositFiles.add(depositFile);
-//            }
-//        }
+        entities.stream()
+            .filter(passEntity -> passEntity instanceof File)
+            .map(passEntity -> (File) passEntity)
+            .forEach(file -> createDepositFileIfNeeded(file, submissionEntity, depositFiles));
 
         return submission;
     }
 
+    private void createDepositFileIfNeeded(File file, Submission submissionEntity, List<DepositFile> depositFiles) {
+        if (file.getSubmission().getId().equals(submissionEntity.getId().toString())) {
+            DepositFile depositFile = new DepositFile();
+            depositFile.setName(file.getName());
+            depositFile.setLocation(file.getUri().toString());
+            // TODO - The client model currently only has "manuscript" and "supplement" roles.
+            depositFile.setType(getTypeForRole(file.getFileRole()));
+            depositFile.setLabel(file.getDescription());
+            depositFiles.add(depositFile);
+        }
+    }
     /**
      * Creates a DepositMetadata person with the person's context passed as parameters.
      *

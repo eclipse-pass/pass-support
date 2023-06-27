@@ -15,17 +15,14 @@
  */
 package org.eclipse.pass.deposit.messaging.service;
 
-import static org.eclipse.pass.deposit.util.SubmissionTestUtil.getFileUris;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.net.URI;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.deposit.util.async.Condition;
-import org.eclipse.pass.deposit.messaging.config.spring.DepositConfig;
-import org.eclipse.pass.deposit.messaging.config.spring.JmsConfig;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -34,68 +31,49 @@ import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@TestPropertySource(properties = {"pass.deposit.jobs.default-interval-ms=5000"})
-@Import({DepositConfig.class, JmsConfig.class})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessorIT.class);
 
-    private Submission submission;
-
-    @Before
-    public void submit() throws IOException {
-        submission = findSubmission(createSubmission(
-            ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
-    }
+    @Autowired private SubmissionStatusUpdater submissionStatusUpdater;
+    @Autowired private DepositProcessor depositProcessor;
 
     @Test
-    public void smokeSubmission() throws Exception {
+    public void testSubmissionProcessingFull() throws Exception {
+        // GIVEN
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
+        triggerSubmission(submission);
+        final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
 
-        assertEquals(Boolean.FALSE, submission.getSubmitted());
-        assertTrue(getFileUris(submission, passClient).size() > 0);
-
-        triggerSubmission(submission.getId());
-
-        submission = passClient.getObject(Submission.class, submission.getId());
-        assertEquals(SubmissionStatus.SUBMITTED, submission.getSubmissionStatus());
+        // WHEN
+        submissionProcessor.accept(actualSubmission);
 
         // After the SubmissionProcessor successfully processing a submission we should observe:
-
         // 1. Deposit resources created for each Repository associated with the Submission
-
         // 2. The Deposit resources should be in a ACCEPTED state
-
         // These statuses are dependant on the transport being used - because the TransportResponse.onSuccess(...)
         // method may modify the repository resources associated with the Submission.  Because the FilesystemTransport
         // is used, the Deposit resources will be in the ACCEPTED state, and RepositoryCopy resources in the ACCEPTED
         // state.
-
         // 3. The Submission's AggregateDepositStatus should be set to ACCEPTED
-
         // 4. The Submission's SubmissionStatus should be changed to COMPLETE
 
+        // THEN
+        // TODO replace with awaitility
         Condition<Set<Deposit>> deposits = depositsForSubmission(
-                submission.getId(),
-                submission.getRepositories().size(),
+            actualSubmission.getId(),
+            actualSubmission.getRepositories().size(),
                 (deposit, repo) -> {
-                    LOG.debug("Polling Submission {} for deposit-related resources", submission.getId());
+                    LOG.debug("Polling Submission {} for deposit-related resources", actualSubmission.getId());
                     LOG.debug("  Deposit: {} {}", deposit.getDepositStatus(), deposit.getId());
                     LOG.debug("  Repository: {} {}", repo.getName(), repo.getId());
 
@@ -125,25 +103,28 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         deposits.await();
 
-        // Verification
+        Set<Deposit> resultDeposits = deposits.getResult();
+        assertEquals(actualSubmission.getRepositories().size(), resultDeposits.size());
+        long actualSubmissionDepositCount = resultDeposits.stream()
+            .filter(deposit -> deposit.getSubmission().getId().equals(actualSubmission.getId()))
+            .count();
+        assertEquals(actualSubmissionDepositCount, submission.getRepositories().size());
+        assertTrue(resultDeposits.stream().allMatch(deposit -> deposit.getDepositStatus() == DepositStatus.ACCEPTED));
 
-        Set<Deposit> result = deposits.getResult();
-        assertEquals(submission.getRepositories().size(), result.size());
-        assertEquals(result.stream().filter(deposit -> deposit.getSubmission().equals(submission.getId())).count(),
-                     submission.getRepositories().size());
-        assertTrue(result.stream().allMatch(deposit -> deposit.getDepositStatus() == DepositStatus.ACCEPTED));
+        // WHEN
+        submissionStatusUpdater.doUpdate(List.of(actualSubmission.getId()));
 
-        Condition<Submission> statusVerification =
-            new Condition<>(() -> passClient.getObject(Submission.class, submission.getId()),
-                            "Get updated Submission");
+        // THEN
+        final Submission statusSubmission = passClient.getObject(Submission.class, submission.getId());
+        assertEquals(SubmissionStatus.COMPLETE, statusSubmission.getSubmissionStatus());
 
-        statusVerification.awaitAndVerify(
-            sub -> AggregatedDepositStatus.ACCEPTED == sub.getAggregatedDepositStatus());
-        statusVerification.awaitAndVerify(
-            sub -> SubmissionStatus.COMPLETE == sub.getSubmissionStatus());
+        // WHEN
+        Deposit deposit = resultDeposits.iterator().next();
+        depositProcessor.accept(deposit);
 
-        assertEquals(AggregatedDepositStatus.ACCEPTED, statusVerification.getResult().getAggregatedDepositStatus());
-        assertEquals(SubmissionStatus.COMPLETE, statusVerification.getResult().getSubmissionStatus());
+        // THEN
+        final Submission aggrStatusSubmission = passClient.getObject(Submission.class, submission.getId());
+        assertEquals(AggregatedDepositStatus.ACCEPTED, aggrStatusSubmission.getAggregatedDepositStatus());
     }
 
 }

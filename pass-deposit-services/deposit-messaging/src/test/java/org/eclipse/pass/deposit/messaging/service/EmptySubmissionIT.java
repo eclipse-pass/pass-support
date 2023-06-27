@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class EmptySubmissionIT extends AbstractSubmissionIT {
 
     @Test
-    public void submissionWithNoFiles() {
+    public void testSubmissionWithNoFiles() {
         DepositServiceRuntimeException ex = assertThrows(DepositServiceRuntimeException.class, () -> {
             Submission submission = findSubmission(createSubmission(
                 ResourceTestUtil.readSubmissionJson("sample1-no-files")));
