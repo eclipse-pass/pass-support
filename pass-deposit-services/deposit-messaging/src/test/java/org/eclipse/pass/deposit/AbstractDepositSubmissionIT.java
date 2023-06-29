@@ -16,7 +16,6 @@
 package org.eclipse.pass.deposit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,13 +107,10 @@ public abstract class AbstractDepositSubmissionIT {
      *         Submission.AggregatedDepositStatus.NOT_STARTED}</li>
      * </ul>
      */
-    public List<PassEntity> createSubmission(InputStream submissionGraph) {
+    public List<PassEntity> createSubmission(InputStream submissionGraph) throws IOException {
         List<PassEntity> entities = new LinkedList<>();
 
-        // Upload sample data to Fedora repository to get its Submission URI.
-        String submissionId = submissionTestUtil.readSubmissionJsonAndAddToPass(submissionGraph, entities).getId();
-
-        // Find the Submission entity that was uploaded
+        submissionTestUtil.readSubmissionJsonAndAddToPass(submissionGraph, entities);
         Submission submission = findSubmission(entities);
 
         // verify state of the initial Submission

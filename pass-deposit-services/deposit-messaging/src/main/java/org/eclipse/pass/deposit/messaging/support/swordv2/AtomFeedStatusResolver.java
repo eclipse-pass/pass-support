@@ -30,6 +30,7 @@ import org.eclipse.pass.deposit.messaging.service.DepositTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
 
 /**
  * Attempts to determine the status of a {@link Deposit} by retrieving the Atom Statement associated with the
@@ -43,15 +44,15 @@ import org.springframework.core.io.Resource;
  * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement">SWORDv2 Profile §11</a>
  * @see DepositTask
  */
+@Component
 public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
 
     static final String ERR = "Error resolving deposit status URI from SWORD statement <%s>: %s";
 
     private static final Logger LOG = LoggerFactory.getLogger(AtomFeedStatusResolver.class);
 
-    private Parser abderaParser;
-
-    private ResourceResolver resourceResolver;
+    private final Parser abderaParser;
+    private final ResourceResolver resourceResolver;
 
     public AtomFeedStatusResolver(Parser abderaParser, ResourceResolver resourceResolver) {
         this.abderaParser = abderaParser;
