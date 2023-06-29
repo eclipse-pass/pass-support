@@ -62,7 +62,11 @@ public class SubmissionTestUtil {
         entities.clear();
         Submission submissionFromJson = createSubmissionFromJson(is, entities);
         Submission submission = passClient.getObject(Submission.class, submissionFromJson.getId());
-        return Objects.nonNull(submission) ? submission : createEntitiesInPass(entities);
+        if(Objects.nonNull(submission)) {
+            resetSubmissionStatuses(submission, submissionFromJson);
+            return submission;
+        }
+        return createEntitiesInPass(entities);
     }
 
     public void deleteDepositsInPass() throws IOException {
@@ -79,10 +83,9 @@ public class SubmissionTestUtil {
         });
     }
 
-    public void resetSubmissionStatuses(String submissionId) throws IOException {
-        Submission submission = passClient.getObject(Submission.class, submissionId);
-        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
-        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
+    private void resetSubmissionStatuses(Submission submission, Submission submissionFromJson) throws IOException {
+        submission.setSubmissionStatus(submissionFromJson.getSubmissionStatus());
+        submission.setAggregatedDepositStatus(submissionFromJson.getAggregatedDepositStatus());
         passClient.updateObject(submission);
     }
 

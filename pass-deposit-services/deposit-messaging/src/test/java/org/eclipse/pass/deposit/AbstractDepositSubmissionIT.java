@@ -108,8 +108,8 @@ public abstract class AbstractDepositSubmissionIT {
      * </ul>
      */
     public List<PassEntity> createSubmission(InputStream submissionGraph) throws IOException {
+        submissionTestUtil.deleteDepositsInPass();
         List<PassEntity> entities = new LinkedList<>();
-
         submissionTestUtil.readSubmissionJsonAndAddToPass(submissionGraph, entities);
         Submission submission = findSubmission(entities);
 
