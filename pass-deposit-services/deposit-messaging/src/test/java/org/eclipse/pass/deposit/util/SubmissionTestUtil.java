@@ -17,11 +17,10 @@ package org.eclipse.pass.deposit.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,10 +32,13 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.builder.DepositSubmissionMapper;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientResult;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
-import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -56,10 +58,32 @@ public class SubmissionTestUtil {
         return depositSubmissionMapper.createDepositSubmission(submissionEntity, entities);
     }
 
-    public Submission readSubmissionJsonAndAddToPass(InputStream is, List<PassEntity> entities) {
+    public Submission readSubmissionJsonAndAddToPass(InputStream is, List<PassEntity> entities) throws IOException {
         entities.clear();
-        createSubmissionFromJson(is, entities);
-        return createEntitiesInPass(entities);
+        Submission submissionFromJson = createSubmissionFromJson(is, entities);
+        Submission submission = passClient.getObject(Submission.class, submissionFromJson.getId());
+        return Objects.nonNull(submission) ? submission : createEntitiesInPass(entities);
+    }
+
+    public void deleteDepositsInPass() throws IOException {
+        PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
+        depositSelector.setInclude("repositoryCopy");
+        PassClientResult<Deposit> resultDeposits = passClient.selectObjects(depositSelector);
+        resultDeposits.getObjects().forEach(deposit -> {
+            try {
+                passClient.deleteObject(deposit);
+                passClient.deleteObject(deposit.getRepositoryCopy());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
+
+    public void resetSubmissionStatuses(String submissionId) throws IOException {
+        Submission submission = passClient.getObject(Submission.class, submissionId);
+        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
+        passClient.updateObject(submission);
     }
 
     public Submission createSubmissionFromJson(InputStream is, List<PassEntity> entities) {
@@ -106,7 +130,6 @@ public class SubmissionTestUtil {
     }
 
     private Submission createEntitiesInPass(List<PassEntity> entities) {
-
         entities.forEach(entity -> {
             try {
                 passClient.createObject(entity);
@@ -119,32 +142,5 @@ public class SubmissionTestUtil {
             .map(passEntity -> (Submission) passEntity)
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Submission not found"));
-    }
-
-    public static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {
-        return getIncomingUris(submission, passClient, Deposit.class);
-    }
-
-    public static Collection<URI> getFileUris(Submission submission, PassClient passClient) {
-        return getIncomingUris(submission, passClient, File.class);
-    }
-
-    private static Collection<URI> getIncomingUris(Submission submission, PassClient passClient,
-                                                   Class<? extends PassEntity> incomingResourceClass) {
-        // TODO Deposit service port pending
-//        Map<String, Collection<URI>> incoming = passClient.getIncoming(submission.getId());
-//        if (!incoming.containsKey("submission")) {
-//            return Collections.emptySet();
-//        }
-//
-//        return incoming.get("submission").stream().filter(uri -> {
-//            try {
-//                passClient.readResource(uri, incomingResourceClass);
-//                return true;
-//            } catch (Exception e) {
-//                return false;
-//            }
-//        }).collect(toSet());
-        return null;
     }
 }

@@ -263,11 +263,6 @@ public class DepositConfig {
     }
 
     @Bean
-    public AtomFeedStatusResolver atomFeedStatusParser(Parser abderaParser, ResourceResolver resourceResolver) {
-        return new AtomFeedStatusResolver(abderaParser, resourceResolver);
-    }
-
-    @Bean
     public ResourceResolverImpl resourceResolver(
         @Value("${pass.deposit.transport.swordv2.followRedirects}") boolean followRedirects) {
         return new ResourceResolverImpl(followRedirects);

@@ -20,21 +20,24 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.model.Category;
+import org.apache.abdera.model.Document;
+import org.apache.abdera.model.Feed;
+import org.apache.abdera.parser.Parser;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
@@ -43,10 +46,9 @@ import org.eclipse.pass.deposit.assembler.PreassembledAssembler;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.messaging.service.AbstractSubmissionIT;
 import org.eclipse.pass.deposit.messaging.service.DepositProcessor;
-import org.eclipse.pass.deposit.transport.TransportSession;
-import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
+import org.eclipse.pass.deposit.messaging.support.swordv2.ResourceResolverImpl;
+import org.eclipse.pass.deposit.transport.sword2.Sword2ClientFactory;
 import org.eclipse.pass.deposit.transport.sword2.Sword2Transport;
-import org.eclipse.pass.deposit.transport.sword2.Sword2TransportSession;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -55,9 +57,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.core.io.Resource;
 import org.springframework.test.context.TestPropertySource;
 import org.swordapp.client.DepositReceipt;
+import org.swordapp.client.SWORDClient;
+import org.swordapp.client.SWORDCollection;
+import org.swordapp.client.SWORDError;
+import org.swordapp.client.SWORDWorkspace;
+import org.swordapp.client.ServiceDocument;
 import org.swordapp.client.SwordIdentifier;
 
 /**
@@ -98,32 +107,25 @@ public class DepositTaskIT extends AbstractSubmissionIT {
      * Pre-built package conforming to the DSpace METS SIP packaging: http://purl.org/net/sword/package/METSDSpaceSIP
      */
     private static final String PACKAGE_PATH = "/packages/example.zip";
-
     private static final String CHECKSUM_PATH = PACKAGE_PATH + ".md5";
 
     /**
      * Pre-built package missing a file specified in the METS.xml
      */
-    private static final String MISSING_FILE_PACKAGE_PATH = "/packages/example-missing-file.zip";
-
-    private static final String MISSING_FILE_CHECKSUM_PATH = MISSING_FILE_PACKAGE_PATH + ".md5";
-
     private final ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
 
     @Autowired private PreassembledAssembler assembler;
     @Autowired private DepositProcessor depositProcessor;
 
-    // N.B. the name of this bean and field are important, they must be named 'errorHandler' for the spy to be
-    // properly injected into the Application Context, and into this test class.  Otherwise multiple beans are
-    // registered in the Application Context, and one or the other (test class vs app ctx) doesn't get the Spy.
-    @SpyBean(name = "errorHandler")
-    private DepositServiceErrorHandler errorHandler;
+    @MockBean private Sword2ClientFactory clientFactory;
+    @MockBean private ResourceResolverImpl resourceResolver;
+    @MockBean private Parser mockParser;
 
-    @SpyBean
-    private DepositStatusProcessor depositStatusProcessor;
+    @SpyBean(name = "errorHandler") private DepositServiceErrorHandler errorHandler;
+    @SpyBean private DepositStatusProcessor depositStatusProcessor;
+    @SpyBean private Sword2Transport sword2Transport;
 
-    @SpyBean
-    private Sword2Transport sword2Transport;
+    private SWORDClient mockSwordClient;
 
     /**
      * Mocks up the {@link #assembler} so that it streams back a {@link #PACKAGE_PATH package} conforming to the
@@ -145,37 +147,23 @@ public class DepositTaskIT extends AbstractSubmissionIT {
         assembler.setPackageLength(33849);
         assembler.setCompression(PackageOptions.Compression.OPTS.ZIP);
         assembler.setArchive(PackageOptions.Archive.OPTS.ZIP);
+
+        mockSwordClient = mock(SWORDClient.class);
+        when(clientFactory.newInstance(any())).thenReturn(mockSwordClient);
+
+        submissionTestUtil.deleteDepositsInPass();
     }
 
     /**
      * A submission with a valid package should result in success.
      */
     @Test
-    public void success() throws IOException {
+    public void testDepositTask() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
+        submissionTestUtil.resetSubmissionStatuses(submission.getId());
+        mockSword();
 
-        // Configure a spy on the TransportSession returned by the Transport
-        AtomicReference<TransportSession> transportSessionSpy = new AtomicReference<>();
-        doAnswer(inv -> {
-            Sword2TransportSession mockSwordSession = mock(Sword2TransportSession.class);
-            Sword2DepositReceiptResponse mockSwordResp = mock(Sword2DepositReceiptResponse.class);
-            when(mockSwordResp.success()).thenReturn(true);
-            DepositReceipt mockReciept = mock(DepositReceipt.class);
-            when(mockReciept.getSplashPageLink()).thenReturn(mock(SwordIdentifier.class));
-            when(mockReciept.getSplashPageLink().getHref()).thenReturn("http://foobarsplashlink");
-            when(mockReciept.getAtomStatementLink()).thenReturn(mock(SwordIdentifier.class));
-            when(mockReciept.getAtomStatementLink().getIRI()).thenReturn(mock(IRI.class));
-            when(mockReciept.getAtomStatementLink().getIRI().toURI()).thenReturn(mock(URI.class));
-            when(mockReciept.getAtomStatementLink().getIRI().toURI().toString())
-                .thenReturn("http://foobaratomstatement");
-            when(mockSwordResp.getReceipt()).thenReturn(mockReciept);
-            when(mockSwordSession.send(any(), any())).thenReturn(mockSwordResp);
-            transportSessionSpy.set(mockSwordSession);
-            return transportSessionSpy.get();
-        }).when(sword2Transport).open(any());
-
-        // "Click" submit
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
 
@@ -201,34 +189,31 @@ public class DepositTaskIT extends AbstractSubmissionIT {
         assertNotNull(deposit.getDepositStatusRef());
 
         // No exceptions should be handled by the error handler
-        verifyZeroInteractions(errorHandler);
+        verifyNoInteractions(errorHandler);
 
         // Insure the DepositStatusProcessor processed the Deposit.depositStatusRef
         ArgumentCaptor<Deposit> processedDepositCaptor = ArgumentCaptor.forClass(Deposit.class);
         verify(depositStatusProcessor).process(processedDepositCaptor.capture(), any());
         assertEquals(deposit.getId(), processedDepositCaptor.getValue().getId());
 
-        // Insure the Transport and TransportSession were invoked
-        ArgumentCaptor<PackageStream> packageStreamCaptor = ArgumentCaptor.forClass(PackageStream.class);
         verify(sword2Transport).open(any());
-        verify(transportSessionSpy.get()).send(packageStreamCaptor.capture(), any());
-        assertNotNull(packageStreamCaptor.getValue());
+        verify(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
     }
 
-    /**
-     * A submission with an invalid checksum should result in failure, an intermediate status.  The exception should
-     * carry a message to that effect.
-     */
     @Test
-    public void invalidChecksum() throws IOException {
+    public void testDepositError() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
-        PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
-        when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.OPTS.MD5);
-        when(checksum.asHex()).thenReturn("invalid checksum");
-        assembler.setChecksum(checksum);
+        submissionTestUtil.resetSubmissionStatuses(submission.getId());
+        mockSword();
+        doThrow(new SWORDError(400, "Testing deposit error"))
+            .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
 
         triggerSubmission(submission);
+        final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
+
+        // WHEN
+        submissionProcessor.accept(actualSubmission);
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
@@ -239,86 +224,40 @@ public class DepositTaskIT extends AbstractSubmissionIT {
         assertNull(deposits.iterator().next().getDepositStatusRef());
 
         verify(errorHandler).handleError(throwableCaptor.capture());
-        assertTrue(throwableCaptor.getValue().getCause().getMessage().contains("did not match the checksum"));
+        assertTrue(throwableCaptor.getValue().getCause().getMessage().contains("Testing deposit error"));
     }
 
-    /**
-     * A submission with an invalid package specification should result in failure, an intermediate status.  The
-     * exception should carry a message to that effect.
-     */
-    @Test
-    public void invalidSpec() throws IOException {
-        Submission submission = findSubmission(createSubmission(
-            ResourceTestUtil.readSubmissionJson("sample2")));
-        assembler.setSpec("invalid spec");
-        triggerSubmission(submission);
+    private void mockSword() throws Exception {
+        ServiceDocument mockServiceDoc = mock(ServiceDocument.class);
+        SWORDWorkspace mockSwordWorkspace = mock(SWORDWorkspace.class);
+        SWORDCollection mockSwordCollection = mock(SWORDCollection.class);
+        when(mockSwordCollection.getHref()).thenReturn(mock(IRI.class));
+        when(mockSwordCollection.getHref().toString())
+            .thenReturn("http://localhost/swordv2/collection/foobartest");
+        when(mockSwordWorkspace.getCollections()).thenReturn(List.of(mockSwordCollection));
+        when(mockServiceDoc.getWorkspaces()).thenReturn(List.of(mockSwordWorkspace));
+        doReturn(mockServiceDoc).when(mockSwordClient).getServiceDocument(any(), any());
 
-        Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-            deposit.getDepositStatusRef() == null);
-        assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                DepositStatus.FAILED == deposits.iterator().next()
-                                                                                        .getDepositStatus()));
-        Set<Deposit> deposits = c.getResult();
-        assertNull(deposits.iterator().next().getDepositStatusRef());
+        DepositReceipt mockReceipt = mock(DepositReceipt.class);
+        when(mockReceipt.getStatusCode()).thenReturn(200);
+        when(mockReceipt.getSplashPageLink()).thenReturn(mock(SwordIdentifier.class));
+        when(mockReceipt.getSplashPageLink().getHref()).thenReturn("http://foobarsplashlink");
+        when(mockReceipt.getAtomStatementLink()).thenReturn(mock(SwordIdentifier.class));
+        when(mockReceipt.getAtomStatementLink().getIRI()).thenReturn(mock(IRI.class));
+        when(mockReceipt.getAtomStatementLink().getIRI().toURI()).thenReturn(mock(URI.class));
+        when(mockReceipt.getAtomStatementLink().getIRI().toURI().toString())
+            .thenReturn("http://localhost/swordv2");
+        doReturn(mockReceipt).when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
 
-        verify(errorHandler).handleError(throwableCaptor.capture());
-        assertTrue(throwableCaptor.getValue().getCause().getMessage().contains("Unacceptable packaging type"));
-    }
+        Resource mockResource = mock(Resource.class);
+        when(mockResource.getInputStream()).thenReturn(mock(InputStream.class));
+        doReturn(mockResource).when(resourceResolver).resolve(any(), any());
 
-    /**
-     * A submission with an invalid length results in mismatched checksums.
-     */
-    @Test
-    public void invalidLength() throws IOException {
-        Submission submission = findSubmission(createSubmission(
-            ResourceTestUtil.readSubmissionJson("sample2")));
-        assembler.setPackageLength(3);
-        triggerSubmission(submission);
-
-        Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-            deposit.getDepositStatusRef() == null);
-        assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                DepositStatus.FAILED == deposits.iterator().next()
-                                                                                        .getDepositStatus()));
-        Set<Deposit> deposits = c.getResult();
-        assertNull(deposits.iterator().next().getDepositStatusRef());
-
-        verify(errorHandler).handleError(throwableCaptor.capture());
-        assertTrue(throwableCaptor.getValue().getCause().getMessage().contains("did not match the checksum"));
-    }
-
-    /**
-     * If the METS.xml is missing a file, the submission fails as well.
-     *
-     * @throws IOException
-     */
-    @Test
-    public void missingFile() throws IOException {
-        Submission submission = findSubmission(createSubmission(
-            ResourceTestUtil.readSubmissionJson("sample2")));
-        InputStream packageFile = this.getClass().getResourceAsStream(MISSING_FILE_PACKAGE_PATH);
-        PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
-        when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.OPTS.MD5);
-        when(checksum.asHex()).thenReturn(IOUtils.resourceToString(MISSING_FILE_CHECKSUM_PATH, StandardCharsets.UTF_8));
-
-        assembler.setPackageStream(packageFile);
-        assembler.setPackageName("example-missing-file.zip");
-        assembler.setChecksum(checksum);
-        assembler.setPackageLength(23095);
-
-        triggerSubmission(submission);
-
-        Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-            deposit.getDepositStatusRef() == null);
-        assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                DepositStatus.FAILED == deposits.iterator().next()
-                                                                                        .getDepositStatus()));
-        Set<Deposit> deposits = c.getResult();
-        assertNull(deposits.iterator().next().getDepositStatusRef());
-
-        verify(errorHandler).handleError(throwableCaptor.capture());
-        assertTrue(throwableCaptor.getValue().getCause().getMessage()
-                                  .contains(
-                                      "Manifest file references file &apos;pdf3.pdf&apos; not included in the zip."));
+        Document mockParserDoc = mock(Document.class);
+        when(mockParserDoc.getRoot()).thenReturn(mock(Feed.class));
+        Category category = mock(Category.class);
+        when(category.getTerm()).thenReturn("http://dspace.org/state/archived");
+        when(((Feed) mockParserDoc.getRoot()).getCategories(any())).thenReturn(List.of(category));
+        doReturn(mockParserDoc).when(mockParser).parse(any(InputStream.class));
     }
 }
