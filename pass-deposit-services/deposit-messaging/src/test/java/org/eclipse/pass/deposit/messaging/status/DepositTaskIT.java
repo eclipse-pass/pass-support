@@ -150,8 +150,6 @@ public class DepositTaskIT extends AbstractSubmissionIT {
 
         mockSwordClient = mock(SWORDClient.class);
         when(clientFactory.newInstance(any())).thenReturn(mockSwordClient);
-
-        submissionTestUtil.deleteDepositsInPass();
     }
 
     /**
@@ -161,7 +159,6 @@ public class DepositTaskIT extends AbstractSubmissionIT {
     public void testDepositTask() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
-        submissionTestUtil.resetSubmissionStatuses(submission.getId());
         mockSword();
 
         triggerSubmission(submission);
@@ -204,7 +201,6 @@ public class DepositTaskIT extends AbstractSubmissionIT {
     public void testDepositError() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
-        submissionTestUtil.resetSubmissionStatuses(submission.getId());
         mockSword();
         doThrow(new SWORDError(400, "Testing deposit error"))
             .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
