@@ -24,10 +24,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
  */
 public abstract class AbstractSubmissionIT extends AbstractDepositSubmissionIT {
 
-    protected static final String J10P_REPO_NAME = "JScholarship";
-
-    protected static final String PMC_REPO_NAME = "PubMed Central";
-
     @Autowired
     @Qualifier("submissionProcessor")
     protected SubmissionProcessor submissionProcessor;

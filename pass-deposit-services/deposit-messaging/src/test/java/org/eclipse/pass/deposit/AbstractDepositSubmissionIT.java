@@ -184,52 +184,7 @@ public abstract class AbstractDepositSubmissionIT {
         Function<Set<Deposit>, Boolean> verification = (depositSet) -> depositSet.size() == expectedCount;
 
         String name = String.format("Searching for %s Deposits for Submission ID %s", expectedCount, submissionId);
-
         return new Condition<>(deposits, verification, name);
     }
 
-    /**
-     * Looks for, and returns, the Repository attached to the supplied Submission with the specified name.
-     *
-     * @param submission
-     * @param repositoryName
-     * @return the Repository
-     * @throws RuntimeException if the Repository cannot be found
-     */
-    // TODO Deposit service port pending
-//    public Repository repositoryForName(Submission submission, String repositoryName) {
-//        return submission
-//            .getRepositories()
-//            .stream()
-//            .map(uri -> passClient.readResource(uri, Repository.class))
-//            .filter(repo -> repositoryName.equals(repo.getName()))
-//            .findAny()
-//            .orElseThrow(() ->
-//                             new RuntimeException(
-//                                 "Missing Repository with name " + repositoryName + " for Submission " +
-//                                 submission.getId()));
-//    }
-
-    /**
-     * Looks for, and returns, the Deposit attached to the supplied Submission that references the specified
-     * Repository.
-     *
-     * @param submission
-     * @param repositoryUri
-     * @return the Deposit
-     * @throws RuntimeException if the Deposit cannot be found
-     */
-    // TODO Deposit service port pending
-//    public Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
-//        Collection<URI> depositUris = SubmissionUtil.getDepositUris(submission, passClient);
-//        return depositUris
-//            .stream()
-//            .map(uri -> passClient.readResource(uri, Deposit.class))
-//            .filter(deposit -> repositoryUri.equals(deposit.getRepository()))
-//            .findAny()
-//            .orElseThrow(() ->
-//                             new RuntimeException(
-//                                 "Missing Deposit for Repository " + repositoryUri + " on Submission " +
-//                                 submission.getId()));
-//    }
 }
