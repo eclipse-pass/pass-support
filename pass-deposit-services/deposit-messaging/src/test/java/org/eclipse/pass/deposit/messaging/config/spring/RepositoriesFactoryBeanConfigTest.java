@@ -15,35 +15,25 @@
  */
 package org.eclipse.pass.deposit.messaging.config.spring;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.pass.deposit.messaging.config.repository.FtpBinding;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.eclipse.pass.deposit.messaging.config.repository.SwordV2Binding;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Ignore("FIXME")
+@SpringBootTest(properties = { "pass.client.url=http://localhost:8080/", "pass.client.user=test", "pass.client.password=test" })
 public class RepositoriesFactoryBeanConfigTest {
-
-    @Autowired
-    private Environment env;
-
     @Autowired
     private Repositories underTest;
 
@@ -51,7 +41,7 @@ public class RepositoriesFactoryBeanConfigTest {
     public void foo() throws Exception {
         assertNotNull(underTest);
 
-        assertEquals(2, underTest.keys().size());
+        assertEquals(4, underTest.keys().size());
 
         RepositoryConfig j10p = underTest.getConfig("JScholarship");
         assertNotNull(j10p);

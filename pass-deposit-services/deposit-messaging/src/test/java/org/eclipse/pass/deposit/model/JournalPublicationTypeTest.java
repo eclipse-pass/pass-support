@@ -16,8 +16,10 @@
 package org.eclipse.pass.deposit.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -29,9 +31,11 @@ public class JournalPublicationTypeTest {
         assertEquals(JournalPublicationType.OPUB, JournalPublicationType.parseTypeDescription("Online"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseOnlineLowerCase() {
-        JournalPublicationType.parseTypeDescription("online");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JournalPublicationType.parseTypeDescription("online");
+        });
     }
 
     @Test
@@ -44,8 +48,10 @@ public class JournalPublicationTypeTest {
         assertEquals(JournalPublicationType.EPUB, JournalPublicationType.parseTypeDescription("Electronic"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseUnknown() {
-        JournalPublicationType.parseTypeDescription("asdf");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JournalPublicationType.parseTypeDescription("asdf");
+        });
     }
 }
