@@ -20,8 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -54,7 +52,7 @@ public class DepositTestUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositTestUtil.class);
 
-    public static File tmpFile(Class testClass, TestName testName, String suffix) throws IOException {
+    public static File tmpFile(Class<?> testClass, TestName testName, String suffix) throws IOException {
         String nameFmt = "%s-%s-";
         return File.createTempFile(String.format(nameFmt, testClass.getSimpleName(), testName.getMethodName()),
                                    suffix);
@@ -140,7 +138,7 @@ public class DepositTestUtil {
      * @return a {@code File} where a package stream may be written to
      * @throws IOException if there is an error determining a {@code File} to be written to
      */
-    public static File packageFile(Class testClass, TestName testName, PackageStream.Metadata streamMd)
+    public static File packageFile(Class<?> testClass, TestName testName, PackageStream.Metadata streamMd)
         throws IOException {
         StringBuilder ext = new StringBuilder();
 

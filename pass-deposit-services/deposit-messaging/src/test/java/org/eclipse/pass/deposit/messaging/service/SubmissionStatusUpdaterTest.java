@@ -17,25 +17,31 @@ package org.eclipse.pass.deposit.messaging.service;
 
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatus;
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatusExcept;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +60,7 @@ public class SubmissionStatusUpdaterTest {
 
     private CriticalRepositoryInteraction cri;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         statusService = mock(SubmissionStatusService.class);
         passClient = mock(PassClient.class);
@@ -213,53 +219,53 @@ public class SubmissionStatusUpdaterTest {
     /**
      * the toUpdate method should not try to find Submissions with a status of COMPLETE or CANCELLED.
      * the toUpdate method should try to find Submissions with all other statuses.
+     * @throws IOException
      */
-    // TODO Deposit service port pending
-//    @Test
-//    public void toUpdateCollectsAllButCompleteAndCancelled() {
-//        when(passClient.findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any()))
-//            .then(inv -> {
-//                String status = inv.getArgument(2);
-//                assertFalse(status.equalsIgnoreCase(SubmissionStatus.COMPLETE.name()));
-//                assertFalse(status.equalsIgnoreCase(SubmissionStatus.CANCELLED.name()));
-//                return Collections.emptySet(); // don't care about the result
-//            });
-//        SubmissionStatusUpdater.toUpdate(passClient);
-//
-//        verify(passClient, times(SubmissionStatus.values().length - 2))
-//            .findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any());
-//    }
-//
-//    /**
-//     * invoking doUpdate(Collection) with a non-empty collection should invoke the CRI for every URI.
-//     */
-//    @Test
-//    @SuppressWarnings("unchecked")
-//    public void doUpdateInvokesCri() {
-//        URI submissionUri = randomId();
-//        underTest.doUpdate(Collections.singleton(submissionUri));
-//
-//        verify(cri, times(1)).performCritical(eq(submissionUri), eq(Submission.class), any(), (Predicate) any(), any());
-//    }
-//
-//    /**
-//     * invoking doUpdate() should invoke the pass client to find all submisssions that are not CANCELLED or COMPLETE,
-//     * and then invoke the CRI for every discovered URI
-//     */
-//    @Test
-//    @SuppressWarnings("unchecked")
-//    public void doUpdateInvokesPassClientAndCri() {
-//        URI submissionUri = randomId();
-//        when(passClient.findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any())).thenReturn(
-//            Collections.singleton(submissionUri));
-//
-//        underTest.doUpdate();
-//
-//        verify(passClient, times(SubmissionStatus.values().length - 2)).findAllByAttribute(eq(Submission.class),
-//                                                                                           eq("submissionStatus"),
-//                                                                                           any());
-//        verify(cri, times(1)).performCritical(eq(submissionUri), eq(Submission.class), any(), (Predicate) any(), any());
-//
-//    }
+    @Test
+    public void toUpdateCollectsAllButCompleteAndCancelled() throws IOException {
+        when(passClient.streamObjects(any()))
+            .then(inv -> {
+                PassClientSelector<?> sel = inv.getArgument(0);
+
+                assertFalse(sel.getFilter().contains(SubmissionStatus.COMPLETE.getValue()));
+                assertFalse(sel.getFilter().contains(SubmissionStatus.CANCELLED.getValue()));
+
+                return Stream.empty();
+            });
+
+        SubmissionStatusUpdater.toUpdate(passClient);
+
+        verify(passClient, times(1)).streamObjects(any());
+    }
+
+    /**
+     * invoking doUpdate(Collection) with a non-empty collection should invoke the CRI for every URI.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void doUpdateInvokesCri() {
+        String submissionId = UUID.randomUUID().toString();
+        underTest.doUpdate(Collections.singleton(submissionId));
+
+        verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(), any(Predicate.class), any());
+    }
+
+    /**
+     * invoking doUpdate() should invoke the pass client to find all submissions that are not CANCELLED or COMPLETE,
+     * and then invoke the CRI for every discovered URI
+     * @throws IOException
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void doUpdateInvokesPassClientAndCri() throws IOException {
+        String submissionId = UUID.randomUUID().toString();
+
+        when(passClient.streamObjects(any())).thenReturn(Stream.of(new Submission(submissionId)));
+
+        underTest.doUpdate();
+
+        verify(passClient, times(1)).streamObjects(any());
+        verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(), any(Predicate.class), any());
+    }
 
 }

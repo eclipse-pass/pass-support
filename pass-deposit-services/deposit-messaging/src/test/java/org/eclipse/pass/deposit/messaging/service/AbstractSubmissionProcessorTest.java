@@ -23,7 +23,6 @@ import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.model.Registry;
-//import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusMapper;
@@ -32,7 +31,7 @@ import org.eclipse.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.core.task.TaskExecutor;
 
 /**
@@ -52,8 +51,6 @@ public abstract class AbstractSubmissionProcessorTest {
 
     Policy<DepositStatus> terminalDepositStatusPolicy;
 
-//    JmsMessagePolicy messagePolicy;
-
     TaskExecutor taskExecutor;
 
     DepositStatusMapper<SwordDspaceDepositStatus> dspaceStatusMapper;
@@ -66,7 +63,7 @@ public abstract class AbstractSubmissionProcessorTest {
 
     Repositories repositories;
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         passClient = mock(PassClient.class);
@@ -74,17 +71,14 @@ public abstract class AbstractSubmissionProcessorTest {
         packagerRegistry = mock(Registry.class);
         submissionPolicy = mock(SubmissionPolicy.class);
         intermediateDepositStatusPolicy = mock(Policy.class);
-        // TODO Deposit service port pending
-//        messagePolicy = mock(JmsMessagePolicy.class);
         taskExecutor = mock(TaskExecutor.class);
         dspaceStatusMapper = mock(DepositStatusMapper.class);
         atomStatusParser = mock(DepositStatusResolver.class);
         cri = mock(CriticalRepositoryInteraction.class);
         terminalDepositStatusPolicy = mock(Policy.class);
         repositories = mock(Repositories.class);
-        // TODO Deposit service port pending
-//        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-//                                                  terminalDepositStatusPolicy, cri, repositories);
+        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
+                                                  cri, repositories);
     }
 
 }
