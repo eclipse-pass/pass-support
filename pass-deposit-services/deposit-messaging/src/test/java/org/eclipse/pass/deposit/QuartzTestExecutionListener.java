@@ -67,6 +67,7 @@ public class QuartzTestExecutionListener extends AbstractTestExecutionListener {
     public void beforeTestClass(TestContext testContext) throws Exception {
         super.beforeTestClass(testContext);
 
+        // TODO Deposit refactor pending
 //        ApplicationContext appCtx = testContext.getApplicationContext();
 //        Environment env = appCtx.getEnvironment();
 //        SchedulerFactoryBean quartzScheduler = getSchedulerFactoryBean(appCtx);
