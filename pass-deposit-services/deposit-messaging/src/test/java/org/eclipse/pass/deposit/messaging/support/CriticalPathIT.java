@@ -15,34 +15,27 @@
  */
 package org.eclipse.pass.deposit.messaging.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.eclipse.pass.deposit.messaging.config.spring.DrainQueueConfig;
+import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.eclipse.pass.deposit.cri.CriticalPath;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.jms.listener.auto-startup=false"})
-@Import(DrainQueueConfig.class)
 @DirtiesContext
-public class CriticalPathIT {
+public class CriticalPathIT extends AbstractDepositSubmissionIT {
 
     @Autowired
     private CriticalPath criticalPath;
@@ -54,7 +47,6 @@ public class CriticalPathIT {
     public void simpleTest() throws Exception {
         // create a resource, put it in the repo
         Deposit deposit = new Deposit();
-
         passClient.createObject(deposit);
 
         // simply use critical path to update its deposit status
@@ -79,8 +71,7 @@ public class CriticalPathIT {
 
         // create a resource, put it in the repo
         Deposit deposit = new Deposit();
-        // TODO Deposit service port pending
-//        deposit = passClient.readResource(passClient.createResource(deposit), Deposit.class);
+        passClient.createObject(deposit);
 
         // simply use critical path to update its deposit status
 
@@ -107,8 +98,7 @@ public class CriticalPathIT {
 
         // create a resource, put it in the repo
         Deposit deposit = new Deposit();
-        // TODO Deposit service port pending
-//        deposit = passClient.readResource(passClient.createResource(deposit), Deposit.class);
+        passClient.createObject(deposit);
 
         // execute serial updates, the second one should fail because the initial state condition
         // (deposit status == null) is not met
@@ -137,8 +127,4 @@ public class CriticalPathIT {
         assertEquals(DepositStatus.SUBMITTED, second.resource().get().getDepositStatus());
     }
 
-    @Test
-    public void interleavedFailure() throws Exception {
-
-    }
 }
