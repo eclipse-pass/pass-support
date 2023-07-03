@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.deposit.messaging.support.swordv2;
 
-import static java.lang.String.format;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -81,7 +79,8 @@ public class ResourceResolverImpl implements ResourceResolver {
                             return new UrlResource(uri.toURL());
                         }
                     } catch (MalformedURLException e) {
-                        String msg = String.format(AtomFeedStatusResolver.ERR, uri, "Statement URI could not be parsed as URL");
+                        String msg = String.format(AtomFeedStatusResolver.ERR, uri,
+                            "Statement URI could not be parsed as URL");
                         throw new IllegalArgumentException(msg, e);
                     }
                 }).orElseGet(() -> {
@@ -89,7 +88,8 @@ public class ResourceResolverImpl implements ResourceResolver {
                     try {
                         return new UrlResource(uri.toURL());
                     } catch (MalformedURLException e) {
-                        String msg = String.format(AtomFeedStatusResolver.ERR, uri, "Statement URI could not be parsed as URL");
+                        String msg = String.format(AtomFeedStatusResolver.ERR, uri,
+                            "Statement URI could not be parsed as URL");
                         throw new IllegalArgumentException(msg, e);
                     }
                 });

@@ -27,15 +27,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
-import org.eclipse.pass.deposit.cri.CriticalPath;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.ExceptionHandlingThreadPoolExecutor;
+import org.eclipse.pass.deposit.cri.CriticalPath;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
@@ -47,8 +46,6 @@ import org.eclipse.pass.deposit.messaging.service.DepositTask;
 import org.eclipse.pass.deposit.messaging.status.DefaultDepositStatusProcessor;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusResolver;
-import org.eclipse.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
-import org.eclipse.pass.deposit.messaging.support.swordv2.ResourceResolver;
 import org.eclipse.pass.deposit.messaging.support.swordv2.ResourceResolverImpl;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.support.client.PassClient;

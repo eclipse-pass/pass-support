@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.RemedialDepositException;
 import org.eclipse.pass.deposit.messaging.config.repository.DepositProcessing;
@@ -47,7 +48,6 @@ import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.messaging.service.DepositTaskHelper.DepositStatusCriFunc;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -67,8 +67,6 @@ public class DepositTaskHelperTest {
     private PassClient passClient;
     private TaskExecutor taskExecutor;
     private Policy<DepositStatus> intermediateDepositStatusPolicy;
-    private Policy<DepositStatus> terminalDepositStatusPolicy;
-    private CriticalRepositoryInteraction cri;
     private Submission submission;
     private DepositSubmission depositSubmission;
     private Repository repository;
@@ -77,15 +75,13 @@ public class DepositTaskHelperTest {
     private DepositTaskHelper depositTaskHelper;
     private Repositories repositories;
 
-
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         passClient = mock(PassClient.class);
         taskExecutor = mock(TaskExecutor.class);
         intermediateDepositStatusPolicy = mock(Policy.class);
-        terminalDepositStatusPolicy = mock(Policy.class);
-        cri = mock(CriticalRepositoryInteraction.class);
+        CriticalRepositoryInteraction cri = mock(CriticalRepositoryInteraction.class);
         repositories = mock(Repositories.class);
         submission = mock(Submission.class);
         depositSubmission = mock(DepositSubmission.class);
@@ -94,11 +90,11 @@ public class DepositTaskHelperTest {
         packager = mock(Packager.class);
 
         depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-                                          cri, repositories);
+            cri, repositories);
     }
 
     @Test
-    public void j10sStatementUrlHackWithNullValues() throws Exception {
+    public void j10sStatementUrlHackWithNullValues() {
         ArgumentCaptor<DepositTask> dtCaptor = ArgumentCaptor.forClass(DepositTask.class);
 
         depositTaskHelper.submitDeposit(submission, depositSubmission, repository, deposit, packager);
@@ -113,7 +109,7 @@ public class DepositTaskHelperTest {
     }
 
     @Test
-    public void j10sStatementUrlHack() throws Exception {
+    public void j10sStatementUrlHack() {
         ArgumentCaptor<DepositTask> dtCaptor = ArgumentCaptor.forClass(DepositTask.class);
         String prefix = "moo";
         String replacement = "foo";
@@ -555,7 +551,8 @@ public class DepositTaskHelperTest {
         verifyNoMoreInteractions(passClient);
     }
 
-    private void verifyNullObjectInDepositStatusProcessorLookup(Repository repository, Repositories repos) throws IOException {
+    private void verifyNullObjectInDepositStatusProcessorLookup(Repository repository, Repositories repos)
+        throws IOException {
 
         Exception e = assertThrows(DepositServiceRuntimeException.class, () -> {
             DepositStatusCriFunc.critical(repos, passClient).apply(deposit);

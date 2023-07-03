@@ -61,10 +61,14 @@ public class AssemblerSupport {
      */
     public static void buildMetadata(MetadataBuilder mdb, Map<String, Object> options) {
         mdb.spec(options.getOrDefault(PackageOptions.Spec.KEY, "").toString());
-        mdb.archive((PackageOptions.Archive.OPTS) options.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE));
-        mdb.archived(options.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE) != PackageOptions.Archive.OPTS.NONE);
-        mdb.compression((PackageOptions.Compression.OPTS) options.getOrDefault(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.NONE));
-        mdb.compressed(options.getOrDefault(PackageOptions.Spec.KEY, PackageOptions.Compression.OPTS.NONE) != PackageOptions.Compression.OPTS.NONE);
+        mdb.archive((PackageOptions.Archive.OPTS) options.getOrDefault(PackageOptions.Archive.KEY,
+            PackageOptions.Archive.OPTS.NONE));
+        mdb.archived(options.getOrDefault(PackageOptions.Archive.KEY,
+            PackageOptions.Archive.OPTS.NONE) != PackageOptions.Archive.OPTS.NONE);
+        mdb.compression((PackageOptions.Compression.OPTS) options.getOrDefault(PackageOptions.Compression.KEY,
+            PackageOptions.Compression.OPTS.NONE));
+        mdb.compressed(options.getOrDefault(PackageOptions.Spec.KEY,
+            PackageOptions.Compression.OPTS.NONE) != PackageOptions.Compression.OPTS.NONE);
 
         PackageStream.Metadata md = mdb.build();
 

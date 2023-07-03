@@ -26,7 +26,6 @@ import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 
-
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -225,7 +224,8 @@ public class DepositMessagingTestUtil {
         return result.get();
     }
 
-    private static <T extends Enum<T>> Enum<?> randomFromEnumExcludesPredicate(Class<T> enumClass, Predicate<T> excludes) {
+    private static <T extends Enum<T>> Enum<?> randomFromEnumExcludesPredicate(Class<T> enumClass,
+                                                                               Predicate<T> excludes) {
         AtomicReference<T> result = new AtomicReference<>();
         do {
             result.set(randomFromEnum(enumClass));

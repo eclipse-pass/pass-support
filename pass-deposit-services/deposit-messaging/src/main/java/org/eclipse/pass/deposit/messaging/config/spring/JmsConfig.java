@@ -19,6 +19,8 @@ import java.util.function.Consumer;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -32,9 +34,6 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -45,7 +44,7 @@ public class JmsConfig {
     @Autowired
     private PassClient passClient;
 
-   @Autowired
+    @Autowired
     private Consumer<Submission> submissionConsumer;
 
     @Autowired
@@ -68,7 +67,8 @@ public class JmsConfig {
         return factory;
     }
 
-    @JmsListener(destination = "${pass.deposit.queue.submission.name}", containerFactory = "jmsListenerContainerFactory")
+    @JmsListener(destination = "${pass.deposit.queue.submission.name}",
+        containerFactory = "jmsListenerContainerFactory")
     public void processSubmissionMessage(String message) {
         try {
             JsonObject json = new JsonParser().parse(message).getAsJsonObject();

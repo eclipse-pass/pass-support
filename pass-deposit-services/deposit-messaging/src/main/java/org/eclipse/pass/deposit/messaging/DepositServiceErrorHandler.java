@@ -15,8 +15,8 @@
  */
 package org.eclipse.pass.deposit.messaging;
 
-import org.eclipse.pass.deposit.messaging.service.DepositUtil;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.messaging.service.DepositUtil;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;

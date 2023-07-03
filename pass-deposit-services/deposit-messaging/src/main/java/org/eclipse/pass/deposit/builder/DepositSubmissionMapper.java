@@ -161,13 +161,7 @@ public class DepositSubmissionMapper {
             depositFiles.add(depositFile);
         }
     }
-    /**
-     * Creates a DepositMetadata person with the person's context passed as parameters.
-     *
-     * @param userEntity
-     * @param type
-     * @return
-     */
+
     private DepositMetadata.Person createPerson(User userEntity, DepositMetadata.PERSON_TYPE type) {
         DepositMetadata.Person person = new DepositMetadata.Person();
         person.setFirstName(userEntity.getFirstName());

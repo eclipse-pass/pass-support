@@ -15,7 +15,6 @@
  */
 package org.eclipse.pass.deposit.assembler;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.eclipse.pass.deposit.assembler.AssemblerSupport.detectMediaType;
 
@@ -245,7 +244,8 @@ public class DefaultStreamWriterImpl implements StreamWriter {
             rb = rbf.newInstance();
             return writeResource(rb, resource);
         } catch (IOException e) {
-            throw new RuntimeException(String.format(ArchivingPackageStream.ERR_PUT_RESOURCE, resource.getFilename(), e.getMessage()), e);
+            throw new RuntimeException(String.format(ArchivingPackageStream.ERR_PUT_RESOURCE, resource.getFilename(),
+                e.getMessage()), e);
         }
     }
 

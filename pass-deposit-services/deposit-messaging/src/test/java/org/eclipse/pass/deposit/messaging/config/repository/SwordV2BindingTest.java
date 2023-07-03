@@ -63,7 +63,8 @@ public class SwordV2BindingTest {
 
         String expected1 = "covid" + HINT_URL_SEPARATOR + leading.trim() + HINT_TUPLE_SEPARATOR +
                 "nobel" + HINT_URL_SEPARATOR + trailing.trim();
-        String expected2 = "nobel" + HINT_URL_SEPARATOR + trailing.trim() + HINT_TUPLE_SEPARATOR + "covid" + HINT_URL_SEPARATOR + leading.trim();
+        String expected2 = "nobel" + HINT_URL_SEPARATOR + trailing.trim() + HINT_TUPLE_SEPARATOR + "covid" +
+            HINT_URL_SEPARATOR + leading.trim();
 
         String result = underTest.hintsToPropertyString(hints);
 

@@ -15,9 +15,6 @@
  */
 package org.eclipse.pass.deposit.assembler;
 
-import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.assembler.PackageOptions;
-
 /**
  * Default implementation of {@link PackageStream.Checksum}.
  *

@@ -22,8 +22,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -143,7 +143,8 @@ public class DepositProcessor implements Consumer<Deposit> {
                 try {
                     deposits = passClient.streamObjects(sel).toList();
                 } catch (IOException e) {
-                    throw new RuntimeException("Failed to retrieve deposits for submission " + criSubmission.getId(), e);
+                    throw new RuntimeException("Failed to retrieve deposits for submission " + criSubmission.getId(),
+                        e);
                 }
 
                 if (deposits.isEmpty()) {

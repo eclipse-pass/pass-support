@@ -15,9 +15,9 @@
  */
 package org.eclipse.pass.deposit.messaging.status;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;

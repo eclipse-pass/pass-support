@@ -15,15 +15,15 @@
  */
 package org.eclipse.pass.deposit.messaging;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests insuring that the Suppliers created by {@link DepositMessagingTestUtil} are congruent with the concrete
@@ -57,31 +57,38 @@ public class DepositMessagingTestUtilTest {
     @Test
     public void terminalAggregatedDepositStatusSupplier() {
         for (int i = 0; i < tries; i++) {
-            assertTrue(terminalSubmissionStatusPolicy.test(DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus.get()));
-            assertFalse(intermediateSubmissionStatusPolicy.test(DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus.get()));
+            assertTrue(terminalSubmissionStatusPolicy.test(
+                DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus.get()));
+            assertFalse(intermediateSubmissionStatusPolicy.test(
+                DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus.get()));
         }
     }
 
     @Test
     public void intermediateAggregatedDepositStatusSupplier() {
         for (int i = 0; i < tries; i++) {
-            assertFalse(terminalSubmissionStatusPolicy.test(DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus.get()));
-            assertTrue(intermediateSubmissionStatusPolicy.test(DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus.get()));
+            assertFalse(terminalSubmissionStatusPolicy.test(
+                DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus.get()));
+            assertTrue(intermediateSubmissionStatusPolicy.test(
+                DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus.get()));
         }
     }
 
     @Test
     public void intermediateDepositStatusSupplier() {
         for (int i = 0; i < tries; i++) {
-            assertTrue(intermediateDepositStatusPolicy.test(DepositMessagingTestUtil.randomIntermediateDepositStatus.get()));
-            assertFalse(terminalDepositStatusPolicy.test(DepositMessagingTestUtil.randomIntermediateDepositStatus.get()));
+            assertTrue(intermediateDepositStatusPolicy.test(
+                DepositMessagingTestUtil.randomIntermediateDepositStatus.get()));
+            assertFalse(terminalDepositStatusPolicy.test(
+                DepositMessagingTestUtil.randomIntermediateDepositStatus.get()));
         }
     }
 
     @Test
     public void terminalDepositStatusSupplier() {
         for (int i = 0; i < tries; i++) {
-            assertFalse(intermediateDepositStatusPolicy.test(DepositMessagingTestUtil.randomTerminalDepositStatus.get()));
+            assertFalse(intermediateDepositStatusPolicy.test(
+                DepositMessagingTestUtil.randomTerminalDepositStatus.get()));
             assertTrue(terminalDepositStatusPolicy.test(DepositMessagingTestUtil.randomTerminalDepositStatus.get()));
         }
     }
