@@ -16,12 +16,13 @@
 
 package org.eclipse.pass.deposit.transport.ftp;
 
-import static org.eclipse.pass.deposit.transport.ftp.FtpTestUtil.FTP_ROOT_DIR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.eclipse.pass.deposit.transport.ftp.FtpTestConstants.FTP_ROOT_DIR;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -41,8 +42,8 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.eclipse.pass.deposit.transport.TransportResponse;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class FtpTransportSessionTest {
 
@@ -55,7 +56,7 @@ public class FtpTransportSessionTest {
     /**
      * Configure the FtpTransportSession under test with a mock FTPClient instance.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         ftpClient = mock(FTPClient.class);
         ftpSession = new FtpTransportSession(ftpClient);
@@ -209,8 +210,8 @@ public class FtpTransportSessionTest {
         String suffix = (destinationResource.contains(".")) ? destinationResource.substring(
             destinationResource.indexOf(".")) : "";
 
-        assertTrue("Must have a filename prefix!", prefix.length() > 0); //we are requiring both a prefix
-        assertTrue("Must have a filename suffix!", suffix.length() > 0); //and a suffix
+        assertTrue(prefix.length() > 0); //we are requiring both a prefix
+        assertTrue(suffix.length() > 0); //and a suffix
 
         verify(ftpClient).storeFile(argThat((candidateResource) ->
                                                 candidateResource.startsWith(prefix) && candidateResource.endsWith(

@@ -36,14 +36,14 @@ public class DepositStatusEvaluatorTest {
     }
 
     @Test
-    public void testIsTerminal() throws Exception {
+    public void testIsTerminal() {
         assertTrue(underTest.isTerminal(DepositStatus.ACCEPTED));
         assertTrue(underTest.isTerminal(DepositStatus.REJECTED));
         assertFalse(underTest.isTerminal(DepositStatus.SUBMITTED));
     }
 
     @Test
-    public void testNullStatus() throws Exception {
+    public void testNullStatus() {
         assertThrows(IllegalArgumentException.class, () -> {
             underTest.isTerminal(null);
         });

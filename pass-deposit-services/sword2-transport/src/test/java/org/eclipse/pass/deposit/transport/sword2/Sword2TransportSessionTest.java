@@ -20,7 +20,8 @@ import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.HIN
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.HINT_URL_SEPARATOR;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_HINTS;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_URL;
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -33,8 +34,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.abdera.i18n.iri.IRI;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.swordapp.client.AuthCredentials;
 import org.swordapp.client.SWORDClient;
 import org.swordapp.client.SWORDCollection;
@@ -65,7 +66,7 @@ public class Sword2TransportSessionTest {
     /**
      * Instantiates mocks for tests that must be configured in individual test methods.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         serviceDoc = mock(ServiceDocument.class);
         packageMd = mock(PackageStream.Metadata.class);

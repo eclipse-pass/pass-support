@@ -16,7 +16,7 @@
 
 package org.eclipse.pass.deposit.transport.ftp;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -33,19 +33,14 @@ import java.io.IOException;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class FtpUtilTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private FTPClient ftpClient;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ftpClient = mock(FTPClient.class);
     }
@@ -70,16 +65,18 @@ public class FtpUtilTest {
      * @throws IOException
      */
     @Test
-    public void setPasvFalse() throws IOException {
+    public void setPasvFalse() {
         FtpUtil.setPasv(ftpClient, false);
         verify(ftpClient).enterLocalActiveMode();
     }
 
-    @Test(expected = RuntimeException.class)
-    public void setPasvFail() throws Exception {
+    @Test
+    public void setPasvFail() {
         doThrow(new RuntimeException("Unable to enter local passive mode")).when(ftpClient).enterLocalPassiveMode();
 
-        FtpUtil.setPasv(ftpClient, true);
+        assertThrows(RuntimeException.class, () -> {
+            FtpUtil.setPasv(ftpClient, true);
+        });
     }
 
     /**
@@ -106,10 +103,9 @@ public class FtpUtilTest {
     public void setDataTypeBinaryFail() throws IOException {
         when(ftpClient.setFileType(anyInt())).thenReturn(false);
 
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("Unable to set FTP file type to");
-
-        FtpUtil.setDataType(ftpClient, FtpTransportHints.TYPE.binary.name());
+        assertThrows(RuntimeException.class, () -> {
+            FtpUtil.setDataType(ftpClient, FtpTransportHints.TYPE.binary.name());
+        });
 
         verify(ftpClient).setFileType(anyInt());
     }
@@ -134,12 +130,14 @@ public class FtpUtilTest {
      *
      * @throws IOException
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void setDataTypeUnknown() throws IOException {
         when(ftpClient.type(anyInt())).thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
 
-        FtpUtil.setDataType(ftpClient, "foo");
+        assertThrows(RuntimeException.class, () -> {
+            FtpUtil.setDataType(ftpClient, "foo");
+        });
     }
 
     /**
@@ -164,12 +162,14 @@ public class FtpUtilTest {
      *
      * @throws IOException
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void setTransferModeStreamFail() throws IOException {
         when(ftpClient.setFileTransferMode(anyInt())).thenReturn(false);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.REQUEST_DENIED);
 
-        FtpUtil.setTransferMode(ftpClient, FtpTransportHints.MODE.stream.name());
+        assertThrows(RuntimeException.class, () -> {
+            FtpUtil.setTransferMode(ftpClient, FtpTransportHints.MODE.stream.name());
+        });
     }
 
     /**
@@ -177,12 +177,14 @@ public class FtpUtilTest {
      *
      * @throws IOException
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void setTransferModeUnknown() throws IOException {
         when(ftpClient.setFileTransferMode(anyInt())).thenReturn(false);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.REQUEST_DENIED);
 
-        FtpUtil.setTransferMode(ftpClient, "foo");
+        assertThrows(RuntimeException.class, () -> {
+            FtpUtil.setTransferMode(ftpClient, "foo");
+        });
     }
 
     /**
@@ -240,15 +242,17 @@ public class FtpUtilTest {
      *
      * @throws IOException
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testLoginFailure() throws IOException {
         when(ftpClient.login(anyString(), anyString())).thenReturn(false);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.NOT_LOGGED_IN);
 
-        FtpUtil.login(ftpClient, "foo", "bar");
+        assertThrows(RuntimeException.class, () -> {
+            FtpUtil.login(ftpClient, "foo", "bar");
+        });
 
         verify(ftpClient).login(eq("foo"), eq("bar"));
-        verify(ftpClient).getReplyCode();
+        verify(ftpClient, times(2)).getReplyCode();
     }
 
     /**
@@ -263,7 +267,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeSingleDirectory() throws IOException {
-        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
+        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestConstants.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
             .thenReturn(FTPReply.PATHNAME_CREATED)
@@ -275,7 +279,7 @@ public class FtpUtilTest {
         verify(ftpClient, times(3)).printWorkingDirectory();
         verify(ftpClient).makeDirectory(eq("dir"));
         verify(ftpClient).changeWorkingDirectory(eq("dir"));
-        verify(ftpClient).changeWorkingDirectory(FtpTestUtil.FTP_ROOT_DIR);
+        verify(ftpClient).changeWorkingDirectory(FtpTestConstants.FTP_ROOT_DIR);
         verify(ftpClient, times(6)).getReplyCode();
     }
 
@@ -291,7 +295,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeSingleDirectoryThatAlreadyExists() throws IOException {
-        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
+        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestConstants.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
             .thenReturn(FTPReply.COMMAND_OK)
@@ -309,7 +313,7 @@ public class FtpUtilTest {
         verify(ftpClient, times(3)).printWorkingDirectory();
         verify(ftpClient).makeDirectory(eq("dir"));
         verify(ftpClient).changeWorkingDirectory(eq("dir"));
-        verify(ftpClient).changeWorkingDirectory(FtpTestUtil.FTP_ROOT_DIR);
+        verify(ftpClient).changeWorkingDirectory(FtpTestConstants.FTP_ROOT_DIR);
         verify(ftpClient, times(7)).getReplyCode();
     }
 
@@ -326,7 +330,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeNestedDirectory() throws IOException {
-        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
+        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestConstants.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
             .thenReturn(FTPReply.PATHNAME_CREATED)
@@ -339,7 +343,7 @@ public class FtpUtilTest {
         verify(ftpClient).changeWorkingDirectory(eq("dir"));
         verify(ftpClient).makeDirectory(eq("subdir"));
         verify(ftpClient).changeWorkingDirectory(eq("subdir"));
-        verify(ftpClient).changeWorkingDirectory(FtpTestUtil.FTP_ROOT_DIR);
+        verify(ftpClient).changeWorkingDirectory(FtpTestConstants.FTP_ROOT_DIR);
     }
 
     /**
@@ -357,7 +361,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeNestedDirectoryStartingWithPathSep() throws IOException {
-        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
+        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestConstants.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(argThat(s -> s.length() > 0))).thenReturn(true);
         when(ftpClient.getReplyCode())
             .thenReturn(FTPReply.PATHNAME_CREATED)
@@ -370,7 +374,7 @@ public class FtpUtilTest {
         verify(ftpClient).changeWorkingDirectory(eq("dir"));
         verify(ftpClient).makeDirectory(eq("subdir"));
         verify(ftpClient).changeWorkingDirectory(eq("subdir"));
-        verify(ftpClient, times(2)).changeWorkingDirectory(FtpTestUtil.FTP_ROOT_DIR);
+        verify(ftpClient, times(2)).changeWorkingDirectory(FtpTestConstants.FTP_ROOT_DIR);
         verify(ftpClient, never()).makeDirectory(eq(""));
         verify(ftpClient, never()).makeDirectory(eq(FtpUtil.PATH_SEP));
     }
@@ -383,7 +387,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeDirectoryFails() throws Exception {
-        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
+        when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestConstants.FTP_ROOT_DIR);
         when(ftpClient.getReplyCode())
             .thenReturn(FTPReply.COMMAND_OK)
             .thenReturn(FTPReply.COMMAND_OK)
@@ -391,14 +395,11 @@ public class FtpUtilTest {
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
 
-        try {
+        assertThrows(Exception.class, () -> {
             FtpUtil.makeDirectories(ftpClient, "dir");
-            fail("Expected exception to be thrown");
-        } catch (Exception e) {
-            // expected
-        }
+        });
 
         verify(ftpClient).makeDirectory(eq("dir"));
-        verify(ftpClient).changeWorkingDirectory(FtpTestUtil.FTP_ROOT_DIR);
+        verify(ftpClient).changeWorkingDirectory(FtpTestConstants.FTP_ROOT_DIR);
     }
 }

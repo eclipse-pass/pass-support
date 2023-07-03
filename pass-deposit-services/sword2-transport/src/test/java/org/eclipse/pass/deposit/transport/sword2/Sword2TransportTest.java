@@ -19,9 +19,10 @@ package org.eclipse.pass.deposit.transport.sword2;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_URL;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_ON_BEHALF_OF_USER;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_SERVICE_DOC_URL;
-import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
@@ -33,10 +34,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.pass.deposit.transport.Transport;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.swordapp.client.AuthCredentials;
 import org.swordapp.client.ProtocolViolationException;
 import org.swordapp.client.SWORDClient;
@@ -44,9 +43,6 @@ import org.swordapp.client.SWORDClientException;
 import org.swordapp.client.ServiceDocument;
 
 public class Sword2TransportTest {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     private static final String SERVICE_DOC_URL = "http://localhost:8080/swordv2/servicedocument";
 
@@ -75,7 +71,7 @@ public class Sword2TransportTest {
 
     private Sword2Transport underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ServiceDocument serviceDocument = mock(ServiceDocument.class);
         swordClient = mock(SWORDClient.class);
@@ -87,37 +83,43 @@ public class Sword2TransportTest {
         underTest = new Sword2Transport(clientFactory);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNullFactory() throws Exception {
-        new Sword2Transport(null);
+    @Test
+    public void testNullFactory() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Sword2Transport(null);
+        });
     }
 
     @Test
-    public void testOpenMissingAuthUsernameKey() throws Exception {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_USERNAME));
-        underTest.open(removeKey(Transport.TRANSPORT_USERNAME, TRANSPORT_HINTS));
+    public void testOpenMissingAuthUsernameKey() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            underTest.open(removeKey(Transport.TRANSPORT_USERNAME, TRANSPORT_HINTS));
+        });
+        assertEquals(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_USERNAME), ex.getMessage());
     }
 
     @Test
-    public void testOpenMissingAuthPasswordKey() throws Exception {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_PASSWORD));
-        underTest.open(removeKey(Transport.TRANSPORT_PASSWORD, TRANSPORT_HINTS));
+    public void testOpenMissingAuthPasswordKey() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            underTest.open(removeKey(Transport.TRANSPORT_PASSWORD, TRANSPORT_HINTS));
+        });
+        assertEquals(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_PASSWORD), ex.getMessage());
     }
 
     @Test
-    public void testOpenMissingAuthModeKey() throws Exception {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("only supports AUTHMODE");
-        underTest.open(removeKey(Transport.TRANSPORT_AUTHMODE, TRANSPORT_HINTS));
+    public void testOpenMissingAuthModeKey() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            underTest.open(removeKey(Transport.TRANSPORT_AUTHMODE, TRANSPORT_HINTS));
+        });
+        assertEquals("This transport only supports AUTHMODE userpass (was: 'null'", ex.getMessage());
     }
 
     @Test
-    public void testOpenUnsupportedAuthMode() throws Exception {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("only supports AUTHMODE");
-        underTest.open(replaceKey(Transport.TRANSPORT_AUTHMODE, "fooAuthMode", TRANSPORT_HINTS));
+    public void testOpenUnsupportedAuthMode() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            underTest.open(replaceKey(Transport.TRANSPORT_AUTHMODE, "fooAuthMode", TRANSPORT_HINTS));
+        });
+        assertEquals("This transport only supports AUTHMODE userpass (was: 'fooAuthMode'", ex.getMessage());
     }
 
     @Test
@@ -133,33 +135,34 @@ public class Sword2TransportTest {
 
     @Test
     public void testGetServiceDocumentThrowsRuntimeException() throws Exception {
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectCause(isA(RuntimeException.class));
-        expectedException.expectMessage("http");
-
         when(swordClient.getServiceDocument(any(), any())).thenThrow(new RuntimeException());
 
-        underTest.open(TRANSPORT_HINTS);
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            underTest.open(TRANSPORT_HINTS);
+        });
+        assertEquals("Error reading or parsing SWORD service document " +
+            "'http://localhost:8080/swordv2/servicedocument'", ex.getMessage());
+
     }
 
     @Test
     public void testGetServiceDocumentThrowsSWORDClientException() throws Exception {
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectCause(isA(SWORDClientException.class));
-
         when(swordClient.getServiceDocument(any(), any())).thenThrow(mock(SWORDClientException.class));
 
-        underTest.open(TRANSPORT_HINTS);
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            underTest.open(TRANSPORT_HINTS);
+        });
+        assertEquals(ex.getCause().getClass(), SWORDClientException.class);
     }
 
     @Test
     public void testGetServiceDocumentThrowsProtocolViolationException() throws Exception {
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectCause(isA(ProtocolViolationException.class));
-
         when(swordClient.getServiceDocument(any(), any())).thenThrow(mock(ProtocolViolationException.class));
 
-        underTest.open(TRANSPORT_HINTS);
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            underTest.open(TRANSPORT_HINTS);
+        });
+        assertEquals(ex.getCause().getClass(), ProtocolViolationException.class);
     }
 
     /**

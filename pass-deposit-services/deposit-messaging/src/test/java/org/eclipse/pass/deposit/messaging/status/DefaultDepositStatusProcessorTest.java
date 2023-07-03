@@ -78,7 +78,7 @@ public class DefaultDepositStatusProcessorTest {
     }
 
     @Test
-    public void processingOk() throws Exception {
+    public void processingOk() {
         URI refUri = URI.create(depositStatusRef);
         when(resolver.resolve(refUri, repositoryConfig)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
         when(mapping.getStatusMap()).thenReturn(
@@ -93,7 +93,7 @@ public class DefaultDepositStatusProcessorTest {
     }
 
     @Test
-    public void mappingReturnsUnknownDepositStatus() throws Exception {
+    public void mappingReturnsUnknownDepositStatus() {
         String badDepositStatusUri = "http://foo/uri";
 
         URI refUri = URI.create(depositStatusRef);
@@ -111,7 +111,7 @@ public class DefaultDepositStatusProcessorTest {
     }
 
     @Test
-    public void parsingReturnsNullSwordStatus() throws Exception {
+    public void parsingReturnsNullSwordStatus() {
         when(resolver.resolve(any(), eq(repositoryConfig))).thenReturn(null);
 
         assertNull(underTest.process(deposit, repositoryConfig));
@@ -121,7 +121,7 @@ public class DefaultDepositStatusProcessorTest {
     }
 
     @Test
-    public void mappingReturnsNullDepositStatus() throws Exception {
+    public void mappingReturnsNullDepositStatus() {
         when(resolver.resolve(any(), eq(repositoryConfig))).thenReturn(SWORD_STATE_INPROGRESS.asUri());
         when(mapping.getStatusMap()).thenReturn(Collections.emptyMap());
         when(mapping.getDefaultMapping()).thenReturn(null);
@@ -134,7 +134,7 @@ public class DefaultDepositStatusProcessorTest {
     }
 
     @Test
-    public void parsingThrowsRuntimeException() throws Exception {
+    public void parsingThrowsRuntimeException() {
         when(resolver.resolve(any(), eq(repositoryConfig))).thenThrow(new RuntimeException("Expected"));
 
         Exception e = assertThrows(RuntimeException.class, () -> {
@@ -147,7 +147,7 @@ public class DefaultDepositStatusProcessorTest {
     }
 
     @Test
-    public void mappingThrowsRuntimeException() throws Exception {
+    public void mappingThrowsRuntimeException() {
         when(resolver.resolve(any(), eq(repositoryConfig))).thenReturn(SWORD_STATE_INPROGRESS.asUri());
         when(mapping.getStatusMap()).thenThrow(new RuntimeException("Expected"));
 

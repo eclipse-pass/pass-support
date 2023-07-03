@@ -21,9 +21,9 @@ import static org.eclipse.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
 import static org.eclipse.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN;
 import static org.eclipse.pass.deposit.transport.Transport.TRANSPORT_SERVER_PORT;
 import static org.eclipse.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
-import static org.eclipse.pass.deposit.transport.ftp.FtpTestUtil.FTP_ROOT_DIR;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.eclipse.pass.deposit.transport.ftp.FtpTestConstants.FTP_ROOT_DIR;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,8 +41,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportSession;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -77,7 +77,7 @@ public class FtpTransportTest {
     /**
      * Set up a mock FtpClientFactory to supply a mock FTPClient to the FtpTransport class under test.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         ftpClientFactory = mock(FtpClientFactory.class);
         ftpClient = mock(FTPClient.class);
@@ -127,12 +127,9 @@ public class FtpTransportTest {
             .thenReturn("OK")
             .thenReturn("Login authentication failed");
 
-        try {
+        assertThrows(RuntimeException.class, () -> {
             transport.open(expectedHints);
-            fail("Expected RuntimeException to be thrown.");
-        } catch (RuntimeException e) {
-            // expected
-        }
+        });
 
         verify(ftpClient).sendNoOp();
         verify(ftpClient, atLeastOnce()).getReplyCode();
