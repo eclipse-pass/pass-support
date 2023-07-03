@@ -261,22 +261,22 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>unpack</id>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <artifact>${project.groupId}:${project.artifactId}:${project.version}:jar:exec</artifact>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-dependency-plugin</artifactId>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>unpack</id>-->
+<!--            <goals>-->
+<!--              <goal>unpack</goal>-->
+<!--            </goals>-->
+<!--            <phase>package</phase>-->
+<!--            <configuration>-->
+<!--              <artifact>${project.groupId}:${project.artifactId}:${project.version}:jar:exec</artifact>-->
+<!--            </configuration>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -309,26 +309,26 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <configuration>
-          <images>
-            <image>
-              <name>oapass/deposit-services-core:%v</name>
-            </image>
-          </images>
-        </configuration>
-        <executions>
-          <execution>
-            <id>build-before-its</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>io.fabric8</groupId>-->
+<!--        <artifactId>docker-maven-plugin</artifactId>-->
+<!--        <configuration>-->
+<!--          <images>-->
+<!--            <image>-->
+<!--              <name>oapass/deposit-services-core:%v</name>-->
+<!--            </image>-->
+<!--          </images>-->
+<!--        </configuration>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>build-before-its</id>-->
+<!--            <phase>pre-integration-test</phase>-->
+<!--            <goals>-->
+<!--              <goal>build</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
 
     </plugins>
   </build>
