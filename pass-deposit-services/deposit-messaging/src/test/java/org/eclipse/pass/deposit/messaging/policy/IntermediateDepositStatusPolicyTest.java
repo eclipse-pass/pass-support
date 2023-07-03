@@ -43,12 +43,12 @@ public class IntermediateDepositStatusPolicyTest {
     }
 
     @Test
-    public void testNullStatus() throws Exception {
+    public void testNullStatus() {
         assertTrue(underTest.test(null));
     }
 
     @Test
-    public void testTerminalStatus() throws Exception {
+    public void testTerminalStatus() {
         DepositStatus terminal = DepositStatus.ACCEPTED;
         when(evaluator.isTerminal(terminal)).thenReturn(true);
 
@@ -57,7 +57,7 @@ public class IntermediateDepositStatusPolicyTest {
     }
 
     @Test
-    public void testIntermediateStatus() throws Exception {
+    public void testIntermediateStatus() {
         DepositStatus terminal = DepositStatus.SUBMITTED;
         when(evaluator.isTerminal(terminal)).thenReturn(false);
 
@@ -66,7 +66,7 @@ public class IntermediateDepositStatusPolicyTest {
     }
 
     @Test
-    public void testFailedStatus() throws Exception {
+    public void testFailedStatus() {
         DepositStatus failed = DepositStatus.FAILED;
         when(evaluator.isTerminal(failed)).thenReturn(false);
 

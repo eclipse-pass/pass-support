@@ -18,7 +18,6 @@ package org.eclipse.pass.deposit.messaging.config.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.config.repository.SpringEnvironmentDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +52,6 @@ public class RepositoriesFactoryBeanConfig {
         LOG.trace("Resolving repository configuration resource from '{}'", configResource);
         RepositoriesFactory factory = new RepositoriesFactory(configResource, repositoriesMapper);
         return factory;
-    }
-
-    @Bean
-    public Repositories repositories(RepositoriesFactory factory) throws Exception {
-        return factory.getObject();
     }
 
 }

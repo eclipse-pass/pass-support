@@ -16,19 +16,21 @@
 package org.eclipse.pass.deposit.messaging.service;
 
 import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomId;
+import static org.eclipse.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.abdera.i18n.iri.IRI;
+import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.transport.Transport;
@@ -51,8 +53,6 @@ import org.swordapp.client.DepositReceipt;
 import org.swordapp.client.SWORDClientException;
 import org.swordapp.client.SwordIdentifier;
 
-import com.hp.hpl.jena.assembler.Assembler;
-
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -66,7 +66,7 @@ public class DepositTaskTest {
 
     private CriticalRepositoryInteraction cri;
 
-    private DepositTask underTest;
+    private DepositTask depositTask;
 
 
     @BeforeEach
@@ -77,7 +77,7 @@ public class DepositTaskTest {
         passClient = mock(PassClient.class);
         intermediateDepositStatusPolicy = mock(Policy.class);
         cri = new CriticalPath(passClient);
-        underTest = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
+        depositTask = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
     }
 
     @Test
@@ -100,11 +100,11 @@ public class DepositTaskTest {
 
         Deposit d = depositContext(dc, tr, passClient);
 
-        underTest.setSwordSleepTimeMs(1); // move things along...
-        underTest.setReplacementPrefix(replacement);
-        underTest.setPrefixToMatch(prefix);
+        depositTask.setSwordSleepTimeMs(1); // move things along...
+        depositTask.setReplacementPrefix(replacement);
+        depositTask.setPrefixToMatch(prefix);
 
-        underTest.run();
+        depositTask.run();
 
         assertEquals(replacement, d.getDepositStatusRef());
     }
@@ -128,11 +128,11 @@ public class DepositTaskTest {
 
         Deposit d = depositContext(dc, tr, passClient);
 
-        underTest.setSwordSleepTimeMs(1); // move things along...
-        underTest.setReplacementPrefix(replacement);
-        underTest.setPrefixToMatch(prefix);
+        depositTask.setSwordSleepTimeMs(1); // move things along...
+        depositTask.setReplacementPrefix(replacement);
+        depositTask.setPrefixToMatch(prefix);
 
-        underTest.run();
+        depositTask.run();
 
         assertEquals(prefix, d.getDepositStatusRef());
     }
@@ -157,11 +157,11 @@ public class DepositTaskTest {
 
         Deposit d = depositContext(dc, tr, passClient);
 
-        underTest.setSwordSleepTimeMs(1); // move things along...
-        underTest.setReplacementPrefix(replacement);
-        underTest.setPrefixToMatch(prefix);
+        depositTask.setSwordSleepTimeMs(1); // move things along...
+        depositTask.setReplacementPrefix(replacement);
+        depositTask.setPrefixToMatch(prefix);
 
-        underTest.run();
+        depositTask.run();
 
         assertEquals(href, d.getDepositStatusRef());
     }
@@ -174,45 +174,42 @@ public class DepositTaskTest {
      * @return
      */
     private static Deposit depositContext(DepositUtil.DepositWorkerContext depositContext, TransportResponse tr,
-                                          PassClient passClient) {
-        // TODO Deposit refactor pending
-//        Repository r = new Repository();
-//        r.setId(randomId());
-//        depositContext.repository(r);
-//
-//        Submission s = new Submission();
-//        s.setId(randomId());
-//        s.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
-//        depositContext.submission(s);
-//
-//        Deposit d = new Deposit();
-//        d.setId(randomId());
-//        d.setSubmission(s);
-////        d.setDepositStatus(randomIntermediateDepositStatus.get());
-//        depositContext.deposit(d);
-//
-////        when(passClient.readResource(d.getId(), Deposit.class)).thenReturn(d);
-////        when(passClient.updateAndReadResource(any(), any())).thenAnswer((inv) -> inv.getArgument(0));
-////        when(passClient.createAndReadResource(any(), any())).thenAnswer((inv) -> inv.getArgument(0));
-//
-//        Assembler assembler = mock(Assembler.class);
-//        PackageStream stream = mock(PackageStream.class);
-//        Packager packager = mock(Packager.class);
-//        Transport transport = mock(Transport.class);
-//        TransportSession session = mock(TransportSession.class);
-//
-//        Map<String, String> packagerConfig = new HashMap<>();
-//        when(packager.getAssembler()).thenReturn(assembler);
-//        when(packager.getConfiguration()).thenReturn(packagerConfig);
-//        when(assembler.assemble(any(), anyMap())).thenReturn(stream);
-//        when(packager.getTransport()).thenReturn(transport);
-//        when(transport.open(anyMap())).thenReturn(session);
-//        when(session.send(eq(stream), any())).thenReturn(tr);
-//
-//        when(depositContext.packager()).thenReturn(packager);
-//
-//        return d;
-        return null;
+                                          PassClient passClient) throws IOException {
+        Repository r = new Repository();
+        r.setId(randomId());
+        depositContext.repository(r);
+
+        Submission s = new Submission();
+        s.setId(randomId());
+        s.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
+        depositContext.submission(s);
+
+        Deposit d = new Deposit();
+        d.setId(randomId());
+        d.setSubmission(s);
+        d.setDepositStatus(randomIntermediateDepositStatus.get());
+        depositContext.deposit(d);
+
+        when(passClient.getObject(d)).thenReturn(d);
+        when(passClient.getObject(Deposit.class, d.getId())).thenReturn(d);
+
+        Assembler assembler = mock(Assembler.class);
+        PackageStream stream = mock(PackageStream.class);
+        Packager packager = mock(Packager.class);
+        Transport transport = mock(Transport.class);
+        TransportSession session = mock(TransportSession.class);
+
+        Map<String, String> packagerConfig = new HashMap<>();
+        when(packager.getAssembler()).thenReturn(assembler);
+        when(packager.getConfiguration()).thenReturn(packagerConfig);
+        when(assembler.assemble(any(), anyMap())).thenReturn(stream);
+        when(packager.getTransport()).thenReturn(transport);
+        when(transport.open(anyMap())).thenReturn(session);
+        when(session.send(eq(stream), any())).thenReturn(tr);
+
+        when(depositContext.packager()).thenReturn(packager);
+
+        return d;
     }
 
     /**

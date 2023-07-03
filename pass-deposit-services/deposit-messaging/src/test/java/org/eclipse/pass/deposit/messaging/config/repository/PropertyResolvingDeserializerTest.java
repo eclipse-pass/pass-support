@@ -16,43 +16,27 @@
 
 package org.eclipse.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 
-@SpringBootTest(properties = { "pass.client.url=http://localhost:8080/", "pass.client.user=test", "pass.client.password=test" })
-public class PropertyResolvingDeserializerTest extends RepositoryConfigMappingTest {
-
-    @Autowired
-    private Environment env;
-
-    @Override
-    public void setUpObjectMapper() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(String.class, new SpringEnvironmentDeserializer(env));
-        mapper.registerModule(module);
-        this.mapper = mapper;
-    }
+public class PropertyResolvingDeserializerTest extends AbstractJacksonMappingTest {
 
     @Test
     public void noPropertyResolutionTest() throws Exception {
-        RepositoryConfig config = mapper.readValue(SWORD_REPOSITORY_JSON, RepositoryConfig.class);
-        assertTrue(config.getTransportConfig().getProtocolBinding().getProtocol().equals(SwordV2Binding.PROTO));
+        RepositoryConfig config = repositoriesMapper.readValue(RepositoryConfigMappingTest.SWORD_REPOSITORY_JSON,
+            RepositoryConfig.class);
+        assertEquals(SwordV2Binding.PROTO, config.getTransportConfig().getProtocolBinding().getProtocol());
         SwordV2Binding swordV2Binding = (SwordV2Binding) config.getTransportConfig().getProtocolBinding();
-        assertTrue(swordV2Binding.getDefaultCollectionUrl().contains("${dspace.host}"));
+        assertTrue(swordV2Binding.getDefaultCollectionUrl().contains("http://localhost:8181"));
     }
 
     @Test
     public void resolvePropertiesTest() throws Exception {
-        RepositoryConfig config = mapper.readValue(SWORD_REPOSITORY_JSON, RepositoryConfig.class);
+        RepositoryConfig config = repositoriesMapper.readValue(RepositoryConfigMappingTest.SWORD_REPOSITORY_JSON,
+            RepositoryConfig.class);
         assertTrue(config.getTransportConfig().getProtocolBinding().getProtocol().equals(SwordV2Binding.PROTO));
         SwordV2Binding swordV2Binding = (SwordV2Binding) config.getTransportConfig().getProtocolBinding();
         assertFalse(swordV2Binding.getDefaultCollectionUrl().contains("${dspace.host}"));

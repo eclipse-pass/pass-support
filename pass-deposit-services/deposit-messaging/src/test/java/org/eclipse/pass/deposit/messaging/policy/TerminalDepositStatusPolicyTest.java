@@ -44,13 +44,13 @@ public class TerminalDepositStatusPolicyTest {
     }
 
     @Test
-    public void testNullStatus() throws Exception {
+    public void testNullStatus() {
         assertFalse(underTest.test(null));
         verifyNoInteractions(evaluator);
     }
 
     @Test
-    public void testTerminalStatus() throws Exception {
+    public void testTerminalStatus() {
         DepositStatus terminal = DepositStatus.ACCEPTED;
         when(evaluator.isTerminal(terminal)).thenReturn(true);
 
@@ -59,7 +59,7 @@ public class TerminalDepositStatusPolicyTest {
     }
 
     @Test
-    public void testIntermediateStatus() throws Exception {
+    public void testIntermediateStatus() {
         DepositStatus terminal = DepositStatus.SUBMITTED;
         when(evaluator.isTerminal(terminal)).thenReturn(false);
 

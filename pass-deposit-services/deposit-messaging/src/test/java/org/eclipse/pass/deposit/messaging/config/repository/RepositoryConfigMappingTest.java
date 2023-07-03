@@ -20,8 +20,6 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
 
     static final String SWORD_REPOSITORY_JSON = "" +
@@ -92,15 +90,12 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapRepositoryConfigFromJsonRoundTrip() throws Exception {
-        mapper = new ObjectMapper();
-
-        RepositoryConfig config = mapper.readValue(SWORD_REPOSITORY_JSON, RepositoryConfig.class);
+        RepositoryConfig config = repositoriesMapper.readValue(SWORD_REPOSITORY_JSON, RepositoryConfig.class);
         assertRoundTrip(config, RepositoryConfig.class);
     }
 
     @Test
     public void mapRepositoryConfigFromJavaRoundTrip() throws Exception {
-        mapper = new ObjectMapper();
 
         RepositoryConfig repoConfig = new RepositoryConfig();
         TransportConfig tsConfig = new TransportConfig();

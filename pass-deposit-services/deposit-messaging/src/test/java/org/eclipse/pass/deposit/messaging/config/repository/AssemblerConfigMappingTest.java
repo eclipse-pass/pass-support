@@ -43,7 +43,7 @@ public class AssemblerConfigMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapAssemblerConfig() throws IOException {
-        AssemblerConfig config = mapper.readValue(ASSEMBLER_CONFIG, AssemblerConfig.class);
+        AssemblerConfig config = repositoriesMapper.readValue(ASSEMBLER_CONFIG, AssemblerConfig.class);
 
         assertEquals("http://purl.org/net/sword/package/METSDSpaceSIP", config.getSpec());
 
