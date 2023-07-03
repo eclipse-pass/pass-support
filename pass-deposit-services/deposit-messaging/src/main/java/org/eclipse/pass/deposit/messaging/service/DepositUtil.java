@@ -22,14 +22,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 import javax.jms.Session;
 
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.policy.TerminalDepositStatusPolicy;
 import org.eclipse.pass.deposit.messaging.policy.TerminalSubmissionStatusPolicy;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.messaging.status.SubmissionStatusEvaluator;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;

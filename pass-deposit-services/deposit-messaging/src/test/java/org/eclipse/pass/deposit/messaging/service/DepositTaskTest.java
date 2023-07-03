@@ -31,15 +31,15 @@ import java.util.Map;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.eclipse.pass.deposit.assembler.Assembler;
+import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.cri.CriticalPath;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.cri.CriticalPath;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -67,7 +67,6 @@ public class DepositTaskTest {
     private CriticalRepositoryInteraction cri;
 
     private DepositTask depositTask;
-
 
     @BeforeEach
     @SuppressWarnings("unchecked")

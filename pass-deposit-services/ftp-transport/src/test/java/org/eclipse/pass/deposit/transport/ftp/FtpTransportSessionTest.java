@@ -17,7 +17,6 @@
 package org.eclipse.pass.deposit.transport.ftp;
 
 import static org.eclipse.pass.deposit.transport.ftp.FtpTestConstants.FTP_ROOT_DIR;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

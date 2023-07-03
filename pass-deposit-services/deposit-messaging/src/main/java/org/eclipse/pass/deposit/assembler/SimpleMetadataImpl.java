@@ -23,7 +23,6 @@ import java.util.List;
 import com.google.gson.JsonObject;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
-import org.eclipse.pass.deposit.assembler.PackageStream;
 
 /**
  * Provides metadata for a {@link PackageStream}.  Includes package-private accessors in addition to

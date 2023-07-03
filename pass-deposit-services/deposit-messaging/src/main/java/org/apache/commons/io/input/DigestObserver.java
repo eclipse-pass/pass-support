@@ -26,7 +26,6 @@ import org.eclipse.pass.deposit.assembler.ChecksumImpl;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.ResourceBuilder;
 
-
 /**
  * Computes a digest over the observed bytes, and applies it to the {@link ResourceBuilder}.
  *

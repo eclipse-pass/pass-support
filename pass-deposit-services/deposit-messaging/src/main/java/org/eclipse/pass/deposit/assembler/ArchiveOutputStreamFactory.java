@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.eclipse.pass.deposit.assembler.PackageStream;
 
 /**
  * Responsible for creating the {@link ArchiveOutputStream} used to write the {@link PackageStream}.  Implementations

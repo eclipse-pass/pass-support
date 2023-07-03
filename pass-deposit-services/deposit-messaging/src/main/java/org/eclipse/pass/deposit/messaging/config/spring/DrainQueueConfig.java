@@ -16,7 +16,6 @@
 
 package org.eclipse.pass.deposit.messaging.config.spring;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
@@ -50,6 +49,7 @@ import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
  * annotate the class as {@code DirtiesContext}</em>
  * </p>
  */
+// TODO RP: this may not be needed
 @EnableJms
 public class DrainQueueConfig {
     private static final Logger LOG = LoggerFactory.getLogger(DrainQueueConfig.class);

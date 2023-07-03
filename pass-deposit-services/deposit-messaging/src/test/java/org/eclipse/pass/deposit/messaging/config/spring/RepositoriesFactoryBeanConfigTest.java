@@ -16,20 +16,13 @@
 package org.eclipse.pass.deposit.messaging.config.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.eclipse.pass.deposit.messaging.config.repository.FtpBinding;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.eclipse.pass.deposit.messaging.config.repository.SwordV2Binding;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

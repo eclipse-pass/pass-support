@@ -18,7 +18,6 @@ package org.eclipse.pass.deposit.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,16 +28,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.pass.deposit.builder.DepositSubmissionMapper;
-import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
-import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
-import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,20 +44,12 @@ import org.springframework.stereotype.Component;
 public class SubmissionTestUtil {
 
     @Autowired private PassClient passClient;
-    @Autowired private DepositSubmissionMapper depositSubmissionMapper;
-
-    public DepositSubmission asDepositSubmission(String submissionJsonName) throws IOException {
-        InputStream inputStream = ResourceTestUtil.readSubmissionJson(submissionJsonName);
-        List<PassEntity> entities = new LinkedList<>();
-        Submission submissionEntity = readSubmissionJsonAndAddToPass(inputStream, entities);
-        return depositSubmissionMapper.createDepositSubmission(submissionEntity, entities);
-    }
 
     public Submission readSubmissionJsonAndAddToPass(InputStream is, List<PassEntity> entities) throws IOException {
         entities.clear();
         Submission submissionFromJson = createSubmissionFromJson(is, entities);
         Submission submission = passClient.getObject(Submission.class, submissionFromJson.getId());
-        if(Objects.nonNull(submission)) {
+        if (Objects.nonNull(submission)) {
             resetSubmissionStatuses(submission, submissionFromJson);
             return submission;
         }

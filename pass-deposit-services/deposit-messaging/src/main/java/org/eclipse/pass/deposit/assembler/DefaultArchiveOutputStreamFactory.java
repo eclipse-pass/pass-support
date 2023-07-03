@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.deposit.assembler;
 
-import static java.lang.String.format;
-
 import java.io.OutputStream;
 import java.util.Map;
 
@@ -48,21 +46,26 @@ public class DefaultArchiveOutputStreamFactory implements ArchiveOutputStreamFac
         // we support zip, tar and tar.gz so far
         ArchiveOutputStream archiveOut;
 
-        if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE) == PackageOptions.Archive.OPTS.TAR) {
+        if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE) ==
+            PackageOptions.Archive.OPTS.TAR) {
             try {
-                if (packageOptions.getOrDefault(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.NONE) == PackageOptions.Compression.OPTS.GZIP) {
+                if (packageOptions.getOrDefault(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.NONE)
+                    == PackageOptions.Compression.OPTS.GZIP) {
                     archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(toWrap));
                 } else {
                     archiveOut = new TarArchiveOutputStream(toWrap);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, PackageOptions.Archive.OPTS.TAR, e.getMessage()), e);
+                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, PackageOptions.Archive.OPTS.TAR,
+                    e.getMessage()), e);
             }
-        } else if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE) == PackageOptions.Archive.OPTS.ZIP) {
+        } else if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE) ==
+            PackageOptions.Archive.OPTS.ZIP) {
             try {
                 archiveOut = new ZipArchiveOutputStream(toWrap);
             } catch (Exception e) {
-                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, PackageOptions.Archive.OPTS.ZIP, e.getMessage()), e);
+                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, PackageOptions.Archive.OPTS.ZIP,
+                    e.getMessage()), e);
             }
         } else {
             throw new RuntimeException(ERR_NO_ARCHIVE_FORMAT);

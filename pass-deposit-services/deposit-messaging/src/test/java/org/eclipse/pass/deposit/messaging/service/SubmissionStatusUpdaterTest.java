@@ -33,8 +33,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.eclipse.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.SubmissionStatusService;
@@ -247,7 +247,8 @@ public class SubmissionStatusUpdaterTest {
         String submissionId = UUID.randomUUID().toString();
         submissionStatusUpdater.doUpdate(Collections.singleton(submissionId));
 
-        verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(), any(Predicate.class), any());
+        verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(),
+            any(Predicate.class), any());
     }
 
     /**
@@ -265,7 +266,8 @@ public class SubmissionStatusUpdaterTest {
         submissionStatusUpdater.doUpdate();
 
         verify(passClient, times(1)).streamObjects(any());
-        verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(), any(Predicate.class), any());
+        verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(),
+            any(Predicate.class), any());
     }
 
 }

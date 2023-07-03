@@ -24,15 +24,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.model.Registry;
 import org.eclipse.pass.deposit.messaging.service.DepositTaskHelper;
+import org.eclipse.pass.deposit.messaging.service.SubmissionProcessor;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.eclipse.pass.deposit.messaging.service.SubmissionProcessor;
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.PassClientSelector;import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
@@ -118,10 +119,12 @@ public class FailedDepositRunner {
                              * taken on the Deposit or any other repository resource if one fails.
                              */
                             (d) -> {
-                                if (deposit.getDepositStatus() != DepositStatus.FAILED && deposit.getDepositStatus() != null) {
+                                if (deposit.getDepositStatus() != DepositStatus.FAILED
+                                    && deposit.getDepositStatus() != null) {
                                     LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
                                              "Deposit status must equal 'null' " +
-                                             "or '" + DepositStatus.FAILED + "', but was '" + deposit.getDepositStatus() + "'");
+                                             "or '" + DepositStatus.FAILED + "', but was '" +
+                                                 deposit.getDepositStatus() + "'");
                                     return false;
                                 }
 

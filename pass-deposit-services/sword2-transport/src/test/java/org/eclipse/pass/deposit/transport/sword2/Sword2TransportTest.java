@@ -19,7 +19,6 @@ package org.eclipse.pass.deposit.transport.sword2;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_URL;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_ON_BEHALF_OF_USER;
 import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_SERVICE_DOC_URL;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -95,7 +94,8 @@ public class Sword2TransportTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             underTest.open(removeKey(Transport.TRANSPORT_USERNAME, TRANSPORT_HINTS));
         });
-        assertEquals(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_USERNAME), ex.getMessage());
+        assertEquals(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_USERNAME),
+            ex.getMessage());
     }
 
     @Test
@@ -103,7 +103,8 @@ public class Sword2TransportTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             underTest.open(removeKey(Transport.TRANSPORT_PASSWORD, TRANSPORT_HINTS));
         });
-        assertEquals(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_PASSWORD), ex.getMessage());
+        assertEquals(String.format(Sword2Transport.MISSING_REQUIRED_HINT, Transport.TRANSPORT_PASSWORD),
+            ex.getMessage());
     }
 
     @Test

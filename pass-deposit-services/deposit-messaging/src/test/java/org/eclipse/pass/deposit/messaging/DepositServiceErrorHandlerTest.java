@@ -27,12 +27,12 @@ import static org.mockito.Mockito.when;
 import java.util.function.Predicate;
 
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -87,7 +87,8 @@ public class PreassembledAssembler implements Assembler {
      * @param packageStream
      */
     public PreassembledAssembler(String spec, PackageStream.Checksum checksum, String packageName, long packageLength,
-                                 PackageOptions.Archive.OPTS archive, PackageOptions.Compression.OPTS compression, InputStream packageStream) {
+                                 PackageOptions.Archive.OPTS archive, PackageOptions.Compression.OPTS compression,
+                                 InputStream packageStream) {
         this.spec = spec;
         this.checksum = checksum;
         this.packageName = packageName;

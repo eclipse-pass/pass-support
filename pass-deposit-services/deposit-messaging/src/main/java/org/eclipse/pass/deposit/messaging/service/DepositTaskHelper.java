@@ -29,6 +29,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.RemedialDepositException;
@@ -41,8 +43,6 @@ import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;

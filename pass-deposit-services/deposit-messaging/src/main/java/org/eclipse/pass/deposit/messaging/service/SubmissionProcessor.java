@@ -29,6 +29,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.model.Registry;
@@ -36,8 +38,6 @@ import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -99,7 +99,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
             if (result.throwable().isPresent()) {
                 Throwable cause = result.throwable().get();
-                String msg = format(msg_tmpl, submission.getId(), AggregatedDepositStatus.IN_PROGRESS, cause.getMessage());
+                String msg = format(msg_tmpl, submission.getId(), AggregatedDepositStatus.IN_PROGRESS,
+                    cause.getMessage());
                 throw new DepositServiceRuntimeException(msg, cause, submission);
             } else {
                 String msg = format(msg_tmpl, submission.getId(), AggregatedDepositStatus.IN_PROGRESS,

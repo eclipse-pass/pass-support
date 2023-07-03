@@ -30,6 +30,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.model.Packager;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
@@ -37,8 +39,6 @@ import org.eclipse.pass.deposit.messaging.service.DepositUtil.DepositWorkerConte
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -170,8 +170,8 @@ public class DepositTask implements Runnable {
             } catch (Exception e) {
                 String msg = format("Failed to update deposit status to %s for tuple [%s, %s, %s]; " +
                                     "parsing the Atom statement %s for %s failed: %s",
-                                    DepositStatus.ACCEPTED, dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(),
-                                    statementUri, dc.deposit().getId(), e.getMessage());
+                                    DepositStatus.ACCEPTED, dc.submission().getId(), dc.repository().getId(),
+                                    dc.deposit().getId(), statementUri, dc.deposit().getId(), e.getMessage());
                 throw new DepositServiceRuntimeException(msg, e, dc.deposit());
             }
 

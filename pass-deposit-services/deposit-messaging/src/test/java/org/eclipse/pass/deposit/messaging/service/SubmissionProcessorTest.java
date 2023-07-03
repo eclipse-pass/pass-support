@@ -90,8 +90,8 @@ public class SubmissionProcessorTest {
         taskExecutor = mock(TaskExecutor.class);
         cri = mock(CriticalRepositoryInteraction.class);
         Repositories repositories = mock(Repositories.class);
-        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-            cri, repositories);
+        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor,
+            intermediateDepositStatusPolicy, cri, repositories);
         submissionProcessor =
             new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry, submissionPolicy,
                 depositTaskHelper, cri);
@@ -588,7 +588,7 @@ public class SubmissionProcessorTest {
         });
 
         assertEquals("Update postcondition failed for null: expected status 'IN_PROGRESS' " +
-                "but actual status is '"+ aggregatedDepositStatus + "'",
+                "but actual status is '" + aggregatedDepositStatus + "'",
             exception.getMessage());
         verify(submission, times(2)).getAggregatedDepositStatus();
         verifyNoInteractions(depositSubmission);
