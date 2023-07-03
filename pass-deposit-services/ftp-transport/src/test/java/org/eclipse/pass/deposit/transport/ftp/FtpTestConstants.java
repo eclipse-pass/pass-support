@@ -16,9 +16,9 @@
 
 package org.eclipse.pass.deposit.transport.ftp;
 
-public class FtpTestUtil {
+public class FtpTestConstants {
 
-    private FtpTestUtil() {
+    private FtpTestConstants() {
         //never called
     }
 

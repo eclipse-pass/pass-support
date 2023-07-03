@@ -15,15 +15,15 @@
  */
 package org.eclipse.pass.deposit.messaging;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests insuring that the Suppliers created by {@link DepositMessagingTestUtil} are congruent with the concrete
@@ -32,7 +32,12 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 
-@SpringBootTest(properties = { "pass.deposit.jobs.disabled=true", "pass.client.url=http://localhost:8080/", "pass.client.user=test", "pass.client.password=test" })
+@SpringBootTest(properties = {
+    "pass.deposit.jobs.disabled=true",
+    "pass.client.url=http://localhost:8080/",
+    "pass.client.user=test",
+    "pass.client.password=test"
+})
 public class DepositMessagingTestUtilTest {
 
     @Autowired

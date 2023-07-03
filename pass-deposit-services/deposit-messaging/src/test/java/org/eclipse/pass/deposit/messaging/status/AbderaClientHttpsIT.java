@@ -15,9 +15,9 @@
  */
 package org.eclipse.pass.deposit.messaging.status;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
@@ -25,16 +25,16 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.commons.httpclient.Credentials;
 import org.eclipse.pass.deposit.messaging.config.spring.DrainQueueConfig;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Insures that the Apache {@code AbderaClient} can connect to https URLs, specifically the ability to trust the root
@@ -71,11 +71,11 @@ import org.springframework.test.context.junit4.SpringRunner;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @Import(DrainQueueConfig.class)
 @DirtiesContext
-@Ignore("To be run manually, see class Javadoc.")
+@Disabled("To be run manually, see class Javadoc.")
 public class AbderaClientHttpsIT {
 
     @Autowired
@@ -89,10 +89,9 @@ public class AbderaClientHttpsIT {
     @Value("${sword.pass}")
     private String swordPass;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        assertTrue("Expected the SWORD service document URL to begin with 'https://'!",
-                   httpsSwordServiceDocUrl.startsWith("https://"));
+        assertTrue(httpsSwordServiceDocUrl.startsWith("https://"));
 
         assertNotNull("Expected a value for the 'sword.user' property, but was 'null'", swordUser);
         assertNotNull("Expected a value for the 'sword.pass' property, but was 'null'", swordPass);
@@ -104,12 +103,10 @@ public class AbderaClientHttpsIT {
     @Test
     public void httpsConnection() throws Exception {
         ClientResponse res = underTest.get(httpsSwordServiceDocUrl);
-        assertNotNull("Expected a non-null ClientResponse!", res);
-        String msg = "Received unexpected response code %s retrieving %s: %s";
-        assertEquals(String.format(msg, res.getStatus(), httpsSwordServiceDocUrl, res.getStatusText()),
-                     200, res.getStatus());
+        assertNotNull(res);
+        assertEquals(200, res.getStatus());
         Document<Feed> serviceDoc = res.getDocument();
-        assertNotNull("Expected a non-null service document!", serviceDoc);
+        assertNotNull(serviceDoc);
         assertEquals(httpsSwordServiceDocUrl, serviceDoc.getBaseUri().toString());
     }
 }
