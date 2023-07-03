@@ -65,27 +65,16 @@ import org.springframework.core.task.TaskExecutor;
  */
 public class DepositTaskHelperTest {
     private PassClient passClient;
-
     private TaskExecutor taskExecutor;
-
     private Policy<DepositStatus> intermediateDepositStatusPolicy;
-
     private Policy<DepositStatus> terminalDepositStatusPolicy;
-
     private CriticalRepositoryInteraction cri;
-
-    private Submission s;
-
-    private DepositSubmission ds;
-
-    private Repository r;
-
-    private Packager p;
-
-    private Deposit d;
-
-    private DepositTaskHelper underTest;
-
+    private Submission submission;
+    private DepositSubmission depositSubmission;
+    private Repository repository;
+    private Packager packager;
+    private Deposit deposit;
+    private DepositTaskHelper depositTaskHelper;
     private Repositories repositories;
 
 
@@ -98,22 +87,21 @@ public class DepositTaskHelperTest {
         terminalDepositStatusPolicy = mock(Policy.class);
         cri = mock(CriticalRepositoryInteraction.class);
         repositories = mock(Repositories.class);
+        submission = mock(Submission.class);
+        depositSubmission = mock(DepositSubmission.class);
+        deposit = mock(Deposit.class);
+        repository = mock(Repository.class);
+        packager = mock(Packager.class);
 
-        underTest = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
+        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
                                           cri, repositories);
-
-        s = mock(Submission.class);
-        ds = mock(DepositSubmission.class);
-        d = mock(Deposit.class);
-        r = mock(Repository.class);
-        p = mock(Packager.class);
     }
 
     @Test
     public void j10sStatementUrlHackWithNullValues() throws Exception {
         ArgumentCaptor<DepositTask> dtCaptor = ArgumentCaptor.forClass(DepositTask.class);
 
-        underTest.submitDeposit(s, ds, r, d, p);
+        depositTaskHelper.submitDeposit(submission, depositSubmission, repository, deposit, packager);
 
         verify(taskExecutor).execute(dtCaptor.capture());
 
@@ -130,9 +118,9 @@ public class DepositTaskHelperTest {
         String prefix = "moo";
         String replacement = "foo";
 
-        underTest.setStatementUriPrefix(prefix);
-        underTest.setStatementUriReplacement(replacement);
-        underTest.submitDeposit(s, ds, r, d, p);
+        depositTaskHelper.setStatementUriPrefix(prefix);
+        depositTaskHelper.setStatementUriReplacement(replacement);
+        depositTaskHelper.submitDeposit(submission, depositSubmission, repository, deposit, packager);
 
         verify(taskExecutor).execute(dtCaptor.capture());
 
@@ -170,34 +158,11 @@ public class DepositTaskHelperTest {
         String path = "/fcrepo/repositories/a-repository";
         String uri = "http://pass.jhu.edu" + path;
         Repository repo = newRepositoryWithId(uri);
-        Repositories repositories = newRepositoriesWithConfigFor(path);
+        Repositories repositories = newRepositoriesWithConfigFor(uri);
 
         DepositTaskHelper.lookupConfig(repo, repositories)
                          .orElseThrow(
                              () -> new RuntimeException("Missing expected repository config for path '" + path + "'"));
-    }
-
-    @Test
-    public void lookupRepositoryConfigByUriPathComponent() {
-        String uri = "http://pass.jhu.edu/fcrepo/repositories/a-repository";
-        Repository repo = newRepositoryWithId(uri);
-        Repositories repositories = newRepositoriesWithConfigFor("a-repository");
-
-        DepositTaskHelper.lookupConfig(repo, repositories)
-                         .orElseThrow(
-                             () -> new RuntimeException("Missing expected repository config for path 'a-repository'"));
-
-        repositories = newRepositoriesWithConfigFor("/a-repository");
-
-        DepositTaskHelper.lookupConfig(repo, repositories)
-                         .orElseThrow(
-                             () -> new RuntimeException("Missing expected repository config for path '/a-repository'"));
-
-        repositories = newRepositoriesWithConfigFor("/fcrepo/repositories/a-repository");
-
-        DepositTaskHelper.lookupConfig(repo, repositories)
-                         .orElseThrow(() -> new RuntimeException(
-                             "Missing expected repository config for path '/fcrepo/repositories/a-repository'"));
     }
 
     /**
@@ -217,18 +182,16 @@ public class DepositTaskHelperTest {
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
-        when(d.getDepositStatus()).thenReturn(
+        when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
-        when(d.getDepositStatusRef()).thenReturn(randomId().toString());
-        when(d.getRepository()).thenReturn(new Repository(repoId));
-        when(d.getRepositoryCopy()).thenReturn(new RepositoryCopy(repoCopyId));
-        when(passClient.getObject(RepositoryCopy.class, repoCopyId)).thenReturn(repoCopy);
+        when(deposit.getDepositStatusRef()).thenReturn(randomId().toString());
+        when(deposit.getRepository()).thenReturn(new Repository(repoId));
+        when(deposit.getRepositoryCopy()).thenReturn(new RepositoryCopy(repoCopyId));
 
-        assertTrue(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(d));
+        assertTrue(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
 
         verify(intermediateDepositStatusPolicy).test(any());
-        verify(passClient).getObject(RepositoryCopy.class, repoCopyId);
     }
 
     /**
@@ -237,15 +200,15 @@ public class DepositTaskHelperTest {
     @Test
     public void depositCriFuncPreconditionFailTerminalStatus() {
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(false);
-        when(d.getDepositStatus()).thenReturn(DepositStatus.SUBMITTED);
+        when(deposit.getDepositStatus()).thenReturn(DepositStatus.SUBMITTED);
 
         // don't need any other mocking, because the test for status comes first.
         // use Mockito.verify to insure this
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(d));
-        verify(d, times(2)).getDepositStatus(); // once for the call, once for the log message
-        verify(d).getId(); // log message
-        verifyNoMoreInteractions(d);
+        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
+        verify(deposit, times(2)).getDepositStatus(); // once for the call, once for the log message
+        verify(deposit).getId(); // log message
+        verifyNoMoreInteractions(deposit);
         verifyNoInteractions(passClient);
     }
 
@@ -255,20 +218,20 @@ public class DepositTaskHelperTest {
     @Test
     public void depositCriFuncPreconditionFailDepositStatusRef() {
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
-        when(d.getDepositStatus()).thenReturn(
+        when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
 
         // don't need any other mocking, because null is returned by default for the status uri
         // use Mockito.verify to insure this
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(d));
+        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
 
-        verify(d).getDepositStatus();
-        verify(d).getDepositStatusRef();
-        verify(d).getId(); // log message
+        verify(deposit).getDepositStatus();
+        verify(deposit).getDepositStatusRef();
+        verify(deposit).getId(); // log message
         verify(intermediateDepositStatusPolicy).test(any());
-        verifyNoMoreInteractions(d);
+        verifyNoMoreInteractions(deposit);
         verifyNoInteractions(passClient);
     }
 
@@ -281,20 +244,20 @@ public class DepositTaskHelperTest {
         String statusRef = randomId();
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
-        when(d.getDepositStatus()).thenReturn(
+        when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
-        when(d.getDepositStatusRef()).thenReturn(statusRef.toString());
+        when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(d));
+        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
 
-        verify(d).getDepositStatus();
-        verify(d, atLeastOnce()).getDepositStatusRef();
-        verify(d).getRepository();
-        verify(d).getId(); // log message
+        verify(deposit).getDepositStatus();
+        verify(deposit, atLeastOnce()).getDepositStatusRef();
+        verify(deposit).getRepository();
+        verify(deposit).getId(); // log message
 
         verify(intermediateDepositStatusPolicy).test(any());
-        verifyNoMoreInteractions(d);
+        verifyNoMoreInteractions(deposit);
         verifyNoInteractions(passClient);
     }
 
@@ -312,23 +275,23 @@ public class DepositTaskHelperTest {
         String repoId = randomId();
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
-        when(d.getDepositStatus()).thenReturn(
+        when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
-        when(d.getDepositStatusRef()).thenReturn(statusRef.toString());
-        when(d.getRepository()).thenReturn(new Repository(repoId));
+        when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
+        when(deposit.getRepository()).thenReturn(new Repository(repoId));
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(d));
+        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
 
-        verify(d).getDepositStatus();
-        verify(d, atLeastOnce()).getDepositStatusRef();
-        verify(d).getRepository();
-        verify(d).getRepository();
-        verify(d).getRepositoryCopy();
-        verify(d).getId(); // log message
+        verify(deposit).getDepositStatus();
+        verify(deposit, atLeastOnce()).getDepositStatusRef();
+        verify(deposit).getRepository();
+        verify(deposit).getRepository();
+        verify(deposit).getRepositoryCopy();
+        verify(deposit).getId(); // log message
 
         verify(intermediateDepositStatusPolicy).test(any());
-        verifyNoMoreInteractions(d);
+        verifyNoMoreInteractions(deposit);
         verifyNoInteractions(passClient);
     }
 
@@ -349,25 +312,24 @@ public class DepositTaskHelperTest {
         String repoCopyId = randomId();
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
-        when(d.getDepositStatus()).thenReturn(
+        when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
-        when(d.getDepositStatusRef()).thenReturn(statusRef.toString());
-        when(d.getRepository()).thenReturn(new Repository(repoId));
-        when(d.getRepositoryCopy()).thenReturn(new RepositoryCopy(repoCopyId));
+        when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
+        when(deposit.getRepository()).thenReturn(new Repository(repoId));
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(d));
+        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
 
-        verify(d).getDepositStatus();
-        verify(d, atLeastOnce()).getDepositStatusRef();
-        verify(d).getRepository();
-        verify(d).getRepository();
-        verify(d).getRepositoryCopy();
-        verify(d).getId(); // log message
+        verify(deposit).getDepositStatus();
+        verify(deposit, atLeastOnce()).getDepositStatusRef();
+        verify(deposit).getRepository();
+        verify(deposit).getRepository();
+        verify(deposit).getRepositoryCopy();
+        verify(deposit).getId(); // log message
 
         verify(intermediateDepositStatusPolicy).test(any());
-        verify(passClient).getObject(RepositoryCopy.class, repoCopyId);
-        verifyNoMoreInteractions(d);
+        verifyNoInteractions(passClient);
+        verifyNoMoreInteractions(deposit);
     }
 
     /**
@@ -380,10 +342,10 @@ public class DepositTaskHelperTest {
     @Test
     public void depositCriFuncPostconditionSuccessAccepted() {
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
-        when(d.getDepositStatus()).thenReturn(DepositStatus.ACCEPTED);
+        when(deposit.getDepositStatus()).thenReturn(DepositStatus.ACCEPTED);
         when(repoCopy.getCopyStatus()).thenReturn(CopyStatus.COMPLETE);
 
-        assertTrue(DepositStatusCriFunc.postcondition().test(d, repoCopy));
+        assertTrue(DepositStatusCriFunc.postcondition().test(deposit, repoCopy));
 
         verify(repoCopy).getCopyStatus();
     }
@@ -397,10 +359,10 @@ public class DepositTaskHelperTest {
     @Test
     public void depositCriFuncPostconditionSuccessRejected() {
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
-        when(d.getDepositStatus()).thenReturn(DepositStatus.REJECTED);
+        when(deposit.getDepositStatus()).thenReturn(DepositStatus.REJECTED);
         when(repoCopy.getCopyStatus()).thenReturn(CopyStatus.REJECTED);
 
-        assertTrue(DepositStatusCriFunc.postcondition().test(d, repoCopy));
+        assertTrue(DepositStatusCriFunc.postcondition().test(deposit, repoCopy));
 
         verify(repoCopy).getCopyStatus();
     }
@@ -414,9 +376,9 @@ public class DepositTaskHelperTest {
     @Test
     public void depositCriFuncPostconditionSuccessIntermediate() {
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
-        when(d.getDepositStatus()).thenReturn(DepositStatus.SUBMITTED);
+        when(deposit.getDepositStatus()).thenReturn(DepositStatus.SUBMITTED);
 
-        assertTrue(DepositStatusCriFunc.postcondition().test(d, repoCopy));
+        assertTrue(DepositStatusCriFunc.postcondition().test(deposit, repoCopy));
 
         verifyNoInteractions(repoCopy);
     }
@@ -429,8 +391,8 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPostconditionFailNullRepoCopy() {
-        assertFalse(DepositStatusCriFunc.postcondition().test(d, null));
-        verifyNoInteractions(d);
+        assertFalse(DepositStatusCriFunc.postcondition().test(deposit, null));
+        verifyNoInteractions(deposit);
     }
 
     /**
@@ -443,7 +405,7 @@ public class DepositTaskHelperTest {
         CopyStatus expectedCopyStatus = CopyStatus.COMPLETE;
         DepositStatus statusProcessorResult = DepositStatus.ACCEPTED;
 
-        testDepositCriFuncCriticalForStatus(expectedCopyStatus, statusProcessorResult, d, passClient);
+        testDepositCriFuncCriticalForStatus(expectedCopyStatus, statusProcessorResult,deposit, passClient);
     }
 
     /**
@@ -456,7 +418,7 @@ public class DepositTaskHelperTest {
         CopyStatus expectedCopyStatus = CopyStatus.REJECTED;
         DepositStatus statusProcessorResult = DepositStatus.REJECTED;
 
-        testDepositCriFuncCriticalForStatus(expectedCopyStatus, statusProcessorResult, d, passClient);
+        testDepositCriFuncCriticalForStatus(expectedCopyStatus, statusProcessorResult, deposit, passClient);
     }
 
     /**
@@ -475,20 +437,20 @@ public class DepositTaskHelperTest {
         Repositories repos = newRepositoriesWithConfigFor(repoId.toString(), statusProcessor);
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
 
-        when(d.getRepository()).thenReturn(new Repository(repoId));
-        when(d.getRepositoryCopy()).thenReturn(new RepositoryCopy(repoCopyId));
+        when(deposit.getRepository()).thenReturn(repo);
+        when(deposit.getRepositoryCopy()).thenReturn(repoCopy);
 
-        when(passClient.getObject(Repository.class, repoId)).thenReturn(repo);
-        when(passClient.getObject(RepositoryCopy.class, repoCopyId)).thenReturn(repoCopy);
+        when(passClient.getObject(repo)).thenReturn(repo);
+        when(passClient.getObject(repoCopy)).thenReturn(repoCopy);
 
-        when(statusProcessor.process(eq(d), any())).thenReturn(statusProcessorResult);
+        when(statusProcessor.process(eq(deposit), any())).thenReturn(statusProcessorResult);
 
-        assertSame(repoCopy, DepositStatusCriFunc.critical(repos, passClient).apply(d));
+        assertSame(repoCopy, DepositStatusCriFunc.critical(repos, passClient).apply(deposit));
 
-        verify(passClient).getObject(Repository.class, repoId);
-        verify(passClient).getObject(RepositoryCopy.class, repoCopyId);
+        verify(passClient).getObject(repo);
+        verify(passClient).getObject(repoCopy);
         verifyNoMoreInteractions(passClient);
-        verify(statusProcessor).process(eq(d), any());
+        verify(statusProcessor).process(eq(deposit), any());
         verifyNoInteractions(repoCopy);
     }
 
@@ -500,16 +462,16 @@ public class DepositTaskHelperTest {
     public void depositCriFuncCriticalMissingRepositoryConfig() throws IOException {
         String repoId = randomId();
 
-        when(d.getRepository()).thenReturn(new Repository(repoId));
-        when(passClient.getObject(Repository.class, repoId)).thenReturn(r);
+        when(deposit.getRepository()).thenReturn(repository);
+        when(passClient.getObject(repository)).thenReturn(repository);
 
         Exception e = assertThrows(RemedialDepositException.class, () -> {
-            DepositStatusCriFunc.critical(repositories, passClient).apply(d);
+            DepositStatusCriFunc.critical(repositories, passClient).apply(deposit);
         });
 
         assertTrue(e.getMessage().contains("Unable to resolve Repository Configuration for Repository"));
 
-        verify(passClient).getObject(Repository.class, repoId);
+        verify(passClient).getObject(repository);
         verifyNoMoreInteractions(passClient);
     }
 
@@ -522,13 +484,13 @@ public class DepositTaskHelperTest {
         String repoId = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         Repository repo = newRepositoryWithId(repoId);
-        Repositories repos = newRepositoriesWithConfigFor(repoId.toString(), statusProcessor);
+        Repositories repos = newRepositoriesWithConfigFor(repoId, statusProcessor);
 
-        when(d.getRepository()).thenReturn(repo);
-        when(passClient.getObject(Repository.class, repoId)).thenReturn(repo);
-        repos.getConfig(repoId.toString()).setRepositoryDepositConfig(null);
+        when(deposit.getRepository()).thenReturn(repo);
+        when(passClient.getObject(repo)).thenReturn(repo);
+        repos.getConfig(repoId).setRepositoryDepositConfig(null);
 
-        verifyNullObjectInDepositStatusProcessorLookup(repoId, repos);
+        verifyNullObjectInDepositStatusProcessorLookup(repo, repos);
     }
 
     /**
@@ -542,11 +504,11 @@ public class DepositTaskHelperTest {
         Repository repo = newRepositoryWithId(repoId.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoId.toString(), statusProcessor);
 
-        when(d.getRepository()).thenReturn(repo);
+        when(deposit.getRepository()).thenReturn(repo);
         when(passClient.getObject(Repository.class, repoId)).thenReturn(repo);
         repos.getConfig(repoId.toString()).getRepositoryDepositConfig().setDepositProcessing(null);
 
-        verifyNullObjectInDepositStatusProcessorLookup(repoId, repos);
+        verifyNullObjectInDepositStatusProcessorLookup(repo, repos);
     }
 
     /**
@@ -560,11 +522,11 @@ public class DepositTaskHelperTest {
         Repository repo = newRepositoryWithId(repoId.toString());
         Repositories repos = newRepositoriesWithConfigFor(repoId.toString(), statusProcessor);
 
-        when(d.getRepository()).thenReturn(repo);
+        when(deposit.getRepository()).thenReturn(repo);
         when(passClient.getObject(Repository.class, repoId)).thenReturn(repo);
         repos.getConfig(repoId.toString()).getRepositoryDepositConfig().getDepositProcessing().setProcessor(null);
 
-        verifyNullObjectInDepositStatusProcessorLookup(repoId, repos);
+        verifyNullObjectInDepositStatusProcessorLookup(repo, repos);
     }
 
     /**
@@ -575,33 +537,33 @@ public class DepositTaskHelperTest {
     public void depositCriFuncCriticalDepositStatusProcessorProducesNullStatus() throws IOException {
         String repoId = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
-        Repository repo = newRepositoryWithId(repoId.toString());
-        Repositories repos = newRepositoriesWithConfigFor(repoId.toString(), statusProcessor);
+        Repository repo = newRepositoryWithId(repoId);
+        Repositories repos = newRepositoriesWithConfigFor(repoId, statusProcessor);
 
-        when(d.getRepository()).thenReturn(repo);
-        when(passClient.getObject(Repository.class, repoId)).thenReturn(repo);
-        when(statusProcessor.process(d, repos.getConfig(repoId.toString()))).thenReturn(null);
+        when(deposit.getRepository()).thenReturn(repo);
+        when(passClient.getObject(repo)).thenReturn(repo);
+        when(statusProcessor.process(deposit, repos.getConfig(repoId))).thenReturn(null);
 
         Exception e = assertThrows(DepositServiceRuntimeException.class, () -> {
-            DepositStatusCriFunc.critical(repositories, passClient).apply(d);
+            DepositStatusCriFunc.critical(repos, passClient).apply(deposit);
         });
 
         assertTrue(e.getMessage().contains("Failed to update deposit status"));
 
-        verify(d).getRepository();
-        verify(passClient).getObject(Repository.class, repoId);
+        verify(deposit).getRepository();
+        verify(passClient).getObject(repo);
         verifyNoMoreInteractions(passClient);
     }
 
-    private void verifyNullObjectInDepositStatusProcessorLookup(String repoId, Repositories repos) throws IOException {
+    private void verifyNullObjectInDepositStatusProcessorLookup(Repository repository, Repositories repos) throws IOException {
 
         Exception e = assertThrows(DepositServiceRuntimeException.class, () -> {
-            DepositStatusCriFunc.critical(repos, passClient).apply(d);
+            DepositStatusCriFunc.critical(repos, passClient).apply(deposit);
         });
 
         assertTrue(e.getMessage().contains("parsing the status document referenced by"));
 
-        verify(passClient).getObject(Repository.class, repoId);
+        verify(passClient).getObject(repository);
         verifyNoMoreInteractions(passClient);
     }
 
@@ -653,8 +615,8 @@ public class DepositTaskHelperTest {
         when(deposit.getRepository()).thenReturn(repo);
         when(deposit.getRepositoryCopy()).thenReturn(repoCopy);
 
-        when(passClient.getObject(Repository.class, repoId)).thenReturn(repo);
-        when(passClient.getObject(RepositoryCopy.class, repoCopyId)).thenReturn(repoCopy);
+        when(passClient.getObject(repo)).thenReturn(repo);
+        when(passClient.getObject(repoCopy)).thenReturn(repoCopy);
 
         when(statusProcessor.process(eq(deposit), any())).thenReturn(statusProcessorResult);
 

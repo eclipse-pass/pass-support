@@ -224,8 +224,8 @@ public class DepositTaskHelper {
         Set<String> repositoryKeys = repositories.keys();
 
         // Look up the RepositoryConfig by the Repository URI
-        if (repository.getId() != null && repositoryKeys.contains(repository.getId().toString())) {
-            return Optional.of(repositories.getConfig(repository.getId().toString()));
+        if (repository.getId() != null && repositoryKeys.contains(repository.getId())) {
+            return Optional.of(repositories.getConfig(repository.getId()));
         }
 
         // Look up the RepositoryConfig by the Repository Key

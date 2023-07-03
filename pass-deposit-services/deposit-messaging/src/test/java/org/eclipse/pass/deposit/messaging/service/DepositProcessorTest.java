@@ -55,48 +55,44 @@ import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 public class DepositProcessorTest {
 
     @SuppressWarnings("unchecked")
-    private Policy<AggregatedDepositStatus> intermediateStatusPolicy = mock(Policy.class);
+    private final Policy<AggregatedDepositStatus> intermediateStatusPolicy = mock(Policy.class);
 
     @SuppressWarnings("unchecked")
-    private Policy<DepositStatus> terminalStatusPolicy = mock(Policy.class);
+    private final Policy<DepositStatus> terminalStatusPolicy = mock(Policy.class);
 
-    private PassClient passClient = mock(PassClient.class);
-
-    private Submission s = mock(Submission.class);
-
-    private CriticalRepositoryInteraction cri = mock(CriticalRepositoryInteraction.class);
-
-    private DepositTaskHelper depositHelper = mock(DepositTaskHelper.class);
-
-    private DepositProcessor underTest = new DepositProcessor(terminalStatusPolicy, intermediateStatusPolicy, cri,
-                                                              passClient, depositHelper);
+    private final PassClient passClient = mock(PassClient.class);
+    private final Submission submission = mock(Submission.class);
+    private final CriticalRepositoryInteraction cri = mock(CriticalRepositoryInteraction.class);
+    private final DepositTaskHelper depositTaskHelper = mock(DepositTaskHelper.class);
+    private final DepositProcessor depositProcessor =
+        new DepositProcessor(terminalStatusPolicy, intermediateStatusPolicy, cri, passClient, depositTaskHelper);
 
     @Test
     public void criFuncPreconditionSuccess() {
         when(intermediateStatusPolicy.test(any())).thenReturn(true);
-        when(s.getAggregatedDepositStatus()).thenReturn(randomIntermediateAggregatedDepositStatus.get());
+        when(submission.getAggregatedDepositStatus()).thenReturn(randomIntermediateAggregatedDepositStatus.get());
 
-        assertTrue(DepositProcessorCriFunc.precondition(intermediateStatusPolicy).test(s));
+        assertTrue(DepositProcessorCriFunc.precondition(intermediateStatusPolicy).test(submission));
 
-        verify(s).getAggregatedDepositStatus();
+        verify(submission).getAggregatedDepositStatus();
         verify(intermediateStatusPolicy).test(any());
     }
 
     @Test
     public void criFuncPreconditionFailStatusPolicy() {
         when(intermediateStatusPolicy.test(any())).thenReturn(false);
-        when(s.getAggregatedDepositStatus()).thenReturn(randomTerminalAggregatedDepositStatus.get());
+        when(submission.getAggregatedDepositStatus()).thenReturn(randomTerminalAggregatedDepositStatus.get());
 
-        assertFalse(DepositProcessorCriFunc.precondition(intermediateStatusPolicy).test(s));
+        assertFalse(DepositProcessorCriFunc.precondition(intermediateStatusPolicy).test(submission));
 
-        verify(s).getAggregatedDepositStatus();
+        verify(submission).getAggregatedDepositStatus();
         verify(intermediateStatusPolicy).test(any());
     }
 
     @Test
     public void criFuncPostconditionSuccess() {
-        assertTrue(DepositProcessorCriFunc.postcondition().test(s));
-        verifyNoInteractions(s);
+        assertTrue(DepositProcessorCriFunc.postcondition().test(submission));
+        verifyNoInteractions(submission);
     }
 
     @Test
@@ -105,10 +101,10 @@ public class DepositProcessorTest {
         AggregatedDepositStatus expectedAggregatedDepositStatus = AggregatedDepositStatus.ACCEPTED;
         prepareCriFuncCriticalSuccess(depositStatus);
 
-        assertSame(s, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(s));
+        assertSame(submission, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(submission));
 
         verify(terminalStatusPolicy, times(2)).test(depositStatus);
-        verify(s).setAggregatedDepositStatus(expectedAggregatedDepositStatus);
+        verify(submission).setAggregatedDepositStatus(expectedAggregatedDepositStatus);
     }
 
     @Test
@@ -117,23 +113,23 @@ public class DepositProcessorTest {
         AggregatedDepositStatus expectedAggregatedDepositStatus = AggregatedDepositStatus.REJECTED;
         prepareCriFuncCriticalSuccess(depositStatus);
 
-        assertSame(s, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(s));
+        assertSame(submission, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(submission));
 
         verify(terminalStatusPolicy, times(2)).test(depositStatus);
-        verify(s).setAggregatedDepositStatus(expectedAggregatedDepositStatus);
+        verify(submission).setAggregatedDepositStatus(expectedAggregatedDepositStatus);
     }
 
     @Test
     public void criFuncCriticalNoopNoDeposits() throws IOException {
         String submissionId = randomId();
 
-        when(s.getId()).thenReturn(submissionId);
+        when(submission.getId()).thenReturn(submissionId);
         when(passClient.streamObjects(any())).thenReturn(Stream.empty());
 
-        assertSame(s, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(s));
+        assertSame(submission, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(submission));
 
-        verify(s).getId();
-        verifyNoMoreInteractions(s);
+        verify(submission).getId();
+        verifyNoMoreInteractions(submission);
         verify(passClient).streamObjects(any());
         verifyNoInteractions(terminalStatusPolicy);
     }
@@ -142,11 +138,11 @@ public class DepositProcessorTest {
     public void criFuncCriticalNoopAtLeastOneDepositIsIntermediate() throws IOException {
         prepareCriFuncCriticalNoop(randomIntermediateDepositStatus, randomTerminalDepositStatus);
 
-        assertSame(s, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(s));
+        assertSame(submission, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(submission));
 
         verify(terminalStatusPolicy, atLeastOnce()).test(any());
-        verify(s).getId();
-        verifyNoMoreInteractions(s);
+        verify(submission).getId();
+        verifyNoMoreInteractions(submission);
     }
 
     @Test
@@ -162,34 +158,38 @@ public class DepositProcessorTest {
         InvalidTypeIdException invalidTypeIdException = mock(InvalidTypeIdException.class);
         RuntimeException e = new RuntimeException(invalidTypeIdException);
 
-        when(s.getId()).thenReturn(submissionId);
+        when(submission.getId()).thenReturn(submissionId);
         when(passClient.streamObjects(any())).thenReturn(Stream.of(deposit1, deposit2));
         when(passClient.getObject(Deposit.class, depositId1)).thenReturn(deposit1);
         when(passClient.getObject(Deposit.class, depositId2)).thenThrow(e);
         when(deposit1.getDepositStatus()).thenReturn(depositStatus);
+        when(deposit2.getDepositStatus()).thenReturn(depositStatus);
         when(terminalStatusPolicy.test(depositStatus)).thenReturn(true);
 
-        assertSame(s, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(s));
+        assertSame(submission, DepositProcessorCriFunc.critical(passClient, terminalStatusPolicy).apply(submission));
 
-        verify(terminalStatusPolicy).test(depositStatus);
-        verify(s).setAggregatedDepositStatus(expectedStatus);
+        verify(terminalStatusPolicy, times(2)).test(depositStatus);
+        verify(submission).setAggregatedDepositStatus(expectedStatus);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void acceptDepositWithTerminalStatus() {
+        String submissionId = randomId();
+        when(submission.getId()).thenReturn(submissionId);
         Deposit terminalDeposit = mock(Deposit.class);
         DepositStatus terminalStatus = randomTerminalDepositStatus.get();
 
+        when(terminalDeposit.getSubmission()).thenReturn(submission);
         when(terminalDeposit.getDepositStatus()).thenReturn(terminalStatus);
         when(terminalStatusPolicy.test(terminalStatus)).thenReturn(true);
 
-        underTest.accept(terminalDeposit);
+        depositProcessor.accept(terminalDeposit);
 
         verify(terminalDeposit).getDepositStatus();
         verify(terminalStatusPolicy).test(terminalStatus);
         verify(cri).performCritical(any(), any(), any(), any(Predicate.class), any());
-        verifyNoInteractions(depositHelper);
+        verifyNoInteractions(depositTaskHelper);
     }
 
     @Test
@@ -202,12 +202,12 @@ public class DepositProcessorTest {
         when(intermediateDeposit.getDepositStatus()).thenReturn(intermediateStatus);
         when(terminalStatusPolicy.test(intermediateStatus)).thenReturn(false);
 
-        underTest.accept(intermediateDeposit);
+        depositProcessor.accept(intermediateDeposit);
 
         verify(intermediateDeposit).getDepositStatus();
         verify(terminalStatusPolicy).test(intermediateStatus);
         verifyNoInteractions(cri);
-        verify(depositHelper).processDepositStatus(depositId);
+        verify(depositTaskHelper).processDepositStatus(depositId);
     }
 
     private void prepareCriFuncCriticalSuccess(DepositStatus depositStatus) throws IOException {
@@ -217,7 +217,7 @@ public class DepositProcessorTest {
         String depositId2 = randomId();
         Deposit deposit2 = mock(Deposit.class);
 
-        when(s.getId()).thenReturn(submissionId);
+        when(submission.getId()).thenReturn(submissionId);
         when(passClient.streamObjects(any())).thenReturn(Stream.of(deposit1, deposit2));
         when(passClient.getObject(Deposit.class, depositId1)).thenReturn(deposit1);
         when(passClient.getObject(Deposit.class, depositId2)).thenReturn(deposit2);
@@ -237,7 +237,7 @@ public class DepositProcessorTest {
         DepositStatus intermediateStatus = intermediateSupplier.get();
         DepositStatus terminalStatus = terminalSupplier.get();
 
-        when(s.getId()).thenReturn(submissionId);
+        when(submission.getId()).thenReturn(submissionId);
         when(passClient.streamObjects(any())).thenReturn(Stream.of(deposit1, deposit2));
         when(passClient.getObject(Deposit.class, depositId1)).thenReturn(deposit1);
         when(passClient.getObject(Deposit.class, depositId2)).thenReturn(deposit2);
