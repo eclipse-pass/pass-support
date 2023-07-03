@@ -54,7 +54,7 @@ public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapOptions() throws IOException {
-        AssemblerOptions options = mapper.readValue(OPTIONS_CONFIG, AssemblerOptions.class);
+        AssemblerOptions options = repositoriesMapper.readValue(OPTIONS_CONFIG, AssemblerOptions.class);
 
         assertEquals("ZIP", options.getArchive());
         assertEquals("NONE", options.getCompression());
@@ -65,7 +65,7 @@ public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapOptionsWithAddtionalValues() throws IOException {
-        AssemblerOptions options = mapper.readValue(OPTIONS_CONFIG_ADDITIONAL_VALUES, AssemblerOptions.class);
+        AssemblerOptions options = repositoriesMapper.readValue(OPTIONS_CONFIG_ADDITIONAL_VALUES, AssemblerOptions.class);
 
         assertEquals("ZIP", options.getArchive());
         assertEquals("NONE", options.getCompression());

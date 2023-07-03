@@ -52,7 +52,7 @@ public class SubmissionStatusUpdaterTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionStatusUpdater.class);
 
-    private SubmissionStatusUpdater underTest;
+    private SubmissionStatusUpdater submissionStatusUpdater;
 
     private SubmissionStatusService statusService;
 
@@ -66,7 +66,7 @@ public class SubmissionStatusUpdaterTest {
         passClient = mock(PassClient.class);
         cri = mock(CriticalRepositoryInteraction.class);
 
-        underTest = new SubmissionStatusUpdater(statusService, passClient, cri);
+        submissionStatusUpdater = new SubmissionStatusUpdater(statusService, passClient, cri);
     }
 
     /**
@@ -245,7 +245,7 @@ public class SubmissionStatusUpdaterTest {
     @SuppressWarnings("unchecked")
     public void doUpdateInvokesCri() {
         String submissionId = UUID.randomUUID().toString();
-        underTest.doUpdate(Collections.singleton(submissionId));
+        submissionStatusUpdater.doUpdate(Collections.singleton(submissionId));
 
         verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(), any(Predicate.class), any());
     }
@@ -262,7 +262,7 @@ public class SubmissionStatusUpdaterTest {
 
         when(passClient.streamObjects(any())).thenReturn(Stream.of(new Submission(submissionId)));
 
-        underTest.doUpdate();
+        submissionStatusUpdater.doUpdate();
 
         verify(passClient, times(1)).streamObjects(any());
         verify(cri, times(1)).performCritical(eq(submissionId), eq(Submission.class), any(), any(Predicate.class), any());

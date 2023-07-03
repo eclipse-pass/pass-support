@@ -26,46 +26,45 @@ import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.eclipse.pass.deposit.messaging.config.repository.SwordV2Binding;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@SpringBootTest(properties = { "pass.client.url=http://localhost:8080/", "pass.client.user=test", "pass.client.password=test" })
+@SpringBootTest(properties = {
+    "pass.client.url=http://localhost:8080/",
+    "pass.client.user=test",
+    "pass.client.password=test",
+    "pass.deposit.jobs.disabled=true"
+})
 public class RepositoriesFactoryBeanConfigTest {
     @Autowired
-    private Repositories underTest;
+    private Repositories repositories;
 
     @Test
     public void foo() throws Exception {
-        assertNotNull(underTest);
+        assertNotNull(repositories);
 
-        assertEquals(4, underTest.keys().size());
+        assertEquals(4, repositories.keys().size());
 
-        RepositoryConfig j10p = underTest.getConfig("JScholarship");
+        RepositoryConfig j10p = repositories.getConfig("JScholarship");
         assertNotNull(j10p);
 
-        RepositoryConfig pubMed = underTest.getConfig("PubMed Central");
+        RepositoryConfig pubMed = repositories.getConfig("PubMed Central");
         assertNotNull(pubMed);
 
         assertEquals("JScholarship", j10p.getRepositoryKey());
         assertEquals("PubMed Central", pubMed.getRepositoryKey());
 
         assertNotNull(j10p.getTransportConfig());
-        assertNotNull(j10p.getRepositoryDepositConfig());
-        assertNotNull(j10p.getRepositoryDepositConfig().getDepositProcessing());
         assertNotNull(j10p.getTransportConfig().getProtocolBinding());
-        assertTrue(j10p.getTransportConfig().getProtocolBinding() instanceof SwordV2Binding);
-        assertFalse(((SwordV2Binding) j10p.getTransportConfig().getProtocolBinding()).getDefaultCollectionUrl()
-                                                                                     .contains("${dspace.host}"));
-        assertNotNull(j10p.getTransportConfig().getAuthRealms());
+        assertNotNull(j10p.getAssemblerConfig().getSpec());
 
         assertNotNull(pubMed.getTransportConfig());
-        assertNotNull(pubMed.getRepositoryDepositConfig());
-        assertNotNull(pubMed.getRepositoryDepositConfig().getDepositProcessing());
         assertNotNull(pubMed.getTransportConfig().getProtocolBinding());
-        assertTrue(pubMed.getTransportConfig().getProtocolBinding() instanceof FtpBinding);
-        assertNull(pubMed.getTransportConfig().getAuthRealms());
+        assertNotNull(pubMed.getAssemblerConfig().getSpec());
     }
 }

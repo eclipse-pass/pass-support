@@ -26,7 +26,13 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
+@TestPropertySource(properties = {
+    "dspace.baseuri=http://localhost:8181",
+    "dspace.covid.handle=test-covid-handle",
+    "dspace.nobel.handle=test-nobel-handle"
+})
 public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
     private static final String MINIMAL_SWORD_TRANSPORT_CONFIG = "" +
@@ -108,7 +114,7 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapMinimalSwordTransportConfig() throws IOException {
-        TransportConfig config = mapper.readValue(MINIMAL_SWORD_TRANSPORT_CONFIG, TransportConfig.class);
+        TransportConfig config = repositoriesMapper.readValue(MINIMAL_SWORD_TRANSPORT_CONFIG, TransportConfig.class);
 
         assertNull(config.getAuthRealms());
         assertNotNull(config.getProtocolBinding());
@@ -129,14 +135,14 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapMinimalSwordTransportConfigFromJsonRoundTrip() throws IOException {
-        TransportConfig config = mapper.readValue(MINIMAL_SWORD_TRANSPORT_CONFIG, TransportConfig.class);
+        TransportConfig config = repositoriesMapper.readValue(MINIMAL_SWORD_TRANSPORT_CONFIG, TransportConfig.class);
 
         assertRoundTrip(config, TransportConfig.class);
     }
 
     @Test
     public void mapMinimalFtpTransportConfig() throws IOException {
-        TransportConfig config = mapper.readValue(MINIMAL_FTP_TRANSPORT_CONFIG, TransportConfig.class);
+        TransportConfig config = repositoriesMapper.readValue(MINIMAL_FTP_TRANSPORT_CONFIG, TransportConfig.class);
 
         assertNull(config.getAuthRealms());
         assertNotNull(config.getProtocolBinding());
@@ -149,7 +155,7 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapTransportConfigWithRealms() throws IOException {
-        TransportConfig config = mapper.readValue(MULTIPLE_REALMS_TRANSPORT_CONFIG, TransportConfig.class);
+        TransportConfig config = repositoriesMapper.readValue(MULTIPLE_REALMS_TRANSPORT_CONFIG, TransportConfig.class);
 
         assertNull(config.getProtocolBinding());
         assertNotNull(config.getAuthRealms());
@@ -160,21 +166,21 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapTransportConfigFromJsonRoundTrip() throws IOException {
-        TransportConfig config = mapper.readValue(TRANSPORT_CONFIG_JSON, TransportConfig.class);
+        TransportConfig config = repositoriesMapper.readValue(TRANSPORT_CONFIG_JSON, TransportConfig.class);
 
         assertRoundTrip(config, TransportConfig.class);
     }
 
     @Test
     public void mapTransportConfigCollectionHints() throws IOException {
-        TransportConfig config = mapper.readValue(TRANSPORT_CONFIG_JSON, TransportConfig.class);
+        TransportConfig config = repositoriesMapper.readValue(TRANSPORT_CONFIG_JSON, TransportConfig.class);
 
         assertRoundTrip(config, TransportConfig.class);
         Map<String, String> hints = ((SwordV2Binding) config.getProtocolBinding()).getCollectionHints();
         assertTrue(hints.containsKey("covid"));
         assertTrue(hints.containsKey("nobel"));
-        assertEquals("${dspace.baseuri}/swordv2/collection/${dspace.covid.handle}", hints.get("covid"));
-        assertEquals("${dspace.baseuri}/swordv2/collection/${dspace.nobel.handle}", hints.get("nobel"));
+        assertEquals("http://localhost:8181/swordv2/collection/test-covid-handle", hints.get("covid"));
+        assertEquals("http://localhost:8181/swordv2/collection/test-nobel-handle", hints.get("nobel"));
     }
 
     @Test

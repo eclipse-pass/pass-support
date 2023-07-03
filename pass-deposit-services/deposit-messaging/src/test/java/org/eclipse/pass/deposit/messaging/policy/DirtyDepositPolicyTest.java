@@ -29,12 +29,12 @@ import org.junit.jupiter.api.Test;
 public class DirtyDepositPolicyTest {
 
     @Test
-    public void testNullObject() throws Exception {
+    public void testNullObject() {
         assertTrue(new DirtyDepositPolicy().test(null));
     }
 
     @Test
-    public void testNonNullStatus() throws Exception {
+    public void testNonNullStatus() {
         Stream.of(DepositStatus.values()).forEach(status ->
             assertFalse(new DirtyDepositPolicy().test(status)));
     }

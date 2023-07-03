@@ -74,7 +74,7 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapAuthRealmFromJson() throws IOException {
-        BasicAuthRealm realm = mapper.readValue(AUTH_REALM_JSON, BasicAuthRealm.class);
+        BasicAuthRealm realm = repositoriesMapper.readValue(AUTH_REALM_JSON, BasicAuthRealm.class);
 
         assertNotNull(realm);
         assertEquals("basic", realm.getMech());
@@ -97,21 +97,21 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapAuthRealmFromJsonRoundTrip() throws IOException {
-        BasicAuthRealm realm = mapper.readValue(AUTH_REALM_JSON, BasicAuthRealm.class);
+        BasicAuthRealm realm = repositoriesMapper.readValue(AUTH_REALM_JSON, BasicAuthRealm.class);
 
         assertRoundTrip(realm, BasicAuthRealm.class);
     }
 
     @Test
     public void mapSwordBinding() throws IOException {
-        SwordV2Binding swordBinding = mapper.readValue(SWORD_BINDING_JSON, SwordV2Binding.class);
+        SwordV2Binding swordBinding = repositoriesMapper.readValue(SWORD_BINDING_JSON, SwordV2Binding.class);
 
         assertNotNull(swordBinding);
         assertEquals("SWORDv2", swordBinding.getProtocol());
         assertEquals("sworduser", swordBinding.getUsername());
         assertEquals("swordpass", swordBinding.getPassword());
-        assertEquals("http://${dspace.host}:${dspace.port}/swordv2/servicedocument", swordBinding.getServiceDocUrl());
-        assertEquals("http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2",
+        assertEquals("http://localhost:8181/swordv2/servicedocument", swordBinding.getServiceDocUrl());
+        assertEquals("http://localhost:8181/swordv2/collection/123456789/2",
                      swordBinding.getDefaultCollectionUrl());
         assertNull(swordBinding.getOnBehalfOf());
         assertTrue(swordBinding.isDepositReceipt());
@@ -134,20 +134,20 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapSwordBindingFromJsonRoundTrip() throws IOException {
-        SwordV2Binding swordBinding = mapper.readValue(SWORD_BINDING_JSON, SwordV2Binding.class);
+        SwordV2Binding swordBinding = repositoriesMapper.readValue(SWORD_BINDING_JSON, SwordV2Binding.class);
 
         assertRoundTrip(swordBinding, SwordV2Binding.class);
     }
 
     @Test
     public void mapFtpBinding() throws IOException {
-        FtpBinding ftpBinding = mapper.readValue(FTP_BINDING_JSON, FtpBinding.class);
+        FtpBinding ftpBinding = repositoriesMapper.readValue(FTP_BINDING_JSON, FtpBinding.class);
 
         assertEquals("ftp", ftpBinding.getProtocol());
         assertEquals("ftpuser", ftpBinding.getUsername());
         assertEquals("ftppass", ftpBinding.getPassword());
-        assertEquals("${ftp.host}", ftpBinding.getServerFqdn());
-        assertEquals("${ftp.port}", ftpBinding.getServerPort());
+        assertEquals("localhost", ftpBinding.getServerFqdn());
+        assertEquals("21", ftpBinding.getServerPort());
         assertEquals("binary", ftpBinding.getDataType());
         assertEquals("stream", ftpBinding.getTransferMode());
         assertTrue(ftpBinding.isUsePasv());
@@ -171,14 +171,14 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapFtpBindingFromJsonRoundTrip() throws IOException {
-        FtpBinding ftpBinding = mapper.readValue(FTP_BINDING_JSON, FtpBinding.class);
+        FtpBinding ftpBinding = repositoriesMapper.readValue(FTP_BINDING_JSON, FtpBinding.class);
 
         assertRoundTrip(ftpBinding, FtpBinding.class);
     }
 
     @Test
     public void mapJ10PStatus() throws IOException {
-        StatusMapping mapping = mapper.readValue(J10P_STATUS_MAPPING_JSON, StatusMapping.class);
+        StatusMapping mapping = repositoriesMapper.readValue(J10P_STATUS_MAPPING_JSON, StatusMapping.class);
 
         assertNotNull(mapping);
         assertEquals("http://oapass.org/status/deposit#submitted", mapping.getDefaultMapping());
@@ -200,7 +200,7 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
 
     @Test
     public void mapJ10SatusFromJsonRoundTrip() throws IOException {
-        StatusMapping mapping = mapper.readValue(J10P_STATUS_MAPPING_JSON, StatusMapping.class);
+        StatusMapping mapping = repositoriesMapper.readValue(J10P_STATUS_MAPPING_JSON, StatusMapping.class);
 
         assertRoundTrip(mapping, StatusMapping.class);
     }

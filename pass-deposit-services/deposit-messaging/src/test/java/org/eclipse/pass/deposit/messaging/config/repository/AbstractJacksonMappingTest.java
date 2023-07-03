@@ -21,17 +21,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest(properties = {
+    "pass.client.url=http://localhost:8080/",
+    "pass.client.user=test",
+    "pass.client.password=test",
+    "pass.deposit.jobs.disabled=true"
+})
 public abstract class AbstractJacksonMappingTest {
 
-    protected ObjectMapper mapper;
-
-    @BeforeEach
-    public void setUpObjectMapper() throws Exception {
-        mapper = new ObjectMapper();
-    }
+    @Autowired
+    protected ObjectMapper repositoriesMapper;
 
     protected <T> void assertRoundTrip(T instance, Class<T> type) throws IOException {
-        assertEquals(instance, mapper.readValue(mapper.writeValueAsString(instance), type));
+        assertEquals(instance, repositoriesMapper.readValue(repositoriesMapper.writeValueAsString(instance), type));
     }
 }
