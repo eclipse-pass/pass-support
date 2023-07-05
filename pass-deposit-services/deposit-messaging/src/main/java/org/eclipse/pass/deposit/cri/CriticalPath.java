@@ -44,7 +44,7 @@ import org.springframework.stereotype.Component;
 public class CriticalPath implements CriticalRepositoryInteraction {
     private static final Logger LOG = LoggerFactory.getLogger(CriticalPath.class);
 
-    private PassClient passClient;
+    private final PassClient passClient;
 
     public CriticalPath(PassClient passClient) {
         this.passClient = passClient;

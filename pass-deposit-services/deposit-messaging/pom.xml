@@ -27,6 +27,11 @@
 
   <name>PASS messaging integration</name>
 
+  <properties>
+    <junit.jupiter.version>5.9.3</junit.jupiter.version>
+    <amazon.sqs.version>2.1.1</amazon.sqs.version>
+  </properties>
+
   <dependencies>
 
     <dependency>
@@ -47,6 +52,18 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-artemis</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>amazon-sqs-java-messaging-lib</artifactId>
+      <version>${amazon.sqs.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

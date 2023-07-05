@@ -17,7 +17,6 @@ package org.eclipse.pass.deposit.messaging.config.spring;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
-import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 import java.net.URI;
 import java.util.Map;
@@ -29,12 +28,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.ExceptionHandlingThreadPoolExecutor;
-import org.eclipse.pass.deposit.cri.CriticalPath;
+import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
@@ -59,8 +57,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
@@ -77,12 +73,6 @@ public class DepositConfig {
 
     @Value("${pass.deposit.workers.concurrency}")
     private int depositWorkersConcurrency;
-
-    @Value("${pass.deposit.http.agent}")
-    private String passHttpAgent;
-
-    @Value("${pass.deposit.repository.configuration}")
-    private Resource repositoryConfigResource;
 
     @Value("${pass.client.url}")
     private String passClientUrl;
@@ -101,12 +91,6 @@ public class DepositConfig {
     @Bean
     public SubmissionStatusService submissionStatusService() {
         return new SubmissionStatusService(passClient());
-    }
-
-    @Bean
-    @Scope(SCOPE_PROTOTYPE)
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
     }
 
     @Bean
@@ -285,11 +269,8 @@ public class DepositConfig {
 
     @Bean
     @SuppressWarnings("SpringJavaAutowiringInspection")
-        // TODO Deposit service port pending
-//    DepositServiceErrorHandler errorHandler(CriticalRepositoryInteraction cri) {
-//        return new DepositServiceErrorHandler(cri);
-    DepositServiceErrorHandler errorHandler(PassClient passClient) {
-        return new DepositServiceErrorHandler(new CriticalPath(passClient));
+    DepositServiceErrorHandler errorHandler(CriticalRepositoryInteraction cri) {
+        return new DepositServiceErrorHandler(cri);
     }
 
     @Bean

@@ -21,15 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.pass.deposit.messaging.DepositApp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest(properties = {
-    "pass.client.url=http://localhost:8080/",
-    "pass.client.user=test",
-    "pass.client.password=test",
-    "pass.deposit.jobs.disabled=true"
-})
+@SpringBootTest(classes = DepositApp.class)
+@TestPropertySource("classpath:test-application.properties")
 public abstract class AbstractJacksonMappingTest {
 
     @Autowired
