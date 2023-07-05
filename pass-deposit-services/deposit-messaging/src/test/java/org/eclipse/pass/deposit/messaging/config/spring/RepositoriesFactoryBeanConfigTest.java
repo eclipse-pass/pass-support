@@ -18,21 +18,19 @@ package org.eclipse.pass.deposit.messaging.config.spring;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.eclipse.pass.deposit.messaging.DepositApp;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@SpringBootTest(properties = {
-    "pass.client.url=http://localhost:8080/",
-    "pass.client.user=test",
-    "pass.client.password=test",
-    "pass.deposit.jobs.disabled=true"
-})
+@SpringBootTest(classes = DepositApp.class)
+@TestPropertySource("classpath:test-application.properties")
 public class RepositoriesFactoryBeanConfigTest {
     @Autowired
     private Repositories repositories;

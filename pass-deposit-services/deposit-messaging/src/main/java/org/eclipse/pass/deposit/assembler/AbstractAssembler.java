@@ -68,11 +68,14 @@ public abstract class AbstractAssembler implements Assembler {
 
     private ResourceBuilderFactory rbf;
 
-    private String fedoraBaseUrl;
+    @Value("${pass.client.url}")
+    private String passClientUrl;
 
-    private String fedoraUser;
+    @Value("${pass.client.user}")
+    private String passClientUser;
 
-    private String fedoraPassword;
+    @Value("${pass.client.password}")
+    private String passClientPassword;
 
     private boolean followRedirects;
 
@@ -240,12 +243,12 @@ public abstract class AbstractAssembler implements Assembler {
                     // Defend against callers that have not specified Fedora auth creds, or repositories that
                     // do not require authentication
                     // TODO: a more flexible mechanism for authenticating to origin servers when retrieving resources
-                    if (fedoraBaseUrl != null && location.startsWith(fedoraBaseUrl)) {
-                        if (fedoraUser != null) {
+                    if (passClientUrl != null && location.startsWith(passClientUrl)) {
+                        if (passClientUser != null) {
                             try {
                                 LOG.trace("Returning AuthenticatedResource for {}", location);
-                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser,
-                                                                             fedoraPassword);
+                                delegateResource = new AuthenticatedResource(new URL(location), passClientUser,
+                                    passClientPassword);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e.getMessage(), e);
                             }
@@ -293,33 +296,6 @@ public abstract class AbstractAssembler implements Assembler {
         LOG.trace("Filename was sanitized from '{}' to '{}'", candidateFilename, result);
 
         return result;
-    }
-
-    public String getFedoraBaseUrl() {
-        return fedoraBaseUrl;
-    }
-
-    @Value("${pass.fedora.baseurl}")
-    public void setFedoraBaseUrl(String fedoraBaseUrl) {
-        this.fedoraBaseUrl = fedoraBaseUrl;
-    }
-
-    public String getFedoraUser() {
-        return fedoraUser;
-    }
-
-    @Value("${pass.fedora.user}")
-    public void setFedoraUser(String fedoraUser) {
-        this.fedoraUser = fedoraUser;
-    }
-
-    public String getFedoraPassword() {
-        return fedoraPassword;
-    }
-
-    @Value("${pass.fedora.password}")
-    public void setFedoraPassword(String fedoraPassword) {
-        this.fedoraPassword = fedoraPassword;
     }
 
 }

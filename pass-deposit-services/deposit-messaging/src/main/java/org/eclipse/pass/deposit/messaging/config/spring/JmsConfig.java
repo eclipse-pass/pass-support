@@ -15,78 +15,89 @@
  */
 package org.eclipse.pass.deposit.messaging.config.spring;
 
-import java.util.function.Consumer;
-import javax.jms.ConnectionFactory;
-import javax.jms.Session;
+import java.util.Map;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.amazon.sqs.javamessaging.ProviderConfiguration;
+import com.amazon.sqs.javamessaging.SQSConnectionFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Session;
 import org.eclipse.pass.deposit.messaging.DepositServiceErrorHandler;
-import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.model.Deposit;
-import org.eclipse.pass.support.client.model.Submission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.eclipse.pass.deposit.messaging.model.DepositMessage;
+import org.eclipse.pass.deposit.messaging.model.SubmissionMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.MessageConverter;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@ConditionalOnProperty(
+    name = "spring.jms.listener.auto-startup",
+    havingValue = "true"
+)
+@Configuration
 @EnableJms
 public class JmsConfig {
-    private static final Logger LOG = LoggerFactory.getLogger(JmsConfig.class);
 
-    @Autowired
-    private PassClient passClient;
+    @Value("${aws.region:AWS_REGION}")
+    private String awsRegion;
 
-    @Autowired
-    private Consumer<Submission> submissionConsumer;
-
-    @Autowired
-    private Consumer<Deposit> depositConsumer;
+    /**
+     * Configure a JMS connection factory for Amazon SQS.
+     * <p>
+     * Note that if a different JMS provider is required, this method should be changed to return the
+     * ConnectionFactory of the different JMS provider.
+     *
+     * @return ConnectionFactory
+     */
+    @Bean
+    public ConnectionFactory jmsConnectionFactory() {
+        SqsClient sqsClient = SqsClient.builder()
+            .region(Region.of(awsRegion))
+            .build();
+        return new SQSConnectionFactory(
+            new ProviderConfiguration(),
+            sqsClient
+        );
+    }
 
     @Bean
     public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(DepositServiceErrorHandler errorHandler,
-                                                                          @Value("${spring.jms.listener.concurrency}")
-                                                                              String concurrency,
-                                                                          @Value("${spring.jms.listener.auto-startup}")
-                                                                              boolean autoStart,
-                                                                          ConnectionFactory connectionFactory) {
+                                                                          ConnectionFactory connectionFactory,
+                                                                          MessageConverter messageConverter) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setErrorHandler(errorHandler);
-        factory.setConcurrency(concurrency);
-        // TODO Deposit service port pending
-//        factory.setConnectionFactory(connectionFactory);
-        factory.setAutoStartup(autoStart);
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
         return factory;
     }
 
-    @JmsListener(destination = "${pass.deposit.queue.submission.name}",
-        containerFactory = "jmsListenerContainerFactory")
-    public void processSubmissionMessage(String message) {
-        try {
-            JsonObject json = new JsonParser().parse(message).getAsJsonObject();
-            String submissionId = json.get("submission-id").getAsString();
-            submissionConsumer.accept(passClient.getObject(Submission.class, submissionId));
-        } catch (Exception e) {
-            LOG.error("Failed to process submission JMS message.\nPayload: '{}'", message, e);
-        }
+    /**
+     * Configure the message converter
+     * @param objectMapper the object mapper
+     * @return the message converter
+     */
+    @Bean
+    public MessageConverter messageConverter(ObjectMapper objectMapper) {
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setTypeIdPropertyName("type");
+        converter.setTypeIdMappings(
+            Map.of(
+                "SubmissionReady", SubmissionMessage.class,
+                "DepositStatus", DepositMessage.class
+            )
+        );
+        converter.setObjectMapper(objectMapper);
+        return converter;
     }
 
-    @JmsListener(destination = "${pass.deposit.queue.deposit.name}", containerFactory = "jmsListenerContainerFactory")
-    public void processDepositMessage(String message) {
-        try {
-            JsonObject json = new JsonParser().parse(message).getAsJsonObject();
-            String depositId = json.get("deposit-id").getAsString();
-            depositConsumer.accept(passClient.getObject(Deposit.class, depositId));
-        } catch (Exception e) {
-            LOG.error("Failed to process deposit JMS message.\nPayload: '{}'", message, e);
-        }
-    }
 }
