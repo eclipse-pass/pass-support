@@ -13,43 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.deposit.messaging.support.quartz;
+package org.eclipse.pass.deposit.messaging.support.jobs;
 
 import java.io.IOException;
 
+import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.messaging.service.SubmissionStatusUpdater;
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
-@DisallowConcurrentExecution
-public class SubmissionStatusUpdaterJob implements Job {
+public class SubmissionStatusUpdaterJob {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionStatusUpdaterJob.class);
 
-    private SubmissionStatusUpdater updater;
+    private final SubmissionStatusUpdater updater;
 
-    @Autowired
     public SubmissionStatusUpdaterJob(SubmissionStatusUpdater updater) {
         this.updater = updater;
     }
 
-    @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    @Scheduled(fixedDelayString = "${pass.deposit.jobs.default-interval-ms}")
+    public void updateSubmissions() {
         LOG.trace("Starting {}", this.getClass().getSimpleName());
         try {
             updater.doUpdate();
         } catch (IOException e) {
-            throw new JobExecutionException("Submission status updater failed", e);
+            throw new DepositServiceRuntimeException("Submission status updater failed", e);
         }
         LOG.trace("Finished {}", this.getClass().getSimpleName());
     }
