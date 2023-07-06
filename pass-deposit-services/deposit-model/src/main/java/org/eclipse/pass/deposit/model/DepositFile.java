@@ -46,34 +46,58 @@ public class DepositFile {
      */
     private String location;
 
+    /**
+     * @return {@link #type}
+     */
     public DepositFileType getType() {
         return type;
     }
 
+    /**
+     * @param type {@link #type}
+     */
     public void setType(DepositFileType type) {
         this.type = type;
     }
 
+    /**
+     * @return {@link #name}
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @param name {@link #name}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * @return {@link #label}
+     */
     public String getLabel() {
         return label;
     }
 
+    /**
+     * @param label {@link #label}
+     */
     public void setLabel(String label) {
         this.label = label;
     }
 
+    /**
+     * @return {@link #location}
+     */
     public String getLocation() {
         return location;
     }
 
+    /**
+     * @param location {@link #location}
+     */
     public void setLocation(String location) {
         this.location = location;
     }

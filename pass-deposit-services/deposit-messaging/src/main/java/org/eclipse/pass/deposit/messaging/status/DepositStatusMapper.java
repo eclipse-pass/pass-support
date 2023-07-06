@@ -16,6 +16,7 @@
 package org.eclipse.pass.deposit.messaging.status;
 
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 
 /**
  * Accepts an object representing the status of some entity, and attempts to map the status to a
