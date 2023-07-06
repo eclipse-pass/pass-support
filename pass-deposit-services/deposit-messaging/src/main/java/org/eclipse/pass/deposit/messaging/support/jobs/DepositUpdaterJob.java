@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package org.eclipse.pass.deposit.messaging.support.quartz;
+package org.eclipse.pass.deposit.messaging.support.jobs;
 
 import org.eclipse.pass.deposit.messaging.service.DepositUpdater;
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-@DisallowConcurrentExecution
-public class DepositUpdaterJob implements Job {
+public class DepositUpdaterJob {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositUpdaterJob.class);
 
-    @Autowired
-    private DepositUpdater depositUpdater;
+    private final DepositUpdater depositUpdater;
 
-    @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public DepositUpdaterJob(DepositUpdater depositUpdater) {
+        this.depositUpdater = depositUpdater;
+    }
+
+    @Scheduled(fixedDelayString = "${pass.deposit.jobs.default-interval-ms}")
+    public void updateDeposits() {
         try {
             depositUpdater.doUpdate();
         } catch (Exception e) {
