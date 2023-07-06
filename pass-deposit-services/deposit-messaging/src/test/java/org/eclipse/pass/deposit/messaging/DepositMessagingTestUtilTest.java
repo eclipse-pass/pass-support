@@ -18,6 +18,7 @@ package org.eclipse.pass.deposit.messaging;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.deposit.messaging.policy.Policy;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.DepositStatus;

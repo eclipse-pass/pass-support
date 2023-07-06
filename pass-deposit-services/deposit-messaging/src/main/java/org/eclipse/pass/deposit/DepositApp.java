@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.deposit.messaging;
+package org.eclipse.pass.deposit;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -38,7 +38,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 
-
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -59,12 +58,6 @@ public class DepositApp {
     private static final String GIT_DIRTY_FLAG = "git.dirty";
 
     private static final String GIT_BRANCH = "git.branch";
-
-    private String fcrepoUser;
-
-    private String fcrepoPass;
-
-    private String fcrepoBaseUrl;
 
     private static final String GIT_PROPERTIES_RESOURCE_PATH = "/deposit-services-git.properties";
 

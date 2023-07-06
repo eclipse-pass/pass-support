@@ -18,7 +18,7 @@ package org.eclipse.pass.deposit.messaging.config.spring;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.eclipse.pass.deposit.messaging.DepositApp;
+import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.deposit.messaging.config.repository.Repositories;
 import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.junit.jupiter.api.Test;
