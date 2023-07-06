@@ -16,37 +16,25 @@ used in development and production infrastructure which rely on Docker and its a
 
 ### Production Configuration Variables
 
-|Environment Variable                           |Default Value                                                                  |Description|
-|-----------------------------------------------|-------------------------------------------------------------------------------|-----------|
-|`ACTIVEMQ_BROKER_URI`                          |`null`                                                                         |the publicly-supported (i.e. official PASS) variable for configuring the JMS broker URL. used to compose the `SPRING_ACTIVEMQ_BROKER_URL`
-|`DSPACE_HOST`                                  |localhost                                                                      |the IP address or host name of the server running the SWORD protocol version 2 endpoint
-|`DSPACE_PORT`                                  |8181                                                                           |the TCP port exposing the SWORD protocol version 2 endpoint
-|`ES_HOST`                                      |localhost                                                                      |the IP address or host name of the Elastic Search index.
-|`ES_PORT`                                      |9200                                                                           |the TCP port running the Elastic Search HTTP API.
-|`FCREPO_HOST`                                  |localhost                                                                      |the IP address or host name of the Fedora repository
-|`FCREPO_JMS_PORT`                              |61616                                                                          |the TCP port for the STOMP protocol.
-|`FCREPO_PORT`                                  |8080                                                                           |the TCP port running the Fedora HTTP REST API.
-|`FTP_HOST`                                     |localhost                                                                      |the IP address or  host name of the NIH FTP server
-|`FTP_PORT`                                     |21                                                                             |the TCP control port of the NIH FTP server
-|`PASS_DEPOSIT_HTTP_AGENT`                      |pass-deposit/x.y.z                                                             |the value of the `User-Agent` header supplied on Deposit Services' HTTP requests.
-|`PASS_DEPOSIT_JOBS_CONCURRENCY`                |2                                                                              |the number of Quartz jobs that may be run concurrently.
-|`PASS_DEPOSIT_JOBS_DEFAULT_INTERVAL_MS`        |600000                                                                         |the amount of time, in milliseconds, that Quartz launches jobs.
-|`PASS_DEPOSIT_JOBS_DISABLED`                   |undefined                                                                      |set this environment variable to `true` to disable all Quartz jobs. By default this environment variable is undefined for the production runtime.
-|`PASS_DEPOSIT_QUEUE_SUBMISSION_NAME`           |submission                                                                     |the name of the JMS queue that has messages pertaining to `Submission` resources (used by the `JmsSubmissionProcessor`)
-|`PASS_DEPOSIT_QUEUE_DEPOSIT_NAME`              |deposit                                                                        |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
-|`PASS_DEPOSIT_REPOSITORY_CONFIGURATION`         |classpath:/repositories.json                                                  |points to a properties file containing the configuration for the transport of custodial content to remote repositories. Values must be [Spring Resource URIs][1]. See below for customizing the repository configuration values.
-|`PASS_DEPOSIT_TRANSPORT_SWORDV2_SLEEP_TIME_MS` |10000                                                                          |the number of milliseconds to wait between depositing a package using SWORD, and checking the SWORD statement for the deposit state
-|`PASS_DEPOSIT_TRANSPORT_SWORDV2_FOLLOW_REDIRECTS`|false|Specifically controls whether or not the `AtomFeedStatusResolver` follows HTTP redirects or not
-|`PASS_DEPOSIT_WORKERS_CONCURRENCY`             |4                                                                              |the number of Deposit Worker threads that can simultaneously run.
-|`PASS_ELASTICSEARCH_LIMIT`                     |100                                                                            |the maximum number of results returned in a single search response
-|`PASS_ELASTICSEARCH_URL`                       |http://${es.host:localhost}:${es.port:9200}/pass                               |the URL used to communicate with the Elastic search API. Normally this this variable does not need to be changed (see note below)
-|`PASS_FEDORA_BASEURL`                          |http://${fcrepo.host:localhost}:${fcrepo.port:8080}/fcrepo/rest/               |the URL used to communicate with the Fedora REST API. Normally this variable does not need to be changed (see note below)
-|`PASS_FEDORA_PASSWORD`                         |moo                                                                            |the password used for `Basic` HTTP authentication to the Fedora REST API
-|`PASS_FEDORA_USER`                             |fedoraAdmin                                                                    |the username used for `Basic` HTTP authentication to the Fedora REST API
-|`SPRING_ACTIVEMQ_BROKER_URL`                   |${activemq.broker.uri:tcp://${fcrepo.host:localhost}:${fcrepo.jms.port:61616}} |the internal variable for configuring the URI of the JMS broker
-|`SPRING_ACTIVEMQ_PASSWORD`                     |`null`                                                                         |Password to use when authenticating to the broker
-|`SPRING_ACTIVEMQ_USER`                         |`null`                                                                         |User name to use when authenticating to the broker
-|`SPRING_JMS_LISTENER_CONCURRENCY`              |4                                                                              |the number of JMS messages that can be processed simultaneously by _
+| Environment Variable    | Default Value                                                                  |Description|
+|-------------------------|--------------------------------------------------------------------------------|-----------|
+| `DSPACE_HOST`           | localhost                                                                      |the IP address or host name of the server running the SWORD protocol version 2 endpoint
+| `DSPACE_PORT`           | 8181                                                                           |the TCP port exposing the SWORD protocol version 2 endpoint
+| `FTP_HOST`              | localhost                                                                      |the IP address or  host name of the NIH FTP server
+| `FTP_PORT`              | 21                                                                             |the TCP control port of the NIH FTP server
+| `PASS_DEPOSIT_JOBS_CONCURRENCY` | 2                                                                              |the number of Quartz jobs that may be run concurrently.
+| `PASS_DEPOSIT_JOBS_DEFAULT_INTERVAL_MS` | 600000                                                                         |the amount of time, in milliseconds, that Quartz launches jobs.
+| `PASS_DEPOSIT_QUEUE_SUBMISSION_NAME` | submission                                                                     |the name of the JMS queue that has messages pertaining to `Submission` resources (used by the `JmsSubmissionProcessor`)
+| `PASS_DEPOSIT_QUEUE_DEPOSIT_NAME` | deposit                                                                        |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
+| `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` | classpath:/repositories.json                                                   |points to a properties file containing the configuration for the transport of custodial content to remote repositories. Values must be [Spring Resource URIs][1]. See below for customizing the repository configuration values.
+| `PASS_DEPOSIT_WORKERS_CONCURRENCY` | 4                                                                              |the number of Deposit Worker threads that can simultaneously run.
+| `PASS_CLIENT_URL`       | localhost:8080                                                                 |the URL used to communicate with the PASS Core API. Normally this variable does not need to be changed (see note below)
+| `PASS_CLIENT_PASSWORD`        | fakepassword                                                                           |the password used for `Basic` HTTP authentication to the PASS Core API
+| `PASS_CLIENT_USER`            | fakeuser                                                                           |the username used for `Basic` HTTP authentication to the PASS Core API
+| `SPRING_ACTIVEMQ_BROKER_URL` | ${activemq.broker.uri:tcp://${fcrepo.host:localhost}:${fcrepo.jms.port:61616}} |the internal variable for configuring the URI of the JMS broker
+| `SPRING_ACTIVEMQ_PASSWORD` | `null`                                                                         |Password to use when authenticating to the broker
+| `SPRING_ACTIVEMQ_USER`  | `null`                                                                         |User name to use when authenticating to the broker
+| `SPRING_JMS_LISTENER_CONCURRENCY` | 4                                                                              |the number of JMS messages that can be processed simultaneously by _
 each_ JMS queue
 
 > If the Fedora repository is deployed under a webapp context other than `/fcrepo`, or if `https` ought to be used instead of `http`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=https://fcrepo:8080/rest`)
