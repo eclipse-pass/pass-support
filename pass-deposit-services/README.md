@@ -221,68 +221,6 @@ Deposit Services can be built by running:
 The main Deposit Services deployment artifact is found in `deposit-messaging/target/deposit-messaging-<version>.jar`. It
 is this jarfile that is included in the Docker image for Deposit Services, and posted on the GitHub Release page.
 
-## Supported modes
-
-The mode is a required command-line argument which directs the deposit services application to take a specific action.
-
-### Listen
-
-Listen mode is the "primary" mode, if you will, of Deposit Services. In `listen` mode Deposit Services responds to JMS
-messages from the Fedora repository by creating and transferring packages of custodial content to remote repositories.
-
-Listen mode is invoked by starting Deposit services with `listen` as the single command-line argument:
-
-> $ java -jar deposit-services.jar listen
-
-Deposit Services will connect to a JMS broker specified by the `SPRING_ACTIVEMQ_BROKER_URL` environment variable (
-optionally authenticating if `SPRING_ACTIVEMQ_USER` and `SPRING_ACTIVEMQ_PASSWORD` are present), and wait for the Fedora
-repository to be available as specified by `FCREPO_HOST` and `FCREPO_PORT`. Notably, `listen` mode does not use the
-index.
-
-> If the Fedora repository is deployed under a webapp context other than `/fcrepo`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=http://fcrepo:8080/fcrepo/rest`)
-
-After successfully connecting to the JMS broker and the Fedora repository, deposit services will listen and respond to
-JMS messages relating to the submission and deposit of material to the Fedora repository. Incoming `Submission`
-resources created by end-users of the UI will be processed:
-
-* custodial content packaged
-* packages sent to destination repositories
-* confirmation of custody transfer
-* recording the identities of content in destination repositories
-
-Incoming `Deposit` resources will be used to update the overall success or failure of a `Submission`.
-
-### Retry
-
-Retry mode is used to retry a `Deposit` that has failed. Retry mode is invoked by starting Deposit services with `retry`
-as the first command-line argument, with an optional `--uris` argument, accepting a space-separated list of `Deposit`
-URIs to retry. If no `--uris` argument is present, the index is searched for _all_ `Deposit` resources that have failed,
-and those are the deposits that are re-tried.
-
-To retry all failed deposits:
-> $ java -jar deposit-services.jar retry
-
-To retry specific deposits:
-> $ java -jar deposit-services.jar retry --uri=http://192.168.99.100:8080/fcrepo/rest/deposits/8e/af/ac/a9/8eafaca9-1f24-413a-bf1e-fbbd673ba45b --uri=http://192.168.99.100:8080/fcrepo/rest/deposits/4a/cb/04/bb/4acb04bb-4f79-40ef-8ff9-e105261aa7fb
-
-#### Refresh
-
-Refresh mode is used to re-process a Deposit in the `SUBMITTED` state that needs its deposit status refreshed.
-When `refresh` is invoked, the optional `--uris` argument is used to identify the `Deposit` resources to refresh.
-Otherwise a search of the index is performed for _all_ `Deposit` resources in the `SUBMITTED` state.
-
-Refreshing a `Deposit` means that its deposit status reference will be retrieved, parsed, and processed. The status
-returned from the reference will be stored on the `Deposit`, and the status of the corresponding `RepositoryCopy` will
-be updated as well. If the `Deposit` status is updated to `ACCEPTED`, the `RepositoryCopy` will be updated to `COMPLETE`
-. If the `Deposit` status is updated to `REJECTED`, the `RepositoryCopy` will be updated to `REJECTED` as well.
-
-To refresh all deposits in the `SUBMITTED` state:
-> $ java -jar deposit-services.jar refresh
-
-To refresh specific deposits:
-> $ java -jar deposit-services.jar refresh --uri=http://192.168.99.100:8080/fcrepo/rest/deposits/8e/af/ac/a9/8eafaca9-1f24-413a-bf1e-fbbd673ba45b --uri=http://192.168.99.100:8080/fcrepo/rest/deposits/4a/cb/04/bb/4acb04bb-4f79-40ef-8ff9-e105261aa7fb
-
-
 [1]: https://docs.spring.io/spring/docs/5.0.7.RELEASE/spring-framework-reference/core.html#resources-implementations
 
 [2]: https://docs.spring.io/spring/docs/5.0.7.RELEASE/javadoc-api/org/springframework/util/ErrorHandler.html
