@@ -67,42 +67,72 @@ public class DepositSubmission {
      */
     private JsonObject submissionMeta;
 
+    /**
+     * @return {@link #id}
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * @param id {@link #id}
+     */
     public void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * @return {@link #manifest}
+     */
     public DepositManifest getManifest() {
         return manifest;
     }
 
+    /**
+     * @param manifest {@link #manifest}
+     */
     public void setManifest(DepositManifest manifest) {
         this.manifest = manifest;
     }
 
+    /**
+     * @return {@link #metadata}
+     */
     public DepositMetadata getMetadata() {
         return metadata;
     }
 
+    /**
+     * @param metadata {@link #metadata}
+     */
     public void setMetadata(DepositMetadata metadata) {
         this.metadata = metadata;
     }
 
+    /**
+     * @return {@link #files}
+     */
     public List<DepositFile> getFiles() {
         return files;
     }
 
+    /**
+     * @param files {@link #files}
+     */
     public void setFiles(List<DepositFile> files) {
         this.files = files;
     }
 
+    /**
+     * @return {@link #name}
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @param name {@link #name}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -129,6 +159,9 @@ public class DepositSubmission {
         return submissionMeta;
     }
 
+    /**
+     * @param submissionMeta {@link #submissionMeta}
+     */
     public void setSubmissionMeta(JsonObject submissionMeta) {
         this.submissionMeta = submissionMeta;
     }

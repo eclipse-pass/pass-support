@@ -28,6 +28,8 @@ import org.eclipse.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.eclipse.pass.deposit.messaging.service.DepositTask;
 import org.eclipse.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.transport.Transport;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

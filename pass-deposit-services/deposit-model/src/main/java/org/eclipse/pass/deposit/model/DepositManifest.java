@@ -34,10 +34,16 @@ public class DepositManifest {
      */
     private List<DepositFile> files;
 
+    /**
+     * @return {@link #files}
+     */
     public List<DepositFile> getFiles() {
         return files;
     }
 
+    /**
+     * @param files {@link #files}
+     */
     public void setFiles(List<DepositFile> files) {
         this.files = files;
     }

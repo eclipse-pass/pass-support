@@ -245,46 +245,79 @@ public class DepositMetadata {
         @Deprecated
         public String issn;
 
+        /**
+         * @return {@link #journalId}
+         */
         public String getJournalId() {
             return journalId;
         }
 
+        /**
+         * @param journalId {@link #journalId}
+         */
         public void setJournalId(String journalId) {
             this.journalId = journalId;
         }
 
+        /**
+         * @return {@link #journalType}
+         */
         public String getJournalType() {
             return journalType;
         }
 
+        /**
+         * @return {@link #journalTitle}
+         */
         public String getJournalTitle() {
             return journalTitle;
         }
 
+        /**
+         * @param journalTitle {@link #journalTitle}
+         */
         public void setJournalTitle(String journalTitle) {
             this.journalTitle = journalTitle;
         }
 
+        /**
+         * @return {@link #publisherName}
+         */
         public String getPublisherName() {
             return publisherName;
         }
 
+        /**
+         * @param publisherName {@link #publisherName}
+         */
         public void setPublisherName(String publisherName) {
             this.publisherName = publisherName;
         }
 
+        /**
+         * @return {@link #publicationDate}
+         */
         public String getPublicationDate() {
             return publicationDate;
         }
 
+        /**
+         * @param publicationDate {@link #publicationDate}
+         */
         public void setPublicationDate(String publicationDate) {
             this.publicationDate = publicationDate;
         }
 
+        /**
+         * @return {@link #issnPubTypes}
+         */
         public Map<String, IssnPubType> getIssnPubTypes() {
             return issnPubTypes;
         }
 
+        /**
+         * @param issnPubTypes {@link #issnPubTypes}
+         */
         public void setIssnPubTypes(Map<String, IssnPubType> issnPubTypes) {
             this.issnPubTypes = issnPubTypes;
         }
