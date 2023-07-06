@@ -43,6 +43,7 @@ import org.springframework.core.env.Environment;
  */
 @SpringBootApplication
 @ComponentScan(basePackages = "org.eclipse.pass")
+@SuppressWarnings({"checkstyle:hideutilityclassconstructor"})
 public class DepositApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositApp.class);
