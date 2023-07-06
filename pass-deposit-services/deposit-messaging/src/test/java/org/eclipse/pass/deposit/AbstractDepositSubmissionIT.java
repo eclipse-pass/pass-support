@@ -29,7 +29,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.deposit.util.async.Condition;
-import org.eclipse.pass.deposit.messaging.DepositApp;
 import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;

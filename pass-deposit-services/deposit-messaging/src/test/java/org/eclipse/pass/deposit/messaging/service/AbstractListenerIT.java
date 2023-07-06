@@ -17,7 +17,7 @@ package org.eclipse.pass.deposit.messaging.service;
 
 import static org.eclipse.pass.deposit.messaging.service.AwsSqsTestConfig.QUEUE_NAME;
 
-import org.eclipse.pass.deposit.messaging.DepositApp;
+import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.support.client.PassClient;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

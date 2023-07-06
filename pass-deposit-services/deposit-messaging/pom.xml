@@ -266,8 +266,9 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
+          <mainClass>org.eclipse.pass.deposit.DepositApp</mainClass>
+          <finalName>pass-deposit-service</finalName>
           <classifier>exec</classifier>
-          <attach>true</attach>
         </configuration>
         <executions>
           <execution>
@@ -278,44 +279,36 @@
         </executions>
       </plugin>
 
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-dependency-plugin</artifactId>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <id>unpack</id>-->
-<!--            <goals>-->
-<!--              <goal>unpack</goal>-->
-<!--            </goals>-->
-<!--            <phase>package</phase>-->
-<!--            <configuration>-->
-<!--              <artifact>${project.groupId}:${project.artifactId}:${project.version}:jar:exec</artifact>-->
-<!--            </configuration>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <configuration>
+          <images>
+            <image>
+              <name>ghcr.io/eclipse-pass/deposit-services-core:%v</name>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>build-after-its</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemProperties>
-            <!-- Disable Quartz jobs from running when unit tests are executed. -->
-            <pass.deposit.jobs.disabled>true</pass.deposit.jobs.disabled>
-          </systemProperties>
-        </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven-failsafe-plugin.version}</version>
-        <configuration>
-          <systemProperties>
-            <!-- Disable Quartz jobs from running when unit tests are executed. -->
-            <pass.deposit.jobs.disabled>true</pass.deposit.jobs.disabled>
-          </systemProperties>
-        </configuration>
         <executions>
           <execution>
             <goals>
@@ -325,27 +318,6 @@
           </execution>
         </executions>
       </plugin>
-
-<!--      <plugin>-->
-<!--        <groupId>io.fabric8</groupId>-->
-<!--        <artifactId>docker-maven-plugin</artifactId>-->
-<!--        <configuration>-->
-<!--          <images>-->
-<!--            <image>-->
-<!--              <name>oapass/deposit-services-core:%v</name>-->
-<!--            </image>-->
-<!--          </images>-->
-<!--        </configuration>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <id>build-before-its</id>-->
-<!--            <phase>pre-integration-test</phase>-->
-<!--            <goals>-->
-<!--              <goal>build</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
 
     </plugins>
   </build>
