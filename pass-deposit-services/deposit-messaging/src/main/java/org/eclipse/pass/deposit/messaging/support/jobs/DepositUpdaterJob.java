@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.eclipse.pass.deposit.messaging.support.jobs;
 
 import org.eclipse.pass.deposit.messaging.service.DepositUpdater;
