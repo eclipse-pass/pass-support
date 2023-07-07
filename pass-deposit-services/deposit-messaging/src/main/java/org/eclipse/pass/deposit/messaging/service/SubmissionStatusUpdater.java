@@ -42,9 +42,7 @@ import org.springframework.stereotype.Component;
  * </p>
  * <p>
  * The criteria for determining which Submissions need to have their {@code submissionStatus} updated is hard-coded and
- * limited in part by the {@link PassClient}.  An alternate approach would be to configure a resource with a query in
- * the ElasticSearch DSL, and communicate directly with the ElasticSearch Query API.  This allows more surgical
- * retrieval of candidate Submissions, and externalizes the query from compiled code.
+ * limited in part by the {@link PassClient}.
  * </p>
  *
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -15,7 +15,6 @@
  *  * limitations under the License.
  *
  */
-
 package org.eclipse.pass.deposit.messaging;
 
 /**
@@ -24,90 +23,6 @@ package org.eclipse.pass.deposit.messaging;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public final class Constants {
-
-    /**
-     * W3C Prov Constants
-     */
-    public static final class Prov {
-
-        public static final String SOFTWARE_AGENT = "http://www.w3.org/ns/prov#SoftwareAgent";
-
-    }
-
-    /**
-     * JMS header names used by Fedora
-     */
-    public static final class JmsFcrepoHeader {
-
-        public static final String FCREPO_RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
-
-        public static final String FCREPO_EVENT_TYPE = "org.fcrepo.jms.eventType";
-
-    }
-
-    /**
-     * Values of the {@link JmsFcrepoHeader#FCREPO_EVENT_TYPE} header.
-     */
-    public static final class JmsFcrepoEvent {
-
-        public static final String RESOURCE_CREATION = "http://fedora.info/definitions/v4/event#ResourceCreation";
-
-        public static final String RESOURCE_MODIFICATION = "http://fedora" +
-                ".info/definitions/v4/event#ResourceModification";
-
-    }
-
-    /**
-     * Values of the {@link JmsFcrepoHeader#FCREPO_RESOURCE_TYPE} header.
-     */
-    public static final class JmsFcrepoType {
-
-        public static final String REPO_CONTAINER = "http://fedora.info/definitions/v4/repository#Container";
-
-        public static final String REPO_RESOURCE = "http://fedora.info/definitions/v4/repository#Resource";
-
-    }
-
-    /**
-     * LDP-related types as represented by URIs in RDF
-     */
-    public static final class LdpType {
-
-        public static final String LDP_RDFSOURCE = "http://www.w3.org/ns/ldp#RDFSource";
-
-        public static final String LDP_CONTAINER = "http://www.w3.org/ns/ldp#Container";
-
-    }
-
-    /**
-     * LDP-related relationships as represented by URIs in RDF
-     */
-    public static final class LdpRel {
-
-        public static final String LDP_CONTAINS = "http://www.w3.org/ns/ldp#contains";
-    }
-
-    /**
-     * Names of PASS fields in the index
-     */
-    public static final class PassEntity {
-
-        /**
-         * The field of the {@code org.eclipse.pass.support.client.model.Deposit} entity that carries
-         * {@code Deposit#getDepositStatus() status} information.
-         */
-        public static final String DEPOSIT_STATUS = "depositStatus";
-
-        /**
-         * The field of the {@code org.eclipse.pass.support.client.model.RepositoryCopy} entity that carries
-         * {@code org.eclipse.pass.support.client.model.RepositoryCopy#copyStatus status} information.
-         */
-        public static final String REPOSITORYCOPY_STATUS = "copyStatus";
-
-        public static final String SUBMISSION = "submission";
-
-        public static final String REPOSITORY = "repository";
-    }
 
     /**
      * Possible values for the {@link #SWORD_STATE} predicate as represented by URIs.
@@ -138,29 +53,6 @@ public final class Constants {
          * SWORD state indicating the item is under review
          */
         public static final String SWORD_STATE_INREVIEW = "http://dspace.org/state/inreview";
-
-    }
-
-    /**
-     * Values of JSON keys that represent identifiers.  Useful for parsing {@code id} or {@code @id} fields from
-     * JSON or JSON+LD
-     */
-    public static final class Json {
-
-        /**
-         * JSON {@code id}
-         */
-        public static final String JSON_ID = "id";
-
-        /**
-         * JSON {@code @id}
-         */
-        public static final String JSON_AT_ID = "@id";
-
-        /**
-         * JSON {@code etag}
-         */
-        public static final String ETAG = "etag";
 
     }
 

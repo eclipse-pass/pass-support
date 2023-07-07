@@ -102,7 +102,7 @@ public class SubmissionProcessorTest {
      * <ol>
      *     <li>Updates the aggregated deposit status of the Submission to IN-PROGRESS</li>
      *     <li>Builds a DepositSubmission from the Submission</li>
-     *     <li>Creates a Deposit resource in the Fedora repository for each Repository associated with the
+     *     <li>Creates a Deposit resource in the Pass Core for each Repository associated with the
      *     Submission</li>
      *     <li>Resolves the Packager (used to perform the transfer of custodial content to a downstream repository)
      *     for each Repository</li>
@@ -171,8 +171,8 @@ public class SubmissionProcessorTest {
         verify(passClient, times(submission.getRepositories().size()))
             .createObject(any(Deposit.class));
 
-        // Verify that each Repository was read from the Fedora repository, and that a Packager for each Repository was
-        // resolved from the PackagerRegistry
+        // Verify that each Repository was read from the Pass Core repository, and that a Packager for each
+        // Repository was resolved from the PackagerRegistry
         repositories.forEach(repo -> {
             try {
                 verify(passClient).getObject(repo);

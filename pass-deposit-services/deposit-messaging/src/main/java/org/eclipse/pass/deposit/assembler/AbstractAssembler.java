@@ -240,7 +240,7 @@ public abstract class AbstractAssembler implements Assembler {
                         location.substring(ENCODED_CLASSPATH_PREFIX.length()));
                 } else
 
-                    // Defend against callers that have not specified Fedora auth creds, or repositories that
+                    // Defend against callers that have not specified Pass Core auth creds, or repositories that
                     // do not require authentication
                     // TODO: a more flexible mechanism for authenticating to origin servers when retrieving resources
                     if (passClientUrl != null && location.startsWith(passClientUrl)) {

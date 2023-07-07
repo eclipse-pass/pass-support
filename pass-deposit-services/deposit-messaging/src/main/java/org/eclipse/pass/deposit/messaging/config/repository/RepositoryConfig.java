@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Contains parameters and configuration for communicating with a downstream repository for the purpose of transferring
  * the custody of materials deposited by a user of PASS.
  * <p>
- * A "repository" may be a DSpace instance, an FTP server, a Fedora repository, or any system capable of receiving a
+ * A "repository" may be a DSpace instance, an FTP server, a Pass Core repository, or any system capable of receiving a
  * package of materials.
  * </p>
  */
