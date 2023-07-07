@@ -95,7 +95,7 @@ public abstract class AbstractDepositSubmissionIT {
     }
 
     /**
-     * Populates Fedora with a Submission graph serialized as JSON, as if it was submitted interactively by a user of
+     * Populates Pass Core with a Submission graph serialized as JSON, as if it was submitted interactively by a user of
      * the PASS UI.
      * <p>
      * The submission graph supplied by the {@code InputStream} must satisfy the following conditions, or an {@code

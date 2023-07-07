@@ -72,7 +72,7 @@ import org.swordapp.client.SwordIdentifier;
 /**
  * This IT insures that the SWORD transport properly handles the Deposit.depositStatusRef field by updating the
  * Deposit.depositStatus field according to the SWORD state document.  It configures Deposit Services with an Assembler
- * that streams a pre-built package (the files actually submitted to Fedora in the Submission are ignored, and not
+ * that streams a pre-built package (the files actually submitted to Pass Core in the Submission are ignored, and not
  * streamed to DSpace).  DSpace is the only concrete implementation of a SWORD server used by Deposit Services, so it is
  * employed here.
  *

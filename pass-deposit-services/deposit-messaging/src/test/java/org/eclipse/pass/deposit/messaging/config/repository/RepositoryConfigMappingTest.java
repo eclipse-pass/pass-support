@@ -30,10 +30,10 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
         /*
          * Empty elements aren't supported without additional mapping configuration:
          * com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org
-         * .dataconservancy.pass.deposit.messaging.config.repository.DepositProcessing and no properties discovered
+         * .eclipse.pass.deposit.messaging.config.repository.DepositProcessing and no properties discovered
          * to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through
-         * reference chain: org.dataconservancy.pass.deposit.messaging.config.repository
-         * .RepositoryConfig["deposit-config"]->org.dataconservancy.pass.deposit.messaging.config.repository
+         * reference chain: org.eclipse.pass.deposit.messaging.config.repository
+         * .RepositoryConfig["deposit-config"]->org.eclipse.pass.deposit.messaging.config.repository
          * .RepositoryDepositConfig["processing"])
          */
 //            "      \"processing\": {\n" +

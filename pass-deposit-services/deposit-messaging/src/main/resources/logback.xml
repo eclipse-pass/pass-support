@@ -28,31 +28,31 @@
   <logger name="org.springframework" additivity="false" level="${org.springframework.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.level:-WARN}">
+  <logger name="org.eclipse" additivity="false" level="${org.eclipse.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false"
-          level="${org.dataconservancy.pass.deposit.level:-INFO}">
+  <logger name="org.eclipse.pass.deposit" additivity="false"
+          level="${org.eclipse.pass.deposit.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="edu.jhu.library.pass.deposit.provider" additivity="false"
           level="${edu.jhu.library.pass.deposit.provider.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.client" additivity="false"
-          level="${org.dataconservancy.pass.client.level:-WARN}">
+  <logger name="org.eclipse.pass.client" additivity="false"
+          level="${org.eclipse.pass.client.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
 
   <!-- Default logging for the JMS messaging sub-system is INFO -->
 
-  <logger name="org.dataconservancy.pass.deposit.messaging" additivity="false"
-          level="${org.dataconservancy.pass.deposit.messaging.level:-INFO}">
+  <logger name="org.eclipse.pass.deposit.messaging" additivity="false"
+          level="${org.eclipse.pass.deposit.messaging.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 
-  <logger name="org.dataconservancy.pass.deposit.messaging.config" additivity="false"
-          level="${org.dataconservancy.pass.deposit.messaging.config.level:-DEBUG}">
+  <logger name="org.eclipse.pass.deposit.messaging.config" additivity="false"
+          level="${org.eclipse.pass.deposit.messaging.config.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
 
@@ -68,17 +68,17 @@
 
   <!-- DEBUG level will show policy messages that refuse to process Submissions based on some attribute of the
        *Submission*, TRACE level will show policy messages that refuse the JMS message for some lower-level reason:
-       e.g. the user-agent of the message, or the type of the fedora resource -->
+       e.g. the user-agent of the message, or the type of the Pass Core resource -->
 
-  <logger name="org.dataconservancy.pass.deposit.messaging.policy" additivity="false"
-          level="${org.dataconservancy.pass.deposit.messaging.policy.level:-INFO}">
+  <logger name="org.eclipse.pass.deposit.messaging.policy" additivity="false"
+          level="${org.eclipse.pass.deposit.messaging.policy.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 
   <!-- DEBUG level will show FTP session opening and closing, TRACE will log more details of a session. -->
 
-  <logger name="org.dataconservancy.pass.deposit.transport.ftp" additivity="false"
-          level="{org.dataconservancy.pass.deposit.transport.ftp.level:-INFO}">
+  <logger name="org.eclipse.pass.deposit.transport.ftp" additivity="false"
+          level="{org.eclipse.pass.deposit.transport.ftp.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 
@@ -89,9 +89,4 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
-  <!-- the rest client is noisy, and detracts from looking at test logging output -->
-  <logger name="org.elasticsearch.client.RestClient" additivity="false"
-          level="${org.elasticsearch.client.level:-ERROR}">
-    <appender-ref ref="STDERR"/>
-  </logger>
 </configuration>
