@@ -22,9 +22,9 @@ import java.io.File;
 import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.eclipse.pass.deposit.util.DepositTestUtil;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.util.DepositTestUtil;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.junit.jupiter.api.AfterEach;

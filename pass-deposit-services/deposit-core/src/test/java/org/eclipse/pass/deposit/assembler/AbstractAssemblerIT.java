@@ -194,5 +194,4 @@ public abstract class AbstractAssemblerIT extends AbstractDepositSubmissionIT {
      */
     protected abstract void verifyStreamMetadata(PackageStream.Metadata metadata);
 
-
 }

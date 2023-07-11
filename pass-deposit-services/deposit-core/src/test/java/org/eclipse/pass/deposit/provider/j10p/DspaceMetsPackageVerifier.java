@@ -15,10 +15,10 @@
  */
 package org.eclipse.pass.deposit.provider.j10p;
 
-import static org.eclipse.pass.deposit.provider.j10p.DspaceMetsPackageProvider.METS_XML;
 import static org.apache.commons.io.filefilter.FileFilterUtils.nameFileFilter;
 import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
 import static org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
+import static org.eclipse.pass.deposit.provider.j10p.DspaceMetsPackageProvider.METS_XML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

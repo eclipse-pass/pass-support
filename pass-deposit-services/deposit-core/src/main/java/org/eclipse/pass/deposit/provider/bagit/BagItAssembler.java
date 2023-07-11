@@ -24,15 +24,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.jknack.handlebars.Handlebars;
-import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.deposit.assembler.MetadataBuilder;
-import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.ArchivingPackageStream;
 import org.eclipse.pass.deposit.assembler.DepositFileResource;
+import org.eclipse.pass.deposit.assembler.MetadataBuilder;
 import org.eclipse.pass.deposit.assembler.MetadataBuilderFactory;
+import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.ResourceBuilderFactory;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.support.client.PassClient;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -73,6 +73,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractDepositSubmissionIT {
 
     private static final DockerImageName PASS_CORE_IMG =
+        // TODO remove version when done testing
         DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:0.8.0-SNAPSHOT");
 
     @Container

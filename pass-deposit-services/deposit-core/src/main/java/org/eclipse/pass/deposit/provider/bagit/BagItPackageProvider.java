@@ -36,12 +36,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.deposit.assembler.DepositFileResource;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
-import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.PackageProvider;
+import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
 import org.slf4j.Logger;
@@ -182,8 +182,7 @@ public class BagItPackageProvider implements PackageProvider {
                 new ArrayList<>(writePayloadManifests(submission, packageResources, packageOpts));
             supplementalResources.add(writeBagDeclaration());
             supplementalResources.add(writeBagInfo(submission, packageResources,
-                                                   this.getClass()
-                                                       .getResourceAsStream((String) packageOpts.get(BAGINFO_TEMPLATE))));
+                this.getClass().getResourceAsStream((String) packageOpts.get(BAGINFO_TEMPLATE))));
             supplementalResources.addAll(
                 writeTagfileManifests(submission, packageResources, packageOpts, supplementalResources));
 

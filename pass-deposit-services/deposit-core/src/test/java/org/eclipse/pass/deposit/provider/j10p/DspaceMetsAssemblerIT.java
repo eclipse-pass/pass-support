@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.provider.j10p;
 
+import static org.eclipse.pass.deposit.assembler.AbstractAssembler.sanitizeFilename;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_CHECKSUM;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_CHECKSUM_TYPE;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_FILE;
@@ -24,8 +25,6 @@ import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_SIZE;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_HREF;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_NS;
 import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
-import static org.eclipse.pass.deposit.assembler.AbstractAssembler.sanitizeFilename;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
