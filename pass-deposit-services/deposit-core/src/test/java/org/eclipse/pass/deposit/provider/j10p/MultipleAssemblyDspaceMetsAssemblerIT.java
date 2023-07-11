@@ -27,14 +27,16 @@ import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.springframework.test.annotation.DirtiesContext;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
+public class MultipleAssemblyDspaceMetsAssemblerIT extends AbstractDspaceMetsAssemblerIT {
 
     /**
      * Re-use the same assembler instance across tests.  This is to demonstrate that the collaborating objects,
@@ -47,13 +49,24 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
      * Creates an instance of DsspaceMetsAssembler that is shared across test method invocations.
      * See {@link #assemblePackage(String, TestInfo)}.
      */
-    @BeforeClass
+    @BeforeAll
     public static void initAssembler() {
         DspaceMetadataDomWriterFactory metsWriterFactory = new DspaceMetadataDomWriterFactory(
             DocumentBuilderFactory.newInstance());
         DspaceMetsPackageProviderFactory packageProviderFactory = new DspaceMetsPackageProviderFactory(
             metsWriterFactory);
         underTest = new DspaceMetsAssembler(metadataBuilderFactory(), resourceBuilderFactory(), packageProviderFactory);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        PASS_CORE_CONTAINER.stop();
+        PASS_CORE_CONTAINER.start();
+    }
+
+    @Override
+    protected boolean shouldSetUpBaseSubmission() {
+        return false;
     }
 
     /**
@@ -67,7 +80,6 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
 
         InputStream jsonInputStream = ResourceTestUtil.readSubmissionJson(submissionName);
         prepareSubmission(jsonInputStream);
-
         prepareCustodialResources();
 
         // Both tests in this IT will execute assemble(...) on the same instance of DspaceMetsAssembler because the
@@ -83,12 +95,14 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
         extractPackage(packageArchive, stream.metadata().archive(), stream.metadata().compression());
     }
 
+    @DirtiesContext
     @Test
     public void assembleSample1(TestInfo testInfo) throws Exception {
         assemblePackage("sample1", testInfo);
         verifyPackageStructure(getMetsXml(extractedPackageDir), extractedPackageDir, custodialResources);
     }
 
+    @DirtiesContext
     @Test
     public void assembleSample2(TestInfo testInfo) throws Exception {
         assemblePackage("sample2", testInfo);

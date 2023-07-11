@@ -26,10 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.pass.deposit.assembler.PackageStream.Resource;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.DepositFileResource;
 import org.eclipse.pass.deposit.assembler.PackageProvider;
+import org.eclipse.pass.deposit.assembler.PackageStream.Resource;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
