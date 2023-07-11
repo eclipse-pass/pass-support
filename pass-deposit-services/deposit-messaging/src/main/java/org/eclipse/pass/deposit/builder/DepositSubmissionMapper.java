@@ -31,7 +31,7 @@ import java.util.Optional;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.eclipse.pass.deposit.messaging.DepositServiceRuntimeException;
+import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositManifest;
