@@ -71,6 +71,7 @@ public class SubmissionEventListenerIT extends AbstractNotificationSpringIntegra
         String message = Json.createObjectBuilder()
             .add("submission-event", "222")
             .add("approval-link", "http://example.org/user-token-test")
+            .add("type", "SubmissionEvent")
             .build().toString();
 
         jmsTemplate.send(QUEUE_NAME, ses -> {
