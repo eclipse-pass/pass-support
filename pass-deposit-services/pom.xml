@@ -55,7 +55,7 @@
     <module>ftp-transport</module>
     <module>deposit-util</module>
     <module>sword2-transport</module>
-    <module>deposit-messaging</module>
+    <module>deposit-core</module>
     <module>filesystem-transport</module>
     <module>deposit-cri</module>
   </modules>
