@@ -43,9 +43,9 @@ import org.springframework.core.io.Resource;
  * </ul>
  * </p>
  */
-public abstract class BaseAssemblerIT extends AbstractDepositSubmissionIT {
+public abstract class AbstractAssemblerIT extends AbstractDepositSubmissionIT {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(BaseAssemblerIT.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractAssemblerIT.class);
 
     @Autowired protected SubmissionTestUtil submissionUtil;
     @Autowired protected DepositSubmissionModelBuilder modelBuilder;
@@ -105,17 +105,20 @@ public abstract class BaseAssemblerIT extends AbstractDepositSubmissionIT {
     public void setUp(TestInfo testInfo) throws Exception {
         mbf = metadataBuilderFactory();
         rbf = resourceBuilderFactory();
+        if (shouldSetUpBaseSubmission()) {
+            prepareSubmission();
+            prepareCustodialResources();
+            AbstractAssembler assembler = assemblerUnderTest();
+            PackageStream stream = assembler.assemble(submission, getOptions());
+            String testMethodName = testInfo.getTestMethod().get().getName();
+            File packageArchive = savePackage(packageFile(this.getClass(), testMethodName, stream.metadata()), stream);
+            verifyStreamMetadata(stream.metadata());
+            extractPackage(packageArchive, stream.metadata().archive(), stream.metadata().compression());
+        }
+    }
 
-        AbstractAssembler assembler = assemblerUnderTest();
-        prepareSubmission();
-        prepareCustodialResources();
-
-        PackageStream stream = assembler.assemble(submission, getOptions());
-        String testMethodName = testInfo.getTestMethod().get().getName();
-        File packageArchive = savePackage(packageFile(this.getClass(), testMethodName, stream.metadata()), stream);
-
-        verifyStreamMetadata(stream.metadata());
-        extractPackage(packageArchive, stream.metadata().archive(), stream.metadata().compression());
+    protected boolean shouldSetUpBaseSubmission() {
+        return true;
     }
 
     protected abstract Map<String, Object> getOptions();
@@ -133,19 +136,16 @@ public abstract class BaseAssemblerIT extends AbstractDepositSubmissionIT {
 
     /**
      * Obtains a List of Resources from the classpath, stores them in {@link #custodialResources}.
-     *
+     * <p>
      * Creates a convenience {@code Map}, mapping file names to their corresponding Resources in {@link
      * #custodialResourcesMap}.  Every Resource in {@code custodialResources} should be represented in {@code
      * custodialResourcesMap}, and vice-versa.
-     *
-     * @return a {@code Map} of custodial resources to be packaged, and their corresponding {@code DepositFileType}
      */
-    protected List<DepositFile> prepareCustodialResources() {
+    protected void prepareCustodialResources() {
         // Insure we're packaging something
         assertTrue(submission.getFiles().size() > 0);
         custodialResources = submission.getFiles();
         custodialResourcesMap = submission.getFiles().stream().collect(toMap(DepositFile::getName, identity()));
-        return submission.getFiles();
     }
 
     /**
@@ -193,4 +193,6 @@ public abstract class BaseAssemblerIT extends AbstractDepositSubmissionIT {
      * @param metadata the package stream metadata
      */
     protected abstract void verifyStreamMetadata(PackageStream.Metadata metadata);
+
+
 }

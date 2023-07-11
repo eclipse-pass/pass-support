@@ -21,6 +21,7 @@ import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -45,7 +46,7 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
-import org.eclipse.pass.deposit.assembler.BaseAssemblerIT;
+import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositMetadata;
@@ -61,7 +62,7 @@ import org.w3c.dom.Element;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class NihmsAssemblerIT extends BaseAssemblerIT {
+public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
     private File manifest;
 
@@ -75,7 +76,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected Map<String, Object> getOptions() {
-        return new HashMap<String, Object>() {
+        return new HashMap<>() {
             {
                 put(Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
                 put(Archive.KEY, Archive.OPTS.TAR);
@@ -85,7 +86,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
     }
 
     @Test
-    public void testSimple() throws Exception {
+    public void testSimple() {
         assertTrue(extractedPackageDir.exists());
     }
 
@@ -110,12 +111,12 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
      * @throws Exception
      */
     @Test
-    public void testBasicStructure() throws Exception {
+    public void testBasicStructure() {
         assertTrue(manifest.exists());
         assertTrue(metadata.exists());
         assertTrue(submission.getFiles().size() > 0);
-        assertTrue(submission.getFiles().stream()
-                             .filter(df -> df.getType() == DepositFileType.manuscript).count() == 1);
+        assertEquals(1, submission.getFiles().stream()
+            .filter(df -> df.getType() == DepositFileType.manuscript).count());
 
         Map<String, DepositFileType> custodialResourcesTypeMap = custodialResources.stream()
                                                                                    .collect(Collectors.toMap(
@@ -184,7 +185,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         //table, figure and supplement file types must have a label
         //labels must be unique within type for all types
         Map<String, Set<String>> labels = new HashMap<>();
-        for (DepositFileType fileType : Arrays.asList(DepositFileType.values())) {
+        for (DepositFileType fileType : DepositFileType.values()) {
             labels.put(fileType.toString(), new HashSet<>());
         }
 
@@ -278,11 +279,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
     }
 
     private static boolean isNullOrEmpty(String s) {
-        if (s == null || s.trim().length() == 0) {
-            return true;
-        }
-
-        return false;
+        return s == null || s.trim().length() == 0;
     }
 
     private static class ManifestLine {
@@ -320,10 +317,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         }
 
         void assertNameIsValid() {
-            assertFalse(manifestFile.getName() ==
-                        org.eclipse.pass.deposit.provider.nihms.NihmsManifestSerializer.METADATA_ENTRY_NAME);
-            assertFalse(manifestFile.getName()
-                        == org.eclipse.pass.deposit.provider.nihms.NihmsManifestSerializer.MANIFEST_ENTRY_NAME);
+            assertNotSame(NihmsManifestSerializer.METADATA_ENTRY_NAME, manifestFile.getName());
+            assertNotSame(NihmsManifestSerializer.MANIFEST_ENTRY_NAME, manifestFile.getName());
         }
     }
 

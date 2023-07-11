@@ -56,7 +56,7 @@ import org.w3c.dom.Element;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
+public class DspaceMetsAssemblerIT extends AbstractDspaceMetsAssemblerIT {
 
     /**
      * Insures the locations of the files in the package are as expected, and that the mets.xml is present and correctly

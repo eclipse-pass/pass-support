@@ -38,7 +38,7 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
-import org.eclipse.pass.deposit.assembler.BaseAssemblerIT;
+import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.junit.jupiter.api.BeforeEach;
 import org.w3c.dom.Document;
@@ -47,7 +47,7 @@ import org.w3c.dom.Element;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
+public abstract class AbstractDspaceMetsAssemblerIT extends AbstractAssemblerIT {
 
     /**
      * The mets.xml from the package built and extracted by {@link #setUp()}, parsed into a {@link Document}
@@ -56,7 +56,9 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
 
     @BeforeEach
     public void setUp() throws Exception {
-        metsDoc = DspaceDepositTestUtil.getMetsXml(extractedPackageDir);
+        if (shouldSetUpBaseSubmission()) {
+            metsDoc = DspaceDepositTestUtil.getMetsXml(extractedPackageDir);
+        }
     }
 
     @Override
