@@ -39,7 +39,7 @@ public class NihmsThreadedAssemblyIT extends ThreadedAssemblyIT {
 
     @Override
     protected Map<String, Object> packageOptions() {
-        return new HashMap<String, Object>() {
+        return new HashMap<>() {
             {
                 put(PackageOptions.Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
                 put(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.TAR);

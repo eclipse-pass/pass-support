@@ -29,18 +29,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.eclipse.pass.client.PassClient;
-import org.eclipse.pass.client.PassJsonAdapter;
-import org.eclipse.pass.client.adapter.PassJsonAdapterBasic;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
 import org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT;
-import org.eclipse.pass.deposit.builder.fs.FilesystemModelBuilder;
-import org.eclipse.pass.model.Submission;
-import org.eclipse.pass.model.User;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.User;
 import org.junit.Before;
-import submissions.SubmissionResourceUtil;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -48,9 +44,7 @@ import submissions.SubmissionResourceUtil;
 public class BagItThreadedAssemblyIT extends ThreadedAssemblyIT {
 
     // needs to be initialized here so it is visible by {@link #setupAssembler())}
-    private PassClient passClient = mock(PassClient.class);
-
-    private PassJsonAdapter adapter;
+    private final PassClient passClient = mock(PassClient.class);
 
     private Map<URI, Submission> submissionMap;
 
@@ -58,50 +52,50 @@ public class BagItThreadedAssemblyIT extends ThreadedAssemblyIT {
 
     @Before
     public void setUp() {
-        this.builder = new FilesystemModelBuilder();
-        this.adapter = new PassJsonAdapterBasic();
-
-        Collection<URI> submissionUris = SubmissionResourceUtil.submissionUris();
-        this.submissionMap = submissionUris.stream()
-                                           .peek(uri -> System.err.println("Processing " + uri))
-                                           .map(SubmissionResourceUtil::asJson)
-                                           .flatMap(SubmissionResourceUtil::asStream)
-                                           .filter(node -> node.has("@id") &&
-                                                           node.has("@type") &&
-                                                           node.get("@type").asText().equals("Submission"))
-                                           .collect(Collectors.toMap(node -> URI.create(node.get("@id").asText()),
-                                                                     node -> {
-                                                                         try {
-                                                                             return adapter.toModel(
-                                                                                 toInputStream(node.toString(), UTF_8),
-                                                                                 Submission.class);
-                                                                         } catch (Exception e) {
-                                                                             throw new RuntimeException(e);
-                                                                         }
-                                                                     }));
-
-        this.userMap = submissionUris.stream()
-                                     .map(SubmissionResourceUtil::asJson)
-                                     .flatMap(SubmissionResourceUtil::asStream)
-                                     .filter(node -> node.has("@id") &&
-                                                     node.has("@type") && node.get("@type").asText().equals("User"))
-                                     .collect(Collectors.toMap(node -> URI.create(node.get("@id").asText()),
-                                                               node -> {
-                                                                   try {
-                                                                       return adapter.toModel(
-                                                                           toInputStream(node.toString(), UTF_8),
-                                                                           User.class);
-                                                                   } catch (Exception e) {
-                                                                       throw new RuntimeException(e);
-                                                                   }
-                                                               },
-                                                               (user1, user2) -> user2));
-
-        when(passClient.readResource(any(URI.class), eq(Submission.class)))
-            .then(inv -> submissionMap.get(inv.getArgument(0)));
-
-        when(passClient.readResource(any(URI.class), eq(User.class)))
-            .then(inv -> userMap.get(inv.getArgument(0)));
+//        this.builder = new FilesystemModelBuilder();
+//        this.adapter = new PassJsonAdapterBasic();
+//
+//        Collection<URI> submissionUris = SubmissionResourceUtil.submissionUris();
+//        this.submissionMap = submissionUris.stream()
+//                                           .peek(uri -> System.err.println("Processing " + uri))
+//                                           .map(SubmissionResourceUtil::asJson)
+//                                           .flatMap(SubmissionResourceUtil::asStream)
+//                                           .filter(node -> node.has("@id") &&
+//                                                           node.has("@type") &&
+//                                                           node.get("@type").asText().equals("Submission"))
+//                                           .collect(Collectors.toMap(node -> URI.create(node.get("@id").asText()),
+//                                                                     node -> {
+//                                                                         try {
+//                                                                             return adapter.toModel(
+//                                                                                 toInputStream(node.toString(), UTF_8),
+//                                                                                 Submission.class);
+//                                                                         } catch (Exception e) {
+//                                                                             throw new RuntimeException(e);
+//                                                                         }
+//                                                                     }));
+//
+//        this.userMap = submissionUris.stream()
+//                                     .map(SubmissionResourceUtil::asJson)
+//                                     .flatMap(SubmissionResourceUtil::asStream)
+//                                     .filter(node -> node.has("@id") &&
+//                                                     node.has("@type") && node.get("@type").asText().equals("User"))
+//                                     .collect(Collectors.toMap(node -> URI.create(node.get("@id").asText()),
+//                                                               node -> {
+//                                                                   try {
+//                                                                       return adapter.toModel(
+//                                                                           toInputStream(node.toString(), UTF_8),
+//                                                                           User.class);
+//                                                                   } catch (Exception e) {
+//                                                                       throw new RuntimeException(e);
+//                                                                   }
+//                                                               },
+//                                                               (user1, user2) -> user2));
+//
+//        when(passClient.readResource(any(URI.class), eq(Submission.class)))
+//            .then(inv -> submissionMap.get(inv.getArgument(0)));
+//
+//        when(passClient.readResource(any(URI.class), eq(User.class)))
+//            .then(inv -> userMap.get(inv.getArgument(0)));
     }
 
     @Override

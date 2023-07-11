@@ -25,9 +25,9 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
-import org.eclipse.pass.deposit.assembler.shared.AbstractAssembler;
-import org.eclipse.pass.deposit.assembler.shared.PackageVerifier;
-import org.eclipse.pass.deposit.assembler.shared.ThreadedAssemblyIT;
+import org.eclipse.pass.deposit.assembler.AbstractAssembler;
+import org.eclipse.pass.deposit.assembler.PackageVerifier;
+import org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -44,7 +44,7 @@ public class DspaceMetsThreadedAssemblyIT extends ThreadedAssemblyIT {
 
     @Override
     protected Map<String, Object> packageOptions() {
-        return new HashMap<String, Object>() {
+        return new HashMap<>() {
             {
                 put(Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
                 put(Archive.KEY, Archive.OPTS.ZIP);

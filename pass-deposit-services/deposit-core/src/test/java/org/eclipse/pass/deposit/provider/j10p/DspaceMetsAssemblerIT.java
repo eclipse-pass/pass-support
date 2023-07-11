@@ -23,11 +23,12 @@ import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_NS;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_SIZE;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_HREF;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_NS;
-import static org.eclipse.pass.deposit.DepositTestUtil.asList;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
 import static org.eclipse.pass.deposit.assembler.AbstractAssembler.sanitizeFilename;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,7 +48,7 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.ResourceBuilder;
 import org.eclipse.pass.deposit.model.DepositFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
 /**
@@ -64,7 +65,7 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
      * @throws Exception
      */
     @Test
-    public void testPackageStructure() throws Exception {
+    public void testPackageStructure() {
         verifyPackageStructure(metsDoc, extractedPackageDir, custodialResources);
     }
 
@@ -74,7 +75,7 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
      * @throws Exception
      */
     @Test
-    public void testPackageIntegrity() throws Exception {
+    public void testPackageIntegrity() {
         Map<String, PackageStream.Checksum> expectedChecksums = new HashMap<>();
 
         Map<String, PackageStream.Checksum> actualChecksums = new HashMap<>();
@@ -121,7 +122,7 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
      * @throws Exception
      */
     @Test
-    public void testFileMetadata() throws Exception {
+    public void testFileMetadata() {
 
         // Custodial resources have their file names sanitized before being written out to a package
         // If we are to locate the sanitized file name on the filesystem, we have to repeat the sanitization function
@@ -138,8 +139,7 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
                 String sanitizedFileName = ((Element) fileElement.getFirstChild())
                     .getAttributeNS(XLINK_NS, XLINK_HREF).substring("data/".length());
                 File file = new File(extractedPackageDir, "data/" + sanitizedFileName);
-                assertTrue("File metadata references non-existent file: " + sanitizedFileName,
-                           file.exists());
+                assertTrue(file.exists());
                 assertEquals((Long) file.length(), Long.valueOf(fileElement.getAttribute(METS_SIZE)));
             });
     }

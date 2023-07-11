@@ -20,17 +20,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 import static java.util.stream.StreamSupport.stream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,8 +46,9 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -64,11 +65,14 @@ import org.xmlunit.validation.Validator;
  */
 public class NihmsMetadataSerializerTest {
 
-    private static NihmsMetadataSerializer underTest;
-    private static DepositMetadata metadata = new DepositMetadata();
+    @TempDir
+    private Path tempDir;
 
-    @BeforeClass
-    public static void setup() throws Exception {
+    private static NihmsMetadataSerializer underTest;
+    private static final DepositMetadata metadata = new DepositMetadata();
+
+    @BeforeEach
+    public void setup() throws Exception {
         //set up metadata snd its fields;
         DepositMetadata.Journal journal = new DepositMetadata.Journal();
         DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
@@ -151,7 +155,7 @@ public class NihmsMetadataSerializerTest {
         sizedStream.getInputStream().read(buffer);
         sizedStream.getInputStream().close();
 
-        File targetFile = new File("MetadataSerializerTest.xml");
+        java.io.File targetFile = tempDir.resolve("MetadataSerializerTest.xml").toFile();
 
         OutputStream os = new FileOutputStream(targetFile);
 
@@ -164,7 +168,7 @@ public class NihmsMetadataSerializerTest {
         StreamSource dtd = new StreamSource(getClass().getResourceAsStream("bulksubmission.dtd"));
         dtd.setSystemId(getClass().getResource("bulksubmission.dtd").toURI().toString());
         v.setSchemaSource(dtd);
-        StreamSource s = new StreamSource("MetadataSerializerTest.xml");
+        StreamSource s = new StreamSource(targetFile);
         ValidationResult r = v.validateInstance(s);
         assertTrue(r.isValid());
     }
@@ -185,7 +189,7 @@ public class NihmsMetadataSerializerTest {
         node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
         doi = node.getAttributes().getNamedItem("doi").getTextContent();
         is.close();
-        assertTrue("Valid DOI was modified during export.", doi.contentEquals(path));
+        assertTrue(doi.contentEquals(path));
 
         metadata.getArticleMetadata().setDoi(URI.create("http://dx.doi.org/" + path));
         sizedStream = underTest.serialize();
@@ -193,7 +197,7 @@ public class NihmsMetadataSerializerTest {
         node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
         doi = node.getAttributes().getNamedItem("doi").getTextContent();
         is.close();
-        assertTrue("http:// prefix and/or domain not stripped from DOI during export.", doi.contentEquals(path));
+        assertTrue(doi.contentEquals(path));
     }
 
     /**
@@ -209,7 +213,7 @@ public class NihmsMetadataSerializerTest {
         // serializing
 
         DepositMetadata.IssnPubType issn = new DepositMetadata.IssnPubType(expectedIssn, JournalPublicationType.OPUB);
-        journalMd.setIssnPubTypes(new HashMap<String, DepositMetadata.IssnPubType>() {
+        journalMd.setIssnPubTypes(new HashMap<>() {
             {
                 put(issn.issn, issn);
             }
@@ -244,7 +248,7 @@ public class NihmsMetadataSerializerTest {
         DepositMetadata metadata = new DepositMetadata();
         DepositMetadata.Journal journalMd = new DepositMetadata.Journal();
         DepositMetadata.IssnPubType nullIssn = new DepositMetadata.IssnPubType(null, JournalPublicationType.OPUB);
-        journalMd.setIssnPubTypes(new HashMap<String, DepositMetadata.IssnPubType>() {
+        journalMd.setIssnPubTypes(new HashMap<>() {
             {
                 put(nullIssn.issn, nullIssn);
             }

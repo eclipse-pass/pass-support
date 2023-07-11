@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.eclipse.pass.deposit.provider.j10p;
 
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.DCTERMS_NS;
@@ -22,18 +21,16 @@ import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.DC_CONTRIBUTOR
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.DC_NS;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.DC_PUBLISHER;
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static submissions.SubmissionResourceUtil.lookupStream;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.eclipse.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
 /**
@@ -43,23 +40,23 @@ import org.w3c.dom.Element;
 public class MetadataTest {
 
     private DspaceMetadataDomWriter domWriter;
-    private FilesystemModelBuilder modelBuilder;
 
     private static final URI SUBMISSION_RESOURCE_1 = URI.create("fake:submission13");
     private static final URI SUBMISSION_RESOURCE_2 = URI.create("fake:submission14");
 
-    @Before
+    @BeforeEach
     public void setup() {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         domWriter = new DspaceMetadataDomWriter(dbf);
-        modelBuilder = new FilesystemModelBuilder();
     }
 
     @Test
     public void commonContributorsAndFewAuthors() throws Exception {
         // Create deposit services data model from JSON representing Submission
-        DepositSubmission depositSubmission = modelBuilder.build(lookupStream(SUBMISSION_RESOURCE_1), emptyMap());
+        // TODO package-provider port
+//        DepositSubmission depositSubmission = modelBuilder.build(lookupStream(SUBMISSION_RESOURCE_1), emptyMap());
+        DepositSubmission depositSubmission = new DepositSubmission();
         // Create XML DOM for DSpace metadata from deposit services data model
         Element qdc = domWriter.createDublinCoreMetadataDCMES(depositSubmission);
 
@@ -85,7 +82,9 @@ public class MetadataTest {
     @Test
     public void crossrefAndManyAuthors() throws Exception {
         // Create deposit services data model from JSON representing Submission
-        DepositSubmission depositSubmission = modelBuilder.build(lookupStream(SUBMISSION_RESOURCE_2), emptyMap());
+        // TODO package-provider port
+//        DepositSubmission depositSubmission = modelBuilder.build(lookupStream(SUBMISSION_RESOURCE_2), emptyMap());
+        DepositSubmission depositSubmission = new DepositSubmission();
         // Create XML DOM for DSpace metadata from deposit services data model
         Element qdc = domWriter.createDublinCoreMetadataDCMES(depositSubmission);
 

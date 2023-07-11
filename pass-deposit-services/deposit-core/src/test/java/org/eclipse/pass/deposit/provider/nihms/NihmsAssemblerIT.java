@@ -15,14 +15,13 @@
  */
 package org.eclipse.pass.deposit.provider.nihms;
 
-import static org.eclipse.pass.deposit.DepositTestUtil.asList;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
 import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.APPLICATION_GZIP;
 import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,8 +51,8 @@ import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositMetadata.Person;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -68,10 +67,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     private File metadata;
 
-    @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         manifest = new File(extractedPackageDir, "manifest.txt");
         metadata = new File(extractedPackageDir, "bulk_meta.xml");
     }
@@ -114,12 +111,10 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
      */
     @Test
     public void testBasicStructure() throws Exception {
-        assertTrue("Missing NIHMS package manifest (expected: " + manifest + ")", manifest.exists());
-        assertTrue("Missing NIHMS bulk metadata (expected: " + metadata + ")", metadata.exists());
-        assertTrue("Expected Files to be attached to the DepositSubmission!",
-                   submission.getFiles().size() > 0);
-        assertTrue("Expected exactly 1 manuscript to be attached to the DepositSubmission!",
-                   submission.getFiles().stream()
+        assertTrue(manifest.exists());
+        assertTrue(metadata.exists());
+        assertTrue(submission.getFiles().size() > 0);
+        assertTrue(submission.getFiles().stream()
                              .filter(df -> df.getType() == DepositFileType.manuscript).count() == 1);
 
         Map<String, DepositFileType> custodialResourcesTypeMap = custodialResources.stream()
@@ -154,12 +149,9 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
                         if (!remediatedFilename.startsWith(
                             org.eclipse.pass.deposit.provider.nihms.NihmsPackageProvider
                                 .REMEDIATED_FILE_PREFIX)) {
-                            assertTrue("Missing file from custodial resources: '" + remediatedFilename + "'",
-                                       custodialResourcesMap.containsKey(remediatedFilename));
+                            assertTrue(custodialResourcesMap.containsKey(remediatedFilename));
                         } else {
-                            assertTrue("Missing remediated file from custodial resources: '" +
-                                       remediatedFilename + "'",
-                                       custodialResourcesMap.containsKey(
+                            assertTrue(custodialResourcesMap.containsKey(
                                            remediatedFilename.substring(
                                                org.eclipse.pass.deposit.provider.nihms.NihmsPackageProvider
                                                    .REMEDIATED_FILE_PREFIX.length())));
@@ -186,9 +178,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             entries.add(line);
             new ManifestLine(manifest, line, lineCount++).assertAll();
         }
-        assertEquals("Expected one line per custodial resource plus metadata file in NIHMS manifest file "
-                     + manifest,
-                     submission.getFiles().size() + 1, lineCount);
+        assertEquals(submission.getFiles().size() + 1, lineCount);
 
         //check for compliance with the NIHMS Bulk Submission Specification
         //table, figure and supplement file types must have a label
@@ -235,7 +225,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             asPerson.setMiddleName(element.getAttribute("mname"));
             asPerson.setType(DepositMetadata.PERSON_TYPE.submitter);
             return asPerson;
-        }).collect(Collectors.toList());
+        }).toList();
 
         // Insure that the Person in the metadata matches a Person on the Submission, and that the person is a
         // corresponding pi
@@ -316,43 +306,23 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
         void assertTypeIsPresent() {
             String[] parts = line.split("\t");
-
-            try {
-                assertFalse(String.format(ERR, manifestFile, lineNo, "a file type"),
-                            isNullOrEmpty(parts[0]));
-            } catch (ArrayIndexOutOfBoundsException e) {
-                fail(String.format(ERR, manifestFile, lineNo, "a file type"));
-            }
+            assertFalse(isNullOrEmpty(parts[0]));
         }
 
         void assertLabelIsPresent() {
             String[] parts = line.split("\t");
-
-            try {
-                assertFalse(String.format(ERR, manifestFile, lineNo, "a file label"),
-                            isNullOrEmpty(parts[1]));
-            } catch (ArrayIndexOutOfBoundsException e) {
-                fail(String.format(ERR, manifestFile, lineNo, "a file label"));
-            }
+            assertFalse(isNullOrEmpty(parts[1]));
         }
 
         void assertFileIsPresent() {
             String[] parts = line.split("\t");
-
-            try {
-                assertFalse(String.format(ERR, manifestFile, lineNo, "a file name"),
-                            isNullOrEmpty(parts[2]));
-            } catch (ArrayIndexOutOfBoundsException e) {
-                fail(String.format(ERR, manifestFile, lineNo, "a file name"));
-            }
+            assertFalse(isNullOrEmpty(parts[2]));
         }
 
         void assertNameIsValid() {
-            assertFalse(String.format("File %s, line %s: Name cannot be same as metadata file.", manifestFile, lineNo),
-                        manifestFile.getName() ==
+            assertFalse(manifestFile.getName() ==
                         org.eclipse.pass.deposit.provider.nihms.NihmsManifestSerializer.METADATA_ENTRY_NAME);
-            assertFalse(String.format("File %s, line %s: Name cannot be same as manifest file.", manifestFile, lineNo),
-                        manifestFile.getName()
+            assertFalse(manifestFile.getName()
                         == org.eclipse.pass.deposit.provider.nihms.NihmsManifestSerializer.MANIFEST_ENTRY_NAME);
         }
     }

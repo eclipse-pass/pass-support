@@ -30,8 +30,9 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.Extension;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,17 +47,15 @@ public class NihmsAssemblerTest {
 
     private MetadataBuilder mdBuilder;
 
-    private String expectedSubmissionUuid;
-
     ArgumentCaptor<String> packageNameCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         submission = mock(DepositSubmission.class);
         metadata = mock(PackageStream.Metadata.class);
         mdBuilder = mock(MetadataBuilder.class);
 
-        expectedSubmissionUuid = UUID.randomUUID().toString();
+        String expectedSubmissionUuid = UUID.randomUUID().toString();
         when(submission.getId()).thenReturn("http://example.org/" + expectedSubmissionUuid);
 
         when(mdBuilder.build()).thenReturn(metadata);
@@ -67,7 +66,7 @@ public class NihmsAssemblerTest {
     }
 
     @Test
-    public void packageNameForTarGz() throws Exception {
+    public void packageNameForTarGz() {
         when(metadata.archive()).thenReturn(Archive.OPTS.TAR);
         when(metadata.compression()).thenReturn(Compression.OPTS.GZIP);
 
@@ -79,7 +78,7 @@ public class NihmsAssemblerTest {
     }
 
     @Test
-    public void packageNameForZip() throws Exception {
+    public void packageNameForZip() {
         when(metadata.archive()).thenReturn(Archive.OPTS.ZIP);
         when(metadata.compression()).thenReturn(Compression.OPTS.ZIP);
 

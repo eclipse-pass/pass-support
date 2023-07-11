@@ -21,16 +21,15 @@ import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_NS;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_HREF;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_NS;
 import static org.apache.tika.mime.MediaType.APPLICATION_ZIP;
-import static org.eclipse.pass.deposit.DepositTestUtil.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
@@ -41,7 +40,7 @@ import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.BaseAssemblerIT;
 import org.eclipse.pass.deposit.model.DepositFile;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -55,15 +54,14 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
      */
     protected Document metsDoc;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         metsDoc = DspaceDepositTestUtil.getMetsXml(extractedPackageDir);
     }
 
     @Override
     protected Map<String, Object> getOptions() {
-        return new HashMap<String, Object>() {
+        return new HashMap<>() {
             {
                 put(Spec.KEY, SPEC_DSPACE_METS);
                 put(Archive.KEY, Archive.OPTS.ZIP);
@@ -107,7 +105,7 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
         List<String> sanitizedFileNames = custodialResources.stream()
                                                             .map(DepositFile::getName)
                                                             .map(AbstractAssembler::sanitizeFilename)
-                                                            .collect(Collectors.toList());
+                                                            .toList();
 
         sanitizedFileNames.forEach(sanitizedFileName -> {
             assertTrue(extractedPackageDir.toPath().resolve("data/" + sanitizedFileName).toFile().exists());
@@ -145,11 +143,10 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
         List<Element> flocats = asList(metsDoc.getElementsByTagNameNS(METS_NS, METS_FLOCAT));
         List<String> flocatHrefs = flocats.stream()
                                           .map(flocat -> flocat.getAttributeNS(XLINK_NS, XLINK_HREF))
-                                          .collect(Collectors.toList());
+                                          .toList();
 
         // each custodial resource has an flocat, and each flocat has a custodial resource
-        assertEquals("Expected '" + custodialResources.size() + "' flocat elements in the package metadata",
-                     custodialResources.size(), flocats.size());
+        assertEquals(custodialResources.size(), flocats.size());
 
         sanitizedFileNames.forEach(fileName -> {
             assertTrue(flocatHrefs.contains("data/" + fileName));

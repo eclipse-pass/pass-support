@@ -52,9 +52,9 @@ public class DepositTestUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositTestUtil.class);
 
-    public static File tmpFile(Class<?> testClass, TestName testName, String suffix) throws IOException {
+    public static File tmpFile(Class<?> testClass, String testMethodName, String suffix) throws IOException {
         String nameFmt = "%s-%s-";
-        return File.createTempFile(String.format(nameFmt, testClass.getSimpleName(), testName.getMethodName()),
+        return File.createTempFile(String.format(nameFmt, testClass.getSimpleName(), testMethodName),
                                    suffix);
     }
 
@@ -133,12 +133,12 @@ public class DepositTestUtil {
      * and name of the test method.
      *
      * @param testClass the test class
-     * @param testName  the test name
+     * @param testMethodName  the test method name
      * @param streamMd  the package stream which supplies metadata useful for file naming
      * @return a {@code File} where a package stream may be written to
      * @throws IOException if there is an error determining a {@code File} to be written to
      */
-    public static File packageFile(Class<?> testClass, TestName testName, PackageStream.Metadata streamMd)
+    public static File packageFile(Class<?> testClass, String testMethodName, PackageStream.Metadata streamMd)
         throws IOException {
         StringBuilder ext = new StringBuilder();
 
@@ -164,7 +164,7 @@ public class DepositTestUtil {
                 break;
         }
 
-        return tmpFile(testClass, testName, ext.toString());
+        return tmpFile(testClass, testMethodName, ext.toString());
     }
 
     /**
