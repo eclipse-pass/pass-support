@@ -51,6 +51,7 @@ public class DepositListenerIT extends AbstractListenerIT {
         when(passClient.getObject(Deposit.class, "111")).thenReturn(deposit);
         String message = Json.createObjectBuilder()
             .add("deposit", "111")
+            .add("type", "DepositStatus")
             .build().toString();
 
         jmsTemplate.send(QUEUE_NAME, ses -> {

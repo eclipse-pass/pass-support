@@ -51,6 +51,7 @@ public class SubmissionListenerIT extends AbstractListenerIT {
         when(passClient.getObject(Submission.class, "222")).thenReturn(submission);
         String message = Json.createObjectBuilder()
             .add("submission", "222")
+            .add("type", "SubmissionReady")
             .build().toString();
 
         jmsTemplate.send(QUEUE_NAME, ses -> {
