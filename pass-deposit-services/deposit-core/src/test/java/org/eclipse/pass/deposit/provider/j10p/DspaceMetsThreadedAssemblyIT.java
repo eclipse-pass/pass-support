@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
-import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
 import org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT;
 

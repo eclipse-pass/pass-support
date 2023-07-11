@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.apache.commons.io.DirectoryWalker;
-import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;

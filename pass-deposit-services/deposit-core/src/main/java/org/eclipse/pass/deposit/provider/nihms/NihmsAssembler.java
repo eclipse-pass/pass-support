@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.eclipse.pass.deposit.assembler.MetadataBuilder;
-import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.ArchivingPackageStream;
 import org.eclipse.pass.deposit.assembler.DepositFileResource;
 import org.eclipse.pass.deposit.assembler.Extension;
+import org.eclipse.pass.deposit.assembler.MetadataBuilder;
 import org.eclipse.pass.deposit.assembler.MetadataBuilderFactory;
+import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.ResourceBuilderFactory;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.springframework.beans.factory.annotation.Autowired;

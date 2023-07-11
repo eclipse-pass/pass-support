@@ -61,7 +61,6 @@ import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_USE;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_XMLDATA;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_HREF;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_NS;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -93,14 +92,13 @@ import au.edu.apsr.mtk.base.File;
 import au.edu.apsr.mtk.base.FileGrp;
 import au.edu.apsr.mtk.base.FileSec;
 import org.apache.tika.io.IOUtils;
-import org.eclipse.pass.deposit.util.DepositTestUtil;
+import org.eclipse.pass.deposit.assembler.ChecksumImpl;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.assembler.ChecksumImpl;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
-
+import org.eclipse.pass.deposit.util.DepositTestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

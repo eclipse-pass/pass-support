@@ -15,12 +15,12 @@
  */
 package org.eclipse.pass.deposit.provider.j10p;
 
+import static org.apache.tika.mime.MediaType.APPLICATION_ZIP;
 import static org.eclipse.pass.deposit.provider.j10p.DspaceMetsAssembler.SPEC_DSPACE_METS;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_FLOCAT;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_NS;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_HREF;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_NS;
-import static org.apache.tika.mime.MediaType.APPLICATION_ZIP;
 import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,13 +32,13 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.eclipse.pass.deposit.assembler.AbstractAssembler;
+import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.assembler.AbstractAssembler;
-import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.junit.jupiter.api.BeforeEach;
 import org.w3c.dom.Document;
