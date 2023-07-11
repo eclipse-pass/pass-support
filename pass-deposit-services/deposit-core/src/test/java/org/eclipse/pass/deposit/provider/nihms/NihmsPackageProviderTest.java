@@ -16,11 +16,11 @@
 package org.eclipse.pass.deposit.provider.nihms;
 
 import static org.eclipse.pass.deposit.provider.nihms.NihmsPackageProvider.getNonCollidingFilename;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.pass.deposit.model.DepositFileType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -34,19 +34,19 @@ public class NihmsPackageProviderTest {
 
         nameIn = "test.txt";
         nameOut = getNonCollidingFilename(nameIn, DepositFileType.supplement);
-        assertTrue("Non-colliding name was changed.", nameIn.contentEquals(nameOut));
+        assertTrue(nameIn.contentEquals(nameOut));
 
         nameIn = "manifest.txt";
         nameOut = getNonCollidingFilename(nameIn, DepositFileType.supplement);
-        assertFalse("Colliding manifest name was not changed.", nameIn.contentEquals(nameOut));
+        assertFalse(nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
         nameOut = getNonCollidingFilename(nameIn, DepositFileType.supplement);
-        assertFalse("Colliding metadata name was not changed.", nameIn.contentEquals(nameOut));
+        assertFalse(nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
         nameOut = getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
-        assertTrue("Actual metadata name was changed.", nameIn.contentEquals(nameOut));
+        assertTrue(nameIn.contentEquals(nameOut));
     }
 
 }

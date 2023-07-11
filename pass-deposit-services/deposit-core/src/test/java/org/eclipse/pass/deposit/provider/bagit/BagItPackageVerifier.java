@@ -48,24 +48,15 @@ import org.eclipse.pass.deposit.model.DepositSubmission;
  */
 public class BagItPackageVerifier implements PackageVerifier {
 
-    private BagItReader reader;
+    private final BagItReader reader;
 
-    private Charset expectedEncoding = UTF_8;
+    private final Charset expectedEncoding = UTF_8;
 
     /**
      * Verifies packages with a UTF-8 reader.
      */
     public BagItPackageVerifier() {
         this.reader = new BagItReader(expectedEncoding);
-    }
-
-    /**
-     * Verifies packages with the supplied reader.
-     *
-     * @param reader the reader, which may use an encoding other than UTF-8
-     */
-    public BagItPackageVerifier(BagItReader reader) {
-        this.reader = reader;
     }
 
     /**

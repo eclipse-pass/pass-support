@@ -16,20 +16,20 @@
 package org.eclipse.pass.deposit.provider.j10p;
 
 import static org.eclipse.pass.deposit.provider.j10p.DspaceDepositTestUtil.getMetsXml;
-import static org.eclipse.pass.deposit.DepositTestUtil.packageFile;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.packageFile;
 
 import java.io.File;
-import java.net.URI;
+import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.eclipse.pass.deposit.DepositTestUtil;
+import org.eclipse.pass.deposit.util.DepositTestUtil;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import resources.SharedSubmissionUtil;
+import org.junit.jupiter.api.TestInfo;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -43,14 +43,9 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
      */
     private static DspaceMetsAssembler underTest;
 
-    @Override
-    public void setUp() throws Exception {
-        builder = new FilesystemModelBuilder();
-    }
-
     /**
      * Creates an instance of DsspaceMetsAssembler that is shared across test method invocations.
-     * See {@link #assemblePackage(URI)}.
+     * See {@link #assemblePackage(String, TestInfo)}.
      */
     @BeforeClass
     public static void initAssembler() {
@@ -66,12 +61,12 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
      * {@code sample1/} resource path.  Sets the {@link #extractedPackageDir} to the base directory of the newly created
      * and extracted package.
      */
-    private void assemblePackage(URI submissionUri) throws Exception {
-        submissionUtil = new SharedSubmissionUtil();
+    private void assemblePackage(String submissionName, TestInfo testInfo) throws Exception {
         mbf = metadataBuilderFactory();
         rbf = resourceBuilderFactory();
 
-        prepareSubmission(submissionUri);
+        InputStream jsonInputStream = ResourceTestUtil.readSubmissionJson(submissionName);
+        prepareSubmission(jsonInputStream);
 
         prepareCustodialResources();
 
@@ -79,8 +74,9 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
         // field is static
         PackageStream stream = underTest.assemble(submission, getOptions());
 
-        File packageArchive = DepositTestUtil.savePackage(packageFile(this.getClass(), testName, stream.metadata()),
-                                                          stream);
+        String testMethodName = testInfo.getTestMethod().get().getName();
+        File packageArchive = DepositTestUtil.savePackage(packageFile(this.getClass(), testMethodName,
+            stream.metadata()), stream);
 
         verifyStreamMetadata(stream.metadata());
 
@@ -88,14 +84,14 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
     }
 
     @Test
-    public void assembleSample1() throws Exception {
-        assemblePackage(URI.create("fake:submission1"));
+    public void assembleSample1(TestInfo testInfo) throws Exception {
+        assemblePackage("sample1", testInfo);
         verifyPackageStructure(getMetsXml(extractedPackageDir), extractedPackageDir, custodialResources);
     }
 
     @Test
-    public void assembleSample2() throws Exception {
-        assemblePackage(URI.create("fake:submission2"));
+    public void assembleSample2(TestInfo testInfo) throws Exception {
+        assemblePackage("sample2", testInfo);
         verifyPackageStructure(getMetsXml(extractedPackageDir), extractedPackageDir, custodialResources);
     }
 

@@ -16,9 +16,6 @@
 
 package org.eclipse.pass.deposit.provider.nihms;
 
-
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +25,9 @@ import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositManifest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Jim Martino (jrm@jhu.edu)

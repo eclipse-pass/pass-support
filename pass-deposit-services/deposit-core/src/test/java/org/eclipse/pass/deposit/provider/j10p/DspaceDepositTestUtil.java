@@ -26,8 +26,6 @@ import java.nio.file.Files;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -38,8 +36,6 @@ class DspaceDepositTestUtil {
 
     private DspaceDepositTestUtil() {
     }
-
-    private static final Logger LOG = LoggerFactory.getLogger(DspaceDepositTestUtil.class);
 
     /**
      * Invokes {@link DspaceMetadataDomWriter#write(OutputStream)}, and returns a {@link Document} containing the the

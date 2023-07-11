@@ -52,7 +52,7 @@ public class BagItReader {
 
     private static final String LABEL_SEP_TAB = ":\t";
 
-    private Charset charset;
+    private final Charset charset;
 
     public BagItReader(Charset charset) {
         this.charset = charset;

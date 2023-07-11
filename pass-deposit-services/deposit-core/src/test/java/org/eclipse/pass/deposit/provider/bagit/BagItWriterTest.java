@@ -15,6 +15,8 @@
  */
 package org.eclipse.pass.deposit.provider.bagit;
 
+import org.junit.jupiter.api.Test;
+
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.COLON;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR_ENCODED;
@@ -22,14 +24,13 @@ import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.LF;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.LF_ENCODED;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT_ENCODED;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
-import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -41,24 +42,24 @@ public class BagItWriterTest {
         BagItWriter.validateLabel("foo");
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelCr() {
-        BagItWriter.validateLabel("foo" + CR);
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel("foo" + CR));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelLf() {
-        BagItWriter.validateLabel("foo" + LF);
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel("foo" + LF));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelColon() {
-        BagItWriter.validateLabel("foo" + COLON + "bar");
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel("foo" + COLON + "bar"));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelCrLf() {
-        BagItWriter.validateLabel("foo" + CR + LF);
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel("foo" + CR + LF));
     }
 
     @Test
@@ -71,24 +72,24 @@ public class BagItWriterTest {
         BagItWriter.validateLabel("f    o   o");
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelStartsWithTab() {
-        BagItWriter.validateLabel(" foo");
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel(" foo"));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelStartsWithSpace() {
-        BagItWriter.validateLabel(" foo");
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel(" foo"));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelEndsWithSpace() {
-        BagItWriter.validateLabel("foo ");
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel("foo "));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void validateLabelEndsWithTab() {
-        BagItWriter.validateLabel("foo  ");
+        assertThrows(RuntimeException.class, () -> BagItWriter.validateLabel("foo  "));
     }
 
     @Test

@@ -61,10 +61,12 @@ import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_USE;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.METS_XMLDATA;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_HREF;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_NS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -74,6 +76,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,18 +93,17 @@ import au.edu.apsr.mtk.base.File;
 import au.edu.apsr.mtk.base.FileGrp;
 import au.edu.apsr.mtk.base.FileSec;
 import org.apache.tika.io.IOUtils;
-import org.eclipse.pass.deposit.DepositTestUtil;
+import org.eclipse.pass.deposit.util.DepositTestUtil;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.assembler.shared.ChecksumImpl;
+import org.eclipse.pass.deposit.assembler.ChecksumImpl;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -115,24 +117,20 @@ import org.xml.sax.SAXException;
  * Unit tests most of the nuances of the {@link DspaceMetadataDomWriter}.
  */
 public class DspaceMetadataDomWriterTest {
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     private static final Logger LOG = LoggerFactory.getLogger(DspaceMetadataDomWriterTest.class);
+
+    @TempDir
+    private Path tempDir;
 
     private List<Resource> custodialContent = Arrays.asList(
         new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
         new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg"));
 
-    private DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    private final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
     private DspaceMetadataDomWriter underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         dbf.setNamespaceAware(true);
         underTest = new DspaceMetadataDomWriter(dbf);
@@ -238,7 +236,7 @@ public class DspaceMetadataDomWriterTest {
         underTest.addResource(r);
         underTest.addSubmission(submission);
 
-        java.io.File metsxml = tempFolder.newFile("testSimple-mets.xml");
+        java.io.File metsxml = tempDir.resolve("testSimple-mets.xml").toFile();
 
         LOG.debug(">>>> Writing test METS output to {}", metsxml);
         underTest.write(new FileOutputStream(metsxml));
@@ -258,8 +256,7 @@ public class DspaceMetadataDomWriterTest {
         assertFalse(XMLConstants.NS_TO_PREFIX_MAP.isEmpty());
 
         String novelPrefix = "bar";
-        assertFalse("Prefix '" + novelPrefix + "' was not expected to be present in the XMLConstants prefix map.",
-                    XMLConstants.NS_TO_PREFIX_MAP.values().contains(novelPrefix));
+        assertFalse(XMLConstants.NS_TO_PREFIX_MAP.values().contains(novelPrefix));
         String duplicatePrefix = XMLConstants.NS_TO_PREFIX_MAP.entrySet().iterator().next().getValue();
         String qualifiedElement = duplicatePrefix + ":foo";
         String ns = XMLConstants.NS_TO_PREFIX_MAP.entrySet().iterator().next().getKey();
@@ -269,8 +266,7 @@ public class DspaceMetadataDomWriterTest {
 
         XMLConstants.NS_TO_PREFIX_MAP.values().forEach(prefix -> {
             String attrName = "xmlns:" + prefix;
-            assertNotNull("Expected attribute '" + attrName + "' to be present on the root element.",
-                          rootDuplicatePrefix.getAttribute(attrName));
+            assertNotNull(rootDuplicatePrefix.getAttribute(attrName));
         });
 
         qualifiedElement = novelPrefix + ":foo";
@@ -280,12 +276,10 @@ public class DspaceMetadataDomWriterTest {
 
         XMLConstants.NS_TO_PREFIX_MAP.values().forEach(prefix -> {
             String attrName = "xmlns:" + prefix;
-            assertNotNull("Expected attribute '" + attrName + "' to be present on the root element.",
-                          rootNovelPrefix.getAttribute(attrName));
+            assertNotNull(rootNovelPrefix.getAttribute(attrName));
         });
 
-        assertNotNull("Expected novel attribte 'xmlns:" + novelPrefix + "' to be present on the root element.",
-                      rootNovelPrefix.getAttribute("xmlns:" + novelPrefix));
+        assertNotNull(rootNovelPrefix.getAttribute("xmlns:" + novelPrefix));
     }
 
     /**
@@ -516,38 +510,37 @@ public class DspaceMetadataDomWriterTest {
      * @throws Exception
      */
     @Test
-    public void testMissingTitle() throws Exception {
-        DepositMetadata md = mock(DepositMetadata.class);
-        DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
-        String msAbs = "This is the manuscript abstract";
-        when(msMd.getMsAbstract()).thenReturn(msAbs);
-        when(msMd.getTitle()).thenReturn(null); // no title, this should get spiked
-        when(md.getManuscriptMetadata()).thenReturn(msMd);
-        DepositSubmission submission = mock(DepositSubmission.class);
-        when(submission.getMetadata()).thenReturn(md);
+    public void testMissingTitle() {
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            DepositMetadata md = mock(DepositMetadata.class);
+            DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
+            String msAbs = "This is the manuscript abstract";
+            when(msMd.getMsAbstract()).thenReturn(msAbs);
+            when(msMd.getTitle()).thenReturn(null); // no title, this should get spiked
+            when(md.getManuscriptMetadata()).thenReturn(msMd);
+            DepositSubmission submission = mock(DepositSubmission.class);
+            when(submission.getMetadata()).thenReturn(md);
+            underTest.createDublinCoreMetadataDCMES(submission);
+        });
 
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage("No title found");
-
-        underTest.createDublinCoreMetadataDCMES(submission);
+        assertEquals("No title found in the manuscript metadata!", exception.getMessage());
     }
 
     @Test
-    public void testMissingAuthors() throws Exception {
-        DepositMetadata md = mock(DepositMetadata.class);
-        DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
-        String msAbs = "This is the manuscript abstract";
-        when(msMd.getMsAbstract()).thenReturn(msAbs);
-        when(msMd.getTitle()).thenReturn("This is the manuscript title");
-        when(md.getManuscriptMetadata()).thenReturn(msMd);
-        DepositSubmission submission = mock(DepositSubmission.class);
-        when(submission.getMetadata()).thenReturn(md);
-        // Submission has no authors
+    public void testMissingAuthors() {
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            DepositMetadata md = mock(DepositMetadata.class);
+            DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
+            String msAbs = "This is the manuscript abstract";
+            when(msMd.getMsAbstract()).thenReturn(msAbs);
+            when(msMd.getTitle()).thenReturn("This is the manuscript title");
+            when(md.getManuscriptMetadata()).thenReturn(msMd);
+            DepositSubmission submission = mock(DepositSubmission.class);
+            when(submission.getMetadata()).thenReturn(md);
+            underTest.createDublinCoreMetadataDCMES(submission);
+        });
 
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage("No authors found");
-
-        underTest.createDublinCoreMetadataDCMES(submission);
+        assertEquals("No authors found in the manuscript metadata!", exception.getMessage());
     }
 
     /**
@@ -593,7 +586,7 @@ public class DspaceMetadataDomWriterTest {
                 assertNotNull(candidate.getAttribute(METS_ID));
             }
         }
-        assertNotNull("Missing " + DIM + " element.", dim);
+        assertNotNull(dim);
 
         // the dmdSecGroupId should be unique (other dmdSecs should not share the DIM group Id)
         String finalDmdSecGroupId = dmdSecGroupId;

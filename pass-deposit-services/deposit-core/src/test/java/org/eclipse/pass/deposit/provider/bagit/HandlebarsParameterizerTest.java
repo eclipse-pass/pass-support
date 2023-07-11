@@ -15,7 +15,6 @@
  */
 package org.eclipse.pass.deposit.provider.bagit;
 
-import static org.eclipse.pass.deposit.provider.bagit.TestUtil.randomUri;
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static org.mockito.Mockito.mock;
@@ -23,18 +22,17 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.github.jknack.handlebars.Handlebars;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -63,32 +61,24 @@ public class HandlebarsParameterizerTest {
 
     private static final String SUBMISSION_METADATA = "{\"doi\": \"" + PUBLICATION_DOI + "\"}";
 
-    private Submission passSubmission;
-
-    private DepositSubmission depositSubmission;
-
-    private User submitter;
-
     private BagModel model;
-
-    private PassClient passClient;
 
     private HandlebarsParameterizer underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         underTest = new HandlebarsParameterizer(new Handlebars());
 
-        passSubmission = new Submission();
-        depositSubmission = new DepositSubmission();
-        submitter = new User();
+        Submission passSubmission = new Submission();
+        DepositSubmission depositSubmission = new DepositSubmission();
+        User submitter = new User();
 
-        passSubmission.setId(randomUri());
-        depositSubmission.setId(passSubmission.getId().toString());
-        submitter.setId(randomUri());
+        passSubmission.setId("test-sub-id");
+        depositSubmission.setId(passSubmission.getId());
+        submitter.setId("test-sub-user-id");
 
-        passSubmission.setSubmitter(submitter.getId());
-        passSubmission.setSubmittedDate(DateTime.now());
+        passSubmission.setSubmitter(submitter);
+        passSubmission.setSubmittedDate(ZonedDateTime.now());
         passSubmission.setMetadata(SUBMISSION_METADATA);
 
         DepositMetadata depositMetadata = mock(DepositMetadata.class);
@@ -108,8 +98,7 @@ public class HandlebarsParameterizerTest {
         model.setContactEmail("joecontact@jhu.edu");
         model.setSubmissionUser(submitter);
         model.setSubmission(passSubmission);
-        model.setSubmissionDate(
-            ISODateTimeFormat.basicDateTimeNoMillis().withZoneUTC().print(passSubmission.getSubmittedDate()));
+        model.setSubmissionDate(passSubmission.getSubmittedDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         model.setSubmissionUserEmail(submitter.getEmail());
         model.setSubmissionUserUri(submitter.getId().toString());
         model.setSubmissionUserFullName("Joe User");
