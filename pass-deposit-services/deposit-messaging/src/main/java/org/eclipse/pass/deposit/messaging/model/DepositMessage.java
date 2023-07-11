@@ -15,11 +15,13 @@
  */
 package org.eclipse.pass.deposit.messaging.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DepositMessage {
 
     @JsonProperty("deposit")
