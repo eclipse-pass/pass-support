@@ -15,17 +15,15 @@
  */
 package org.eclipse.pass.deposit.provider.bagit;
 
-import org.junit.jupiter.api.Test;
-
+import static java.nio.charset.StandardCharsets.UTF_16;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR_ENCODED;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.LF;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.LF_ENCODED;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT_ENCODED;
-import static java.nio.charset.StandardCharsets.UTF_16;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,6 +32,8 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

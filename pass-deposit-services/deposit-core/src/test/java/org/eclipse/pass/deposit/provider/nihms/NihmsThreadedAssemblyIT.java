@@ -21,8 +21,8 @@ import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
+import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
 import org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT;
 

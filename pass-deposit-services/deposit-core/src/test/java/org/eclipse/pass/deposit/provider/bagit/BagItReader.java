@@ -15,13 +15,13 @@
  */
 package org.eclipse.pass.deposit.provider.bagit;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR_ENCODED;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.LF;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.LF_ENCODED;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT_ENCODED;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.InputStream;

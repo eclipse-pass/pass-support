@@ -24,13 +24,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
+import org.eclipse.pass.deposit.assembler.Extension;
 import org.eclipse.pass.deposit.assembler.MetadataBuilder;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.assembler.Extension;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

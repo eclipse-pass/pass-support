@@ -31,7 +31,6 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.model.PassEntity;
