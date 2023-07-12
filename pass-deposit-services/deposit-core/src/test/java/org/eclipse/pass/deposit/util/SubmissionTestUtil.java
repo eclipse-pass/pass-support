@@ -28,6 +28,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.pass.deposit.service.SubmissionReader;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -44,6 +45,7 @@ import org.springframework.stereotype.Component;
 public class SubmissionTestUtil {
 
     @Autowired private PassClient passClient;
+    @Autowired private SubmissionReader submissionReader;
 
     public Submission readSubmissionJsonAndAddToPass(InputStream is, List<PassEntity> entities) throws IOException {
         entities.clear();
@@ -51,9 +53,10 @@ public class SubmissionTestUtil {
         Submission submission = passClient.getObject(Submission.class, submissionFromJson.getId());
         if (Objects.nonNull(submission)) {
             resetSubmissionStatuses(submission, submissionFromJson);
-            return submission;
+            return submissionReader.readPassSubmission(submission.getId(), entities);
         }
-        return createEntitiesInPass(entities);
+        Submission createdSubmission = createEntitiesInPass(entities);
+        return submissionReader.readPassSubmission(createdSubmission.getId(), entities);
     }
 
     public void deleteDepositsInPass() throws IOException {
