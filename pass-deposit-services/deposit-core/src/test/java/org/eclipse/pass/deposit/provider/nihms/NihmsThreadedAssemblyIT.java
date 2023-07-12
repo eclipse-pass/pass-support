@@ -22,14 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
+import org.eclipse.pass.deposit.assembler.AbstractThreadedAssemblyIT;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
-import org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class NihmsThreadedAssemblyIT extends ThreadedAssemblyIT {
+public class NihmsThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
 
     @Override
     protected AbstractAssembler assemblerUnderTest() {

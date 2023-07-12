@@ -19,15 +19,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.pass.deposit.assembler.AbstractThreadedAssemblyIT;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
-import org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class BagItThreadedAssemblyIT extends ThreadedAssemblyIT {
+public class BagItThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
 
     @Override
     protected Assembler assemblerUnderTest() {

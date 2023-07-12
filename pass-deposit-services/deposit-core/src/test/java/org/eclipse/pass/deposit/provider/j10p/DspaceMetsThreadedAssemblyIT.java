@@ -27,12 +27,12 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
 import org.eclipse.pass.deposit.assembler.PackageVerifier;
-import org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT;
+import org.eclipse.pass.deposit.assembler.AbstractThreadedAssemblyIT;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DspaceMetsThreadedAssemblyIT extends ThreadedAssemblyIT {
+public class DspaceMetsThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
 
     @Override
     protected AbstractAssembler assemblerUnderTest() {
