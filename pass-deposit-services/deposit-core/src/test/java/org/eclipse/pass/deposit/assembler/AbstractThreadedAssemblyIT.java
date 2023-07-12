@@ -70,12 +70,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractThreadedAssemblyIT extends AbstractDepositSubmissionIT {
 
     /**
-     * Insures the {@code Assembler} under test is instantiated once, so it is effectively a singleton throughout the
-     * test execution.
-     */
-    private static boolean assemblerInitialized = false;
-
-    /**
      * Manages the threads used for the test execution.  Each thread will use the same instance of the {@code Assembler}
      * under test, and run {@link Assembler#assemble(DepositSubmission, Map)}.
      */
@@ -91,14 +85,6 @@ public abstract class AbstractThreadedAssemblyIT extends AbstractDepositSubmissi
      * Used to name the threads created by the {@link #itExecutorService}.
      */
     private static final AtomicInteger IT_THREAD = new AtomicInteger(0);
-
-    private static final String DOUBLE_CHECK_MSG = "Double-check the custodial FileFilter supplied to this method, " +
-        "and manually examine the package directory for any discrepancies.";
-
-    private static final String DOUBLE_CHECK_MAPPER_MSG = "Double-check the 'custodialFilter' and " +
-        "'packageFileMapper' supplied to this method, and manually " +
-        "examine the package directory for any " +
-        "discrepancies";
 
     /**
      * Logger
@@ -161,33 +147,20 @@ public abstract class AbstractThreadedAssemblyIT extends AbstractDepositSubmissi
         itExecutorService.awaitTermination(30, TimeUnit.SECONDS);
     }
 
+    @BeforeEach
+    public void setUpAssembler() {
+        this.mbf = new DefaultMetadataBuilderFactory();
+        this.rbf = new DefaultResourceBuilderFactory();
+        this.underTest = assemblerUnderTest();
+        this.verifier = packageVerifier();
+    }
+
     @AfterEach
     public void cleanupPackageDirectories() {
         if (performCleanup) {
             LOG.info("Cleaning up packages created by this test.");
             packagesToCleanup.forEach(FileUtils::deleteQuietly);
         }
-    }
-
-    /**
-     * Initializes the {@link #mbf MetadataBuilderFactory}, {@link #rbf ResourceBuilderFactory}, and the {@link
-     * #underTest Assembler under test}.  After executing, the {@link #assemblerInitialized initialization flag}
-     * is set, insuring that the same instances of these classes are used for each test.
-     */
-    @BeforeEach
-    public void setUpAssembler() {
-        // Use a single instance of the Assembler and its dependencies for all tests
-        if (!assemblerInitialized) {
-            this.mbf = new DefaultMetadataBuilderFactory();
-            this.rbf = new DefaultResourceBuilderFactory();
-            this.underTest = assemblerUnderTest();
-            assemblerInitialized = true;
-        }
-    }
-
-    @BeforeEach
-    public void setUpPackageVerifier() {
-        this.verifier = packageVerifier();
     }
 
     @Test
