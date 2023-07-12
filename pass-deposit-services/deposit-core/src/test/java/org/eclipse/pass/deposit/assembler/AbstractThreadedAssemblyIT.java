@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public abstract class ThreadedAssemblyIT extends AbstractDepositSubmissionIT {
+public abstract class AbstractThreadedAssemblyIT extends AbstractDepositSubmissionIT {
 
     /**
      * Insures the {@code Assembler} under test is instantiated once, so it is effectively a singleton throughout the
@@ -103,7 +103,7 @@ public abstract class ThreadedAssemblyIT extends AbstractDepositSubmissionIT {
     /**
      * Logger
      */
-    protected static Logger LOG = LoggerFactory.getLogger(ThreadedAssemblyIT.class);
+    protected static Logger LOG = LoggerFactory.getLogger(AbstractThreadedAssemblyIT.class);
 
     /**
      * The factory used to create instances of {@link org.eclipse.pass.deposit.assembler.MetadataBuilder}.

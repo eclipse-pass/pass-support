@@ -87,7 +87,7 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
 
 To get started with testing:
 Create your package verifier that implements `org.eclipse.pass.deposit.assembler.PackageVerifier`
-Extend and implement `org.eclipse.pass.deposit.assembler.ThreadedAssemblyIT`
+Extend and implement `org.eclipse.pass.deposit.assembler.AbstractThreadedAssemblyIT`
 
 # API Overview
 
