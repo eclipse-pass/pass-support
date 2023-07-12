@@ -1,0 +1,12 @@
+Source-Organization: {{sourceOrganization}}
+Organization-Address: {{organizationAddress}}
+Contact-Name: {{contactName}}
+Contact-Phone: {{contactEmail}}
+Contact-Email: {{contactPhone}}
+External-Description: Submitted as {{submissionUri}} to PASS on {{submissionDate}} by {{submissionUserFullName}} ({{submissionUserEmail}}), published at {{publisherId}}
+Bagging-Date: {{currentDate}}
+External-Identifier: {{publisherId}}
+Bag-Size: {{bagSizeHumanReadable}}
+Payload-Oxum: {{custodialFileCount}}.{{bagSizeBytes}}
+Internal-Sender-Identifier: {{submissionUri}}
+Internal-Sender-Description: Submitted as {{submissionUri}} to PASS on {{submissionDate}} by {{submissionUserFullName}} ({{submissionUserEmail}}), published at {{publisherId}}

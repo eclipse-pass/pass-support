@@ -4,18 +4,18 @@ import static java.lang.Math.floorDiv;
 import static org.eclipse.pass.deposit.util.DepositTestUtil.openArchive;
 import static org.eclipse.pass.deposit.util.DepositTestUtil.packageFile;
 import static org.eclipse.pass.deposit.util.DepositTestUtil.savePackage;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.net.URI;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -23,22 +23,28 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.pass.deposit.assembler.Assembler;
-import org.eclipse.pass.deposit.assembler.PackageOptions;
+import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
-import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.rules.TestName;
+
+import org.eclipse.pass.deposit.util.ResourceTestUtil;
+import org.eclipse.pass.deposit.util.SubmissionTestUtil;
+import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.Submission;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Invokes a single instance of an {@link Assembler} by multiple threads, insuring that the {@code Assembler} does not
@@ -62,7 +68,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public abstract class ThreadedAssemblyIT {
+public abstract class ThreadedAssemblyIT extends AbstractDepositSubmissionIT {
 
     /**
      * Insures the {@code Assembler} under test is instantiated once, so it is effectively a singleton throughout the
@@ -131,10 +137,13 @@ public abstract class ThreadedAssemblyIT {
 
     private PackageVerifier verifier;
 
+    @Autowired protected SubmissionTestUtil submissionUtil;
+    @Autowired protected DepositSubmissionModelBuilder modelBuilder;
+
     /**
      * Instantiates the {@link #itExecutorService}.
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpExecutorService() {
         ThreadFactory itTf = r -> new Thread(r, "ThreadedAssemblyITPool-" + IT_THREAD.getAndIncrement());
         itExecutorService = new ThreadPoolExecutor(floorDiv(NO_THREADS, 2), NO_THREADS, 10,
@@ -147,14 +156,14 @@ public abstract class ThreadedAssemblyIT {
      *
      * @throws InterruptedException if the service is interrupted while awaiting termination
      */
-    @AfterClass
+    @AfterAll
     public static void stopExecutorService() throws InterruptedException {
         itExecutorService.shutdown();
         itExecutorService.awaitTermination(30, TimeUnit.SECONDS);
     }
 
-    @After
-    public void cleanupPackageDirectories() throws Exception {
+    @AfterEach
+    public void cleanupPackageDirectories() {
         if (performCleanup) {
             LOG.info("Cleaning up packages created by this test.");
             packagesToCleanup.forEach(FileUtils::deleteQuietly);
@@ -166,7 +175,7 @@ public abstract class ThreadedAssemblyIT {
      * #underTest Assembler under test}.  After executing, the {@link #assemblerInitialized initialization flag}
      * is set, insuring that the same instances of these classes are used for each test.
      */
-    @Before
+    @BeforeEach
     public void setUpAssembler() {
         // Use a single instance of the Assembler and its dependencies for all tests
         if (!assemblerInitialized) {
@@ -177,45 +186,41 @@ public abstract class ThreadedAssemblyIT {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUpPackageVerifier() {
         this.verifier = packageVerifier();
     }
 
     @Test
-    public void testMultiplePackageStreams() {
+    public void testMultiplePackageStreams(TestInfo testInfo) throws IOException {
         Map<String, Object> packageOptions = packageOptions();
 
-        assertTrue("PackageOptions map must contain Archive.KEY", packageOptions.containsKey(Archive.KEY));
-        assertTrue("PackageOptions map must contain Compression.KEY",
-            packageOptions.containsKey(Compression.KEY));
-        assertFalse("PackageOptions map must contain a valid Archive option " +
-            "(Archive.OPTS.NONE is not supported)", packageOptions.containsValue(Archive.OPTS.NONE));
+        assertTrue(packageOptions.containsKey(Archive.KEY));
+        assertTrue(packageOptions.containsKey(Compression.KEY));
+        assertFalse(packageOptions.containsValue(Archive.OPTS.NONE));
 
-        Map<DepositSubmission, Future<PackageStream>> results = new HashMap<>();
-        Map<DepositSubmission, File> packages = new HashMap<>();
+        Map<Integer, Future<PackageStream>> results = new HashMap<>();
+        Map<Integer, File> packages = new HashMap<>();
 
-        Random randomSubmission = new Random();
+        InputStream jsonInputStream = ResourceTestUtil.readSubmissionJson("sample1");
+        List<PassEntity> entities = new ArrayList<>();
+        Submission passSubmission = submissionUtil.readSubmissionJsonAndAddToPass(jsonInputStream, entities);
+        DepositSubmission depositSubmission = modelBuilder.build(passSubmission.getId());
+
         LOG.info("Submitting packages to the assembler:");
-        // TODO package-provider port
-//        for (int i = 0; i < NO_THREADS; i++) {
-//            int submissionId = 0;
-//            do {
-//                submissionId = randomSubmission.nextInt(10);
-//            } while (submissionId < 1 || submissionId == 5 || submissionId == 7);
-//
-//            URI submissionUri = URI.create("fake:submission" + submissionId);
-//            DepositSubmission submission = submissionUtil.asDepositSubmission(submissionUri, builder);
-//            LOG.info("Submitting package {}", submissionUri);
-//            LOG.info(".");
-//            results.put(submission, itExecutorService.submit(() -> underTest.assemble(submission, packageOptions)));
-//        }
+        IntStream.range(0, NO_THREADS).forEach((index) ->
+            results.put(
+                index,
+                itExecutorService.submit(() -> underTest.assemble(depositSubmission, packageOptions))
+            )
+        );
 
         LOG.info("Waiting for results from the assembler, and saving each package:");
         // Get each result insuring no exceptions were thrown.
-        results.forEach((submission, future) -> {
+        String testMethodName = testInfo.getTestMethod().get().getName();
+        results.forEach((submissionIndex, future) -> {
             try {
-                LOG.info("{} ...", submission.getId());
+                LOG.info("{} ...", submissionIndex);
                 PackageStream stream = future.get();
                 assertNotNull(stream.metadata());
                 assertNotNull(stream.metadata().archive());
@@ -224,9 +229,9 @@ public abstract class ThreadedAssemblyIT {
                 assertEquals(stream.metadata().compression(), packageOptions.get(Compression.KEY));
 
                 // TODO: verify resources metadata, but PackageStream#resources is unsupported
-                // TODO package-provider port
-//                File packageFile = savePackage(packageFile(this.getClass(), testName, stream.metadata()), stream);
-//                packages.put(submission, packageFile);
+                File packageFile = savePackage(packageFile(this.getClass(),
+                    testMethodName + submissionIndex, stream.metadata()), stream);
+                packages.put(submissionIndex, packageFile);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -235,7 +240,7 @@ public abstract class ThreadedAssemblyIT {
         List<File> toClean = new ArrayList<>();
 
         LOG.info("Opening and verifying each package:");
-        packages.forEach((submission, packageFile) -> {
+        packages.forEach((submissionIndex, packageFile) -> {
             LOG.info(".");
             File dir;
             try {
@@ -243,7 +248,7 @@ public abstract class ThreadedAssemblyIT {
                     (Compression.OPTS) packageOptions.get(Compression.KEY));
                 LOG.info("Extracted package {} to {}", packageFile, dir);
                 // Have subclass verify the content in the extracted package directory
-                verifier.verify(submission, new ExplodedPackage(packageFile, dir), packageOptions);
+                verifier.verify(depositSubmission, new ExplodedPackage(packageFile, dir), packageOptions);
                 LOG.info("Successfully verified package in {}", dir);
                 toClean.add(dir);
             } catch (Exception e) {
