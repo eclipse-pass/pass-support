@@ -15,9 +15,9 @@
  */
 package org.eclipse.pass.deposit.provider.nihms;
 
-import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
 import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.APPLICATION_GZIP;
 import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07;
+import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,12 +41,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
+import org.eclipse.pass.deposit.assembler.AbstractAssembler;
+import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.assembler.AbstractAssembler;
-import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositMetadata;

@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.deposit.provider.bagit;
 
-import org.junit.jupiter.api.Test;
-
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.COLON;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.CR_ENCODED;
@@ -31,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
