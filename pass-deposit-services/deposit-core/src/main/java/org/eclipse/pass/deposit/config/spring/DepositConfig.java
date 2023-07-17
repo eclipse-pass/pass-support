@@ -103,7 +103,7 @@ public class DepositConfig {
                                            @Value("#{transports}") Map<String, Transport> transports,
                                            Repositories repositories,
                                            ApplicationContext appCtx) {
-        Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
+        Map<String, Packager> packagers = repositories.getAllConfigs().stream()
               .map(repoConfig -> {
                   String dspBeanName = null;
                   DepositStatusProcessor dsp = null;
