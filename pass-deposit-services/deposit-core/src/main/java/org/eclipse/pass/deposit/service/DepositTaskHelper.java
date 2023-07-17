@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
@@ -218,19 +219,10 @@ public class DepositTaskHelper {
         this.statementUriReplacement = statementUriReplacement;
     }
 
-    static Optional<RepositoryConfig> lookupConfig(Repository repository, Repositories repositories) {
-        Set<String> repositoryKeys = repositories.keys();
-
-        // Look up the RepositoryConfig by the Repository URI
-        if (repository.getId() != null && repositoryKeys.contains(repository.getId())) {
-            return Optional.of(repositories.getConfig(repository.getId()));
+    static Optional<RepositoryConfig> lookupConfig(Repository passRepository, Repositories repositories) {
+        if (passRepository.getRepositoryKey() != null) {
+            return Optional.of(repositories.getConfig(passRepository.getRepositoryKey()));
         }
-
-        // Look up the RepositoryConfig by the Repository Key
-        if (repository.getRepositoryKey() != null && repositoryKeys.contains(repository.getRepositoryKey())) {
-            return Optional.of(repositories.getConfig(repository.getRepositoryKey()));
-        }
-
         return Optional.empty();
     }
 
