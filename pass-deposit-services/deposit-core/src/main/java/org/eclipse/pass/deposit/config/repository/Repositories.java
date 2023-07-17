@@ -16,24 +16,26 @@
 
 package org.eclipse.pass.deposit.config.repository;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class Repositories {
 
-    private Map<String, RepositoryConfig> repositoryConfigs = new HashMap<>();
+    private final Map<String, RepositoryConfig> repositoryConfigs = new HashMap<>();
 
     public void addRepositoryConfig(String key, RepositoryConfig config) {
-        repositoryConfigs.put(key, config);
+        String lowerKey = key.toLowerCase();
+        repositoryConfigs.put(lowerKey, config);
     }
 
     public RepositoryConfig getConfig(String key) {
-        return repositoryConfigs.get(key);
+        String lowerKey = key.toLowerCase();
+        return repositoryConfigs.get(lowerKey);
     }
 
-    public Set<String> keys() {
-        return repositoryConfigs.keySet();
+    public Collection<RepositoryConfig> getAllConfigs() {
+        return repositoryConfigs.values();
     }
 
 }
