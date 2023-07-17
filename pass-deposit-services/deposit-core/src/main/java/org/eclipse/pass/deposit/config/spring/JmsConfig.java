@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.config.spring;
 
+import java.net.URI;
 import java.util.Map;
 
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
@@ -22,6 +23,7 @@ import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Session;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.model.DepositMessage;
 import org.eclipse.pass.deposit.model.SubmissionMessage;
@@ -35,6 +37,7 @@ import org.springframework.jms.support.converter.MappingJackson2MessageConverter
 import org.springframework.jms.support.converter.MessageConverter;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -50,6 +53,9 @@ public class JmsConfig {
     @Value("${aws.region:AWS_REGION}")
     private String awsRegion;
 
+    @Value("${aws.sqs.endpoint.override:AWS_SQS_ENDPOINT_OVERRIDE}")
+    private String awsSqsEndpointOverride;
+
     /**
      * Configure a JMS connection factory for Amazon SQS.
      * <p>
@@ -60,13 +66,23 @@ public class JmsConfig {
      */
     @Bean
     public ConnectionFactory jmsConnectionFactory() {
-        SqsClient sqsClient = SqsClient.builder()
-            .region(Region.of(awsRegion))
-            .build();
+        SqsClientBuilder sqsClientBuilder = SqsClient.builder()
+            .region(Region.of(awsRegion));
+        SqsClient sqsClient = createSqsClient(sqsClientBuilder);
+
         return new SQSConnectionFactory(
             new ProviderConfiguration(),
             sqsClient
         );
+    }
+
+    private SqsClient createSqsClient(SqsClientBuilder sqsClientBuilder) {
+        if (StringUtils.isNotEmpty(awsSqsEndpointOverride)) {
+            return sqsClientBuilder
+                .endpointOverride(URI.create(awsSqsEndpointOverride))
+                .build();
+        }
+        return sqsClientBuilder.build();
     }
 
     @Bean
