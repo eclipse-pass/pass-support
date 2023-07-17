@@ -32,27 +32,11 @@
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="org.eclipse.pass.deposit" additivity="false"
-          level="${org.eclipse.pass.deposit.level:-INFO}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-  <logger name="edu.jhu.library.pass.deposit.provider" additivity="false"
-          level="${edu.jhu.library.pass.deposit.provider.level:-INFO}">
+          level="${org.eclipse.pass.deposit.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="org.eclipse.pass.client" additivity="false"
           level="${org.eclipse.pass.client.level:-WARN}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-
-  <!-- Default logging for the JMS messaging sub-system is INFO -->
-
-  <logger name="org.eclipse.pass.deposit.messaging" additivity="false"
-          level="${org.eclipse.pass.deposit.messaging.level:-INFO}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-
-  <logger name="org.eclipse.pass.deposit.messaging.config" additivity="false"
-          level="${org.eclipse.pass.deposit.messaging.config.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
 
@@ -70,8 +54,8 @@
        *Submission*, TRACE level will show policy messages that refuse the JMS message for some lower-level reason:
        e.g. the user-agent of the message, or the type of the Pass Core resource -->
 
-  <logger name="org.eclipse.pass.deposit.messaging.policy" additivity="false"
-          level="${org.eclipse.pass.deposit.messaging.policy.level:-INFO}">
+  <logger name="org.eclipse.pass.deposit.policy" additivity="false"
+          level="${org.eclipse.pass.deposit.policy.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 
@@ -79,6 +63,14 @@
 
   <logger name="org.eclipse.pass.deposit.transport.ftp" additivity="false"
           level="{org.eclipse.pass.deposit.transport.ftp.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <!-- DEBUG level will show logs for sword client requests/responses. -->
+  <logger name="org.swordapp.client" additivity="false" level="${org.swordapp.client:-WARN}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.apache.commons.httpclient" additivity="false" level="${org.apache.commons.httpclient:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
 

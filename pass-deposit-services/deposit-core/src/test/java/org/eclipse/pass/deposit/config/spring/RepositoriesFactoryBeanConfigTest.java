@@ -39,7 +39,7 @@ public class RepositoriesFactoryBeanConfigTest {
     public void foo() throws Exception {
         assertNotNull(repositories);
 
-        assertEquals(4, repositories.keys().size());
+        assertEquals(4, repositories.getAllConfigs().size());
 
         RepositoryConfig j10p = repositories.getConfig("JScholarship");
         assertNotNull(j10p);
