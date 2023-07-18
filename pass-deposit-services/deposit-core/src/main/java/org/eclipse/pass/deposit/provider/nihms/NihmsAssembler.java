@@ -34,6 +34,7 @@ import org.eclipse.pass.deposit.assembler.MetadataBuilderFactory;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.ResourceBuilderFactory;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.support.client.PassClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -62,8 +63,9 @@ public class NihmsAssembler extends AbstractAssembler {
     @Autowired
     public NihmsAssembler(MetadataBuilderFactory mbf,
                           ResourceBuilderFactory rbf,
-                          NihmsPackageProviderFactory packageProviderFactory) {
-        super(mbf, rbf);
+                          NihmsPackageProviderFactory packageProviderFactory,
+                          PassClient passClient) {
+        super(mbf, rbf, passClient);
         this.packageProviderFactory = packageProviderFactory;
     }
 

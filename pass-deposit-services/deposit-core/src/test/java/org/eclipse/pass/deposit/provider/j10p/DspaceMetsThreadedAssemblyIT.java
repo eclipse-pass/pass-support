@@ -39,7 +39,7 @@ public class DspaceMetsThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
         DspaceMetadataDomWriterFactory metsWriterFactory =
             new DspaceMetadataDomWriterFactory(DocumentBuilderFactory.newInstance());
         DspaceMetsPackageProviderFactory ppf = new DspaceMetsPackageProviderFactory(metsWriterFactory);
-        return new DspaceMetsAssembler(mbf, rbf, ppf);
+        return new DspaceMetsAssembler(mbf, rbf, ppf, passClient);
     }
 
     @Override

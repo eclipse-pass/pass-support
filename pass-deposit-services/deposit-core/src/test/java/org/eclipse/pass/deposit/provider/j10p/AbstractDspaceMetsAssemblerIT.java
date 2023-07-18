@@ -79,7 +79,7 @@ public abstract class AbstractDspaceMetsAssemblerIT extends AbstractAssemblerIT 
             new DspaceMetadataDomWriterFactory(DocumentBuilderFactory.newInstance());
         DspaceMetsPackageProviderFactory packageProviderFactory =
             new DspaceMetsPackageProviderFactory(domWriterFactory);
-        return new DspaceMetsAssembler(mbf, rbf, packageProviderFactory);
+        return new DspaceMetsAssembler(mbf, rbf, packageProviderFactory, passClient);
     }
 
     @Override

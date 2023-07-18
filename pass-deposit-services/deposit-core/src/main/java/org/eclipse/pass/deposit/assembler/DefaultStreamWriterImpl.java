@@ -43,19 +43,13 @@ import org.springframework.core.io.Resource;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DefaultStreamWriterImpl implements StreamWriter {
-
-    private List<DepositFileResource> packageFiles;
-
-    private ResourceBuilderFactory rbf;
-
-    private DepositSubmission submission;
-
     protected static final Logger LOG = LoggerFactory.getLogger(DefaultStreamWriterImpl.class);
 
+    private final List<DepositFileResource> packageFiles;
+    private final ResourceBuilderFactory rbf;
+    private final DepositSubmission submission;
     protected ArchiveOutputStream archiveOut;
-
     protected Map<String, Object> packageOptions;
-
     protected PackageProvider packageProvider;
 
     /**

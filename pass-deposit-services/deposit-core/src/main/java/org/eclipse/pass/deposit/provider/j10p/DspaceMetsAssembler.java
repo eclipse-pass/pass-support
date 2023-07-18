@@ -29,6 +29,7 @@ import org.eclipse.pass.deposit.assembler.MetadataBuilderFactory;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.ResourceBuilderFactory;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.support.client.PassClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,8 +45,9 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     @Autowired
     public DspaceMetsAssembler(MetadataBuilderFactory mbf,
                                ResourceBuilderFactory rbf,
-                               DspaceMetsPackageProviderFactory packageProviderFactory) {
-        super(mbf, rbf);
+                               DspaceMetsPackageProviderFactory packageProviderFactory,
+                               PassClient passClient) {
+        super(mbf, rbf, passClient);
         this.packageProviderFactory = packageProviderFactory;
     }
 

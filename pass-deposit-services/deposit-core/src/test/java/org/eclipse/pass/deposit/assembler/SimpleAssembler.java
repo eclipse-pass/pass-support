@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.support.client.PassClient;
 import org.springframework.stereotype.Component;
 
 /**
@@ -28,8 +29,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class SimpleAssembler extends AbstractAssembler {
 
-    public SimpleAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
-        super(mbf, rbf);
+    public SimpleAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, PassClient passClient) {
+        super(mbf, rbf, passClient);
     }
 
     @Override

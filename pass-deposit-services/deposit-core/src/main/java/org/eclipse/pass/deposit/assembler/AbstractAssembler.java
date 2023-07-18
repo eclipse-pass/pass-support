@@ -20,18 +20,18 @@ import static org.eclipse.pass.deposit.assembler.AssemblerSupport.buildMetadata;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.deposit.util.spring.EncodingClassPathResource;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.support.client.PassClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -64,18 +64,11 @@ public abstract class AbstractAssembler implements Assembler {
 
     private static final String JAR_PREFIX = "jar:";
 
-    private MetadataBuilderFactory mbf;
+    private final MetadataBuilderFactory mbf;
 
-    private ResourceBuilderFactory rbf;
+    private final ResourceBuilderFactory rbf;
 
-    @Value("${pass.client.url}")
-    private String passClientUrl;
-
-    @Value("${pass.client.user}")
-    private String passClientUser;
-
-    @Value("${pass.client.password}")
-    private String passClientPassword;
+    protected final PassClient passClient;
 
     private boolean followRedirects;
 
@@ -86,9 +79,10 @@ public abstract class AbstractAssembler implements Assembler {
      * @param mbf used by implementations to create package metadata
      * @param rbf used by implementations to create package resource metadata
      */
-    public AbstractAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
+    public AbstractAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, PassClient passClient) {
         this.mbf = mbf;
         this.rbf = rbf;
+        this.passClient = passClient;
     }
 
     /**
@@ -238,32 +232,21 @@ public abstract class AbstractAssembler implements Assembler {
                 } else if (location.startsWith(ENCODED_CLASSPATH_PREFIX)) {
                     delegateResource = new EncodingClassPathResource(
                         location.substring(ENCODED_CLASSPATH_PREFIX.length()));
-                } else
-
-                    // Defend against callers that have not specified Pass Core auth creds, or repositories that
-                    // do not require authentication
-                    // TODO: a more flexible mechanism for authenticating to origin servers when retrieving resources
-                    if (passClientUrl != null && location.startsWith(passClientUrl)) {
-                        if (passClientUser != null) {
-                            try {
-                                LOG.trace("Returning AuthenticatedResource for {}", location);
-                                delegateResource = new AuthenticatedResource(new URL(location), passClientUser,
-                                    passClientPassword);
-                            } catch (MalformedURLException e) {
-                                throw new RuntimeException(e.getMessage(), e);
-                            }
-                        }
-                    } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX) ||
-                               location.startsWith(JAR_PREFIX)) {
-                        try {
-                            delegateResource = new UrlResource(location);
-                        } catch (MalformedURLException e) {
-                            throw new RuntimeException(e.getMessage(), e);
-                        }
-                    } else if (location.contains("/") || location.contains("\\")) {
-                        // assume it is a file
-                        delegateResource = new FileSystemResource(location);
+                } else if (Objects.nonNull(dfr.getDepositFile().getPassFileId())) {
+                    String passFileId = dfr.getDepositFile().getPassFileId();
+                    LOG.trace("Returning PassFileResource for Pass File {}", passFileId);
+                    delegateResource = new PassFileResource(passClient, passFileId);
+                } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX) ||
+                           location.startsWith(JAR_PREFIX)) {
+                    try {
+                        delegateResource = new UrlResource(location);
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e.getMessage(), e);
                     }
+                } else if (location.contains("/") || location.contains("\\")) {
+                    // assume it is a file
+                    delegateResource = new FileSystemResource(location);
+                }
 
                 if (delegateResource == null) {
                     throw new RuntimeException(String.format(ERR_MAPPING_LOCATION, location));
