@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.gson.JsonObject;
 import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
@@ -90,6 +91,8 @@ public class DepositSubmissionModelBuilderIT extends AbstractDepositSubmissionIT
 
         assertNotNull(submission.getFiles());
         assertEquals(8, submission.getFiles().size());
+        assertTrue(submission.getFiles().stream()
+            .allMatch(depositFile -> Objects.nonNull(depositFile.getPassFileId())));
 
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
