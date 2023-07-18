@@ -55,7 +55,8 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends AbstractDspaceMetsAss
             DocumentBuilderFactory.newInstance());
         DspaceMetsPackageProviderFactory packageProviderFactory = new DspaceMetsPackageProviderFactory(
             metsWriterFactory);
-        underTest = new DspaceMetsAssembler(metadataBuilderFactory(), resourceBuilderFactory(), packageProviderFactory);
+        underTest = new DspaceMetsAssembler(metadataBuilderFactory(), resourceBuilderFactory(),
+            packageProviderFactory, null);
     }
 
     @AfterEach

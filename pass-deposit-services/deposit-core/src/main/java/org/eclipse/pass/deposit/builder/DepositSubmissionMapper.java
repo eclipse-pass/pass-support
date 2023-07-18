@@ -151,8 +151,9 @@ public class DepositSubmissionMapper {
     }
 
     private void createDepositFileIfNeeded(File file, Submission submissionEntity, List<DepositFile> depositFiles) {
-        if (file.getSubmission().getId().equals(submissionEntity.getId().toString())) {
+        if (file.getSubmission().getId().equals(submissionEntity.getId())) {
             DepositFile depositFile = new DepositFile();
+            depositFile.setPassFileId(file.getId());
             depositFile.setName(file.getName());
             depositFile.setLocation(file.getUri().toString());
             // TODO - The client model currently only has "manuscript" and "supplement" roles.

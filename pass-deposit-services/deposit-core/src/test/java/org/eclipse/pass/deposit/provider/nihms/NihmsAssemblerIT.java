@@ -93,7 +93,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
     @Override
     protected AbstractAssembler assemblerUnderTest() {
         NihmsPackageProviderFactory packageProviderFactory = new NihmsPackageProviderFactory();
-        return new NihmsAssembler(mbf, rbf, packageProviderFactory);
+        return new NihmsAssembler(mbf, rbf, packageProviderFactory, passClient);
     }
 
     @Override

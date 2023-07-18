@@ -47,6 +47,11 @@ public class DepositFile {
     private String location;
 
     /**
+     * The ID of the Pass File entity
+     */
+    private String passFileId;
+
+    /**
      * @return {@link #type}
      */
     public DepositFileType getType() {
@@ -86,6 +91,20 @@ public class DepositFile {
      */
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    /**
+     * @return {@link #passFileId}
+     */
+    public String getPassFileId() {
+        return passFileId;
+    }
+
+    /**
+     * @param passFileId {@link #passFileId}
+     */
+    public void setPassFileId(String passFileId) {
+        this.passFileId = passFileId;
     }
 
     /**

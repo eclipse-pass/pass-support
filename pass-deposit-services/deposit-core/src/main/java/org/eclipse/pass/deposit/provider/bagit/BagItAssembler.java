@@ -38,11 +38,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class BagItAssembler extends AbstractAssembler {
 
-    private PassClient passClient;
-
     public BagItAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, PassClient passClient) {
-        super(mbf, rbf);
-        this.passClient = passClient;
+        super(mbf, rbf, passClient);
     }
 
     @Override

@@ -34,7 +34,7 @@ public class NihmsThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
     @Override
     protected AbstractAssembler assemblerUnderTest() {
         NihmsPackageProviderFactory ppf = new NihmsPackageProviderFactory();
-        return new NihmsAssembler(mbf, rbf, ppf);
+        return new NihmsAssembler(mbf, rbf, ppf, passClient);
     }
 
     @Override
