@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Johns Hopkins University
+ * Copyright 2023 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,46 @@ package org.eclipse.pass.deposit.assembler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import org.eclipse.pass.support.client.PassClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.core.io.AbstractResource;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-public class PassFileResource extends FileSystemResource {
-    private static final Logger LOG = LoggerFactory.getLogger(PassFileResource.class);
+public class PassFileResource extends AbstractResource {
 
-    private PassClient passClient;
-    private String passFileId;
+    private final PassClient passClient;
+    private final String passFileId;
 
     public PassFileResource(PassClient passClient, String passFileId) {
-        super("test");
         this.passClient = passClient;
         this.passFileId = passFileId;
     }
 
+    @NotNull
     @Override
     public InputStream getInputStream() throws IOException {
-        // TODO need to implement real call to pass client to get file inputstream
-        return null;
+        return passClient.downloadFile(passFileId);
     }
 
+    @NotNull
+    @Override
+    public byte[] getContentAsByteArray() throws IOException {
+        return super.getContentAsByteArray();
+    }
+
+    @NotNull
+    @Override
+    public String getContentAsString(@NotNull Charset charset) throws IOException {
+        return super.getContentAsString(charset);
+    }
+
+    @NotNull
+    @Override
+    public String getDescription() {
+        return "PassFileResource File ID: " + passFileId;
+    }
 }

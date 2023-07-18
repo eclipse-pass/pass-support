@@ -70,8 +70,6 @@ public abstract class AbstractAssembler implements Assembler {
 
     protected final PassClient passClient;
 
-    private boolean followRedirects;
-
     /**
      * Constructs a new assembler that provides {@link MetadataBuilderFactory} and {@link ResourceBuilderFactory} for
      * implementations to create and amend the state of package metadata and resources.
