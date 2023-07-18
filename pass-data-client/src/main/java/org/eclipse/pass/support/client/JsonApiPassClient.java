@@ -1,10 +1,12 @@
 package org.eclipse.pass.support.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +26,7 @@ import jsonapi.Document.IncludedSerialization;
 import jsonapi.JsonApiFactory;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -88,7 +91,7 @@ public class JsonApiPassClient implements PassClient {
      * @param pass    password of user
      */
     public JsonApiPassClient(String baseUrl, String user, String pass) {
-        this.baseUrl = (baseUrl.endsWith("/") ? baseUrl : baseUrl + "/") + "data/";
+        this.baseUrl = (baseUrl.endsWith("/") ? baseUrl : baseUrl + "/");
 
         OkHttpClient.Builder client_builder = new OkHttpClient.Builder();
 
@@ -142,9 +145,9 @@ public class JsonApiPassClient implements PassClient {
         String name = get_json_type(type);
 
         if (id == null) {
-            return baseUrl + name;
+            return baseUrl + "data/" + name;
         } else {
-            return baseUrl + name + "/" + id;
+            return baseUrl + "data/" + name + "/" + id;
         }
     }
 
@@ -640,5 +643,69 @@ public class JsonApiPassClient implements PassClient {
         });
 
         return new PassClientResult<>(matches, total);
+    }
+
+    @Override
+    public InputStream downloadFile(File file) throws IOException {
+        // Transform File URI to use baseUrl in order to avoid authentication issues
+        HttpUrl url = HttpUrl.parse(baseUrl).newBuilder()
+                .addEncodedPathSegments(file.getUri().getRawPath().substring(1)).build();
+
+        Request request = new Request.Builder().url(url).get().build();
+        Response response = client.newCall(request).execute();
+
+        if (!response.isSuccessful()) {
+            throw new IOException(String.format("Failed to retrieve binary for File: %s, URL: %s, Status code: %d",
+                    file.getId(), url, response.code()));
+        }
+
+        return response.body().byteStream();
+    }
+
+    @Override
+    public URI uploadBinary(String name, byte[] data) throws IOException {
+        HttpUrl url = HttpUrl.parse(baseUrl).newBuilder()
+                .addEncodedPathSegment("file").build();
+
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart("file", name, RequestBody.create(data))
+                .build();
+
+        Request request = new Request.Builder().url(url).post(body).build();
+
+        Response response = client.newCall(request).execute();
+
+        if (!response.isSuccessful()) {
+            throw new IOException(
+                    "File upload failed: " + url + " returned " + response.code()
+                        + " " + response.body().string());
+        }
+
+        // Grab the id field
+        String id = null;
+        try (Buffer buffer = new Buffer(); JsonReader reader =
+                JsonReader.of(buffer.writeUtf8(response.body().string()))) {
+            reader.beginObject();
+
+            while (reader.hasNext()) {
+                switch (reader.nextName()) {
+                    case "id":
+                        id = reader.nextString();
+                        break;
+
+                    default:
+                        reader.skipValue();
+                        break;
+                }
+            }
+
+            reader.endObject();
+        }
+
+        if (id == null) {
+            throw new IOException("Could not find id field after upload");
+        }
+
+        return url.newBuilder().addPathSegments(id).build().uri();
     }
 }
