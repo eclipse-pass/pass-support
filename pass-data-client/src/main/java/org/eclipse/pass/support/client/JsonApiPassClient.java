@@ -175,7 +175,7 @@ public class JsonApiPassClient implements PassClient {
 
         String json = adapter.toJson(doc);
 
-        String url = baseUrl + get_json_type(obj.getClass());
+        String url = baseUrl + "data/" + get_json_type(obj.getClass());
         RequestBody body = RequestBody.create(json, JSON_API_MEDIA_TYPE);
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
                 .addHeader("Content-Type", JSON_API_CONTENT_TYPE).post(body).build();
