@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -523,5 +525,27 @@ public class JsonApiPassClientIT {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    @Test
+    public void testUploadDownloadFile() throws IOException {
+        File file = new File();
+
+        String data = "What's in a name?";
+        file.setName("rose.txt");
+
+        URI data_uri = client.uploadBinary(file.getName(), data.getBytes(StandardCharsets.UTF_8));
+
+        assertNotNull(data_uri);
+
+        file.setUri(data_uri);
+
+        client.createObject(file);
+
+        InputStream is = client.downloadFile(file);
+
+        String test_data = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
+        assertEquals(data, test_data);
     }
 }
