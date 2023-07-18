@@ -71,17 +71,13 @@ public class ArchivingPackageStream implements PackageStream {
      */
     protected Map<String, Object> packageOptions;
 
-    private MetadataBuilder metadataBuilder;
+    private final MetadataBuilder metadataBuilder;
 
-    private ResourceBuilderFactory rbf;
+    private final ExceptionHandlingThreadPoolExecutor executorService;
 
-    private ExceptionHandlingThreadPoolExecutor executorService;
+    private final StreamWriter streamWriter;
 
-    private StreamWriter streamWriter;
-
-    private ArchiveOutputStreamFactory archiveOutputStreamFactory;
-
-    private PackageProvider packageProvider;
+    private final ArchiveOutputStreamFactory archiveOutputStreamFactory;
 
     public ArchivingPackageStream(DepositSubmission submission,
                                   List<DepositFileResource> custodialContent,
@@ -91,47 +87,13 @@ public class ArchivingPackageStream implements PackageStream {
                                   PackageProvider packageProvider) {
         this.custodialContent = custodialContent;
         this.metadataBuilder = metadataBuilder;
-        this.rbf = rbf;
         this.packageOptions = packageOptions;
-        this.executorService = new ExceptionHandlingThreadPoolExecutor(getRuntime().availableProcessors(),
-                                                                       getRuntime().availableProcessors() * 2, 1,
-                                                                       TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
-        this.packageProvider = packageProvider;
+        this.executorService = new ExceptionHandlingThreadPoolExecutor(
+            getRuntime().availableProcessors(),
+            getRuntime().availableProcessors() * 2, 1,
+            TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
         this.streamWriter = new DefaultStreamWriterImpl(submission, custodialContent, rbf, packageOptions,
                                                         packageProvider);
-        if (STREAMING_IO_LOG.isDebugEnabled()) {
-            this.archiveOutputStreamFactory = new DebuggingArchiveOutputStreamFactory(packageOptions);
-        } else {
-            this.archiveOutputStreamFactory = new DefaultArchiveOutputStreamFactory(packageOptions);
-        }
-    }
-
-    /**
-     * Creates a package stream that uses the archive format specified in the {@code packageOptions}.  The supplied
-     * {@code custodialContent} will be present in the stream.  Metadata supplied to the {@code MetadataBuilder} and
-     * {@code ResourceBuilder} (created from the {@code rbf}) may be included in the stream.
-     *
-     * @param custodialContent the custodial content of the package
-     * @param metadataBuilder  interface used to add metadata describing the package
-     * @param rbf              interface used to instantiate {@code ResourceBuilder} instances, used to add metadata
-     *                         describing
-     *                         individual resources in the package
-     * @param packageOptions   the options used when building the package
-     * @param executorService  used to launch a thread which <em>writes</em> content to the package stream
-     * @param streamWriter     used to write content to the package stream
-     */
-    public ArchivingPackageStream(List<DepositFileResource> custodialContent,
-                                  MetadataBuilder metadataBuilder,
-                                  ResourceBuilderFactory rbf,
-                                  Map<String, Object> packageOptions,
-                                  ExceptionHandlingThreadPoolExecutor executorService,
-                                  StreamWriter streamWriter) {
-        this.custodialContent = custodialContent;
-        this.metadataBuilder = metadataBuilder;
-        this.rbf = rbf;
-        this.packageOptions = packageOptions;
-        this.executorService = executorService;
-        this.streamWriter = streamWriter;
         if (STREAMING_IO_LOG.isDebugEnabled()) {
             this.archiveOutputStreamFactory = new DebuggingArchiveOutputStreamFactory(packageOptions);
         } else {

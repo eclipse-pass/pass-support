@@ -34,25 +34,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DspaceMetsAssembler extends AbstractAssembler {
-
-    // todo: find a better place for these constants.
-
     /**
      * Package specification URI identifying a DSpace METS SIP.
      */
     public static final String SPEC_DSPACE_METS = "http://purl.org/net/sword/package/METSDSpaceSIP";
 
-    /**
-     * Package specification URI identifying a simple zip file.
-     */
-    public static final String SPEC_SIMPLE_ZIP = "http://purl.org/net/sword/package/SimpleZip";
-
-    /**
-     * Mime type of zip files.
-     */
-    public static final String APPLICATION_ZIP = "application/zip";
-
-    private DspaceMetsPackageProviderFactory packageProviderFactory;
+    private final DspaceMetsPackageProviderFactory packageProviderFactory;
 
     @Autowired
     public DspaceMetsAssembler(MetadataBuilderFactory mbf,
