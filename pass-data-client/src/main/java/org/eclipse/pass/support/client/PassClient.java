@@ -16,11 +16,14 @@
 package org.eclipse.pass.support.client;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.PassEntity;
 
 /**
@@ -198,4 +201,32 @@ public interface PassClient {
 
         return StreamSupport.stream(iter, false);
     }
+
+    /**
+     * Download the binary associated with a File.
+     *
+     * @param file to download
+     * @return InputStream of bytes
+     * @throws IOException if operation fails
+     */
+    InputStream downloadFile(File file) throws IOException;
+
+    /**
+     * @param id of File
+     * @return InputStream of bytes
+     * @throws IOException if operation fails
+     */
+    default InputStream downloadFile(String id) throws IOException {
+        return downloadFile(getObject(File.class, id));
+    }
+
+    /**
+     * Uploads a binary to the file service.
+     *
+     * @param name of binary
+     * @param data of binary
+     * @return URI to retrieve the binary
+     * @throws IOException if operation fails
+     */
+    URI uploadBinary(String name, byte[] data) throws IOException;
 }
