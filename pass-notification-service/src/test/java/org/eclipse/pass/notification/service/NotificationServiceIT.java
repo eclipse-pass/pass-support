@@ -20,6 +20,7 @@ import static org.eclipse.pass.notification.model.Link.SUBMISSION_REVIEW_INVITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +31,8 @@ import java.util.List;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import jakarta.mail.internet.MimeMessage;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.pass.notification.AbstractNotificationSpringIntegrationTest;
 import org.eclipse.pass.notification.model.Link;
 import org.eclipse.pass.notification.model.SubmissionEventMessage;
@@ -70,9 +73,18 @@ public class NotificationServiceIT extends AbstractNotificationSpringIntegration
     private static final String RECIPIENT = "staffWithNoGrants@jhu.edu";
     private static final String CC = "notification-demo-cc@jhu.edu";
 
-    // TODO replace version with moving tag like `main`
-    private static final DockerImageName PASS_CORE_IMG =
-        DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:0.8.0-SNAPSHOT");
+    static {
+        MavenXpp3Reader reader = new MavenXpp3Reader();
+        try {
+            Model model = reader.read(new FileReader("pom.xml"));
+            String version = model.getParent().getVersion();
+            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:" + version);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final DockerImageName PASS_CORE_IMG;
 
     @Container
     static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
