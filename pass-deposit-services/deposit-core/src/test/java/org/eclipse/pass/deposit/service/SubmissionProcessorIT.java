@@ -60,7 +60,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         // After the SubmissionProcessor successfully processing a submission we should observe:
         // 1. Deposit resources created for each Repository associated with the Submission
         // 2. The Deposit resources should be in a ACCEPTED state
-        // These statuses are dependant on the transport being used - because the TransportResponse.onSuccess(...)
+        // These statuses are dependent on the transport being used - because the TransportResponse.onSuccess(...)
         // method may modify the repository resources associated with the Submission.  Because the FilesystemTransport
         // is used, the Deposit resources will be in the ACCEPTED state, and RepositoryCopy resources in the ACCEPTED
         // state.
@@ -110,6 +110,13 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             .count();
         assertEquals(actualSubmissionDepositCount, submission.getRepositories().size());
         assertTrue(resultDeposits.stream().allMatch(deposit -> deposit.getDepositStatus() == DepositStatus.ACCEPTED));
+
+        List<String> repoKeys = resultDeposits.stream()
+            .map(deposit -> deposit.getRepository().getRepositoryKey())
+                .toList();
+        List<String> expectedRepoKey = List.of("PubMed Central", "JScholarship", "BagIt");
+        assertTrue(repoKeys.size() == expectedRepoKey.size() && repoKeys.containsAll(expectedRepoKey)
+            && expectedRepoKey.containsAll(repoKeys));
 
         // WHEN
         submissionStatusUpdater.doUpdate(List.of(actualSubmission.getId()));
