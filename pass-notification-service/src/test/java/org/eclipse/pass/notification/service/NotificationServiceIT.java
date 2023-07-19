@@ -70,15 +70,16 @@ public class NotificationServiceIT extends AbstractNotificationSpringIntegration
     private static final String RECIPIENT = "staffWithNoGrants@jhu.edu";
     private static final String CC = "notification-demo-cc@jhu.edu";
 
+    // TODO replace version with moving tag like `main`
     private static final DockerImageName PASS_CORE_IMG =
-        DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main");
+        DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:0.8.0-SNAPSHOT");
 
     @Container
     static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
         .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
         .withEnv("PASS_CORE_BACKEND_USER", "backend")
         .withEnv("PASS_CORE_BACKEND_PASSWORD", "backend")
-        .waitingFor(Wait.forHttp("/data/grant"))
+        .waitingFor(Wait.forHttp("/data/grant").forStatusCode(401))
         .withExposedPorts(8080);
 
     @RegisterExtension
