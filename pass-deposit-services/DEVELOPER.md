@@ -8,38 +8,11 @@ The entrypoint into the deposit services is the `DepositApp`, which accepts comm
 of the deposit services runtime. Spring beans are created entirely in Java code by the `DepositConfig`  and `JmsConfig`
 classes.
 
-## Runners
-
-### ListenerRunner
-
-The `listen` argument will invoke the `ListenerRunner`, which waits for the Fedora repository to be available, otherwise
-it shuts down the application. Two JMS listeners are started that listen to the `submission` and `deposit` queues.
-The `submission` queue provides messages relating to `Submission` resources, and the `deposit` queue provides messages
-relating to `Deposit` resources. Deposit Services does not listen or act on messages for other types of repository
-resources.
-
-The `PASS_FEDORA_USERNAME` and `PASS_FEDORA_PASSWORD` define the username and password used to perform HTTP `Basic`
-authentication to the Fedora HTTP REST API (i.e. `PASS_FEDORA_BASEURL`).
-
-### FailedDepositRunner
-
-The `retry` argument invokes the `FailedDepositRunner` which will re-submit failed `Deposit` resources to the task queue
-for processing. URIs for specific Deposits may be specified, otherwise the index is searched for failed Deposits, and
-each one will be re-tried.
-
-### SubmittedUpdateRunner
-
-The `refresh` argument invokes the `SubmittedUpdateRunner` which will attempt to re-process a `Deposit`'s status
-reference. URIs for specific Deposits may be specified, otherwise the index is searched for `SUBMITTED` Deposits, and
-each one will be refreshed.
-
 ## Message flow and concurrency
 
-Each JMS listener (one each for the `deposit` and `submission` queues) can process messages concurrently. The number of
-messages each listener can process concurrently is set by the property `spring.jms.listener.concurrency` (or its
-environment equivalent: `SPRING_JMS_LISTENER_CONCURRENCY`).
+Each JMS listener (one each for the `deposit` and `submission` queues) can process messages concurrently.
 
-The `submission` queue is processed by the `JmsSubmissionProcessor`,which resolves the `Submission` resource represented
+The `submission` queue is processed by the `SubmissionListener`,which resolves the `Submission` resource represented
 in the message, and hands off processing to the `SubmissionProcessor`. The `SubmissionProcessor` builds
 a `DepositSubmission`, which is the Deposit Services' analog of a `Submission` containing all of the metadata and
 custodial content associated with a  `Submission`. After building the `DepositSubmission`, the processor creates
@@ -61,7 +34,7 @@ accordingly.
 
 Certain Spring sub-systems like Spring MVC, or Spring Messaging, support the notion of a "global" [`ErrorHandler`][2].
 Deposit services provides an implementation **`DepositServicesErrorHandler`**, and it is used to catch exceptions thrown
-by the `JmsDepositProcessor`, `JmsSubmissionProcessor`, and is adapted as a [`Thread.UncaughtExceptionHandler`][3] and
+by the `DepositListener`, `SubmissionListener`, and is adapted as a [`Thread.UncaughtExceptionHandler`][3] and
 as a [`RejectedExecutionHandler`][4].
 
 Deposit services provides a `DepositServicesRuntimeException` (`DSRE` for short), which has a
@@ -92,7 +65,7 @@ to `CriticalRepositoryInteraction`: the repository resource itself, a _pre-condi
 critical_ update (i.e. the `Function` to be executed). The only implementation of `CRI` is the class `CriticalPath`, and
 the particulars of that implementation are discussed below.
 
-1. First, `CriticalPath` obtains a lock over the string form of the URI of the resource being updated. This insures that
+1. First, `CriticalPath` obtains a lock over the string form of the ID of the resource being updated. This insures that
    any other threads executing a `CRI` for the _same resource_ _in the same JVM_ must wait their turn before executing
    their critical update of the resource.
 
@@ -275,5 +248,3 @@ There are some common permutations of these statuses that will be observed:
 [3]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.UncaughtExceptionHandler.html
 
 [4]: https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RejectedExecutionHandler.html
-
-[5]: https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Repository.md
