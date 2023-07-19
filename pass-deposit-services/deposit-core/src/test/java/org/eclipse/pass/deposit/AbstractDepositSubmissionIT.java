@@ -87,7 +87,6 @@ public abstract class AbstractDepositSubmissionIT {
     @Autowired protected SubmissionTestUtil submissionTestUtil;
     @Autowired protected PassClient passClient;
 
-
     @DynamicPropertySource
     static void updateProperties(DynamicPropertyRegistry registry) {
         registry.add("pass.client.url",
