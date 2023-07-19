@@ -22,8 +22,8 @@ used in development and production infrastructure which rely on Docker and its a
 | `DSPACE_PORT`           | 8181                                                                           |the TCP port exposing the SWORD protocol version 2 endpoint
 | `FTP_HOST`              | localhost                                                                      |the IP address or  host name of the NIH FTP server
 | `FTP_PORT`              | 21                                                                             |the TCP control port of the NIH FTP server
-| `PASS_DEPOSIT_JOBS_CONCURRENCY` | 2                                                                              |the number of Quartz jobs that may be run concurrently.
-| `PASS_DEPOSIT_JOBS_DEFAULT_INTERVAL_MS` | 600000                                                                         |the amount of time, in milliseconds, that Quartz launches jobs.
+| `PASS_DEPOSIT_JOBS_CONCURRENCY` | 2                                                                              |the number of Scheduled jobs that may be run concurrently.
+| `PASS_DEPOSIT_JOBS_DEFAULT_INTERVAL_MS` | 600000                                                                         |the amount of time, in milliseconds, that Scheduled jobs run.
 | `PASS_DEPOSIT_QUEUE_SUBMISSION_NAME` | submission                                                                     |the name of the JMS queue that has messages pertaining to `Submission` resources (used by the `JmsSubmissionProcessor`)
 | `PASS_DEPOSIT_QUEUE_DEPOSIT_NAME` | deposit                                                                        |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
 | `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` | classpath:/repositories.json                                                   |points to a properties file containing the configuration for the transport of custodial content to remote repositories. Values must be [Spring Resource URIs][1]. See below for customizing the repository configuration values.
@@ -31,15 +31,6 @@ used in development and production infrastructure which rely on Docker and its a
 | `PASS_CLIENT_URL`       | localhost:8080                                                                 |the URL used to communicate with the PASS Core API. Normally this variable does not need to be changed (see note below)
 | `PASS_CLIENT_PASSWORD`        | fakepassword                                                                           |the password used for `Basic` HTTP authentication to the PASS Core API
 | `PASS_CLIENT_USER`            | fakeuser                                                                           |the username used for `Basic` HTTP authentication to the PASS Core API
-| `SPRING_ACTIVEMQ_BROKER_URL` | ${activemq.broker.uri:tcp://${fcrepo.host:localhost}:${fcrepo.jms.port:61616}} |the internal variable for configuring the URI of the JMS broker
-| `SPRING_ACTIVEMQ_PASSWORD` | `null`                                                                         |Password to use when authenticating to the broker
-| `SPRING_ACTIVEMQ_USER`  | `null`                                                                         |User name to use when authenticating to the broker
-| `SPRING_JMS_LISTENER_CONCURRENCY` | 4                                                                              |the number of JMS messages that can be processed simultaneously by _
-each_ JMS queue
-
-> If the Fedora repository is deployed under a webapp context other than `/fcrepo`, or if `https` ought to be used instead of `http`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=https://fcrepo:8080/rest`)
-
-> If the Elastic Search index is deployed under a url other than `/pass`, or if `https` ought to be used instead of `http`, the environment variable `PASS_ELASTICSEARCH_URL` must be set to the base of the Elastic Search HTTP API (e.g. `PASS_ELASTICSEARCH_URL=https://localhost:9200/index`)
 
 ### Repositories Configuration
 
@@ -48,20 +39,9 @@ repositories. The format of the configuration file is JSON, defining multiple do
 
 Each repository configuration has a top-level key that is used to identify a particular configuration. Importantly, each
 top-level key _must_ map to a [`Repository` resource][5] within the PASS repository. This implies that the top-level
-keys in `repositories.json` are not arbitrary. In fact, the top level key must be one of:
+keys in `repositories.json` are not arbitrary. In fact, the top level key must be:
 
 * the value of a `Repository.repositoryKey` field (of a `Repository` resource in the PASS repository)
-* the full URI of a `Repository` resource in the PASS repository
-* a portion of the URI path of a `Repository` resource in the PASS repository
-
-Given a `Repository` with a `repositoryKey` of `my-repo` and a URI
-of `https://pass.my.edu/fcrepo/rest/repositories/77/cc/80/64/77cc8064-a918-4823-968d-2b17386db76d`, any of the following
-top level keys are acceptable:
-
-* `my-repo`
-* `https://pass.my.edu/fcrepo/rest/repositories/77/cc/80/64/77cc8064-a918-4823-968d-2b17386db76d`
-* `/repositories/77/cc/80/64/77cc8064-a918-4823-968d-2b17386db76d`
-* `77cc8064-a918-4823-968d-2b17386db76d`
 
 Deposit Services comes with a default repository configuration, but a production environment will want to override the
 default. Defaults are overridden by creating a copy of the default configuration, editing it to suit, and
@@ -69,7 +49,7 @@ setting `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` to point to the new location.
 
 > Acceptable values for `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` must be a form of [Spring Resource URI][1].
 
-The _default_ configuration is replicated below:
+A possible repository configuration is replicated below:
 
 ```json
 {
@@ -155,7 +135,7 @@ The _default_ configuration is replicated below:
 
 #### Customizing Repository Configuration Elements
 
-The default repository configuration will not be suitable for production. A production deployment needs to provide
+The repository configuration above will not be suitable for production. A production deployment needs to provide
 updated authentication credentials and insure the correct value for the default SWORD collection URL
 - `default-collection`. Each `transport-config` section should be reviewed for correctness, paying special attention
 to `protocol-binding` and `auth-realm` blocks: update `username` and `password` elements, and insure correct values for
@@ -204,21 +184,18 @@ to re-create the submission in the user interface, and resubmit it.
    retries when there are errors communicating with the repository)
 
 See `DepositTask` for details. Deposits fail for transient reasons; a server being down, an interruption in network
-communication, or invalid credentials for the downstream repository are just a few examples. Manual intervention is
-required to remediate failed deposits, but Deposit Services provides support for this case (see the `retry` mode
-documented below).
+communication, or invalid credentials for the downstream repository are just a few examples.
 
 ## Build and Deployment
 
-Deposit Services' primary artifact is a single self-executing jar. The behavior, or "mode" of the deposit services
-application is directed by command line arguments and influenced by environment variables. In the PASS infrastructure,
+Deposit Services' primary artifact is a single self-executing jar. In the PASS infrastructure,
 the Deposit Services self-executing jar is deployed inside of a simple Docker container.
 
 Deposit Services can be built by running:
 
 * `mvn clean install`
 
-The main Deposit Services deployment artifact is found in `deposit-messaging/target/deposit-messaging-<version>.jar`. It
+The main Deposit Services deployment artifact is found in `deposit-core/target/pass-deposit-service-exec.jar`. It
 is this jarfile that is included in the Docker image for Deposit Services, and posted on the GitHub Release page.
 
 [1]: https://docs.spring.io/spring/docs/5.0.7.RELEASE/spring-framework-reference/core.html#resources-implementations
@@ -228,5 +205,3 @@ is this jarfile that is included in the Docker image for Deposit Services, and p
 [3]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.UncaughtExceptionHandler.html
 
 [4]: https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RejectedExecutionHandler.html
-
-[5]: https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Repository.md
