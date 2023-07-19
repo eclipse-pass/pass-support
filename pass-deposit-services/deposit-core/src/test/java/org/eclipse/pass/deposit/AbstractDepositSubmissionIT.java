@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -28,6 +29,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.util.SubmissionTestUtil;
 import org.eclipse.pass.support.client.PassClient;
@@ -72,9 +75,18 @@ import org.testcontainers.utility.DockerImageName;
 @DirtiesContext
 public abstract class AbstractDepositSubmissionIT {
 
-    // TODO replace version with moving tag like `main`
-    private static final DockerImageName PASS_CORE_IMG =
-        DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:0.8.0-SNAPSHOT");
+    static {
+        MavenXpp3Reader reader = new MavenXpp3Reader();
+        try {
+            Model model = reader.read(new FileReader("pom.xml"));
+            String version = model.getParent().getVersion();
+            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:" + version);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final DockerImageName PASS_CORE_IMG;
 
     @Container
     protected static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
