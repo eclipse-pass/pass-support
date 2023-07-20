@@ -73,7 +73,7 @@
     <slf4j.version>2.0.6</slf4j.version>
     <logback-classic.version>1.4.7</logback-classic.version>
     <spring-framework.version>5.1.4.RELEASE</spring-framework.version>
-    <commons-net.version>3.6</commons-net.version>
+    <commons-net.version>3.9.0</commons-net.version>
     <commons-compress.version>1.21</commons-compress.version>
     <commons-io.version>2.6</commons-io.version>
     <guava.version>23.5-jre</guava.version>
