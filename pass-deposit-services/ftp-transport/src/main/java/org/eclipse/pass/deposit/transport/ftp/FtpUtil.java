@@ -45,16 +45,11 @@ public class FtpUtil {
 
     private static final String CONNECTION_ATTEMPT = "({}) Attempting connection to {}:{} ...";
 
-    private static final String CONNECTION_ATTEMPT_FAILED = "({}) Connection *FAILED* to {}:{} (sleeping for {} ms) ." +
-                                                            "..";
-
     private static final String CONNECTION_ATTEMPT_FAILED_WITH_EXCEPTION = "({}) Connection *FAILED* to {}:{} " +
                                                                            "(sleeping for {} ms); Exception was: {}";
 
     private static final String ERR_CONNECT = "({}) Error connecting to {}:{}; error code from the FTP server was " +
                                               "'{}', and the error string was '{}'";
-
-    private static final String NOOP_FAILED = "({}) NOOP *FAILED*, connection to {}:{} not established.";
 
     private static final String ERR_REPLY = "Reply from the FTP server was '%s' (code: '%s')";
 
@@ -389,14 +384,13 @@ public class FtpUtil {
                 int replyCode = ftpClient.getReplyCode();
                 String replyString = ftpClient.getReplyString();
 
-                if (!FTPReply.isPositiveCompletion(replyCode)) {
-                    LOG.debug(ERR_CONNECT, ftpClientAsString(ftpClient), ftpHost, ftpPort, replyCode, replyString);
+                if (FTPReply.isPositiveCompletion(replyCode)) {
+                    connectionSuccess = true;
                 } else {
-                    if (!ftpClient.sendNoOp()) {
-                        LOG.debug(NOOP_FAILED, ftpClientAsString(ftpClient), ftpHost, ftpPort);
-                    } else {
-                        connectionSuccess = true;
-                    }
+                    throw new RuntimeException(
+                        String.format("(%s) Error connecting to %s:%s; error code from the FTP server was " +
+                            "'%s', and the error string was '%s'", ftpClientAsString(ftpClient), ftpHost, ftpPort,
+                            replyCode, replyString));
                 }
             } catch (Exception e) {
                 caughtException = e;

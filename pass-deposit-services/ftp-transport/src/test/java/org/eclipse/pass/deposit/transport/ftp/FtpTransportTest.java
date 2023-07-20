@@ -131,7 +131,6 @@ public class FtpTransportTest {
             transport.open(expectedHints);
         });
 
-        verify(ftpClient).sendNoOp();
         verify(ftpClient, atLeastOnce()).getReplyCode();
         verify(ftpClient, atLeastOnce()).getReplyString();
     }
