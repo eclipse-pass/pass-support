@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.eclipse.pass</groupId>
     <artifactId>pass-grant-loader</artifactId>
-    <version>0.8.0</version>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>pass-grant-cli</artifactId>
