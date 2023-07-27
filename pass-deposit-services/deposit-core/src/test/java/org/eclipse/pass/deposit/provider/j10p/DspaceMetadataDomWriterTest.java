@@ -237,9 +237,13 @@ public class DspaceMetadataDomWriterTest {
         java.io.File metsxml = tempDir.resolve("testSimple-mets.xml").toFile();
 
         LOG.debug(">>>> Writing test METS output to {}", metsxml);
-        underTest.write(new FileOutputStream(metsxml));
+        try (FileOutputStream fos = new FileOutputStream(metsxml)) {
+            underTest.write(fos);
+        }
         if (LOG.isDebugEnabled()) {
-            IOUtils.copy(new FileInputStream(metsxml), System.err);
+            try (FileInputStream fis = new FileInputStream(metsxml)) {
+                IOUtils.copy(fis, System.err);
+            }
         }
     }
 
