@@ -38,9 +38,10 @@ public class Util {
         if (awardNumber.matches("^[A-Z0-9]{3}\s[A-Z0-9]{8}$")) {
             return awardNumber;
         }
+        awardNumber = awardNumber.trim().toUpperCase();
         // Pattern for award numbers, typically a character followed by 2 digits, a space, and a mix of letters
         // and digits totaling 8 characters.
-        String regex = "\\s*[A-Z0-9]{3}\\s[A-Z0-9]{8}($|-[A-Z0-9]{0,4}$|\\s*[A-Z0-9]{0,4})\\s*";
+        String regex = "[A-Z0-9]{3}\\s[A-Z0-9]{8}($|-[A-Z0-9]{0,4}$|\\s+[A-Z0-9]{0,4})";
 
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(awardNumber);
