@@ -37,6 +37,8 @@ public class Util {
         if (awardNumber.matches("^[A-Z0-9]{3}\s[A-Z0-9]{8}$")) {
             return awardNumber;
         }
+        // Pattern for award numbers, typically a character followed by 2 digits, a space, and a mix of letters
+        // and digits totaling 8 characters
         String regex = "[A-Z0-9]{3}\\s[A-Z0-9]{8}";
 
         Pattern pattern = Pattern.compile(regex);
