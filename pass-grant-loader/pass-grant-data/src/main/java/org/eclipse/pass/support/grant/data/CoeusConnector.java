@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.eclipse.pass.support.client.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +108,8 @@ public class CoeusConnector implements GrantConnector {
             while (rs.next()) {
                 Map<String, String> rowMap = new HashMap<>();
 
-                rowMap.put(CoeusFieldNames.C_GRANT_AWARD_NUMBER, rs.getString(CoeusFieldNames.C_GRANT_AWARD_NUMBER));
+                rowMap.put(CoeusFieldNames.C_GRANT_AWARD_NUMBER,
+                        Util.grantAwardNumberNormalizer(rs.getString(CoeusFieldNames.C_GRANT_AWARD_NUMBER)));
                 rowMap.put(CoeusFieldNames.C_GRANT_AWARD_STATUS, rs.getString(CoeusFieldNames.C_GRANT_AWARD_STATUS));
                 rowMap.put(CoeusFieldNames.C_GRANT_LOCAL_KEY, rs.getString(CoeusFieldNames.C_GRANT_LOCAL_KEY));
                 rowMap.put(CoeusFieldNames.C_GRANT_PROJECT_NAME, rs.getString(CoeusFieldNames.C_GRANT_PROJECT_NAME));
