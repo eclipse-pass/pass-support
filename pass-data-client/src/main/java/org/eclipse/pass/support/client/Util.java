@@ -27,8 +27,9 @@ public class Util {
     /**
      * Normalizes an award number by standardizing to the format: [A-Z0-9]{3}\s[A-Z0-9]{8}
      * e.g. K23 HL153778
-     * @param awardNumber
-     * @return
+     * @param awardNumber award number to normalize
+     * @return normalized award number in the format of [A-Z0-9]{3}\s[A-Z0-9]{8}, e.g. K23 HL153778
+     * @throws IOException if the award number cannot be normalized
      */
     public static String grantAwardNumberNormalizer(String awardNumber) throws IOException {
         if (StringUtils.isEmpty(awardNumber)) {
@@ -38,14 +39,18 @@ public class Util {
             return awardNumber;
         }
         // Pattern for award numbers, typically a character followed by 2 digits, a space, and a mix of letters
-        // and digits totaling 8 characters
-        String regex = "[A-Z0-9]{3}\\s[A-Z0-9]{8}";
+        // and digits totaling 8 characters.
+        String regex = "\\s*[A-Z0-9]{3}\\s[A-Z0-9]{8}($|-[A-Z0-9]{0,4}$|\\s*[A-Z0-9]{0,4})\\s*";
 
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(awardNumber);
-        //if not in the format we expect, try to normalize it
+        //if not in the various formats we expect, try to normalize it by finding the first match substring
         if (matcher.find()) {
-            return matcher.group();
+            //if matched the different variations of the awardNumber, then return the normalized version
+            String regexSubstring = "[A-Z0-9]{3}\\s[A-Z0-9]{8}";
+            Pattern patternSubstring = Pattern.compile(regexSubstring);
+            Matcher matcherSubstring = patternSubstring.matcher(awardNumber);
+            return matcherSubstring.group();
         } else {
             throw new IOException("Award number cannot be normalized: " + awardNumber);
         }
