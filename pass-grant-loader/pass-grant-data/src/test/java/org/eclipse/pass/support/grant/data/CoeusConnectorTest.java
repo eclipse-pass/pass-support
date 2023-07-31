@@ -20,11 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -154,7 +150,6 @@ public class CoeusConnectorTest {
         assertTrue(expectedQueryString1.equals(actualQueryString) ||
                           expectedQueryString2.equals(actualQueryString));
     }
-
 
 }
 
