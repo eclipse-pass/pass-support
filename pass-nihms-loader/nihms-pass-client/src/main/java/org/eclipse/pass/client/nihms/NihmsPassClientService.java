@@ -35,6 +35,7 @@ import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.Util;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
@@ -174,7 +175,8 @@ public class NihmsPassClientService {
         if (StringUtils.isEmpty(awardNumber)) {
             throw new IllegalArgumentException("awardNumber cannot be empty");
         }
-
+        //normalize awardNumber
+        awardNumber = Util.grantAwardNumberNormalizer(awardNumber);
         //if the awardNumber is in the cache, retrieve URI.
         String grantId = grantCache.get(awardNumber);
         if (grantId != null) {
@@ -187,22 +189,6 @@ public class NihmsPassClientService {
         grantSelector.setFilter(RSQL.equals(AWARD_NUMBER_FLD, awardNumber));
         PassClientResult<Grant> grantResult = passClient.selectObjects(grantSelector);
         grants.addAll(grantResult.getObjects());
-
-        //try with no spaces
-        String modAwardNum = awardNumber.replaceAll("\\s+", "");
-        if (!awardNumber.equals(modAwardNum)) {
-            grantSelector.setFilter(RSQL.equals(AWARD_NUMBER_FLD, modAwardNum));
-            grantResult = passClient.selectObjects(grantSelector);
-            grants.addAll(grantResult.getObjects());
-        }
-
-        //if there is a "-##" at the end of the award number, remove it and search again
-        if (modAwardNum.contains("-") && modAwardNum.indexOf("-") > 9) {
-            modAwardNum = modAwardNum.substring(0, modAwardNum.indexOf("-"));
-            grantSelector.setFilter(RSQL.equals(AWARD_NUMBER_FLD, modAwardNum));
-            grantResult = passClient.selectObjects(grantSelector);
-            grants.addAll(grantResult.getObjects());
-        }
 
         if (grants.size() == 1) {
             return grants.get(0);

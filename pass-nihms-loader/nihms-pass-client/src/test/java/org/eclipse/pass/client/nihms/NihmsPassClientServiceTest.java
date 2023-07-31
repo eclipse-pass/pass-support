@@ -75,7 +75,7 @@ public class NihmsPassClientServiceTest {
     private static final String repositoryCopyId = "1";
     private static final String pmid = "12345678";
     private static final String doi = "https://doi.org/10.000/abcde";
-    private static final String awardNumber = "RH 1234";
+    private static final String awardNumber = "R01 CA265009";
     private static final String title = "Article Title";
 
     @Mock
@@ -95,18 +95,12 @@ public class NihmsPassClientServiceTest {
     @Test
     public void testFindGrantByAwardNumberNoMatch() throws IOException {
         String awardFilter1 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber);
-        String awardFilter2 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber.replaceAll("\\s+", ""));
         PassClientResult<PassEntity> passClientResult = new PassClientResult(List.of(), 0);
         doReturn(passClientResult)
                 .when(mockClient)
                 .selectObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter1)));
-        doReturn(passClientResult)
-                .when(mockClient)
-                .selectObjects(
-                        argThat(passClientSelector ->
-                                passClientSelector.getFilter().equals(awardFilter2)));
         Grant grant = clientService.findMostRecentGrantByAwardNumber(awardNumber);
         assertNull(grant);
     }
@@ -117,7 +111,6 @@ public class NihmsPassClientServiceTest {
     @Test
     public void testFindGrantByAwardNumberHasMatch() throws Exception {
         String awardFilter = RSQL.equals(AWARD_NUMBER_FLD, awardNumber);
-        String awardFilter2 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber.replaceAll("\\s+", ""));
         Grant grant1 = new Grant(grant1Id);
         grant1.setAwardNumber(awardNumber);
         grant1.setStartDate(ZonedDateTime.now().minusYears(1));
@@ -132,11 +125,6 @@ public class NihmsPassClientServiceTest {
                 .selectObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter)));
-        doReturn(mockGrantResult)
-                .when(mockClient)
-                .selectObjects(
-                        argThat(passClientSelector ->
-                                passClientSelector.getFilter().equals(awardFilter2)));
         Grant matchedGrant = clientService.findMostRecentGrantByAwardNumber(awardNumber);
 
         assertEquals(grant2, matchedGrant);
