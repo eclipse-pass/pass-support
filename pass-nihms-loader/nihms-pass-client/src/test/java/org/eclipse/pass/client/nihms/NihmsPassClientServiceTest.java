@@ -243,6 +243,22 @@ public class NihmsPassClientServiceTest {
     }
 
     /**
+     * Award numbers that cannot be normalized
+     */
+    @Test
+    public void testFindGrantByAwardNumberCannotNormalize() {
+        assertThrows(IOException.class, () -> {
+            Grant matchedGrant1 = clientService.findMostRecentGrantByAwardNumber("K23 HL1537783456");
+        });
+        assertThrows(IOException.class, () -> {
+            Grant matchedGrant2 = clientService.findMostRecentGrantByAwardNumber("  S10 45 OD025226");
+        });
+        assertThrows(IOException.class, () -> {
+            Grant matchedGrant3 = clientService.findMostRecentGrantByAwardNumber("R55 AR05?026");
+        });
+    }
+
+    /**
      * Checks that findPublicationById returns match based on PMID
      */
     @Test
