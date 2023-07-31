@@ -193,6 +193,56 @@ public class NihmsPassClientServiceTest {
     }
 
     /**
+     * Checks that findGrantByAwardNumber returns entity ID when one found, using awardNumbers that can be normalized
+     */
+    @Test
+    public void testFindGrantByAwardNumberCanNormalizeHasMatch() throws Exception {
+        String awardFilter1 = RSQL.equals(AWARD_NUMBER_FLD, "K23 HL153778");
+        String awardFilter2 = RSQL.equals(AWARD_NUMBER_FLD, "S10 OD025226");
+        String awardFilter3 = RSQL.equals(AWARD_NUMBER_FLD, "R55 AR050026");
+
+        Grant grant1 = new Grant("1");
+        grant1.setAwardNumber("K23 HL153778");
+        grant1.setStartDate(ZonedDateTime.now());
+
+        Grant grant2 = new Grant("2");
+        grant2.setAwardNumber("S10 OD025226");
+        grant2.setStartDate(ZonedDateTime.now());
+
+        Grant grant3 = new Grant("3");
+        grant3.setAwardNumber("R55 AR050026");
+        grant3.setStartDate(ZonedDateTime.now());
+
+        PassClientResult<PassEntity> mockGrantResult1 = new PassClientResult<>(List.of(grant1), 1);
+        PassClientResult<PassEntity> mockGrantResult2 = new PassClientResult<>(List.of(grant2), 1);
+        PassClientResult<PassEntity> mockGrantResult3 = new PassClientResult<>(List.of(grant3), 1);
+
+        doReturn(mockGrantResult1)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(awardFilter1)));
+        doReturn(mockGrantResult2)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(awardFilter2)));
+        doReturn(mockGrantResult3)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(awardFilter3)));
+
+        Grant matchedGrant1 = clientService.findMostRecentGrantByAwardNumber("K23 HL153778-1A1");
+        Grant matchedGrant2 = clientService.findMostRecentGrantByAwardNumber("S10 OD025226-1");
+        Grant matchedGrant3 = clientService.findMostRecentGrantByAwardNumber("R55 AR050026-1");
+
+        assertEquals(grant1, matchedGrant1);
+        assertEquals(grant2, matchedGrant2);
+        assertEquals(grant3, matchedGrant3);
+    }
+
+    /**
      * Checks that findPublicationById returns match based on PMID
      */
     @Test
