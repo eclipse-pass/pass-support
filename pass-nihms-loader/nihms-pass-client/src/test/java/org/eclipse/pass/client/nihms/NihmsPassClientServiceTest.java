@@ -66,7 +66,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class NihmsPassClientServiceTest {
 
     private static final String grant1Id = "1";
-    private static final String grant2Id = "2";
     private static final String submissionId = "1";
     private static final String userId = "1";
     private static final String depositId = "1";
@@ -76,6 +75,10 @@ public class NihmsPassClientServiceTest {
     private static final String pmid = "12345678";
     private static final String doi = "https://doi.org/10.000/abcde";
     private static final String awardNumber = "R01 CA265009";
+    private static final String awardNumber1 = "K23 HL153781";
+    private static final String awardNumber2 = "T32 HD094687";
+    private static final String awardNumber3 = "F31 MH128079";
+    private static final String awardNumber4 = "S10 OD025226";
     private static final String title = "Article Title";
 
     @Mock
@@ -111,23 +114,82 @@ public class NihmsPassClientServiceTest {
     @Test
     public void testFindGrantByAwardNumberHasMatch() throws Exception {
         String awardFilter = RSQL.equals(AWARD_NUMBER_FLD, awardNumber);
-        Grant grant1 = new Grant(grant1Id);
+        String awardFilter1 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber1);
+        String awardFilter2 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber2);
+        String awardFilter3 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber3);
+        String awardFilter4 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber4);
+
+        Grant grant1 = new Grant("1");
         grant1.setAwardNumber(awardNumber);
         grant1.setStartDate(ZonedDateTime.now().minusYears(1));
-
-        Grant grant2 = new Grant(grant2Id);
+        Grant grant2 = new Grant("2");
         grant2.setAwardNumber(awardNumber);
         grant2.setStartDate(ZonedDateTime.now());
 
+        Grant grant3 = new Grant("3");
+        grant3.setAwardNumber(awardNumber1);
+        grant3.setStartDate(ZonedDateTime.now());
+
+        Grant grant4 = new Grant("4");
+        grant4.setAwardNumber(awardNumber2);
+        grant4.setStartDate(ZonedDateTime.now());
+
+        Grant grant5 = new Grant("5");
+        grant5.setAwardNumber(awardNumber3);
+        grant5.setStartDate(ZonedDateTime.now());
+
+        Grant grant6 = new Grant("6");
+        grant6.setAwardNumber(awardNumber4);
+        grant6.setStartDate(ZonedDateTime.now());
+
+        //test with same grant number, different start dates
         PassClientResult<PassEntity> mockGrantResult = new PassClientResult<>(List.of(grant1, grant2), 2);
+
+        //test other standardized grant numbers
+        PassClientResult<PassEntity> mockGrantResult1 = new PassClientResult<>(List.of(grant3), 1);
+        PassClientResult<PassEntity> mockGrantResult2 = new PassClientResult<>(List.of(grant4), 1);
+        PassClientResult<PassEntity> mockGrantResult3 = new PassClientResult<>(List.of(grant5), 1);
+        PassClientResult<PassEntity> mockGrantResult4 = new PassClientResult<>(List.of(grant6), 1);
+
         doReturn(mockGrantResult)
                 .when(mockClient)
                 .selectObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter)));
-        Grant matchedGrant = clientService.findMostRecentGrantByAwardNumber(awardNumber);
+        doReturn(mockGrantResult1)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(awardFilter1)));
+        doReturn(mockGrantResult2)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(awardFilter2)));
+        doReturn(mockGrantResult3)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(awardFilter3)));
+        doReturn(mockGrantResult4)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(awardFilter4)));
 
+        Grant matchedGrant = clientService.findMostRecentGrantByAwardNumber(awardNumber);
+        Grant matchedGrant1 = clientService.findMostRecentGrantByAwardNumber(awardNumber1);
+        Grant matchedGrant2 = clientService.findMostRecentGrantByAwardNumber(awardNumber2);
+        Grant matchedGrant3 = clientService.findMostRecentGrantByAwardNumber(awardNumber3);
+        Grant matchedGrant4 = clientService.findMostRecentGrantByAwardNumber(awardNumber4);
+
+        //case with grant with same award number, different start dates
         assertEquals(grant2, matchedGrant);
+        //other cases with 1 grant award number
+        assertEquals(grant3, matchedGrant1);
+        assertEquals(grant4, matchedGrant2);
+        assertEquals(grant5, matchedGrant3);
+        assertEquals(grant6, matchedGrant4);
     }
 
     /**
