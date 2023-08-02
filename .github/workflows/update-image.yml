@@ -39,5 +39,6 @@ jobs:
         run: echo "IMAGE_TAG=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`" >> $GITHUB_OUTPUT
 
       - name: "Upload Docker images to GHCR"
-        run: "docker push ghcr.io/eclipse-pass/deposit-services-core:${{ steps.image_tag.outputs.IMAGE_TAG }}"
-        run: "docker push ghcr.io/eclipse-pass/pass-notification-service:${{ steps.image_tag.outputs.IMAGE_TAG }}"
+        run: |
+          docker push ghcr.io/eclipse-pass/deposit-services-core:${{ steps.image_tag.outputs.IMAGE_TAG }}
+          docker push ghcr.io/eclipse-pass/pass-notification-service:${{ steps.image_tag.outputs.IMAGE_TAG }}
