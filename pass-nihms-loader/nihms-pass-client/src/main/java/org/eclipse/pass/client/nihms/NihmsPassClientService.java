@@ -187,8 +187,7 @@ public class NihmsPassClientService {
         List<Grant> grants = new ArrayList<>();
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
         grantSelector.setFilter(RSQL.equals(AWARD_NUMBER_FLD, awardNumber));
-        PassClientResult<Grant> grantResult = passClient.selectObjects(grantSelector);
-        grants.addAll(grantResult.getObjects());
+        grants = passClient.streamObjects(grantSelector).toList();
 
         if (grants.size() == 1) {
             return grants.get(0);
