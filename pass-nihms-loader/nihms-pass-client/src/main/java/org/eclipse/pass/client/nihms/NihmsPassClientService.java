@@ -184,7 +184,7 @@ public class NihmsPassClientService {
         }
 
         // if we are here, there was nothing cached and we need to figure out which grant to return
-        List<Grant> grants = new ArrayList<>();
+        List<Grant> grants;
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
         grantSelector.setFilter(RSQL.equals(AWARD_NUMBER_FLD, awardNumber));
         grants = passClient.streamObjects(grantSelector).toList();
