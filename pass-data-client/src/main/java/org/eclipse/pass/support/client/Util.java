@@ -25,20 +25,24 @@ public class Util {
     }
 
     /**
-     * Normalizes an award number by standardizing to the format: [A-Z0-9]{3}\s[A-Z0-9]{8}
-     * e.g. K23 HL153778
+     * Normalizes an award number by removing leading/trailing whitespace and converting to uppercase.
+     * Will attempt to detect the NIH format: https://www.era.nih.gov/files/Deciphering_NIH_Application.pdf
+     * If the NIH format is detected it will attempt to normalize otherwise it will ignore as it may be a non-NIH
+     * award number.
      * @param awardNumber award number to normalize
-     * @return normalized award number in the format of [A-Z0-9]{3}\s[A-Z0-9]{8}, e.g. K23 HL153778
+     * @return normalized award number
      * @throws IOException if the award number cannot be normalized
      */
     public static String grantAwardNumberNormalizer(String awardNumber) throws IOException {
         if (StringUtils.isEmpty(awardNumber)) {
             return null;
         }
-        if (awardNumber.matches("^[A-Z0-9]{3}\s[A-Z0-9]{8}$")) {
+        awardNumber = awardNumber.trim().toUpperCase();
+
+        if (awardNumber.matches("[A-Z0-9]{3}\s[A-Z0-9]{8}")) {
             return awardNumber;
         }
-        awardNumber = awardNumber.trim().toUpperCase();
+
         // Pattern for award numbers, typically a character followed by 2 digits, a space, and a mix of letters
         // and digits totaling 8 characters.
         String regex = "^[A-Z0-9]{3}\\s[A-Z0-9]{8}($|-[A-Z0-9]{0,4}$|\\s+[A-Z0-9]{0,4})";
@@ -54,7 +58,7 @@ public class Util {
             matcherSubstring.find();
             return matcherSubstring.group();
         } else {
-            throw new IOException("Award number cannot be normalized: " + awardNumber);
+            throw new IOException("Grant Award number cannot be normalized: " + awardNumber);
         }
     }
 }
