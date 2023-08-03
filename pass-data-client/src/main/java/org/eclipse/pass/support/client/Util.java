@@ -37,12 +37,15 @@ public class Util {
         if (StringUtils.isEmpty(awardNumber)) {
             return null;
         }
-        awardNumber = awardNumber.trim().toUpperCase();
+        awardNumber = awardNumber.trim();
 
         //if matching the NIH format, then normalize it to the expected format by removing leading zeros
-        if (awardNumber.matches("[A-Z0-9]{3}\s*[A-Z0-9]{8}")) {
-            //remove leading zeros & whitespace
-            awardNumber = awardNumber.replaceFirst("^0+(?!$)", "").replaceAll("\\s", "");
+        if (awardNumber.toUpperCase().matches("0*[A-Z][0-9]{2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
+            //remove leading zeros, whitespace and make uppercase
+            awardNumber = awardNumber
+                    .replaceFirst("^0+(?!$)", "")
+                    .replaceAll("\\s", "")
+                    .toUpperCase();
         }
         return awardNumber;
     }
