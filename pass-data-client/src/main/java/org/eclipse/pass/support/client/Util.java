@@ -2,8 +2,6 @@ package org.eclipse.pass.support.client;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,5 +46,41 @@ public class Util {
                     .toUpperCase();
         }
         return awardNumber;
+    }
+
+    /**
+     * Generate RSQL that will find any awardNumber that various patterns that an NIH grant award number
+     * can come in
+     * Along with the following variations from the standard pattern:
+     *  1) a suffix denoted by a hyphen followed by characters, e.g. A01 1234567-01
+     *  2) Leading and trailing spaces
+     *  3) Multiple spaces in between the first set of characters and second set: A01  1234567
+     *  4) Leading zeros in the first set of characters: 000A01 1234567
+     *  5)
+     * @param awardNumber
+     * @return
+     */
+    public static String grantAwardNumberNormalizeSearch(String awardNumber, String rsqlFieldName) throws IOException {
+        if (StringUtils.isEmpty(awardNumber)) {
+            throw new IOException("Award number cannot be empty");
+        }
+        //tokenize award number between character sets
+        String[] tokens = awardNumber.trim().split("\\s+");
+        //loop through tokens and append the characters % to the end of each token. This way the query can
+        //find any award number that has n many spaces between character sets
+        StringBuilder awardNumberTokenized = new StringBuilder();
+        for (String token : tokens) {
+            awardNumberTokenized.append(token).append("%");
+        }
+        return RSQL.or(
+                RSQL.equals(rsqlFieldName, awardNumber),
+                RSQL.equals(rsqlFieldName, awardNumber.trim()),
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")),
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("\\s+","")),
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")
+                        .replaceAll("\\s+","")),
+                RSQL.equals(rsqlFieldName, Util.grantAwardNumberNormalizer(awardNumber)),
+                rsqlFieldName + "=like=%" + awardNumberTokenized
+        );
     }
 }

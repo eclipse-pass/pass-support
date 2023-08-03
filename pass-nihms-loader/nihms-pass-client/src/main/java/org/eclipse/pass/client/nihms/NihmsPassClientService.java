@@ -16,7 +16,6 @@
 package org.eclipse.pass.client.nihms;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -186,7 +185,8 @@ public class NihmsPassClientService {
         // if we are here, there was nothing cached and we need to figure out which grant to return
         List<Grant> grants;
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
-        grantSelector.setFilter(RSQL.equals(AWARD_NUMBER_FLD, awardNumber));
+        String normalizedAwardNumberFilter = Util.grantAwardNumberNormalizeSearch(awardNumber, AWARD_NUMBER_FLD);
+        grantSelector.setFilter(normalizedAwardNumberFilter);
         grants = passClient.streamObjects(grantSelector).toList();
 
         if (grants.size() == 1) {
