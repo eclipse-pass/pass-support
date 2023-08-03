@@ -39,26 +39,11 @@ public class Util {
         }
         awardNumber = awardNumber.trim().toUpperCase();
 
-        if (awardNumber.matches("[A-Z0-9]{3}\s[A-Z0-9]{8}")) {
-            return awardNumber;
+        //if matching the NIH format, then normalize it to the expected format by removing leading zeros
+        if (awardNumber.matches("[A-Z0-9]{3}\s*[A-Z0-9]{8}")) {
+            //remove leading zeros & whitespace
+            awardNumber = awardNumber.replaceFirst("^0+(?!$)", "").replaceAll("\\s", "");
         }
-
-        // Pattern for award numbers, typically a character followed by 2 digits, a space, and a mix of letters
-        // and digits totaling 8 characters.
-        String regex = "^[A-Z0-9]{3}\\s[A-Z0-9]{8}($|-[A-Z0-9]{0,4}$|\\s+[A-Z0-9]{0,4})";
-
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(awardNumber);
-        //if not in the various formats we expect, try to normalize it by finding the first match substring
-        if (matcher.find()) {
-            //if matched the different variations of the awardNumber, then return the normalized version
-            String regexSubstring = "^[A-Z0-9]{3}\\s[A-Z0-9]{8}";
-            Pattern patternSubstring = Pattern.compile(regexSubstring);
-            Matcher matcherSubstring = patternSubstring.matcher(awardNumber);
-            matcherSubstring.find();
-            return matcherSubstring.group();
-        } else {
-            throw new IOException("Grant Award number cannot be normalized: " + awardNumber);
-        }
+        return awardNumber;
     }
 }
