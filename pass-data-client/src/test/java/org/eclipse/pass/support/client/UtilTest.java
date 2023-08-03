@@ -37,9 +37,15 @@ public class UtilTest {
 
     @Test
     public void testAwardNumberCorrectFormatWithHyphen() throws IOException {
-        String awardNumber = "A12 RH345678-A1";
-        String expectedAwardNumber = "A12RH345678-A1";
-        assertEquals(expectedAwardNumber, Util.grantAwardNumberNormalizer(awardNumber));
+        String awardNumber1 = "A12 RH345678-A1";
+        String awardNumber2 = "U01 CA078284-05S2";
+        String awardNumber3 = "000U01 CA078284-05S2";
+        String expectedAwardNumber1 = "A12RH345678-A1";
+        String expectedAwardNumber2 = "U01CA078284-05S2";
+        String expectedAwardNumber3 = "U01CA078284-05S2";
+        assertEquals(expectedAwardNumber1, Util.grantAwardNumberNormalizer(awardNumber1));
+        assertEquals(expectedAwardNumber2, Util.grantAwardNumberNormalizer(awardNumber2));
+        assertEquals(expectedAwardNumber3, Util.grantAwardNumberNormalizer(awardNumber3));
     }
 
     @Test
@@ -61,8 +67,14 @@ public class UtilTest {
     }
 
     @Test
-    public void testNihAwardNumbersLeadingZerosShouldNormalize(){
+    public void testNihAwardNumbersLeadingZerosShouldNormalize() throws IOException {
+        String awardNumber1 = "000A01 RH123456";
+        String awardNumber2 = "000 A01 RH123456";
 
+        String expectedNumber = "A01RH123456";
+
+        assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber1));
+        assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber2));
     }
 
     /**
