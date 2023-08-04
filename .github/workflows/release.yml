@@ -146,3 +146,9 @@ jobs:
           docker push ghcr.io/eclipse-pass/deposit-services-core:$NEXT
           docker push ghcr.io/eclipse-pass/pass-notification-service:$RELEASE
           docker push ghcr.io/eclipse-pass/pass-notification-service:$NEXT
+          docker push ghcr.io/eclipse-pass/jhu-grant-loader:$RELEASE
+          docker push ghcr.io/eclipse-pass/jhu-grant-loader:$NEXT
+          docker push ghcr.io/eclipse-pass/pass-journal-loader:$RELEASE
+          docker push ghcr.io/eclipse-pass/pass-journal-loader:$NEXT
+          docker push ghcr.io/eclipse-pass/pass-nihms-loader:$RELEASE
+          docker push ghcr.io/eclipse-pass/pass-nihms-loader:$NEXT
