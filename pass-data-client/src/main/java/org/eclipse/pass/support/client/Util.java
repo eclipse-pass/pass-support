@@ -79,8 +79,8 @@ public class Util {
                 RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")
                         .replaceAll("\\s+","")),
                 RSQL.equals(rsqlFieldName, Util.grantAwardNumberNormalizer(awardNumber)),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0+","")),
-                rsqlFieldName + "=like=%" + awardNumberTokenized
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0+",""))/*,
+                rsqlFieldName + "=like=%" + awardNumberTokenized*/
         );
     }
 }
