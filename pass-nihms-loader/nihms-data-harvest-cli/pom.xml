@@ -57,6 +57,7 @@
             </goals>
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
+              <finalName>nihms-data-harvest-cli-exec</finalName>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>org.eclipse.pass.loader.nihms.cli.NihmsHarvesterCLI</mainClass>
@@ -77,6 +78,28 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-after-its</id>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <images>
+                <image>
+                  <name>ghcr.io/eclipse-pass/jhu-nihms-loader:%v</name>
+                </image>
+              </images>
+            </configuration>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>
