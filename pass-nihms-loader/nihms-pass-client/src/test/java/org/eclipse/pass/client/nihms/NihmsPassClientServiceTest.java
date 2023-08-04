@@ -24,6 +24,7 @@ import static org.eclipse.pass.client.nihms.NihmsPassClientService.SUBMITTER_FLD
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.argThat;
@@ -32,15 +33,18 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.Util;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
@@ -113,11 +117,11 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindGrantByAwardNumberHasMatch() throws Exception {
-        String awardFilter = RSQL.equals(AWARD_NUMBER_FLD, awardNumber);
-        String awardFilter1 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber1);
-        String awardFilter2 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber2);
-        String awardFilter3 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber3);
-        String awardFilter4 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber4);
+        String awardFilter = Util.grantAwardNumberNormalizeSearch(awardNumber, AWARD_NUMBER_FLD);
+        String awardFilter1 = Util.grantAwardNumberNormalizeSearch(awardNumber1, AWARD_NUMBER_FLD);
+        String awardFilter2 = Util.grantAwardNumberNormalizeSearch(awardNumber2, AWARD_NUMBER_FLD);
+        String awardFilter3 = Util.grantAwardNumberNormalizeSearch(awardNumber3, AWARD_NUMBER_FLD);
+        String awardFilter4 = Util.grantAwardNumberNormalizeSearch(awardNumber4, AWARD_NUMBER_FLD);
 
         Grant grant1 = new Grant("1");
         grant1.setAwardNumber(awardNumber);
@@ -143,37 +147,36 @@ public class NihmsPassClientServiceTest {
         grant6.setStartDate(ZonedDateTime.now());
 
         //test with same grant number, different start dates
-        PassClientResult<PassEntity> mockGrantResult = new PassClientResult<>(List.of(grant1, grant2), 2);
+        Stream<Grant> mockGrantResult = List.of(grant1, grant2).stream();
 
         //test other standardized grant numbers
-        PassClientResult<PassEntity> mockGrantResult1 = new PassClientResult<>(List.of(grant3), 1);
-        PassClientResult<PassEntity> mockGrantResult2 = new PassClientResult<>(List.of(grant4), 1);
-        PassClientResult<PassEntity> mockGrantResult3 = new PassClientResult<>(List.of(grant5), 1);
-        PassClientResult<PassEntity> mockGrantResult4 = new PassClientResult<>(List.of(grant6), 1);
+        Stream<Grant> mockGrantResult1 = List.of(grant3).stream();
+        Stream<Grant> mockGrantResult2 = List.of(grant4).stream();
+        Stream<Grant> mockGrantResult3 = List.of(grant5).stream();
+        Stream<Grant> mockGrantResult4 = List.of(grant6).stream();
 
         doReturn(mockGrantResult)
-                .when(mockClient)
-                .selectObjects(
+                .when(mockClient).streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter)));
         doReturn(mockGrantResult1)
                 .when(mockClient)
-                .selectObjects(
+                .streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter1)));
         doReturn(mockGrantResult2)
                 .when(mockClient)
-                .selectObjects(
+                .streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter2)));
         doReturn(mockGrantResult3)
                 .when(mockClient)
-                .selectObjects(
+                .streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter3)));
         doReturn(mockGrantResult4)
                 .when(mockClient)
-                .selectObjects(
+                .streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter4)));
 

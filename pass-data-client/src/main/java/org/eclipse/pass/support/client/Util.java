@@ -56,7 +56,6 @@ public class Util {
      *  2) Leading and trailing spaces
      *  3) Multiple spaces in between the first set of characters and second set: A01  1234567
      *  4) Leading zeros in the first set of characters: 000A01 1234567
-     *  5)
      * @param awardNumber
      * @return
      */
@@ -80,6 +79,7 @@ public class Util {
                 RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")
                         .replaceAll("\\s+","")),
                 RSQL.equals(rsqlFieldName, Util.grantAwardNumberNormalizer(awardNumber)),
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0+","")),
                 rsqlFieldName + "=like=%" + awardNumberTokenized
         );
     }

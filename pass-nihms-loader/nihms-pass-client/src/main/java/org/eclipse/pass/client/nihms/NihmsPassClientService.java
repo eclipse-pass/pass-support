@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -174,8 +175,6 @@ public class NihmsPassClientService {
         if (StringUtils.isEmpty(awardNumber)) {
             throw new IllegalArgumentException("awardNumber cannot be empty");
         }
-        //normalize awardNumber
-        awardNumber = Util.grantAwardNumberNormalizer(awardNumber);
         //if the awardNumber is in the cache, retrieve URI.
         String grantId = grantCache.get(awardNumber);
         if (grantId != null) {
@@ -187,7 +186,8 @@ public class NihmsPassClientService {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
         String normalizedAwardNumberFilter = Util.grantAwardNumberNormalizeSearch(awardNumber, AWARD_NUMBER_FLD);
         grantSelector.setFilter(normalizedAwardNumberFilter);
-        grants = passClient.streamObjects(grantSelector).toList();
+        Stream<Grant> grantStream = passClient.streamObjects(grantSelector);
+        grants = grantStream.toList();
 
         if (grants.size() == 1) {
             return grants.get(0);
