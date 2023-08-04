@@ -84,10 +84,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -106,7 +102,7 @@
             </goals>
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <finalName>jhu-grant-loader-${project.parent.version}</finalName>
+              <finalName>jhu-grant-loader-exec</finalName>
               <shadedClassifierName>jhu</shadedClassifierName>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
@@ -125,6 +121,27 @@
                 </filter>
               </filters>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-after-its</id>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <images>
+                <image>
+                  <name>ghcr.io/eclipse-pass/jhu-grant-loader:%v</name>
+                </image>
+              </images>
+            </configuration>
+            <goals>
+              <goal>build</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
