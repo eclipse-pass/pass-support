@@ -119,7 +119,7 @@
             <configuration>
               <images>
                 <image>
-                  <name>ghcr.io/eclipse-pass/jhu-journal-loader:%v</name>
+                  <name>ghcr.io/eclipse-pass/pass-journal-loader:%v</name>
                 </image>
               </images>
             </configuration>

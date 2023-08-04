@@ -89,7 +89,7 @@
             <configuration>
               <images>
                 <image>
-                  <name>ghcr.io/eclipse-pass/jhu-nihms-loader:%v</name>
+                  <name>ghcr.io/eclipse-pass/pass-nihms-loader:%v</name>
                 </image>
               </images>
             </configuration>
