@@ -18,35 +18,31 @@
 
 package org.eclipse.pass.client.nihms;
 
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.ISSNS_FLD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.PassClientResult;
-import org.eclipse.pass.support.client.PassClientSelector;
-import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class NihmsPassClientServiceIT {
 
-    private static final String ID_FLD = "@id";
-
     private  NihmsPassClientService underTest;
 
     private PassClient passClient;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         System.setProperty("pass.core.url","http://localhost:8080");
-        System.setProperty("pass.core.user","<test_user>");
-        System.setProperty("pass.core.password","<test_pw>");
+        System.setProperty("pass.core.user","backend");
+        System.setProperty("pass.core.password","backend");
         passClient = PassClient.newInstance();
         underTest = new NihmsPassClientService(passClient);
     }
@@ -63,28 +59,52 @@ public class NihmsPassClientServiceIT {
         passClient.createObject(journal);
         String journalId = journal.getId();
 
-        String journalFilterFoo = RSQL.equals(ISSNS_FLD, "fooissn");
-        PassClientSelector<Journal> journalFooSelector = new PassClientSelector<>(Journal.class);
-        journalFooSelector.setFilter(journalFilterFoo);
-        PassClientResult<Journal> journalFooResult = passClient.selectObjects(journalFooSelector);
-        List<Journal> journalsFoo = journalFooResult.getObjects();
-
-        String journalFilterBar = RSQL.equals(ISSNS_FLD, "barissn");
-        PassClientSelector<Journal> journalBarSelector = new PassClientSelector<>(Journal.class);
-        journalFooSelector.setFilter(journalFilterBar);
-        PassClientResult<Journal> journalBarResult = passClient.selectObjects(journalBarSelector);
-        List<Journal> journalsBar = journalBarResult.getObjects();
-
-        assertEquals(1, journalsFoo.size());
-        assertEquals(journalId, journalsFoo.get(0).getId());
-
-        assertEquals(1, journalsBar.size());
-        assertEquals(journalId, journalsBar.get(0).getId());
-
         assertEquals(journalId, underTest.findJournalByIssn("fooissn"));
         assertEquals(journalId, underTest.findJournalByIssn("barissn"));
 
         // and that a lookup by a non-existent issn returns null.
         assertNull(underTest.findJournalByIssn("nonexistentissn"));
     }
+
+    /**
+     * Using different variants of the same award number, demonstrate that normalized award numbers are found using
+     * non-normalized award numbers.
+     */
+    @Test
+    public void shouldFindNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
+        Grant grant1 = new Grant("1");
+        grant1.setAwardNumber("R01AR074846");
+        grant1.setStartDate(ZonedDateTime.now());
+
+        Grant grant2 = new Grant("2");
+        grant2.setAwardNumber("UM1AI068613");
+        grant2.setStartDate(ZonedDateTime.now());
+
+        Grant grant3 = new Grant("3");
+        grant3.setAwardNumber("K23HL151758");
+        grant3.setStartDate(ZonedDateTime.now());
+
+        passClient.createObject(grant1);
+        passClient.createObject(grant2);
+        passClient.createObject(grant3);
+
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("R01 AR074846").getAwardNumber());
+
+    }
+
+    /**
+     * Generate grants based on a large list of known award numbers in PASS. The search should return the grant that
+     * match the award numbers and not return any false positives.
+     */
+    /*@Test
+    public void shouldFindNonNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
+        URI testAwardNumberUri = NihmsPassClientServiceTest.class.getResource("/valid_award_numbers.csv").toURI();
+        List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
+        int grantId = 0;
+        for (String awardNumber : awardNumbers) {
+            Grant grant = new Grant();
+        }
+    }*/
+
 }

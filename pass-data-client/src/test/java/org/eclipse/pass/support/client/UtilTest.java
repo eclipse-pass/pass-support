@@ -83,7 +83,7 @@ public class UtilTest {
      */
     @Test
     public void testAwardNumberWithValidData() throws IOException, URISyntaxException {
-        URI testAwardNumberUri = UtilTest.class.getResource("/prod_award_numbers.csv").toURI();
+        URI testAwardNumberUri = UtilTest.class.getResource("/valid_award_numbers.csv").toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
         for (String awardNumber : awardNumbers) {
             assertEquals(awardNumber, Util.grantAwardNumberNormalizer(awardNumber));

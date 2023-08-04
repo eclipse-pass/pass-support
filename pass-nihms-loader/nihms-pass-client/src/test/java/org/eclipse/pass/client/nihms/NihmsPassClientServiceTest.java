@@ -586,9 +586,4 @@ public class NihmsPassClientServiceTest {
         assertEquals(ERR_CREATE_PUBLICATION, exception.getMessage());
     }
 
-    @Test
-    public void shouldFindNonNihGrants() {
-
-    }
-
 }
