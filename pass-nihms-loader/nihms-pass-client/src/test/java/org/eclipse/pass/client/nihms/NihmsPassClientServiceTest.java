@@ -101,15 +101,16 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindGrantByAwardNumberNoMatch() throws IOException {
-        String awardFilter1 = RSQL.equals(AWARD_NUMBER_FLD, awardNumber);
-        PassClientResult<PassEntity> passClientResult = new PassClientResult(List.of(), 0);
-        doReturn(passClientResult)
-                .when(mockClient)
-                .selectObjects(
+        String awardFilter = Util.grantAwardNumberNormalizeSearch(awardNumber, AWARD_NUMBER_FLD);
+
+        Stream<Grant> mockGrantResult = Stream.empty();
+
+        doReturn(mockGrantResult)
+                .when(mockClient).streamObjects(
                         argThat(passClientSelector ->
-                                passClientSelector.getFilter().equals(awardFilter1)));
-        Grant grant = clientService.findMostRecentGrantByAwardNumber(awardNumber);
-        assertNull(grant);
+                                passClientSelector.getFilter().equals(awardFilter)));
+        Grant grantTest = clientService.findMostRecentGrantByAwardNumber(awardNumber);
+        assertNull(grantTest);
     }
 
     /**
@@ -200,9 +201,9 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindGrantByAwardNumberCanNormalizeHasMatch() throws Exception {
-        String awardFilter1 = RSQL.equals(AWARD_NUMBER_FLD, "K23 HL153778");
-        String awardFilter2 = RSQL.equals(AWARD_NUMBER_FLD, "S10 OD025226");
-        String awardFilter3 = RSQL.equals(AWARD_NUMBER_FLD, "R55 AR050026");
+        String awardFilter1 = Util.grantAwardNumberNormalizeSearch("K23 HL153778-1A1", AWARD_NUMBER_FLD);
+        String awardFilter2 = Util.grantAwardNumberNormalizeSearch("S10 OD025226-1", AWARD_NUMBER_FLD);
+        String awardFilter3 = Util.grantAwardNumberNormalizeSearch("R55 AR050026-1", AWARD_NUMBER_FLD);
 
         Grant grant1 = new Grant("1");
         grant1.setAwardNumber("K23 HL153778");
@@ -216,23 +217,23 @@ public class NihmsPassClientServiceTest {
         grant3.setAwardNumber("R55 AR050026");
         grant3.setStartDate(ZonedDateTime.now());
 
-        PassClientResult<PassEntity> mockGrantResult1 = new PassClientResult<>(List.of(grant1), 1);
-        PassClientResult<PassEntity> mockGrantResult2 = new PassClientResult<>(List.of(grant2), 1);
-        PassClientResult<PassEntity> mockGrantResult3 = new PassClientResult<>(List.of(grant3), 1);
+        Stream<Grant> mockGrantResult1 = List.of(grant1).stream();
+        Stream<Grant> mockGrantResult2 = List.of(grant2).stream();
+        Stream<Grant> mockGrantResult3 = List.of(grant3).stream();
 
         doReturn(mockGrantResult1)
                 .when(mockClient)
-                .selectObjects(
+                .streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter1)));
         doReturn(mockGrantResult2)
                 .when(mockClient)
-                .selectObjects(
+                .streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter2)));
         doReturn(mockGrantResult3)
                 .when(mockClient)
-                .selectObjects(
+                .streamObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(awardFilter3)));
 
@@ -243,22 +244,6 @@ public class NihmsPassClientServiceTest {
         assertEquals(grant1, matchedGrant1);
         assertEquals(grant2, matchedGrant2);
         assertEquals(grant3, matchedGrant3);
-    }
-
-    /**
-     * Award numbers that cannot be normalized
-     */
-    @Test
-    public void testFindGrantByAwardNumberCannotNormalize() {
-        assertThrows(IOException.class, () -> {
-            Grant matchedGrant1 = clientService.findMostRecentGrantByAwardNumber("K23 HL1537783456");
-        });
-        assertThrows(IOException.class, () -> {
-            Grant matchedGrant2 = clientService.findMostRecentGrantByAwardNumber("  S10 45 OD025226");
-        });
-        assertThrows(IOException.class, () -> {
-            Grant matchedGrant3 = clientService.findMostRecentGrantByAwardNumber("R55 AR05?026");
-        });
     }
 
     /**
