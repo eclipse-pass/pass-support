@@ -24,7 +24,6 @@ import static org.eclipse.pass.client.nihms.NihmsPassClientService.SUBMITTER_FLD
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.argThat;
@@ -33,7 +32,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -47,7 +45,6 @@ import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.Util;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Grant;
-import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
@@ -587,6 +584,11 @@ public class NihmsPassClientServiceTest {
             verify(mockClient, never()).createObject(any());
         });
         assertEquals(ERR_CREATE_PUBLICATION, exception.getMessage());
+    }
+
+    @Test
+    public void shouldFindNonNihGrants() {
+
     }
 
 }
