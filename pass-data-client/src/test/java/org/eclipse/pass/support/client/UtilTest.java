@@ -68,12 +68,17 @@ public class UtilTest {
         String awardNumber1 = "000A01 RH123456";
         String awardNumber2 = "000 A01 RH123456";
         String awardNumber3 = "000-A01 RH123456";
+        String awardNumber4 = "000-A01 RH123456-A1";
 
         String expectedNumber = "A01RH123456";
+        String expectedNumber2 = "A01RH123456-A1";
 
         assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber1));
         assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber2));
         assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber3));
+
+        // This one is a special case, because the A1 is part of the award number,and should normalize with it
+        assertEquals(expectedNumber2, Util.grantAwardNumberNormalizer(awardNumber4));
     }
 
     /**
