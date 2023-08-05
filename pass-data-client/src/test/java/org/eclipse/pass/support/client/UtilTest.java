@@ -67,11 +67,13 @@ public class UtilTest {
     public void testNihAwardNumbersLeadingZerosShouldNormalize() throws IOException {
         String awardNumber1 = "000A01 RH123456";
         String awardNumber2 = "000 A01 RH123456";
+        String awardNumber3 = "000-A01 RH123456";
 
         String expectedNumber = "A01RH123456";
 
         assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber1));
         assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber2));
+        assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber3));
     }
 
     /**

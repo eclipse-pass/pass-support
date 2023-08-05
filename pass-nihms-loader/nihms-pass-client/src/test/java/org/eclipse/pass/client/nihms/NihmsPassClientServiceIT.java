@@ -77,19 +77,30 @@ public class NihmsPassClientServiceIT {
         grant1.setStartDate(ZonedDateTime.now());
 
         Grant grant2 = new Grant("2");
-        grant2.setAwardNumber("UM1AI068613");
+        grant2.setAwardNumber("UM1 AI068613-01");
         grant2.setStartDate(ZonedDateTime.now());
 
         Grant grant3 = new Grant("3");
-        grant3.setAwardNumber("K23HL151758");
+        grant3.setAwardNumber("K23 HL151758");
         grant3.setStartDate(ZonedDateTime.now());
+
+        Grant grant4 = new Grant("4");
+        grant4.setAwardNumber("F32 NS120940-A1");
+        grant4.setStartDate(ZonedDateTime.now());
+
+        Grant grant5 = new Grant("5");
+        grant5.setAwardNumber("0P50 DA044123-B2");
+        grant5.setStartDate(ZonedDateTime.now());
 
         passClient.createObject(grant1);
         passClient.createObject(grant2);
         passClient.createObject(grant3);
 
+        //test different variants of R01AR074846
         assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("R01 AR074846").getAwardNumber());
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("000-R01 AR074846").getAwardNumber());
 
     }
 

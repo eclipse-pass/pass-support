@@ -38,10 +38,10 @@ public class Util {
         awardNumber = awardNumber.trim();
 
         //if matching the NIH format, then normalize it to the expected format by removing leading zeros
-        if (awardNumber.toUpperCase().matches("0*\\s*[A-Z][0-9]{2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
+        if (awardNumber.toUpperCase().matches("0*-*\\s*[A-Z][0-9]{2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
             //remove leading zeros, whitespace and make uppercase
             awardNumber = awardNumber
-                    .replaceFirst("^0+(?!$)", "")
+                    .replaceFirst("^0+-*(?!$)", "")
                     .replaceAll("\\s", "")
                     .toUpperCase();
         }
@@ -67,10 +67,10 @@ public class Util {
         String[] tokens = awardNumber.trim().split("\\s+");
         //loop through tokens and append the characters % to the end of each token. This way the query can
         //find any award number that has n many spaces between character sets
-        StringBuilder awardNumberTokenized = new StringBuilder();
+        /*StringBuilder awardNumberTokenized = new StringBuilder();
         for (String token : tokens) {
             awardNumberTokenized.append(token).append("%");
-        }
+        }*/
         return RSQL.or(
                 RSQL.equals(rsqlFieldName, awardNumber),
                 RSQL.equals(rsqlFieldName, awardNumber.trim()),
