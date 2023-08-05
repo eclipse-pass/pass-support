@@ -92,15 +92,38 @@ public class NihmsPassClientServiceIT {
         grant5.setAwardNumber("0P50 DA044123-B2");
         grant5.setStartDate(ZonedDateTime.now());
 
+        Grant grant6 = new Grant("6");
+        grant6.setAwardNumber("00-P50 DA044123-B2");
+        grant6.setStartDate(ZonedDateTime.now());
+
+        Grant grant7 = new Grant("7");
+        grant7.setAwardNumber("5 R01 ES020425-02");
+        grant7.setStartDate(ZonedDateTime.now());
+
         passClient.createObject(grant1);
         passClient.createObject(grant2);
         passClient.createObject(grant3);
+        passClient.createObject(grant4);
+        passClient.createObject(grant5);
+        passClient.createObject(grant6);
 
         //test different variants of R01AR074846
         assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("R01 AR074846").getAwardNumber());
+        /*assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("000-R01 AR074846").getAwardNumber());*/
         assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("000-R01 AR074846").getAwardNumber());
+                underTest.findMostRecentGrantByAwardNumber("1R01 AR074846-A1").getAwardNumber());
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("1R01AR074846-A1").getAwardNumber());
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("1R01 AR074846-A1").getAwardNumber());
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("R01 AR074846-A1").getAwardNumber());
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("R01AR074846-A1").getAwardNumber());
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("R01AR074846").getAwardNumber());
 
     }
 
