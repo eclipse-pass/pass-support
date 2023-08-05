@@ -37,12 +37,15 @@ public class UtilTest {
         String awardNumber1 = "A12 RH345678-A1";
         String awardNumber2 = "U01 CA078284-05S2";
         String awardNumber3 = "000U01 CA078284-05S2";
+        String awardNumber4 = "1R01 AR074846-A1";
         String expectedAwardNumber1 = "A12RH345678-A1";
         String expectedAwardNumber2 = "U01CA078284-05S2";
         String expectedAwardNumber3 = "U01CA078284-05S2";
+        String expectedAwardNumber4 = "1R01AR074846-A1";
         assertEquals(expectedAwardNumber1, Util.grantAwardNumberNormalizer(awardNumber1));
         assertEquals(expectedAwardNumber2, Util.grantAwardNumberNormalizer(awardNumber2));
         assertEquals(expectedAwardNumber3, Util.grantAwardNumberNormalizer(awardNumber3));
+        assertEquals(expectedAwardNumber4, Util.grantAwardNumberNormalizer(awardNumber4));
     }
 
     @Test

@@ -38,7 +38,7 @@ public class Util {
         awardNumber = awardNumber.trim();
 
         //if matching the NIH format, then normalize it to the expected format by removing leading zeros
-        if (awardNumber.toUpperCase().matches("0*-*\\s*[A-Z][0-9]{2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
+        if (awardNumber.toUpperCase().matches("[0-9]*-*\\s*[A-Z][0-9]{2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
             //remove leading zeros, whitespace and make uppercase
             awardNumber = awardNumber
                     .replaceFirst("^0+-*(?!$)", "")
@@ -52,10 +52,12 @@ public class Util {
      * Generate RSQL that will find any awardNumber that various patterns that an NIH grant award number
      * can come in
      * Along with the following variations from the standard pattern:
-     *  1) a suffix denoted by a hyphen followed by characters, e.g. A01 1234567-01
+     *  1) a suffix denoted by a hyphen followed by characters, e.g. A01 BC123456-01
      *  2) Leading and trailing spaces
-     *  3) Multiple spaces in between the first set of characters and second set: A01  1234567
-     *  4) Leading zeros in the first set of characters: 000A01 1234567
+     *  3) Zero or many spaces in between the first set of characters and second set: A01  BC123456
+     *  4) Leading zeros in the first set of characters: 000A01 BC123456
+     *  5) Leading zeros following by a hyphen: 000-A01 BC123456
+     *  5) Application type that has a leading 1: 1A01 BC123456
      * @param awardNumber
      * @return
      */
@@ -64,7 +66,7 @@ public class Util {
             throw new IOException("Award number cannot be empty");
         }
         //tokenize award number between character sets
-        String[] tokens = awardNumber.trim().split("\\s+");
+        //String[] tokens = awardNumber.trim().split("\\s+");
         //loop through tokens and append the characters % to the end of each token. This way the query can
         //find any award number that has n many spaces between character sets
         /*StringBuilder awardNumberTokenized = new StringBuilder();
@@ -75,12 +77,14 @@ public class Util {
                 RSQL.equals(rsqlFieldName, awardNumber),
                 RSQL.equals(rsqlFieldName, awardNumber.trim()),
                 RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")),
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0*-*","")
+                        .replaceAll("\\s+","")),
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0*-*","")),
                 RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("\\s+","")),
                 RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")
                         .replaceAll("\\s+","")),
                 RSQL.equals(rsqlFieldName, Util.grantAwardNumberNormalizer(awardNumber)),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0+",""))/*,
-                rsqlFieldName + "=like=%" + awardNumberTokenized*/
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0+",""))
         );
     }
 }
