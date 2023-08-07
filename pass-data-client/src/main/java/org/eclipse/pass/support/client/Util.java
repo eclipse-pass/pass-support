@@ -65,28 +65,29 @@ public class Util {
         if (StringUtils.isEmpty(awardNumber)) {
             throw new IOException("Award number cannot be empty");
         }
-        //tokenize award number between character sets
-        //String[] tokens = awardNumber.trim().split("\\s+");
-        //loop through tokens and append the characters % to the end of each token. This way the query can
-        //find any award number that has n many spaces between character sets
-        /*StringBuilder awardNumberTokenized = new StringBuilder();
-        for (String token : tokens) {
-            awardNumberTokenized.append(token).append("%");
-        }*/
+
+        String removeSuffix = awardNumber.trim().replaceAll("-.*$","");
+        String removeLeadingZeroAndSpace = awardNumber.trim().replaceFirst("^0*-*","")
+                .replaceAll("\\s+","");
+        String removeLeadingZeros = awardNumber.trim().replaceFirst("^0*-*","");
+        String removeSpace = awardNumber.trim().replaceAll("\\s+","");
+        String removeSuffixAndSpace = awardNumber.trim().replaceAll("-.*$","")
+                .replaceAll("\\s+","");
+        String normalizedNihGrant = Util.grantAwardNumberNormalizer(awardNumber);
+        String removePrefixAndSuffixAndSpace = awardNumber.trim().replaceAll("^[0-9]", "")
+                .replaceAll("-.*$", "")
+                .replaceAll("\\s+","");
+
         return RSQL.or(
                 RSQL.equals(rsqlFieldName, awardNumber),
                 RSQL.equals(rsqlFieldName, awardNumber.trim()),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0*-*","")
-                        .replaceAll("\\s+","")),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0*-*","")),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("\\s+","")),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")
-                        .replaceAll("\\s+","")),
-                RSQL.equals(rsqlFieldName, Util.grantAwardNumberNormalizer(awardNumber)),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("^[0-9]", "")
-                        .replaceAll("-.*$", "")
-                        .replaceAll("\\s+",""))
+                RSQL.equals(rsqlFieldName, removeSuffix),
+                RSQL.equals(rsqlFieldName, removeLeadingZeroAndSpace),
+                RSQL.equals(rsqlFieldName, removeLeadingZeros),
+                RSQL.equals(rsqlFieldName, removeSpace),
+                RSQL.equals(rsqlFieldName, removeSuffixAndSpace),
+                RSQL.equals(rsqlFieldName, normalizedNihGrant),
+                RSQL.equals(rsqlFieldName, removePrefixAndSuffixAndSpace)
         );
     }
 }
