@@ -84,7 +84,9 @@ public class Util {
                 RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("-.*$","")
                         .replaceAll("\\s+","")),
                 RSQL.equals(rsqlFieldName, Util.grantAwardNumberNormalizer(awardNumber)),
-                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceFirst("^0+",""))
+                RSQL.equals(rsqlFieldName, awardNumber.trim().replaceAll("^[0-9]", "")
+                        .replaceAll("-.*$", "")
+                        .replaceAll("\\s+",""))
         );
     }
 }
