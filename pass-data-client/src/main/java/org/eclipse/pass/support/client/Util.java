@@ -2,6 +2,8 @@ package org.eclipse.pass.support.client;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,7 +40,7 @@ public class Util {
         awardNumber = awardNumber.trim();
 
         //if matching the NIH format, then normalize it to the expected format by removing leading zeros
-        if (awardNumber.toUpperCase().matches("[0-9]*-*\\s*[A-Z][0-9]{2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
+        if (awardNumber.toUpperCase().matches("[0-9]*-*\\s*[A-Z]{1,2}[0-9]{1,2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
             //remove leading zeros, whitespace and make uppercase
             awardNumber = awardNumber
                     .replaceFirst("^0+-*(?!$)", "")
@@ -58,12 +60,28 @@ public class Util {
      *  4) Leading zeros in the first set of characters: 000A01 BC123456
      *  5) Leading zeros following by a hyphen: 000-A01 BC123456
      *  5) Application type that has a leading 1: 1A01 BC123456
+     *  6) Searches where the award number has a suffix and prefix in pass, but not the search term
      * @param awardNumber
      * @return
      */
     public static String grantAwardNumberNormalizeSearch(String awardNumber, String rsqlFieldName) throws IOException {
         if (StringUtils.isEmpty(awardNumber)) {
             throw new IOException("Award number cannot be empty");
+        }
+        String awardNumberNihMinSet = "";
+        if (awardNumber.toUpperCase().matches("[0-9]*-*\\s*[A-Z]{1,2}[0-9]{1,2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
+            //find activity code, institute code and serial number, the minimum set for an NIH grant award number
+            Pattern pattern = Pattern.compile("[A-Z]{1,2}[0-9]{1,2}\s*[A-Z]{2}[A-Z0-9]{6}");
+            Matcher matcher = pattern.matcher(awardNumber);
+            if (matcher.find()) {
+                awardNumberNihMinSet = matcher.group();
+                awardNumberNihMinSet = awardNumberNihMinSet.replaceAll("\\s", "");
+                //break it up in the individual parts
+                String activityCode = awardNumberNihMinSet.substring(0, 3);
+                String instituteCode = awardNumberNihMinSet.substring(3, 5);
+                String serialNumber = awardNumberNihMinSet.substring(5, 11);
+                awardNumberNihMinSet = "*" + activityCode + "*" + instituteCode + serialNumber + "*";
+            }
         }
 
         String removeSuffix = awardNumber.trim().replaceAll("-.*$","");
@@ -77,6 +95,7 @@ public class Util {
         String removePrefixAndSuffixAndSpace = awardNumber.trim().replaceAll("^[0-9]", "")
                 .replaceAll("-.*$", "")
                 .replaceAll("\\s+","");
+        String wildCardSearchSpace = "*" + awardNumber.trim().replaceAll("\\s+","*") + "*";
 
         return RSQL.or(
                 RSQL.equals(rsqlFieldName, awardNumber),
@@ -87,7 +106,9 @@ public class Util {
                 RSQL.equals(rsqlFieldName, removeSpace),
                 RSQL.equals(rsqlFieldName, removeSuffixAndSpace),
                 RSQL.equals(rsqlFieldName, normalizedNihGrant),
-                RSQL.equals(rsqlFieldName, removePrefixAndSuffixAndSpace)
+                RSQL.equals(rsqlFieldName, removePrefixAndSuffixAndSpace),
+                RSQL.equals(rsqlFieldName, wildCardSearchSpace),
+                RSQL.equals(rsqlFieldName, awardNumberNihMinSet)
         );
     }
 }
