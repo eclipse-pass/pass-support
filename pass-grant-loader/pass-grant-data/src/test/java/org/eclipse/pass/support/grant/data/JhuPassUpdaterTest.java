@@ -243,8 +243,8 @@ public class JhuPassUpdaterTest {
         assertEquals("Marsha Lartz", newUser.getDisplayName());
         //test ids
         assertEquals("johnshopkins.edu:employeeid:0000222", newUser.getLocatorIds().get(0));
-        assertEquals("johnshopkins.edu:hopkinsid:A1A1A1", newUser.getLocatorIds().get(1));
-        assertEquals("johnshopkins.edu:jhed:mlartz5", newUser.getLocatorIds().get(2));
+        assertEquals("johnshopkins.edu:unique-id:A1A1A1", newUser.getLocatorIds().get(1));
+        assertEquals("johnshopkins.edu:eppn:mlartz5", newUser.getLocatorIds().get(2));
     }
 
     @Test
