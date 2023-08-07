@@ -27,7 +27,6 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.Util;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,27 +77,27 @@ public class NihmsPassClientServiceIT {
         grant1.setStartDate(ZonedDateTime.now());
 
         Grant grant2 = new Grant("2");
-        grant2.setAwardNumber("UM1 AI068613-01");
+        grant2.setAwardNumber("UM1AI068613-01");
         grant2.setStartDate(ZonedDateTime.now());
 
         Grant grant3 = new Grant("3");
-        grant3.setAwardNumber("K23 HL151758");
+        grant3.setAwardNumber("K23HL151758");
         grant3.setStartDate(ZonedDateTime.now());
 
         Grant grant4 = new Grant("4");
-        grant4.setAwardNumber("F32 NS120940-A1");
+        grant4.setAwardNumber("F32NS120940-A1");
         grant4.setStartDate(ZonedDateTime.now());
 
         Grant grant5 = new Grant("5");
-        grant5.setAwardNumber("0P50 DA044123-B2");
+        grant5.setAwardNumber("0P50DA044123-B2");
         grant5.setStartDate(ZonedDateTime.now());
 
         Grant grant6 = new Grant("6");
-        grant6.setAwardNumber("00-P50 DA044123-B2");
+        grant6.setAwardNumber("P50DA044123-B2");
         grant6.setStartDate(ZonedDateTime.now());
 
         Grant grant7 = new Grant("7");
-        grant7.setAwardNumber("5 R01 ES020425-02");
+        grant7.setAwardNumber("5R01ES020425-02");
         grant7.setStartDate(ZonedDateTime.now());
 
         passClient.createObject(grant1);
@@ -126,9 +125,14 @@ public class NihmsPassClientServiceIT {
         assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("R01AR074846").getAwardNumber());
 
-        System.out.println(Util.grantAwardNumberNormalizeSearch("UM1AI068613", "awardNumber"));
         assertEquals(grant2.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("UM1AI068613").getAwardNumber());
+        assertEquals(grant2.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("UM1 AI068613").getAwardNumber());
+        assertEquals(grant2.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("000-UM1 AI068613").getAwardNumber());
+        assertEquals(grant2.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("1UM1 AI068613-A1").getAwardNumber());
 
     }
 
