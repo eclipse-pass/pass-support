@@ -42,8 +42,8 @@ public class JhuPassUpdater extends DefaultPassUpdater {
     private static final Logger LOG = LoggerFactory.getLogger(JhuPassUpdater.class);
     private static final String DOMAIN = "johnshopkins.edu";
     private static final String EMPLOYEE_ID_TYPE = "employeeid";
-    private static final String HOPKINS_ID_TYPE = "hopkinsid";
-    private static final String JHED_ID_TYPE = "jhed";
+    private static final String HOPKINS_ID_TYPE = "unique-id";
+    private static final String JHED_ID_TYPE = "eppn";
 
     /**
      * Class constructor.
