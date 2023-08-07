@@ -158,6 +158,19 @@ abstract class BaseGrantLoaderApp {
             throw processException(ERR_HOME_DIRECTORY_NOT_READABLE_AND_WRITABLE, null);
         }
 
+        System.out.println("appHome: " + appHome.getPath());
+
+        System.out.println("connection.properties ap: " + connectionPropertiesFile.getAbsolutePath());
+        System.out.println("connection.properties p: " + connectionPropertiesFile.getPath());
+        System.out.println("connection.properties ap exists: " + connectionPropertiesFile.getAbsoluteFile().exists());
+        System.out.println("connection.properties p exists: " + connectionPropertiesFile.exists());
+
+        //create connection properties - check for a user-space defined clear text file - need this for both pull and
+        // load
+        if (!connectionPropertiesFile.exists()) {
+            throw processException(format(ERR_REQUIRED_CONFIGURATION_FILE_MISSING, connectionPropertiesFileName), null);
+        }
+
         //check suitability of our input file
         if (action.equals("load") || action.equals("pull")) {
             if (!dataFile.exists()) {
