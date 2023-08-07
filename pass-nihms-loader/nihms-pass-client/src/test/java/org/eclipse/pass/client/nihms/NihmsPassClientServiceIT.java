@@ -113,12 +113,8 @@ public class NihmsPassClientServiceIT {
                 underTest.findMostRecentGrantByAwardNumber("R01AR074846").getAwardNumber());
         assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("R01 AR074846").getAwardNumber());
-        /*assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("000-R01 AR074846").getAwardNumber());*/
-        System.out.println("1R01AR074846-A1".trim().replaceAll("^[0-9]", "")
-                .replaceAll("-.*$", "")
-                .replaceAll("\\s+",""));
-        System.out.print(Util.grantAwardNumberNormalizeSearch("1R01AR074846-A1", "awardNumber"));
+        assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("000-R01 AR074846").getAwardNumber());
         assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("1R01AR074846-A1").getAwardNumber());
         assertEquals(grant1.getAwardNumber(),
@@ -129,6 +125,10 @@ public class NihmsPassClientServiceIT {
                 underTest.findMostRecentGrantByAwardNumber("R01AR074846-A1").getAwardNumber());
         assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("R01AR074846").getAwardNumber());
+
+        System.out.println(Util.grantAwardNumberNormalizeSearch("UM1AI068613", "awardNumber"));
+        assertEquals(grant2.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("UM1AI068613").getAwardNumber());
 
     }
 
