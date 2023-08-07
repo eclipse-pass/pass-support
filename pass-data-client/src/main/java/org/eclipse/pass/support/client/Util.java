@@ -52,15 +52,13 @@ public class Util {
 
     /**
      * Generate RSQL that will find any awardNumber that various patterns that an NIH grant award number
-     * can come in
-     * Along with the following variations from the standard pattern:
+     * can come in:
      *  1) a suffix denoted by a hyphen followed by characters, e.g. A01 BC123456-01
      *  2) Leading and trailing spaces
      *  3) Zero or many spaces in between the first set of characters and second set: A01  BC123456
      *  4) Leading zeros in the first set of characters: 000A01 BC123456
      *  5) Leading zeros following by a hyphen: 000-A01 BC123456
      *  5) Application type that has a leading 1: 1A01 BC123456
-     *  6) Searches where the award number has a suffix and prefix in pass, but not the search term
      * @param awardNumber
      * @return
      */
@@ -80,34 +78,16 @@ public class Util {
                 String activityCode = awardNumberNihMinSet.substring(0, 3);
                 String instituteCode = awardNumberNihMinSet.substring(3, 5);
                 String serialNumber = awardNumberNihMinSet.substring(5, 11);
-                awardNumberNihMinSet = "*" + activityCode + "*" + instituteCode + serialNumber + "*";
+                awardNumberNihMinSet = "*" + activityCode + instituteCode + serialNumber + "*";
             }
         }
 
-        String removeSuffix = awardNumber.trim().replaceAll("-.*$","");
-        String removeLeadingZeroAndSpace = awardNumber.trim().replaceFirst("^0*-*","")
-                .replaceAll("\\s+","");
-        String removeLeadingZeros = awardNumber.trim().replaceFirst("^0*-*","");
-        String removeSpace = awardNumber.trim().replaceAll("\\s+","");
-        String removeSuffixAndSpace = awardNumber.trim().replaceAll("-.*$","")
-                .replaceAll("\\s+","");
         String normalizedNihGrant = Util.grantAwardNumberNormalizer(awardNumber);
-        String removePrefixAndSuffixAndSpace = awardNumber.trim().replaceAll("^[0-9]", "")
-                .replaceAll("-.*$", "")
-                .replaceAll("\\s+","");
-        String wildCardSearchSpace = "*" + awardNumber.trim().replaceAll("\\s+","*") + "*";
 
         return RSQL.or(
                 RSQL.equals(rsqlFieldName, awardNumber),
                 RSQL.equals(rsqlFieldName, awardNumber.trim()),
-                RSQL.equals(rsqlFieldName, removeSuffix),
-                RSQL.equals(rsqlFieldName, removeLeadingZeroAndSpace),
-                RSQL.equals(rsqlFieldName, removeLeadingZeros),
-                RSQL.equals(rsqlFieldName, removeSpace),
-                RSQL.equals(rsqlFieldName, removeSuffixAndSpace),
                 RSQL.equals(rsqlFieldName, normalizedNihGrant),
-                RSQL.equals(rsqlFieldName, removePrefixAndSuffixAndSpace),
-                RSQL.equals(rsqlFieldName, wildCardSearchSpace),
                 RSQL.equals(rsqlFieldName, awardNumberNihMinSet)
         );
     }
