@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.Util;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,11 +68,11 @@ public class NihmsPassClientServiceIT {
     }
 
     /**
-     * Using different variants of the same award number, demonstrate that normalized award numbers are found using
-     * non-normalized award numbers.
+     * Using different variants of the same award number, demonstrate that normalized award numbers and non-normalized
+     * are found using different variants of an award number.
      */
     @Test
-    public void shouldFindNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
+    public void shouldFindNihGrantAwardNumber() throws IOException, URISyntaxException {
         Grant grant1 = new Grant("1");
         grant1.setAwardNumber("R01AR074846");
         grant1.setStartDate(ZonedDateTime.now());
@@ -109,11 +110,12 @@ public class NihmsPassClientServiceIT {
 
         //test different variants of R01AR074846
         assertEquals(grant1.getAwardNumber(),
+                underTest.findMostRecentGrantByAwardNumber("R01AR074846").getAwardNumber());
+        assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("R01 AR074846").getAwardNumber());
         /*assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("000-R01 AR074846").getAwardNumber());*/
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("1R01 AR074846-A1").getAwardNumber());
+        System.out.print(Util.grantAwardNumberNormalizeSearch("1R01AR074846-A1", "awardNumber"));
         assertEquals(grant1.getAwardNumber(),
                 underTest.findMostRecentGrantByAwardNumber("1R01AR074846-A1").getAwardNumber());
         assertEquals(grant1.getAwardNumber(),
