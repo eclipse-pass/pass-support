@@ -51,14 +51,19 @@ public class Util {
     }
 
     /**
-     * Generate RSQL that will find any awardNumber that various patterns that an NIH grant award number
-     * can come in:
-     *  1) a suffix denoted by a hyphen followed by characters, e.g. A01 BC123456-01
+     * Generate RSQL that will find any awardNumber with various patterns that a NIH grant award number
+     * can come in. It does this by finding the base components of a NIH grant award number and uses
+     * wildcards to find any award number that matches the base components. If the award number does not meet the
+     * criteria of a NIH award number then it will perform a plain text search on the award number and trimmed
+     * leading/trailing whitespace version.
+     *
+     * Following patterns that will be matched on a NIH grant award number:
+     *  1) A suffix denoted by a hyphen followed by characters, e.g. A01 BC123456-01
      *  2) Leading and trailing spaces
      *  3) Zero or many spaces in between the first set of characters and second set: A01  BC123456
-     *  4) Leading zeros in the first set of characters: 000A01 BC123456
+     *  4) Leading zeros in the first set of the string: 000A01 BC123456
      *  5) Leading zeros following by a hyphen: 000-A01 BC123456
-     *  5) Application type that has a leading 1: 1A01 BC123456
+     *  5) Application type that has a leading number 1-9: 1A01 BC123456
      * @param awardNumber
      * @return
      */
@@ -86,7 +91,6 @@ public class Util {
 
         return RSQL.or(
                 RSQL.equals(rsqlFieldName, awardNumber),
-                RSQL.equals(rsqlFieldName, awardNumber.trim()),
                 RSQL.equals(rsqlFieldName, normalizedNihGrant),
                 RSQL.equals(rsqlFieldName, awardNumberNihMinSet)
         );
