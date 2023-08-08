@@ -22,9 +22,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Grant;
@@ -67,11 +71,12 @@ public class NihmsPassClientServiceIT {
     }
 
     /**
-     * Using different variants of the same award number, demonstrate that normalized award numbers and non-normalized
-     * are found using different variants of an award number.
+     * Using different variants of the same award number, demonstrate that normalized award numbers are found using
+     * different variants of an award number e.g. R01AR074846 should match R01AR074846-01A1 or 1R01AR074846-01
+     * the activity code, institute code and serial number are the minimum set of strings required to match
      */
     @Test
-    public void shouldFindNihGrantAwardNumber() throws IOException, URISyntaxException {
+    public void shouldFindNihGrantAwardNumber() throws IOException {
         Grant grant1 = new Grant("1");
         grant1.setAwardNumber("R01AR074846");
         grant1.setStartDate(ZonedDateTime.now());
@@ -85,19 +90,19 @@ public class NihmsPassClientServiceIT {
         grant3.setStartDate(ZonedDateTime.now());
 
         Grant grant4 = new Grant("4");
-        grant4.setAwardNumber("F32NS120940-A1");
+        grant4.setAwardNumber("F32NS120940-01A1");
         grant4.setStartDate(ZonedDateTime.now());
 
         Grant grant5 = new Grant("5");
-        grant5.setAwardNumber("0P50DA044123-B2");
+        grant5.setAwardNumber("1P50DA044123-B2");
         grant5.setStartDate(ZonedDateTime.now());
 
         Grant grant6 = new Grant("6");
-        grant6.setAwardNumber("P50DA044123-B2");
+        grant6.setAwardNumber("K23HL153778-1A1");
         grant6.setStartDate(ZonedDateTime.now());
 
         Grant grant7 = new Grant("7");
-        grant7.setAwardNumber("5R01ES020425-02");
+        grant7.setAwardNumber("5R01ES020425-05S2");
         grant7.setStartDate(ZonedDateTime.now());
 
         passClient.createObject(grant1);
@@ -106,41 +111,77 @@ public class NihmsPassClientServiceIT {
         passClient.createObject(grant4);
         passClient.createObject(grant5);
         passClient.createObject(grant6);
+        passClient.createObject(grant7);
+
+        List<String> grant1Variants = Arrays.asList("R01AR074846", "R01 AR074846", "000-R01 AR074846",
+                "000R01 AR074846", "1R01AR074846-A1", "1R01 AR074846-A1", "R01 AR074846-A1", "R01AR074846-A1",
+                "R01AR074846-01S2");
+
+        List<String> grant2Variants = Arrays.asList("UM1AI068613", "UM1 AI068613", "000-UM1 AI068613",
+                "000UM1 AI068613", "1UM1AI068613-A1", "1UM1 AI068613-A1", "UM1 AI068613-A1", "UM1AI068613-A1",
+                "UM1AI068613-01S2");
+
+        List<String> grant3Variants = Arrays.asList("K23HL151758", "K23 HL151758", "000-K23 HL151758",
+                "000K23 HL151758", "1K23HL151758-A1", "1K23 HL151758-A1", "K23 HL151758-A1", "K23HL151758-A1",
+                "K23HL151758-01S2");
+
+        List<String> grant4Variants = Arrays.asList("F32NS120940", "F32 NS120940", "000-F32 NS120940",
+                "000F32 NS120940", "1F32NS120940-A1", "1F32 NS120940-A1", "F32 NS120940-A1", "F32NS120940-A1",
+                "F32NS120940-01S2");
+
+        List<String> grant5Variants = Arrays.asList("P50DA044123", "P50 DA044123", "000-P50 DA044123",
+                "000P50 DA044123", "1P50DA044123-A1", "1P50 DA044123-A1", "P50 DA044123-A1", "P50DA044123-A1",
+                "P50DA044123-01S2");
+
+        List<String> grant6Variants = Arrays.asList("K23HL153778", "K23 HL153778", "000-K23 HL153778",
+                "000K23 HL153778", "1K23HL153778-A1", "1K23 HL153778-A1", "K23 HL153778-A1", "K23HL153778-A1",
+                "K23HL153778-01S2");
+
+        List<String> grant7Variants = Arrays.asList("R01ES020425", "R01 ES020425", "000-R01 ES020425",
+                "000R01 ES020425", "5R01ES020425-A1", "5R01 ES020425-A1", "5R01 ES020425-A1", "5R01ES020425-A1",
+                "5R01ES020425-01S2");
 
         //test different variants of R01AR074846
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("R01AR074846").getAwardNumber());
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("R01 AR074846").getAwardNumber());
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("000-R01 AR074846").getAwardNumber());
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("1R01AR074846-A1").getAwardNumber());
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("1R01 AR074846-A1").getAwardNumber());
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("R01 AR074846-A1").getAwardNumber());
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("R01AR074846-A1").getAwardNumber());
-        assertEquals(grant1.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("R01AR074846").getAwardNumber());
+        for (String variant : grant1Variants) {
+            assertEquals(grant1.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+        }
 
-        assertEquals(grant2.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("UM1AI068613").getAwardNumber());
-        assertEquals(grant2.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("UM1 AI068613").getAwardNumber());
-        assertEquals(grant2.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("000-UM1 AI068613").getAwardNumber());
-        assertEquals(grant2.getAwardNumber(),
-                underTest.findMostRecentGrantByAwardNumber("1UM1 AI068613-A1").getAwardNumber());
+        //test different variants of UM1AI068613
+        for (String variant : grant2Variants) {
+            assertEquals(grant2.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+        }
 
+        //test different variants of K23HL151758
+        for (String variant : grant3Variants) {
+            assertEquals(grant3.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+        }
+
+        //test different variants of F32NS120940-01A1
+        for (String variant : grant4Variants) {
+            assertEquals(grant4.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+        }
+
+        //test different variants of K23HL153778-1A1
+        for (String variant : grant5Variants) {
+            assertEquals(grant5.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+        }
+
+        //test different variants of P50DA044123-B2
+        for (String variant : grant6Variants) {
+            assertEquals(grant6.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+        }
+
+        //test different variants of 5R01ES020425-05S2
+        for (String variant : grant7Variants) {
+            assertEquals(grant7.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+        }
     }
 
     /**
      * Generate grants based on a large list of known award numbers in PASS. The search should return the grant that
      * match the award numbers and not return any false positives.
      */
-    /*@Test
+    @Test
     public void shouldFindNonNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
         URI testAwardNumberUri = NihmsPassClientServiceTest.class.getResource("/valid_award_numbers.csv").toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
@@ -148,6 +189,6 @@ public class NihmsPassClientServiceIT {
         for (String awardNumber : awardNumbers) {
             Grant grant = new Grant();
         }
-    }*/
+    }
 
 }
