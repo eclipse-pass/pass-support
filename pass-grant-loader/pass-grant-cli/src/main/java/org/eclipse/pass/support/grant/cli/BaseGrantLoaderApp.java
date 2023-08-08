@@ -140,10 +140,6 @@ abstract class BaseGrantLoaderApp {
         Properties mailProperties;
         Properties policyProperties;
 
-        System.out.println("appHome: " + appHome.getPath());
-        System.out.println("connection.properties p: " + connectionPropertiesFile.getPath());
-        System.out.println("connection.properties p exists: " + connectionPropertiesFile.exists());
-
         //check that we have a good value for mode
         if (!checkMode(mode)) {
             throw processException(format(ERR_MODE_NOT_VALID, mode), null);

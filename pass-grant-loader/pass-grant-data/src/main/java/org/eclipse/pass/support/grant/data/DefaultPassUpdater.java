@@ -135,7 +135,7 @@ public class DefaultPassUpdater implements PassUpdater {
         //Map and add to it as additional rows add information.
         Map<String, Grant> grantRowMap = new HashMap<>();
 
-        LOG.info("Processing result set with {} rows", results.size());
+        LOG.warn("Processing result set with {} rows", results.size());
         boolean modeChecked = false;
 
         for (Map<String, String> rowMap : results) {
