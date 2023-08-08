@@ -140,6 +140,10 @@ abstract class BaseGrantLoaderApp {
         Properties mailProperties;
         Properties policyProperties;
 
+        System.out.println("appHome: " + appHome.getPath());
+        System.out.println("connection.properties p: " + connectionPropertiesFile.getPath());
+        System.out.println("connection.properties p exists: " + connectionPropertiesFile.exists());
+
         //check that we have a good value for mode
         if (!checkMode(mode)) {
             throw processException(format(ERR_MODE_NOT_VALID, mode), null);
@@ -157,13 +161,6 @@ abstract class BaseGrantLoaderApp {
         if (!appHome.canRead() || !appHome.canWrite()) {
             throw processException(ERR_HOME_DIRECTORY_NOT_READABLE_AND_WRITABLE, null);
         }
-
-        System.out.println("appHome: " + appHome.getPath());
-
-        System.out.println("connection.properties ap: " + connectionPropertiesFile.getAbsolutePath());
-        System.out.println("connection.properties p: " + connectionPropertiesFile.getPath());
-        System.out.println("connection.properties ap exists: " + connectionPropertiesFile.getAbsoluteFile().exists());
-        System.out.println("connection.properties p exists: " + connectionPropertiesFile.exists());
 
         //create connection properties - check for a user-space defined clear text file - need this for both pull and
         // load
