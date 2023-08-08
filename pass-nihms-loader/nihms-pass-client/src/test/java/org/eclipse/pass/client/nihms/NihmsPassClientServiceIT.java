@@ -179,15 +179,21 @@ public class NihmsPassClientServiceIT {
 
     /**
      * Generate grants based on a large list of known award numbers in PASS. The search should return the grant that
-     * match the award numbers and not return any false positives.
+     * match the award numbers and not return any false positives or inadvertently modify the award number
      */
     @Test
     public void shouldFindNonNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
         URI testAwardNumberUri = NihmsPassClientServiceTest.class.getResource("/valid_award_numbers.csv").toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
-        int grantId = 0;
-        for (String awardNumber : awardNumbers) {
-            Grant grant = new Grant();
+
+        for (int i = 0; i < awardNumbers.size(); i++) {
+            Grant grant = new Grant(String.valueOf(i));
+            grant.setAwardNumber(awardNumbers.get(i));
+            grant.setStartDate(ZonedDateTime.now());
+            passClient.createObject(grant);
+            Grant found = underTest.findMostRecentGrantByAwardNumber(awardNumbers.get(i));
+            assertEquals(awardNumbers.get(i), found.getAwardNumber());
+            assertEquals(grant.getId(), found.getId());
         }
     }
 

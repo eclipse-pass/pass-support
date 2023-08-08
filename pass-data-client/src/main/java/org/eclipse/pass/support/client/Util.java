@@ -72,9 +72,9 @@ public class Util {
             throw new IOException("Award number cannot be empty");
         }
         String awardNumberNihMinSet = "";
-        if (awardNumber.toUpperCase().matches("[0-9]*-*\\s*[A-Z]{1,2}[0-9]{1,2}\s*[A-Z]{2}[A-Z0-9]{6}-*[A-Z0-9]*")) {
+        if (awardNumber.toUpperCase().matches("[0-9]*-*\\s*[A-Z]{1,2}[0-9]{1,2}\s*[A-Z]{2}[0-9]{6}-*[A-Z0-9]*")) {
             //find activity code, institute code and serial number, the minimum set for an NIH grant award number
-            Pattern pattern = Pattern.compile("[A-Z]{1,2}[0-9]{1,2}\s*[A-Z]{2}[A-Z0-9]{6}");
+            Pattern pattern = Pattern.compile("[A-Z]{1,2}[0-9]{1,2}\s*[A-Z]{2}[0-9]{6}");
             Matcher matcher = pattern.matcher(awardNumber);
             if (matcher.find()) {
                 awardNumberNihMinSet = matcher.group();
