@@ -89,10 +89,24 @@ public class Util {
 
         String normalizedNihGrant = Util.grantAwardNumberNormalizer(awardNumber);
 
-        return RSQL.or(
-                RSQL.equals(rsqlFieldName, awardNumber),
-                RSQL.equals(rsqlFieldName, normalizedNihGrant),
-                RSQL.equals(rsqlFieldName, awardNumberNihMinSet)
-        );
+        if (awardNumber.equals(normalizedNihGrant) && StringUtils.isEmpty(awardNumberNihMinSet)) {
+            return RSQL.equals(rsqlFieldName, awardNumber);
+        } else if (!awardNumber.equals(normalizedNihGrant) && StringUtils.isEmpty(awardNumberNihMinSet)) {
+            return RSQL.or(
+                    RSQL.equals(rsqlFieldName, awardNumber),
+                    RSQL.equals(rsqlFieldName, normalizedNihGrant)
+            );
+        } else if (awardNumber.equals(normalizedNihGrant) && StringUtils.isNotEmpty(awardNumberNihMinSet)) {
+            return RSQL.or(
+                    RSQL.equals(rsqlFieldName, awardNumber),
+                    RSQL.equals(rsqlFieldName, awardNumberNihMinSet)
+            );
+        } else {
+            return RSQL.or(
+                    RSQL.equals(rsqlFieldName, awardNumber),
+                    RSQL.equals(rsqlFieldName, normalizedNihGrant),
+                    RSQL.equals(rsqlFieldName, awardNumberNihMinSet)
+            );
+        }
     }
 }

@@ -186,13 +186,13 @@ public class NihmsPassClientServiceIT {
         URI testAwardNumberUri = NihmsPassClientServiceTest.class.getResource("/valid_award_numbers.csv").toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
 
-        for (int i = 0; i < awardNumbers.size(); i++) {
-            Grant grant = new Grant(String.valueOf(i));
-            grant.setAwardNumber(awardNumbers.get(i));
+        for (String award : awardNumbers) {
+            Grant grant = new Grant();
+            grant.setAwardNumber(award);
             grant.setStartDate(ZonedDateTime.now());
             passClient.createObject(grant);
-            Grant found = underTest.findMostRecentGrantByAwardNumber(awardNumbers.get(i));
-            assertEquals(awardNumbers.get(i), found.getAwardNumber());
+            Grant found = underTest.findMostRecentGrantByAwardNumber(award);
+            assertEquals(award, found.getAwardNumber());
             assertEquals(grant.getId(), found.getId());
         }
     }
