@@ -100,4 +100,32 @@ public class UtilTest {
         }
     }
 
+    /**
+     * Test that the correct RSQL generation is done for the given award number. There are four different types of
+     * RSQL that can be generated depending on the state of the original award number:
+     *
+     * 1. award number and award number normalized are distinct and the NIH wild card award number is empty
+     * 2. award number and award number normalized are NOT distinct and the NIH wild card award number is empty
+     * 3. award number and award number normalized are distinct and the NIH wild card award number is NOT empty
+     * 4. award number and award number normalized are NOT distinct and the NIH wild card award number is NOT empty
+     */
+    @Test
+    public void testRsqlGenerationForSearchType() throws IOException {
+        String awardNumberCase1 = " test1234 1234";
+        String awardNumberCase2 = "test1234";
+        String awardNumberCase3 = " R01 CA078284";
+        String awardNumberCase4 = "R01CA078284";
+
+        String expectedCase1 = "(awardNumber==' test1234 1234',awardNumber=='test1234 1234')";
+        String expectedCase2 = "awardNumber=='test1234'";
+        String expectedCase3 = "(awardNumber==' R01 CA078284',awardNumber=='R01CA078284',awardNumber=='*R01CA078284*')";
+        String expectedCase4 = "(awardNumber=='R01CA078284',awardNumber=='*R01CA078284*')";
+
+        assertEquals(expectedCase1, Util.grantAwardNumberNormalizeSearch(awardNumberCase1,"awardNumber"));
+        assertEquals(expectedCase2, Util.grantAwardNumberNormalizeSearch(awardNumberCase2,"awardNumber"));
+        assertEquals(expectedCase3, Util.grantAwardNumberNormalizeSearch(awardNumberCase3,"awardNumber"));
+        assertEquals(expectedCase4, Util.grantAwardNumberNormalizeSearch(awardNumberCase4,"awardNumber"));
+
+    }
+
 }
