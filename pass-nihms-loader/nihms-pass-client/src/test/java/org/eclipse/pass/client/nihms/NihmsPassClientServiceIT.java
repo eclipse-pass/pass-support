@@ -77,31 +77,31 @@ public class NihmsPassClientServiceIT {
      */
     @Test
     public void shouldFindNihGrantAwardNumber() throws IOException {
-        Grant grant1 = new Grant("1");
+        Grant grant1 = new Grant();
         grant1.setAwardNumber("R01AR074846");
         grant1.setStartDate(ZonedDateTime.now());
 
-        Grant grant2 = new Grant("2");
+        Grant grant2 = new Grant();
         grant2.setAwardNumber("UM1AI068613-01");
         grant2.setStartDate(ZonedDateTime.now());
 
-        Grant grant3 = new Grant("3");
+        Grant grant3 = new Grant();
         grant3.setAwardNumber("K23HL151758");
         grant3.setStartDate(ZonedDateTime.now());
 
-        Grant grant4 = new Grant("4");
+        Grant grant4 = new Grant();
         grant4.setAwardNumber("F32NS120940-01A1");
         grant4.setStartDate(ZonedDateTime.now());
 
-        Grant grant5 = new Grant("5");
+        Grant grant5 = new Grant();
         grant5.setAwardNumber("1P50DA044123-B2");
         grant5.setStartDate(ZonedDateTime.now());
 
-        Grant grant6 = new Grant("6");
+        Grant grant6 = new Grant();
         grant6.setAwardNumber("K23HL153778-1A1");
         grant6.setStartDate(ZonedDateTime.now());
 
-        Grant grant7 = new Grant("7");
+        Grant grant7 = new Grant();
         grant7.setAwardNumber("5R01ES020425-05S2");
         grant7.setStartDate(ZonedDateTime.now());
 
