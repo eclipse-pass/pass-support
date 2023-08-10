@@ -14,6 +14,7 @@ import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Karen Hanson
  */
+@Disabled("https://github.com/eclipse-pass/main/issues/679")
 public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
 
     @BeforeEach

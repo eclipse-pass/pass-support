@@ -41,6 +41,7 @@ import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,6 +49,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * @author Karen Hanson
  */
+@Disabled("https://github.com/eclipse-pass/main/issues/679")
 @ExtendWith(MockitoExtension.class)
 public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
 

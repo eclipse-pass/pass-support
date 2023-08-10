@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Grant;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Karen Hanson
  */
+@Disabled("https://github.com/eclipse-pass/main/issues/679")
 public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
 
     /**

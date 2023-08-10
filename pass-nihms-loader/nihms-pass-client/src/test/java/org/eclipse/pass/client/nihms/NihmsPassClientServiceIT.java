@@ -34,8 +34,10 @@ import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled("https://github.com/eclipse-pass/main/issues/679")
 public class NihmsPassClientServiceIT {
 
     private  NihmsPassClientService underTest;
