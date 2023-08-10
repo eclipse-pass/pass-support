@@ -59,7 +59,7 @@
           </execution>
           <execution>
             <id>build-nihms-docker-image</id>
-            <phase>install</phase>
+            <phase>verify</phase>
             <configuration>
               <images>
                 <image>
