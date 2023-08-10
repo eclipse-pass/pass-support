@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.eclipse.pass</groupId>
+    <artifactId>pass-nihms-loader</artifactId>
+    <version>0.9.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>nihms-docker</artifactId>
+
+  <name>NIHMS Docker</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>copy-jar-files-for-dockerfile</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+
+            <configuration>
+              <outputDirectory>target</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>../nihms-data-harvest-cli/target</directory>
+                  <includes>
+                    <include>nihms-data-harvest-cli-exec.jar</include>
+                  </includes>
+                </resource>
+                <resource>
+                  <directory>../nihms-data-transform-load/target</directory>
+                  <includes>
+                    <include>nihms-data-transform-load-exec.jar</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>start</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>stop</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>build-nihms-docker-image</id>
+            <phase>install</phase>
+            <configuration>
+              <images>
+                <image>
+                  <name>ghcr.io/eclipse-pass/pass-nihms-loader:%v</name>
+                </image>
+              </images>
+            </configuration>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
