@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Grant;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -32,7 +31,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Karen Hanson
  */
-@Disabled("https://github.com/eclipse-pass/main/issues/679")
+
 public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
 
     /**
@@ -51,7 +50,7 @@ public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
             grantSelector.setFilter(RSQL.equals("awardNumber", awardNumber));
             final String testGrantId;
             try {
-                testGrantId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+                testGrantId = passClient.streamObjects(grantSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -59,43 +58,43 @@ public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
         });
 
         grantSelector.setFilter(RSQL.equals("awardNumber", awardNumber));
-        String matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        String matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertEquals(grantId, matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "R01 HL003043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertEquals(grantId, matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "R01HL03043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertEquals(grantId, matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "R01HL3043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertEquals(grantId, matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "R02HL3043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertEquals(grantId, matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "TM2HL3043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertEquals(grantId, matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "TM2HL003043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertEquals(grantId, matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "TM2HE003043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertNull(matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "TM2HL000000000000000003043"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertNull(matchedId);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "TM2HL0003041"));
-        matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertNull(matchedId);
 
     }
@@ -114,7 +113,7 @@ public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
             final String testId;
             grantSelector.setFilter(RSQL.equals("awardNumber", awardNumber));
             try {
-                testId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(grantSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -122,7 +121,7 @@ public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
         });
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "R21HL1113043222"));
-        String matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        String matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertNull(matchedId);
     }
 
@@ -140,7 +139,7 @@ public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
             grantSelector.setFilter(RSQL.equals("awardNumber", awardNumber));
             final String testId;
             try {
-                testId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(grantSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -148,7 +147,7 @@ public class GrantNormalizationIT extends NihmsSubmissionEtlITBase {
         });
 
         grantSelector.setFilter(RSQL.equals("awardNumber", "CDE1234567"));
-        String matchedId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
+        String matchedId = passClient.streamObjects(grantSelector).findFirst().get().getId();
         assertNull(matchedId);
 
     }
