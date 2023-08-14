@@ -40,7 +40,6 @@ import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,13 +47,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * @author Karen Hanson
  */
-@Disabled("https://github.com/eclipse-pass/main/issues/679")
 @ExtendWith(MockitoExtension.class)
 public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
     private final String pmid1 = "9999999999";
-    private final String grant1 = "R01 AB123456";
-    private final String grant2 = "R02 CD123456";
+    private final String awardNumber1 = "R01 AB123456";
+    private final String awardNumber2 = "R02 CD123456";
     private final String user1 = "55";
     private final String user2 = "77";
     private final String nihmsId1 = "NIHMS987654321";
@@ -79,25 +77,16 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantId = createGrant(grant1, user1);
-        //wait for new grant appears
-        attempt(RETRIES, () -> {
-            PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-            grantSelector.setFilter(RSQL.equals("@id", grantId));
-            String testGrantId;
-            try {
-                testGrantId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testGrantId);
-        });
+        String grantId = createGrant(awardNumber1);
+
+        Grant testGrant = passClient.getObject(Grant.class, grantId);
+        assertNotNull(testGrant);
 
         setMockPMRecord(pmid1);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.selectObjects(pubSelector).getObjects().get(0));
+        assertNull(passClient.streamObjects(pubSelector).findAny().get().getId());
 
         //load all new publication, repo copy and submission
         NihmsPublication pub = newCompliantNihmsPub();
@@ -106,16 +95,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         transformLoadService.transformAndLoadNihmsPub(pub);
 
         //wait for new publication to appear
-        attempt(RETRIES, () -> {
-            final String testId;
-            try {
-                testId = passClient.selectObjects(pubSelector).getObjects().get(0).getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testId);
-            pubId = testId;
-        });
+        String testId = passClient.streamObjects(pubSelector).findFirst().get().getId();
+        assertNotNull(testId);
+        pubId = testId;
 
         Publication publication = passClient.getObject(Publication.class, pubId);
         //spot check publication fields
@@ -124,17 +106,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(issue, publication.getIssue());
 
         //now make sure we wait for submission, should only be one from the test
-        attempt(RETRIES, () -> {
-            final String testId;
-            subSelector.setFilter(RSQL.equals("publication", pubId));
-            try {
-                testId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testId);
-            submissionId = testId;
-        });
+        subSelector.setFilter(RSQL.equals("publication", pubId));
+        submissionId = passClient.streamObjects(subSelector).findFirst().get().getId();
+        assertNotNull(submissionId);
+        submissionId = testId;
 
         Submission submission = passClient.getObject(Submission.class, submissionId);
         //check fields in submission
@@ -150,17 +125,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(SubmissionStatus.COMPLETE, submission.getSubmissionStatus());
 
         //now retrieve repositoryCopy
-        attempt(RETRIES, () -> {
-            final String testId;
-            repoCopySelector.setFilter(RSQL.equals("publication", pubId));
-            try {
-                testId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testId);
-            repoCopyId = testId;
-        });
+        repoCopySelector.setFilter(RSQL.equals("publication", pubId));
+        repoCopyId = passClient.streamObjects(repoCopySelector).findFirst().get().getId();
+        assertNotNull(repoCopyId);
 
         RepositoryCopy repoCopy = passClient.getObject(RepositoryCopy.class, repoCopyId);
         //check fields in repoCopy
@@ -183,12 +150,12 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantUri1 = createGrant(grant1, user1);
-        String grantUri2 = createGrant(grant2, user2); // dont need to wait, will wait for publication instead
+        String grantUri1 = createGrant(awardNumber1);
+        String grantUri2 = createGrant(awardNumber2); // dont need to wait, will wait for publication instead
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.selectObjects(pubSelector).getObjects().get(0).getId());
+        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
 
         //create existing publication
         Publication publication = newPublication();
@@ -203,7 +170,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             subSelector.setFilter(RSQL.equals("repositories", "fake:repo"));
             try {
-                testId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(subSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -221,7 +188,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             subSelector.setFilter(RSQL.equals("grants", grantUri1));
             try {
-                testId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(subSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -255,7 +222,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             repoCopySelector.setFilter(RSQL.equals("publication", pubId));
             try {
-                testId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(repoCopySelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -269,7 +236,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
-
     }
 
     /**
@@ -283,11 +249,11 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantUri1 = createGrant(grant1, user1);
+        String grantUri1 = createGrant(awardNumber1);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.selectObjects(pubSelector).getObjects().get(0).getId());
+        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
 
         //create existing publication
         pubId = nihmsPassClientService.createPublication(newPublication());
@@ -362,11 +328,11 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantUri1 = createGrant(grant1, user1);
+        String grantUri1 = createGrant(awardNumber1);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.selectObjects(pubSelector).getObjects().get(0).getId());
+        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
 
         //create existing publication
         Publication publication = newPublication();
@@ -383,7 +349,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             subSelector.setFilter(RSQL.equals("@id", preexistingSub.getId()));
             try {
-                testId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(subSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -403,7 +369,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             repoCopySelector.setFilter(RSQL.equals("externalIds", pub.getPmcId()));
             try {
-                testId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(repoCopySelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -421,15 +387,15 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have ONLY ONE submission for this pmid
         subSelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(subSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
 
         //we should have ONLY ONE publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertEquals(1, passClient.selectObjects(pubSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(pubSelector).toList().size());
 
         //we should have ONLY ONE repoCopy for this publication
         repoCopySelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(repoCopySelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(repoCopySelector).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
@@ -448,11 +414,11 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantId1 = createGrant(grant1, user1);
+        String grantId1 = createGrant(awardNumber1);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.selectObjects(pubSelector).getObjects().get(0).getId());
+        assertNull(passClient.streamObjects(pubSelector).toList().size());
 
         //create existing publication
         Publication publication = newPublication();
@@ -473,7 +439,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             depoSelector.setFilter(RSQL.equals("@id", preexistingDeposit.getId()));
             try {
-                testId = passClient.selectObjects(depoSelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(depoSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -492,7 +458,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             repoCopySelector.setFilter(RSQL.equals("externalIds", pub.getPmcId()));
             try {
-                testId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(repoCopySelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -505,15 +471,15 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have ONLY ONE submission for this pmid
         subSelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(subSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
 
         //we should have ONLY ONE publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertEquals(1, passClient.selectObjects(pubSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(pubSelector).toList().size());
 
         //we should have ONLY ONE repoCopy for this publication
         repoCopySelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(repoCopySelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(repoCopySelector).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
@@ -537,11 +503,11 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantId1 = createGrant(grant1, user1);
+        String grantId1 = createGrant(awardNumber1);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.selectObjects(pubSelector).getObjects().get(0).getId());
+        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
 
         //create existing publication
         Publication publication = newPublication();
@@ -565,7 +531,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             repoCopySelector.setFilter(RSQL.equals("@id", repoCopyId));
             try {
-                testId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(repoCopySelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -584,7 +550,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             repoCopySelector.setFilter(RSQL.equals("externalIds", pub.getPmcId()));
             try {
-                testId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(repoCopySelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -593,15 +559,15 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have ONLY ONE submission for this pmid
         subSelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(subSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
 
         //we should have ONLY ONE publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertEquals(1, passClient.selectObjects(pubSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(pubSelector).toList().size());
 
         //we should have ONLY ONE repoCopy for this publication
         repoCopySelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(repoCopySelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(repoCopySelector).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
@@ -611,8 +577,8 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
     }
 
     private NihmsPublication newCompliantNihmsPub() {
-        return new NihmsPublication(NihmsStatus.COMPLIANT, pmid1, grant1, nihmsId1, pmcid1, dateval, dateval, dateval,
-                                    dateval, title);
+        return new NihmsPublication(NihmsStatus.COMPLIANT, pmid1, awardNumber1, nihmsId1, pmcid1, dateval, dateval,
+                dateval, dateval, title);
     }
 
     private Publication newPublication() {
