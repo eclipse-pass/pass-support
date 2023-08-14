@@ -80,7 +80,7 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantId = createGrant(grant1, user1);
+        String grantId = createGrant(grant1);
         //wait for new grant appears
         attempt(RETRIES, () -> {
             grantSelector.setFilter(RSQL.equals("@id", grantId));
@@ -164,7 +164,7 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
-        String grantUri1 = createGrant(grant1, user1);
+        String grantUri1 = createGrant(grant1);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
@@ -257,8 +257,8 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantUri1 = createGrant(grant1, user1);
-        String grantUri2 = createGrant(grant2, user1);
+        String grantUri1 = createGrant(grant1);
+        String grantUri2 = createGrant(grant2);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));

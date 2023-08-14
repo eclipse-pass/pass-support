@@ -106,62 +106,75 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
     private void preLoadGrants() throws Exception {
         PassClientSelector<Grant> grantSelector = new PassClientSelector(Grant.class);
 
-        createGrant("P30 DDDDDD", "1");
-        createGrant("UL1 JJJJJJ", "2");
-        createGrant("R01 BBBBBB", "3");
-        createGrant("N01 IIIIII", "4");
-        createGrant("T32 KKKKKK", "5");
-        createGrant("P30 KKKKKK", "6");
-        createGrant("P20 HHHHHH", "7");
-        createGrant("T32 LLLLLL", "8");
-        createGrant("R01 YYYYYY", "9");
-        createGrant("P30 AAAAAA", "10");
-        createGrant("R01 WWWWWW", "11");
-        createGrant("R01 FFFFFF", "12");
-        createGrant("R01 HHHHHH", "12");
-        createGrant("T32 MMMMMM", "13");
-        createGrant("F31 CCCCCC", "14");
-        createGrant("T32 NNNNNN", "15");
-        createGrant("T32 XXXXXX", "16");
-        createGrant("R01 GGGGGG", "17");
-        createGrant("R01 OOOOOO", "18");
-        createGrant("T32 JJJJJJ", "19");
-        createGrant("U01 LLLLLL", "20");
-        createGrant("TL1 OOOOOO", "21");
-        createGrant("K23 MMMMMM", "22");
-        createGrant("P30 ZZZZZZ", "23");
-        createGrant("R01 EEEEEE", "24");
-        createGrant("P60 EEEEEE", "25");
-        createGrant("U01 AAAAAA", "26");
-        createGrant("T32 GGGGGG", "27");
-        createGrant("T32 PPPPPP", "28");
-        createGrant("R01 PPPPPP", "29");
-        createGrant("R01 QQQQQQ", "29");
-        createGrant("T32 RRRRRR", "29");
-        createGrant("P50 UUUUUU", "30");
-        createGrant("R01 CCCCCC", "31");
-        createGrant("N01 TTTTTT", "32");
-        createGrant("P50 CCCCCC", "33");
-        createGrant("R01 DDDDDD", "33");
-        createGrant("P30 VVVVVV", "34");
-        createGrant("K24 SSSSSS", "35");
-        createGrant("R01 RRRRRR", "35");
-        createGrant("U01 BBBBBB", "36");
-        createGrant("K23 BBBBBB", "37");
+        createGrant("P30 DDDDDD");
+        createGrant("UL1 JJJJJJ");
+        createGrant("R01 BBBBBB");
+        createGrant("N01 IIIIII");
+        createGrant("T32 KKKKKK");
+        createGrant("P30 KKKKKK");
+        createGrant("P20 HHHHHH");
+        createGrant("T32 LLLLLL");
+        createGrant("R01 YYYYYY");
+        createGrant("P30 AAAAAA");
+        createGrant("R01 WWWWWW");
+        createGrant("R01 FFFFFF");
+        createGrant("R01 HHHHHH");
+        createGrant("T32 MMMMMM");
+        createGrant("F31 CCCCCC");
+        createGrant("T32 NNNNNN");
+        createGrant("T32 XXXXXX");
+        createGrant("R01 GGGGGG");
+        createGrant("R01 OOOOOO");
+        createGrant("T32 JJJJJJ");
+        createGrant("U01 LLLLLL");
+        createGrant("TL1 OOOOOO");
+        createGrant("K23 MMMMMM");
+        createGrant("P30 ZZZZZZ");
+        createGrant("R01 EEEEEE");
+        createGrant("P60 EEEEEE");
+        createGrant("U01 AAAAAA");
+        createGrant("T32 GGGGGG");
+        createGrant("T32 PPPPPP");
+        createGrant("R01 PPPPPP");
+        createGrant("R01 QQQQQQ");
+        createGrant("T32 RRRRRR");
+        createGrant("P50 UUUUUU");
+        createGrant("R01 CCCCCC");
+        createGrant("N01 TTTTTT");
+        createGrant("P50 CCCCCC");
+        createGrant("R01 DDDDDD");
+        createGrant("P30 VVVVVV");
+        createGrant("K24 SSSSSS");
+        createGrant("R01 RRRRRR");
+        createGrant("U01 BBBBBB");
+        createGrant("K23 BBBBBB");
+        createGrant("U54 EB007958");
+        createGrant("T32 HD094687");
+        createGrant("R01 HL153178");
+        createGrant("R21 NS127076");
+        createGrant("R01 HL139543");
+        createGrant("U54 CA268083");
+        createGrant("UL1 TR003098");
+        createGrant("R01 AI145435");
+        createGrant("T32 HD094687");
+        createGrant("R01 CA204345");
+        createGrant("T32 GM066691");
+        createGrant("R01 AG054004");
+        createGrant("T32 MH109436");
+        createGrant("UM1 AI068613");
+        createGrant("R01 CA121113");
+        createGrant("R01 NS082338");
+        createGrant("N01 HC095168");
+        createGrant("K23 DK124515");
+        createGrant("U01 HL156056");
+        createGrant("R01 HD086026");
 
         String checkableAwardNumber = "R01 AAAAAA";
-        String checkableGrantUri = createGrant(checkableAwardNumber, "38");
+        String checkableGrantId = createGrant(checkableAwardNumber);
 
-        attempt(RETRIES, () -> {
-            grantSelector.setFilter(RSQL.equals("awardNumber", checkableAwardNumber));
-            final String testGrantId;
-            try {
-                testGrantId = passClient.selectObjects(grantSelector).getObjects().get(0).getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertEquals(checkableGrantUri, testGrantId);
-        });
+        grantSelector.setFilter(RSQL.equals("awardNumber", checkableAwardNumber));
+        String testGrantId = passClient.streamObjects(grantSelector).findFirst().get().getId().toString();
+        assertEquals(checkableGrantId, testGrantId);
 
     }
 

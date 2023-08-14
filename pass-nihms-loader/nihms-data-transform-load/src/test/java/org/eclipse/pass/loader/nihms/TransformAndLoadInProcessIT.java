@@ -78,7 +78,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantUri = createGrant(grant1, user1);
+        String grantUri = createGrant(grant1);
         //wait for new grant appears
         attempt(RETRIES, () -> {
             final String testId;
@@ -167,7 +167,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        String grantUri1 = createGrant(grant1, user1);
+        String grantUri1 = createGrant(grant1);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
