@@ -17,7 +17,7 @@ package org.eclipse.pass.loader.nihms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -86,7 +86,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.streamObjects(pubSelector).findAny().get().getId());
+        assertThrows(
+                Exception.class,
+                () -> {passClient.streamObjects(pubSelector).findAny().get().getId();}
+        );
 
         //load all new publication, repo copy and submission
         NihmsPublication pub = newCompliantNihmsPub();
@@ -155,7 +158,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
+        assertThrows(
+                Exception.class,
+                () -> {passClient.streamObjects(pubSelector).findAny().get().getId();}
+        );
 
         //create existing publication
         Publication publication = newPublication();
@@ -253,7 +259,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
+        assertThrows(
+                Exception.class,
+                () -> {passClient.streamObjects(pubSelector).findAny().get().getId();}
+        );
 
         //create existing publication
         pubId = nihmsPassClientService.createPublication(newPublication());
@@ -332,7 +341,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
+        assertThrows(
+                Exception.class,
+                () -> {passClient.streamObjects(pubSelector).findFirst().get().getId();}
+        );
 
         //create existing publication
         Publication publication = newPublication();
@@ -418,7 +430,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.streamObjects(pubSelector).toList().size());
+        assertThrows(
+                Exception.class,
+                () -> {passClient.streamObjects(pubSelector).findFirst().get().getId();}
+        );
 
         //create existing publication
         Publication publication = newPublication();
@@ -507,7 +522,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.streamObjects(pubSelector).findFirst().get().getId());
+        assertThrows(
+                Exception.class,
+                () -> {passClient.streamObjects(pubSelector).findFirst().get().getId();}
+        );
 
         //create existing publication
         Publication publication = newPublication();
