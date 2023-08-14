@@ -199,4 +199,37 @@ public class NihmsPassClientServiceIT {
         }
     }
 
+    /**
+     * Test that the search for a non-NIH grant with a similar award number returns null
+     * @throws Exception
+     */
+    @Test
+    public void checkSearchForNonNihGrantWithSimilarId() throws Exception {
+        String awardNumber = "R01HL111222";
+        String variant1 = "R01HL1112223-01A1";
+        String variant2 = "000R01HL1112223";
+        String variant3 = "R01 HL211222";
+        String variant4 = "R01-HL111222";
+        Grant testGrant = new Grant();
+        testGrant.setAwardNumber(awardNumber);
+        Grant foundGrant;
+
+        //ensure the search returns the grant with the same award number
+        foundGrant = underTest.findMostRecentGrantByAwardNumber(awardNumber);
+        assertEquals(testGrant.getId(), foundGrant.getId());
+
+        //test similar ids
+        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant1);
+        assertNull(foundGrant);
+
+        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant2);
+        assertNull(foundGrant);
+
+        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant3);
+        assertNull(foundGrant);
+
+        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant4);
+        assertNull(foundGrant);
+    }
+
 }
