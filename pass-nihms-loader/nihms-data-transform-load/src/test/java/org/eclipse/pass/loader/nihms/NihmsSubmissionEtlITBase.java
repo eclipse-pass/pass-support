@@ -149,11 +149,15 @@ public abstract class NihmsSubmissionEtlITBase {
         }
     }
 
-    protected String createGrant(String awardNumber, String userId) throws Exception {
-        Funder primaryFunder = new Funder("funder:id1");
-        Funder directFunder = new Funder("funder:id2");
-        User user = new User(userId);
-        User coPi = new User("user:id");
+    protected String createGrant(String awardNumber) throws Exception {
+        Funder primaryFunder = new Funder();
+        Funder directFunder = new Funder();
+        passClient.createObject(primaryFunder);
+        passClient.createObject(directFunder);
+        User user = new User();
+        User coPi = new User();
+        passClient.createObject(user);
+        passClient.createObject(coPi);
         Grant grant = new Grant();
         grant.setAwardNumber(awardNumber);
         grant.setPi(user);
