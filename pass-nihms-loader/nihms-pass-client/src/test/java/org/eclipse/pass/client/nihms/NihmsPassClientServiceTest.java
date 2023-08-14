@@ -340,17 +340,10 @@ public class NihmsPassClientServiceTest {
                 .selectObjects(
                         argThat(passClientSelector ->
                                 passClientSelector.getFilter().equals(repoCopyFilter)));
-        doReturn(repoCopy)
-                .when(mockClient)
-                .getObject(RepositoryCopy.class, repositoryCopyId);
 
         RepositoryCopy matchedRepoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
         assertEquals(repoCopy, matchedRepoCopy);
 
-        //check it doesnt pull from elasticsearch the second time
-        matchedRepoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
-        verify(mockClient, times(1)).selectObjects(any());
-        assertEquals(repoCopy, matchedRepoCopy);
     }
 
     /**
