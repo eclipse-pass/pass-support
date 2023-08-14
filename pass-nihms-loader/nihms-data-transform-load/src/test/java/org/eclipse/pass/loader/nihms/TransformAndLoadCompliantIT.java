@@ -198,7 +198,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have two submissions for this publication
         subSelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(2, passClient.selectObjects(subSelector).getObjects().size());
+        assertEquals(2, passClient.streamObjects(subSelector).toList().size());
 
         Submission reloadedPreexistingSub = nihmsPassClientService.readSubmission(preexistingSub.getId());
         assertEquals(preexistingSub, reloadedPreexistingSub); //should not have been affected
@@ -232,7 +232,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have one publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertEquals(1, passClient.selectObjects(pubSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(pubSelector).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
@@ -267,7 +267,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             subSelector.setFilter(RSQL.equals("@id", preexistingSub.getId()));
             try {
-                testId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(subSelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -286,7 +286,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
             final String testId;
             repoCopySelector.setFilter(RSQL.equals("externalIds", pub.getPmcId()));
             try {
-                testId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+                testId = passClient.streamObjects(repoCopySelector).findFirst().get().getId();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -299,15 +299,15 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have ONLY ONE submission for this pmid
         subSelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(subSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
 
         //we should have ONLY ONE publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertEquals(1, passClient.selectObjects(pubSelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(pubSelector).toList().size());
 
         //we should have ONLY ONE repoCopy for this publication
         repoCopySelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(repoCopySelector).getObjects().size());
+        assertEquals(1, passClient.streamObjects(repoCopySelector).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
