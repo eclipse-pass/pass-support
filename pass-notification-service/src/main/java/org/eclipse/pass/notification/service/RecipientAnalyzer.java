@@ -22,7 +22,6 @@ import static java.util.stream.Collectors.toSet;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
@@ -53,9 +52,7 @@ public class RecipientAnalyzer implements BiFunction<Submission, SubmissionEvent
             }
             case CHANGES_REQUESTED, SUBMITTED -> {
                 // to: submission.preparers
-                // TODO temporarily comment out to test stage notifications
-//                return submission.getPreparers().stream().map(User::getEmail).collect(toSet());
-                return List.of("rpoetke1@jh.edu");
+                return submission.getPreparers().stream().map(User::getEmail).collect(toSet());
             }
             case CANCELLED -> {
                 String performedBy = event.getPerformedBy().getEmail();

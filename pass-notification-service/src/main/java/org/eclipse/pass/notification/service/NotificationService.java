@@ -57,13 +57,12 @@ public class NotificationService {
         }
 
         Submission submission = submissionEvent.getSubmission();
-        // TODO temporarily comment out to test stage notifications
-//        if (isSelfSubmission(submission)) {
-//            log.debug("Dropping self-submission SubmissionEvent (Event URI: {}, Resource URI: {})",
-//                    submissionEvent.getId(),
-//                    submission.getId());
-//            return;
-//        }
+        if (isSelfSubmission(submission)) {
+            log.debug("Dropping self-submission SubmissionEvent (Event URI: {}, Resource URI: {})",
+                    submissionEvent.getId(),
+                    submission.getId());
+            return;
+        }
 
         // Compose Notification
         Notification notification = composer.apply(submissionEvent, submissionEventMessage);

@@ -58,7 +58,6 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionEvent;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -178,7 +177,6 @@ public class ComposerMockTest {
         assertLinksPresent(notification, event, submissionEventMessage);
     }
 
-    @Disabled
     @Test
     public void testChangesRequested() {
         // GIVEN
@@ -205,7 +203,6 @@ public class ComposerMockTest {
         assertLinksPresent(notification, event, submissionEventMessage);
     }
 
-    @Disabled
     @Test
     public void testSubmitted() {
         // GIVEN
