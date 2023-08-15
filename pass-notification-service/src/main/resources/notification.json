@@ -1,18 +1,6 @@
 {
   "recipient-config": [
     {
-      "mode": "DEMO",
-      "fromAddress": "noreply@pass.jhu.edu",
-      "global_cc": [
-        "notification-demo-cc@jhu.edu"
-      ],
-      "global_bcc": [],
-      "whitelist": [
-        "staffWithGrants@jhu.edu",
-        "staffWithNoGrants@jhu.edu"
-      ]
-    },
-    {
       "mode": "PRODUCTION",
       "fromAddress": "noreply@pass.jhu.edu"
     }
