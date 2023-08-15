@@ -1,4 +1,5 @@
 ---
 Public Access Submission System
 Johns Hopkins University
-https://pass.jhu.eduFooter
+
+<a href="https://{{app_domain}}">https://{{app_domain}}</a>

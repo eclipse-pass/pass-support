@@ -63,7 +63,12 @@ public enum NotificationParam {
      * Placeholder for a data structure carrying links and their descriptions that may be included in the
      * notification
      */
-    LINKS("link_metadata");
+    LINKS("link_metadata"),
+
+    /**
+     * Placeholder for the application domain
+     */
+    APP_DOMAIN("app_domain");
 
     /**
      * String representation of the parameter name, suitable for use as a key in a key-value pair.

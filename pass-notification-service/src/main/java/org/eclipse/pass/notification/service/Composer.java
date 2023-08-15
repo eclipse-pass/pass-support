@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.pass.notification.config.RecipientConfig;
 import org.eclipse.pass.notification.model.Notification;
@@ -35,6 +35,7 @@ import org.eclipse.pass.notification.model.SubmissionEventMessage;
 import org.eclipse.pass.support.client.model.EventType;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -56,7 +57,7 @@ import org.springframework.stereotype.Component;
  * @see NotificationParam
  */
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Component
 public class Composer implements BiFunction<SubmissionEvent, SubmissionEventMessage, Notification> {
 
@@ -65,6 +66,9 @@ public class Composer implements BiFunction<SubmissionEvent, SubmissionEventMess
     private final SubmissionLinkAnalyzer submissionLinkAnalyzer;
     private final LinkValidator linkValidator;
     private final ObjectMapper mapper;
+
+    @Value("${pass.app.domain}")
+    private String passAppDomain;
 
     /**
      * Composes a {@code Notification} from a {@code Submission} and {@code SubmissionEvent}.
@@ -119,6 +123,8 @@ public class Composer implements BiFunction<SubmissionEvent, SubmissionEventMess
         params.put(NotificationParam.LINKS, concat(submissionLinkAnalyzer.apply(event, submissionEventMessage))
                 .filter(linkValidator)
                 .collect(serialized()));
+
+        params.put(NotificationParam.APP_DOMAIN, passAppDomain);
 
         EventType eventType = event.getEventType();
         NotificationType notificationType = NotificationType.findForEventType(eventType);
