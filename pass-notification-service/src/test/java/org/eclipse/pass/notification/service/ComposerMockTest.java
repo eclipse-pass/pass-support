@@ -60,6 +60,7 @@ import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -412,6 +413,7 @@ public class ComposerMockTest {
 
         composer = new Composer(recipientConfig,
             new RecipientAnalyzer(), new SubmissionLinkAnalyzer(), linkValidator, new ObjectMapper());
+        ReflectionTestUtils.setField(composer, "passAppDomain", "testing-pass-app-domain");
 
         // WHEN
         Notification n = composer.apply(event, submissionEventMessage);
@@ -442,6 +444,8 @@ public class ComposerMockTest {
         assertEquals(SUBMISSION_REVIEW_INVITE, deserializedLinks.get(0).getRel());
         assertTrue(deserializedLinks.get(0).getHref().toString().contains(userTokenTestLink.toString()));
         assertNotSame(eventLink, deserializedLinks.get(0).getHref());
+
+        assertEquals("testing-pass-app-domain", params.get(NotificationParam.APP_DOMAIN));
     }
 
     private void assertLinksPresent(Notification notification, SubmissionEvent event,
