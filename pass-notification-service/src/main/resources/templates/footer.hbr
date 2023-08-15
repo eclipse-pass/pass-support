@@ -1,5 +1,4 @@
 ---
 Public Access Submission System
 Johns Hopkins University
-
-<a href="https://{{app_domain}}">https://{{app_domain}}</a>
+https://{{app_domain}}
