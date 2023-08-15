@@ -40,14 +40,17 @@ public class SubmissionEventListener {
      */
     @JmsListener(destination = "${pass.jms.queue.submission.event.name}")
     public void processMessage(SubmissionEventMessage submissionEventMessage) {
-        log.trace("Receiving SubmissionEvent: {}", submissionEventMessage.getSubmissionEventId());
-        if (Mode.DISABLED == notificationConfig.getMode()) {
-            log.trace("Discarding message {}, mode is {}",
-                submissionEventMessage.getSubmissionEventId(),
-                notificationConfig.getMode());
-            return;
+        try {
+            log.trace("Receiving SubmissionEvent: {}", submissionEventMessage.getSubmissionEventId());
+            if (Mode.DISABLED == notificationConfig.getMode()) {
+                log.trace("Discarding message {}, mode is {}",
+                    submissionEventMessage.getSubmissionEventId(),
+                    notificationConfig.getMode());
+                return;
+            }
+            notificationService.notify(submissionEventMessage);
+        } catch (Throwable throwable) {
+            log.error("Error processing SubmissionEvent: " + submissionEventMessage.getSubmissionEventId(), throwable);
         }
-
-        notificationService.notify(submissionEventMessage);
     }
 }
