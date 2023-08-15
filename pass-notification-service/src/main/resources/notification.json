@@ -2,7 +2,7 @@
   "recipient-config": [
     {
       "mode": "DEMO",
-      "fromAddress": "noreply@pass.jh.edu",
+      "fromAddress": "noreply@pass.jhu.edu",
       "global_cc": [
         "notification-demo-cc@jhu.edu"
       ],
@@ -14,7 +14,7 @@
     },
     {
       "mode": "PRODUCTION",
-      "fromAddress": "noreply@pass.jh.edu"
+      "fromAddress": "noreply@pass.jhu.edu"
     }
   ],
   "templates": [
