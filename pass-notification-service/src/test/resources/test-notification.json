@@ -25,9 +25,20 @@
         "notification": "SUBMISSION_APPROVAL_INVITE",
         "templates": {
           "SUBJECT": "PASS Submission Approval: {{abbreviate resource_metadata.title 50}}",
-          "BODY": "classpath:/templates/pass-body-submission-approval-invite-template.hbr",
+          "BODY": "${pass.notification.template.approval.invite.body:classpath:/templates/pass-body-submission-approval-invite-template.hbr}",
           "FOOTER": "A test inline footer"
         }
       }
-    ]
+    ],
+  "link-validators": [
+    {
+      "rels": [
+        "submission-view",
+        "submission-review",
+        "submission-review-invite"
+      ],
+      "requiredBaseURI": "${pass.link.scheme}://${pass.link.host}",
+      "throwExceptionWhenInvalid": true
+    }
+  ]
 }

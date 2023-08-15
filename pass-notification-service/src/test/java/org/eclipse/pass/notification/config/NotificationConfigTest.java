@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.eclipse.pass.notification.AbstractNotificationSpringTest;
 import org.eclipse.pass.notification.model.NotificationType;
@@ -78,6 +79,11 @@ public class NotificationConfigTest extends AbstractNotificationSpringTest {
         assertTrue(recipientConfigDemo.getWhitelist().contains("hvu@jhu.edu"));
         assertTrue(recipientConfigDemo.getWhitelist().contains("apb@jhu.edu"));
         assertTrue(recipientConfigDemo.getWhitelist().contains("khanson@jhu.edu"));
+
+        Collection<LinkValidationRule> linkValidationRules = notificationConfig.getLinkValidatorConfig();
+        assertEquals(1, linkValidationRules.size());
+        LinkValidationRule linkValidationRule = linkValidationRules.iterator().next();
+        assertEquals("https://testing-host", linkValidationRule.getRequiredBaseURI());
     }
 
 }

@@ -18,6 +18,7 @@ package org.eclipse.pass.notification.config;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.eclipse.pass.support.client.PassClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -63,7 +64,13 @@ public class SpringBootNotificationConfig {
      * @throws IOException thrown if IO error
      */
     @Bean
-    public NotificationConfig notificationConfiguration(ObjectMapper objectMapper) throws IOException {
+    public NotificationConfig notificationConfiguration(ObjectMapper objectMapper,
+                                                        SpringEnvStringDeserializer envDeserializer)
+        throws IOException {
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(String.class, envDeserializer);
+        objectMapper.registerModule(module);
+
         NotificationConfig notificationConfig = objectMapper.readValue(notificationConfigResource.getInputStream(),
             NotificationConfig.class);
         notificationConfig.setMode(notificationMode);
