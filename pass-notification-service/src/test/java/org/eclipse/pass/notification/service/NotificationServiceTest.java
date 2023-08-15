@@ -20,7 +20,7 @@ package org.eclipse.pass.notification.service;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-//import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -97,8 +97,8 @@ public class NotificationServiceTest {
         // THEN
         verify(passClient, times(1))
             .getObject(SubmissionEvent.class, "test-event-id", "submission", "performedBy");
-//        verifyNoInteractions(composer);
-//        verifyNoInteractions(dispatchService);
+        verifyNoInteractions(composer);
+        verifyNoInteractions(dispatchService);
     }
 
     /**
@@ -118,8 +118,8 @@ public class NotificationServiceTest {
         // THEN
         verify(passClient, times(1))
             .getObject(SubmissionEvent.class, "test-event-id", "submission", "performedBy");
-//        verifyNoInteractions(composer);
-//        verifyNoInteractions(dispatchService);
+        verifyNoInteractions(composer);
+        verifyNoInteractions(dispatchService);
     }
 
     /**
@@ -142,8 +142,8 @@ public class NotificationServiceTest {
         // THEN
         verify(passClient, times(1))
             .getObject(SubmissionEvent.class, "test-event-id", "submission", "performedBy");
-//        verifyNoInteractions(composer);
-//        verifyNoInteractions(dispatchService);
+        verifyNoInteractions(composer);
+        verifyNoInteractions(dispatchService);
     }
 
     /**

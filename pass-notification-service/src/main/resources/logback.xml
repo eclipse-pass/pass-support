@@ -31,11 +31,11 @@
     <logger name="com.github.jknack.handlebars" additivity="false" level="${com.github.jknack.handlebars.level:-WARN}">
         <appender-ref ref="STDERR"/>
     </logger>
-<!--    <logger name="org.eclipse.pass" additivity="false" level="${org.eclipse.pass.level:-WARN}">-->
-<!--        <appender-ref ref="STDERR"/>-->
-<!--    </logger>-->
+    <logger name="org.eclipse.pass" additivity="false" level="${org.eclipse.pass.level:-WARN}">
+        <appender-ref ref="STDERR"/>
+    </logger>
     <logger name="org.eclipse.pass.notification" additivity="false"
-            level="${org.eclipse.pass.notification.level:-TRACE}">
+            level="${org.eclipse.pass.notification.level:-WARN}">
         <appender-ref ref="STDERR"/>
     </logger>
     <logger name="NOTIFICATION_LOG" additivity="false" level="${org.eclipse.pass.notification.level:-INFO}">
