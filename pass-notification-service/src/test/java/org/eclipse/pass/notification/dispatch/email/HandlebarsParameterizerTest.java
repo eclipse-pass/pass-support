@@ -42,7 +42,7 @@ public class HandlebarsParameterizerTest {
             "\n" +
             "Please review the submission at the following URL:\n" +
             "{{#each link_metadata}}{{#eq rel \"submissionReview\"}}{{href}}{{else}}{{/eq}}{{/each}}\n" +
-            "<a href=\"https://{{app_domain}}\">https://{{app_domain}}</a>\n";
+            "https://{{app_domain}}";
 
     private static final String COMMENT_STRING = "How does this look?";
 
@@ -100,7 +100,7 @@ public class HandlebarsParameterizerTest {
         assertTrue(parameterized.contains(COMMENT_STRING));
         assertTrue(parameterized.contains(SUBMISSION_REVIEW_LINK));
         assertTrue(parameterized.contains(ARTICLE_TITLE));
-        assertTrue(parameterized.contains("<a href=\"https://test-app-domain\">https://test-app-domain</a>"));
+        assertTrue(parameterized.contains("https://test-app-domain"));
     }
 
     @Test
