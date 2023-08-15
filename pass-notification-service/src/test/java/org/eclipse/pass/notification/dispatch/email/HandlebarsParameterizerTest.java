@@ -41,7 +41,8 @@ public class HandlebarsParameterizerTest {
             "{{/event_metadata}}\n" +
             "\n" +
             "Please review the submission at the following URL:\n" +
-            "{{#each link_metadata}}{{#eq rel \"submissionReview\"}}{{href}}{{else}}{{/eq}}{{/each}}";
+            "{{#each link_metadata}}{{#eq rel \"submissionReview\"}}{{href}}{{else}}{{/eq}}{{/each}}\n" +
+            "<a href=\"https://{{app_domain}}\">https://{{app_domain}}</a>\n";
 
     private static final String COMMENT_STRING = "How does this look?";
 
@@ -85,6 +86,7 @@ public class HandlebarsParameterizerTest {
         paramMap.put(NotificationParam.RESOURCE_METADATA, RESOURCE_METADATA);
         paramMap.put(NotificationParam.EVENT_METADATA, EVENT_METADATA);
         paramMap.put(NotificationParam.LINKS, LINK_METADATA);
+        paramMap.put(NotificationParam.APP_DOMAIN, "test-app-domain");
         handlebarsParameterizer = new HandlebarsParameterizer(mapper);
     }
 
@@ -98,6 +100,7 @@ public class HandlebarsParameterizerTest {
         assertTrue(parameterized.contains(COMMENT_STRING));
         assertTrue(parameterized.contains(SUBMISSION_REVIEW_LINK));
         assertTrue(parameterized.contains(ARTICLE_TITLE));
+        assertTrue(parameterized.contains("<a href=\"https://test-app-domain\">https://test-app-domain</a>"));
     }
 
     @Test
