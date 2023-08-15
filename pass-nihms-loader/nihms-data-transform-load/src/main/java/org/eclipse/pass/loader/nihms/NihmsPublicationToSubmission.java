@@ -128,6 +128,7 @@ public class NihmsPublicationToSubmission {
      * @throws IOException if there is a problem with the lookup of the publication, repository, submission
      */
     public SubmissionDTO transform(NihmsPublication pub) throws IOException {
+        System.out.println("transform with PMID " + pub.getPmid());
 
         //matching grant uri is a requirement for all nihms submissions
         Grant grant = clientService.findMostRecentGrantByAwardNumber(pub.getGrantNumber());
@@ -141,15 +142,21 @@ public class NihmsPublicationToSubmission {
         submissionDTO = new SubmissionDTO();
         submissionDTO.setGrantId(grant.getId());
 
+        System.out.println("Before setting publication");
         Publication publication = retrieveOrCreatePublication(pub);
         submissionDTO.setPublication(publication);
+        System.out.println("After setting publication");
 
+        System.out.println("Before setting RepositoryCopy");
         RepositoryCopy repoCopy = retrieveOrCreateRepositoryCopy(pub, publication.getId());
         submissionDTO.setRepositoryCopy(repoCopy);
+        System.out.println("After setting RepositoryCopy");
 
+        System.out.println("Before setting Submission");
         Submission submission = retrieveOrCreateSubmission(publication.getId(), grant, repoCopy, pub.getNihmsStatus(),
                                                            pub.getFileDepositedDate());
         submissionDTO.setSubmission(submission);
+        System.out.println("After setting Submission");
 
         return submissionDTO;
     }
@@ -225,6 +232,8 @@ public class NihmsPublicationToSubmission {
         } else {
             publication.setTitle(nihmsPub.getArticleTitle());
         }
+        //Need to create publication in PASS so the ID can be created?
+        clientService.createPublication(publication);
         return publication;
     }
 
@@ -236,16 +245,20 @@ public class NihmsPublicationToSubmission {
 
     private RepositoryCopy retrieveOrCreateRepositoryCopy(NihmsPublication pub, String publicationId)
             throws IOException {
+        System.out.println("retrieveOrCreateRepositoryCopy with PMID " + pub.getPmid());
+        System.out.println("retrieveOrCreateRepositoryCopy with pubId " + publicationId);
         RepositoryCopy repoCopy = null;
         if (publicationId != null) {
             repoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
         }
         if (repoCopy == null
             && (StringUtils.isNotEmpty(pub.getNihmsId()) || StringUtils.isNotEmpty(pub.getPmcId()))) {
+            System.out.println("repoCopy is null");
             //only create if there is at least a nihms ID indicating something is started
             repoCopy = initiateNewRepositoryCopy(pub, publicationId);
             submissionDTO.setUpdateRepositoryCopy(true);
         } else if (repoCopy != null) {
+            System.out.println("repoCopy is not null");
             //check external ids are updated
             List<String> externalIds = repoCopy.getExternalIds();
             String pmcId = pub.getPmcId();
@@ -276,11 +289,13 @@ public class NihmsPublicationToSubmission {
 
     private RepositoryCopy initiateNewRepositoryCopy(NihmsPublication pub, String publicationId) throws IOException {
         RepositoryCopy repositoryCopy = new RepositoryCopy();
-
+        System.out.println("initiateNewRepositoryCopy with PMID " + pub.getPmid());
         LOG.info("NIHMS RepositoryCopy record needed for PMID \"{}\", initiating new RepositoryCopy record",
                  pub.getPmid());
 
+        System.out.println("BEFORE readPublication with pubId " + publicationId);
         repositoryCopy.setPublication((clientService.readPublication(publicationId)));
+        System.out.println("AFTER readPublication with pubId " + publicationId);
         repositoryCopy.setCopyStatus(calcRepoCopyStatus(pub, null));
         repositoryCopy.setRepository(clientService.readRepository(nihmsRepositoryId));
 

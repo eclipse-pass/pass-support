@@ -133,6 +133,7 @@ public class NihmsTransformLoadService {
      * @throws IOException if there is an error transforming or loading the publication
      */
     public void transformAndLoadNihmsPub(NihmsPublication pub) throws IOException {
+        System.out.println("START transformAndLoadNihmsPub");
         final int MAX_ATTEMPTS = 3; //applies to UpdateConflictExceptions only, which can be recovered from
         int attempt = 0;
 
@@ -146,11 +147,14 @@ public class NihmsTransformLoadService {
         }
 
         while (true) {
+            System.out.println("WHILE(TRUE) transformAndLoadNihmsPub");
             try {
                 attempt = attempt + 1;
                 NihmsPublicationToSubmission transformer = new NihmsPublicationToSubmission(nihmsPassClient,
                                                                                             pmidLookup);
                 SubmissionDTO transformedRecord = transformer.transform(pub);
+                System.out.println("Transformed Record Grant ID: " + transformedRecord.getGrantId());
+                System.out.println("Transformed Record Pub ID: " + transformedRecord.getPublication().getId());
                 if (transformedRecord.doUpdate()) {
                     SubmissionLoader loader = new SubmissionLoader(nihmsPassClient, statusService);
                     loader.load(transformedRecord);
@@ -164,6 +168,7 @@ public class NihmsTransformLoadService {
                 if (attempt < MAX_ATTEMPTS) {
                     LOG.warn("Update failed for PMID %s due to database conflict, attempting retry # %d", pub.getPmid(),
                              attempt);
+                    LOG.warn("Error message: {}", ex.getMessage());
                 } else {
                     throw new RuntimeException(
                         String.format("Update could not be applied for PMID %s after %d attempts ", pub.getPmid(),
