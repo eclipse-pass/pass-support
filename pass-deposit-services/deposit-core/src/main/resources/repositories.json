@@ -14,8 +14,6 @@
     },
     "transport-config": {
       "protocol-binding": {
-        "username": "${dspace.user}",
-        "password": "${dspace.password}",
         "protocol": "filesystem",
         "baseDir": "target/packages",
         "createIfMissing": "true",
