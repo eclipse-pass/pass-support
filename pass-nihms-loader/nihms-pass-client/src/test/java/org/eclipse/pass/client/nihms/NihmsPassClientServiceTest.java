@@ -38,11 +38,11 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
-import org.eclipse.pass.support.client.Util;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Publication;
@@ -98,7 +98,7 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindGrantByAwardNumberNoMatch() throws IOException {
-        String awardFilter = Util.grantAwardNumberNormalizeSearch(awardNumber, AWARD_NUMBER_FLD);
+        String awardFilter = ModelUtil.createAwardNumberQuery(awardNumber, AWARD_NUMBER_FLD);
 
         Stream<Grant> mockGrantResult = Stream.empty();
 
@@ -115,11 +115,11 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindGrantByAwardNumberHasMatch() throws Exception {
-        String awardFilter = Util.grantAwardNumberNormalizeSearch(awardNumber, AWARD_NUMBER_FLD);
-        String awardFilter1 = Util.grantAwardNumberNormalizeSearch(awardNumber1, AWARD_NUMBER_FLD);
-        String awardFilter2 = Util.grantAwardNumberNormalizeSearch(awardNumber2, AWARD_NUMBER_FLD);
-        String awardFilter3 = Util.grantAwardNumberNormalizeSearch(awardNumber3, AWARD_NUMBER_FLD);
-        String awardFilter4 = Util.grantAwardNumberNormalizeSearch(awardNumber4, AWARD_NUMBER_FLD);
+        String awardFilter = ModelUtil.createAwardNumberQuery(awardNumber, AWARD_NUMBER_FLD);
+        String awardFilter1 = ModelUtil.createAwardNumberQuery(awardNumber1, AWARD_NUMBER_FLD);
+        String awardFilter2 = ModelUtil.createAwardNumberQuery(awardNumber2, AWARD_NUMBER_FLD);
+        String awardFilter3 = ModelUtil.createAwardNumberQuery(awardNumber3, AWARD_NUMBER_FLD);
+        String awardFilter4 = ModelUtil.createAwardNumberQuery(awardNumber4, AWARD_NUMBER_FLD);
 
         Grant grant1 = new Grant("1");
         grant1.setAwardNumber(awardNumber);
@@ -198,9 +198,9 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindGrantByAwardNumberCanNormalizeHasMatch() throws Exception {
-        String awardFilter1 = Util.grantAwardNumberNormalizeSearch("K23 HL153778-1A1", AWARD_NUMBER_FLD);
-        String awardFilter2 = Util.grantAwardNumberNormalizeSearch("S10 OD025226-1", AWARD_NUMBER_FLD);
-        String awardFilter3 = Util.grantAwardNumberNormalizeSearch("R55 AR050026-1", AWARD_NUMBER_FLD);
+        String awardFilter1 = ModelUtil.createAwardNumberQuery("K23 HL153778-1A1", AWARD_NUMBER_FLD);
+        String awardFilter2 = ModelUtil.createAwardNumberQuery("S10 OD025226-1", AWARD_NUMBER_FLD);
+        String awardFilter3 = ModelUtil.createAwardNumberQuery("R55 AR050026-1", AWARD_NUMBER_FLD);
 
         Grant grant1 = new Grant("1");
         grant1.setAwardNumber("K23 HL153778");

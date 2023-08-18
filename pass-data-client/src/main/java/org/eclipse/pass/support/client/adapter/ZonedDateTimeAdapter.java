@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
-import org.eclipse.pass.support.client.Util;
+import org.eclipse.pass.support.client.ModelUtil;
 
 /**
  * Map type to JSON.
@@ -16,7 +16,7 @@ public class ZonedDateTimeAdapter {
      */
     @ToJson
     public String toJson(ZonedDateTime value) {
-        return value.format(Util.dateTimeFormatter());
+        return value.format(ModelUtil.dateTimeFormatter());
     }
 
     /**
@@ -25,6 +25,6 @@ public class ZonedDateTimeAdapter {
      */
     @FromJson
     public ZonedDateTime fromJson(String s) {
-        return ZonedDateTime.parse(s, Util.dateTimeFormatter());
+        return ZonedDateTime.parse(s, ModelUtil.dateTimeFormatter());
     }
 }

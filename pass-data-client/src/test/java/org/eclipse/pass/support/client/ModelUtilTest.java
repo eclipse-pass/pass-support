@@ -15,11 +15,12 @@ import org.junit.jupiter.api.Test;
 /**
  * This is a test class to test the utility methods in the pass-data-client Util class.
  */
-public class UtilTest {
+public class ModelUtilTest {
     @Test
     public void testNullAndEmptyAwardNumber() throws IOException {
-        assertNull(Util.grantAwardNumberNormalizer(null));
-        assertNull(Util.grantAwardNumberNormalizer(""));
+        assertNull(ModelUtil.normalizeAwardNumber(null));
+        assertNull(ModelUtil.normalizeAwardNumber(""));
+        assertNull(ModelUtil.normalizeAwardNumber("  "));
     }
 
     @Test
@@ -28,8 +29,8 @@ public class UtilTest {
         String awardNumber2 = "P50 AI074285";
         String awardNumber1Expected = "K99NS062901";
         String awardNumber2Expected = "P50AI074285";
-        assertEquals(awardNumber1Expected, Util.grantAwardNumberNormalizer(awardNumber1));
-        assertEquals(awardNumber2Expected, Util.grantAwardNumberNormalizer(awardNumber2));
+        assertEquals(awardNumber1Expected, ModelUtil.normalizeAwardNumber(awardNumber1));
+        assertEquals(awardNumber2Expected, ModelUtil.normalizeAwardNumber(awardNumber2));
     }
 
     @Test
@@ -42,10 +43,10 @@ public class UtilTest {
         String expectedAwardNumber2 = "U01CA078284-05S2";
         String expectedAwardNumber3 = "U01CA078284-05S2";
         String expectedAwardNumber4 = "1R01AR074846-A1";
-        assertEquals(expectedAwardNumber1, Util.grantAwardNumberNormalizer(awardNumber1));
-        assertEquals(expectedAwardNumber2, Util.grantAwardNumberNormalizer(awardNumber2));
-        assertEquals(expectedAwardNumber3, Util.grantAwardNumberNormalizer(awardNumber3));
-        assertEquals(expectedAwardNumber4, Util.grantAwardNumberNormalizer(awardNumber4));
+        assertEquals(expectedAwardNumber1, ModelUtil.normalizeAwardNumber(awardNumber1));
+        assertEquals(expectedAwardNumber2, ModelUtil.normalizeAwardNumber(awardNumber2));
+        assertEquals(expectedAwardNumber3, ModelUtil.normalizeAwardNumber(awardNumber3));
+        assertEquals(expectedAwardNumber4, ModelUtil.normalizeAwardNumber(awardNumber4));
     }
 
     @Test
@@ -60,10 +61,10 @@ public class UtilTest {
         String expectedNonNih1 = "000 000844";
         String expectedNonNih2 = "CBET0732580";
 
-        assertEquals(expectedNih1, Util.grantAwardNumberNormalizer(awardNumberNih1));
-        assertEquals(expectedNih2, Util.grantAwardNumberNormalizer(awardNumberNih2));
-        assertEquals(expectedNonNih1, Util.grantAwardNumberNormalizer(awardNumberNonNih1));
-        assertEquals(expectedNonNih2, Util.grantAwardNumberNormalizer(awardNumberNonNih2));
+        assertEquals(expectedNih1, ModelUtil.normalizeAwardNumber(awardNumberNih1));
+        assertEquals(expectedNih2, ModelUtil.normalizeAwardNumber(awardNumberNih2));
+        assertEquals(expectedNonNih1, ModelUtil.normalizeAwardNumber(awardNumberNonNih1));
+        assertEquals(expectedNonNih2, ModelUtil.normalizeAwardNumber(awardNumberNonNih2));
     }
 
     @Test
@@ -76,12 +77,12 @@ public class UtilTest {
         String expectedNumber = "A01RH123456";
         String expectedNumber2 = "A01RH123456-A1";
 
-        assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber1));
-        assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber2));
-        assertEquals(expectedNumber, Util.grantAwardNumberNormalizer(awardNumber3));
+        assertEquals(expectedNumber, ModelUtil.normalizeAwardNumber(awardNumber1));
+        assertEquals(expectedNumber, ModelUtil.normalizeAwardNumber(awardNumber2));
+        assertEquals(expectedNumber, ModelUtil.normalizeAwardNumber(awardNumber3));
 
         // This one is a special case, because the A1 is part of the award number,and should normalize with it
-        assertEquals(expectedNumber2, Util.grantAwardNumberNormalizer(awardNumber4));
+        assertEquals(expectedNumber2, ModelUtil.normalizeAwardNumber(awardNumber4));
     }
 
     /**
@@ -93,10 +94,10 @@ public class UtilTest {
      */
     @Test
     public void testAwardNumberWithValidData() throws IOException, URISyntaxException {
-        URI testAwardNumberUri = UtilTest.class.getResource("/valid_award_numbers.csv").toURI();
+        URI testAwardNumberUri = ModelUtilTest.class.getResource("/valid_award_numbers.csv").toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
         for (String awardNumber : awardNumbers) {
-            assertEquals(awardNumber, Util.grantAwardNumberNormalizer(awardNumber));
+            assertEquals(awardNumber, ModelUtil.normalizeAwardNumber(awardNumber));
         }
     }
 
@@ -121,10 +122,10 @@ public class UtilTest {
         String expectedCase3 = "(awardNumber==' R01 CA078284',awardNumber=='R01CA078284',awardNumber=='*R01CA078284*')";
         String expectedCase4 = "(awardNumber=='R01CA078284',awardNumber=='*R01CA078284*')";
 
-        assertEquals(expectedCase1, Util.grantAwardNumberNormalizeSearch(awardNumberCase1,"awardNumber"));
-        assertEquals(expectedCase2, Util.grantAwardNumberNormalizeSearch(awardNumberCase2,"awardNumber"));
-        assertEquals(expectedCase3, Util.grantAwardNumberNormalizeSearch(awardNumberCase3,"awardNumber"));
-        assertEquals(expectedCase4, Util.grantAwardNumberNormalizeSearch(awardNumberCase4,"awardNumber"));
+        assertEquals(expectedCase1, ModelUtil.createAwardNumberQuery(awardNumberCase1,"awardNumber"));
+        assertEquals(expectedCase2, ModelUtil.createAwardNumberQuery(awardNumberCase2,"awardNumber"));
+        assertEquals(expectedCase3, ModelUtil.createAwardNumberQuery(awardNumberCase3,"awardNumber"));
+        assertEquals(expectedCase4, ModelUtil.createAwardNumberQuery(awardNumberCase4,"awardNumber"));
 
     }
 

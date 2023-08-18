@@ -309,7 +309,7 @@ public class JsonApiPassClientIT {
     }
 
     private static ZonedDateTime dt(String s) {
-        return ZonedDateTime.parse(s, Util.dateTimeFormatter());
+        return ZonedDateTime.parse(s, ModelUtil.dateTimeFormatter());
     }
 
     @Test
