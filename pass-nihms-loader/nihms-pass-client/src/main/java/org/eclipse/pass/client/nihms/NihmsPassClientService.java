@@ -31,11 +31,11 @@ import org.eclipse.pass.client.nihms.cache.NihmsRepositoryCopyIdCache;
 import org.eclipse.pass.client.nihms.cache.PublicationIdCache;
 import org.eclipse.pass.client.nihms.cache.UserPubSubmissionsCache;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
+import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
-import org.eclipse.pass.support.client.Util;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
@@ -184,7 +184,7 @@ public class NihmsPassClientService {
         // if we are here, there was nothing cached and we need to figure out which grant to return
         List<Grant> grants;
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
-        String normalizedAwardNumberFilter = Util.grantAwardNumberNormalizeSearch(awardNumber, AWARD_NUMBER_FLD);
+        String normalizedAwardNumberFilter = ModelUtil.createAwardNumberQuery(awardNumber, AWARD_NUMBER_FLD);
         grantSelector.setFilter(normalizedAwardNumberFilter);
         Stream<Grant> grantStream = passClient.streamObjects(grantSelector);
         grants = grantStream.toList();
