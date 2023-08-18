@@ -54,8 +54,8 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
                                                    "        \"protocol\": \"ftp\",\n" +
                                                    "        \"username\": \"ftpuser\",\n" +
                                                    "        \"password\": \"ftppass\",\n" +
-                                                   "        \"server-fqdn\": \"${ftp.host}\",\n" +
-                                                   "        \"server-port\": \"${ftp.port}\",\n" +
+                                                   "        \"server-fqdn\": \"${pmc.ftp.host}\",\n" +
+                                                   "        \"server-port\": \"${pmc.ftp.port}\",\n" +
                                                    "        \"data-type\": \"binary\",\n" +
                                                    "        \"transfer-mode\": \"stream\",\n" +
                                                    "        \"use-pasv\": true,\n" +
