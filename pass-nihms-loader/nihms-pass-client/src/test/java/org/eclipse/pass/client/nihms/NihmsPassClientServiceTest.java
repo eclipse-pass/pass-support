@@ -333,15 +333,6 @@ public class NihmsPassClientServiceTest {
         publication.setId(publicationId);
         repoCopy.setId(repositoryCopyId);
         repoCopy.setPublication(publication);
-        String repoCopyFilter = RSQL.and(
-                RSQL.equals(PUBLICATION_FLD, publicationId),
-                RSQL.equals(REPOSITORY_FLD, repositoryCopyId));
-        /*PassClientResult<RepositoryCopy> mockRepoCopyResult = new PassClientResult<>(List.of(repoCopy), 1);
-        doReturn(mockRepoCopyResult)
-            .when(mockClient)
-            .selectObjects(
-                    argThat(passClientSelector ->
-                            passClientSelector.getFilter().equals(repoCopyFilter)));*/
         Stream<RepositoryCopy> mockRepositoryCopyStream = mock(Stream.class);
         List<RepositoryCopy> mockRepositoryCopies = List.of(repoCopy);
         when(mockRepositoryCopyStream.toList()).thenReturn(mockRepositoryCopies);
@@ -357,10 +348,6 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindRepositoryCopyByRepoAndPubIdNoMatch() throws Exception {
-        /*PassClientResult<RepositoryCopy> mockRepoCopyResult = new PassClientResult<>(List.of(), 0);
-        doReturn(mockRepoCopyResult)
-                .when(mockClient)
-                .selectObjects(any());*/
         Stream<RepositoryCopy> mockRepositoryCopyStream = mock(Stream.class);
         List<RepositoryCopy> mockRepositoryCopies = List.of();
         when(mockRepositoryCopyStream.toList()).thenReturn(mockRepositoryCopies);
