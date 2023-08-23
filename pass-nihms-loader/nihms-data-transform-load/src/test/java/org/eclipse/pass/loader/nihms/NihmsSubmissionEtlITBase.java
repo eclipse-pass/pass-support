@@ -33,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.client.nihms.NihmsPassClientService;
 import org.eclipse.pass.entrez.PmidLookup;
 import org.eclipse.pass.entrez.PubMedEntrezRecord;
+import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -44,6 +45,7 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
@@ -92,10 +94,11 @@ public abstract class NihmsSubmissionEtlITBase {
     protected static CompletedPublicationsCache completedPubsCache;
 
     @BeforeEach
-    public void startup() {
+    public void startup() throws IOException {
         String cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
         System.setProperty("nihmsetl.loader.cachepath", cachepath);
         completedPubsCache = CompletedPublicationsCache.getInstance();
+        initiateNihmsRepoCopy();
     }
 
     @AfterEach
@@ -220,6 +223,14 @@ public abstract class NihmsSubmissionEtlITBase {
         JSONObject rootObj = new JSONObject(json);
         PubMedEntrezRecord pmr = new PubMedEntrezRecord(rootObj);
         when(mockPmidLookup.retrievePubMedRecord(eq(pmid))).thenReturn(pmr);
+    }
+
+    protected void initiateNihmsRepoCopy() throws IOException {
+        Repository nihmsRepo = new Repository();
+        nihmsRepo.setName("NIHMS");
+        nihmsRepo.setRepositoryKey("nihms");
+        nihmsRepo.setId(ConfigUtil.getNihmsRepositoryId());
+        passClient.createObject(nihmsRepo);
     }
 
 }
