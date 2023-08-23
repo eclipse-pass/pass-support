@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -66,7 +65,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * @author Karen Hanson
  */
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"unchecked", "rawtypes"})
 public class NihmsPassClientServiceTest {
 
     private static final String grant1Id = "1";
