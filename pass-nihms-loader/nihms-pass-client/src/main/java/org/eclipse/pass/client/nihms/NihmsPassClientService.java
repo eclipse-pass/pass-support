@@ -281,10 +281,11 @@ public class NihmsPassClientService {
                     RSQL.equals(PUBLICATION_FLD, pubId),
                     RSQL.equals(REPOSITORY_FLD, nihmsRepoId));
             System.out.println("findNihmsRepositoryCopyForPubId repoCopyFilter: " + repoCopyFilter);
+
             PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
             repoCopySelector.setFilter(repoCopyFilter);
-            PassClientResult<RepositoryCopy> repoCopyResult = passClient.selectObjects(repoCopySelector);
-            List<RepositoryCopy> repositoryCopies = repoCopyResult.getObjects();
+            List<RepositoryCopy> repositoryCopies = passClient.streamObjects(repoCopySelector).toList();
+            System.out.println("repositoryCopies count: " + repositoryCopies.size());
 
             if (CollectionUtils.isEmpty(repositoryCopies)) {
                 return null;

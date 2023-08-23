@@ -29,12 +29,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -330,16 +333,19 @@ public class NihmsPassClientServiceTest {
         publication.setId(publicationId);
         repoCopy.setId(repositoryCopyId);
         repoCopy.setPublication(publication);
-
         String repoCopyFilter = RSQL.and(
                 RSQL.equals(PUBLICATION_FLD, publicationId),
                 RSQL.equals(REPOSITORY_FLD, repositoryCopyId));
-        PassClientResult<RepositoryCopy> mockRepoCopyResult = new PassClientResult<>(List.of(repoCopy), 1);
+        /*PassClientResult<RepositoryCopy> mockRepoCopyResult = new PassClientResult<>(List.of(repoCopy), 1);
         doReturn(mockRepoCopyResult)
-                .when(mockClient)
-                .selectObjects(
-                        argThat(passClientSelector ->
-                                passClientSelector.getFilter().equals(repoCopyFilter)));
+            .when(mockClient)
+            .selectObjects(
+                    argThat(passClientSelector ->
+                            passClientSelector.getFilter().equals(repoCopyFilter)));*/
+        Stream<RepositoryCopy> mockRepositoryCopyStream = mock(Stream.class);
+        List<RepositoryCopy> mockRepositoryCopies = List.of(repoCopy);
+        when(mockRepositoryCopyStream.toList()).thenReturn(mockRepositoryCopies);
+        doReturn(mockRepositoryCopyStream).when(mockClient).streamObjects(any(PassClientSelector.class));
 
         RepositoryCopy matchedRepoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
         assertEquals(repoCopy, matchedRepoCopy);
@@ -351,10 +357,14 @@ public class NihmsPassClientServiceTest {
      */
     @Test
     public void testFindRepositoryCopyByRepoAndPubIdNoMatch() throws Exception {
-        PassClientResult<RepositoryCopy> mockRepoCopyResult = new PassClientResult<>(List.of(), 0);
+        /*PassClientResult<RepositoryCopy> mockRepoCopyResult = new PassClientResult<>(List.of(), 0);
         doReturn(mockRepoCopyResult)
                 .when(mockClient)
-                .selectObjects(any());
+                .selectObjects(any());*/
+        Stream<RepositoryCopy> mockRepositoryCopyStream = mock(Stream.class);
+        List<RepositoryCopy> mockRepositoryCopies = List.of();
+        when(mockRepositoryCopyStream.toList()).thenReturn(mockRepositoryCopies);
+        doReturn(mockRepositoryCopyStream).when(mockClient).streamObjects(any(PassClientSelector.class));
         RepositoryCopy matchedRepoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
         assertNull(matchedRepoCopy);
     }
