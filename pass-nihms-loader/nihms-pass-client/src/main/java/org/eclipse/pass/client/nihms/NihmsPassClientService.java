@@ -63,12 +63,12 @@ public class NihmsPassClientService {
     /**
      * The field name for the submission
      */
-    public static final String SUBMISSION_FLD = "submission";
+    public static final String SUBMISSION_FLD = "submission.id";
 
     /**
      * The field name for the repository
      */
-    public static final String REPOSITORY_FLD = "repository";
+    public static final String REPOSITORY_FLD = "repository.id";
 
     /**
      * The field name for the award number
@@ -78,12 +78,12 @@ public class NihmsPassClientService {
     /**
      * The field name for the publication
      */
-    public static final String PUBLICATION_FLD = "publication";
+    public static final String PUBLICATION_FLD = "publication.id";
 
     /**
      * The field name for the submitter
      */
-    public static final String SUBMITTER_FLD = "submitter";
+    public static final String SUBMITTER_FLD = "submitter.id";
 
     /**
      * The error message when a publication is missing a DOI or PMID

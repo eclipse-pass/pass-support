@@ -331,6 +331,7 @@ public class NihmsPublicationToSubmission {
 
     private Submission retrieveOrCreateSubmission(String publicationId, Grant grant, RepositoryCopy repoCopy,
                                                   NihmsStatus nihmsStatus, String depositedDate) throws IOException {
+        System.out.println("retrieveOrCreateSubmission with pubId " + publicationId);
         boolean hasRepoCopy = repoCopy != null;
         Submission submission = null;
         String grantId = grant.getId();
@@ -343,6 +344,7 @@ public class NihmsPublicationToSubmission {
             if (!CollectionUtils.isEmpty(submissions)) {
                 // is there already a nihms submission in the system for this publication? if so add to it instead of
                 // making a new one
+                System.out.println("submissions is not empty");
                 List<Submission> nihmsSubmissions = submissions.stream()
                                                                .filter(s -> s.getRepositories()
                                                                              .contains(nihmsRepositoryId))
@@ -376,6 +378,7 @@ public class NihmsPublicationToSubmission {
         if (submission == null) {
             submission = initiateNewSubmission(grant, publicationId);
             submissionDTO.setUpdateSubmission(true);
+            System.out.println("retrieveOrCreateSubmission setUpdateSubmission=true");
         }
 
         // if there is only one repository listed on the submission (would be the nihms repo) and we have either a
@@ -388,6 +391,7 @@ public class NihmsPublicationToSubmission {
         if (submission.getRepositories().size() == 1
             && (hasRepoCopy || nihmsStatus.equals(NihmsStatus.COMPLIANT))
             && !submission.getSubmitted()) {
+            System.out.println("retrieveOrCreateSubmission only 1 repo and hasRepoCopy or nihmsStatus compliant");
             submission.setSubmitted(true);
             submission.setSource(Source.OTHER);
             // in the absence of an alternative submittedDate, use the file deposited date from NIHMS data
@@ -398,24 +402,28 @@ public class NihmsPublicationToSubmission {
         }
 
         if (submission.getRepositories().size() == 1 && hasRepoCopy) {
+            System.out.println("retrieveOrCreateSubmission only 1 repo and hasRepoCopy");
             //if there is only one repo, can calculate status here, will be checked again later using database
             List<Repository> repositories = submission.getRepositories();
+            System.out.println("retrieveOrCreateSubmission repo.size()=" + repositories.size());
             List<String> repoIds = repositories.stream().map(r -> r.getId()).collect(Collectors.toList());
             SubmissionStatus newStatus = calculatePostSubmissionStatus(repoIds, null,
                                                                        Arrays.asList(repoCopy));
             submission.setSubmissionStatus(newStatus);
             submissionDTO.setUpdateSubmission(true);
+            System.out.println("retrieveOrCreateSubmission - only 1 repo and hasRepoCopy - setUpdateSubmission=true");
         }
 
         // finally, make sure grant is in the list of the chosen submission
         List<Grant> grants = submission.getGrants();
         List<String> grantIds = grants.stream().map(g -> g.getId()).collect(Collectors.toList());
         if (!grantIds.contains(grantId)) {
+            System.out.println("retrieveOrCreateSubmission grant not in list");
             grants.add(clientService.readGrant(grantId));
             submission.setGrants(grants);
             submissionDTO.setUpdateSubmission(true);
         }
-
+        System.out.println("retrieveOrCreateSubmission returning submission");
         return submission;
     }
 
@@ -425,20 +433,32 @@ public class NihmsPublicationToSubmission {
 
         Publication publication = clientService.readPublication(publicationId);
         submission.setPublication(publication);
+        System.out.println("initiateNewSubmission set publication");
 
         List<Repository> repositories = new ArrayList<>();
-        repositories.add(clientService.readRepository(nihmsRepositoryId));
+        Repository nihmsRepo = clientService.readRepository(nihmsRepositoryId);
+        System.out.println("initiateNewSubmission read nihmsRepo" + nihmsRepo.getName());
+        repositories.add(nihmsRepo);
+        System.out.println("initiateNewSubmission repos.size()=" + repositories.size());
+        for (Repository repo : repositories) {
+            System.out.println("initiateNewSubmission repoName=" + repo.getName());
+        }
         submission.setRepositories(repositories);
+        System.out.println("initiateNewSubmission set repos");
+        System.out.println("initiateNewSubmission size = " + submission.getRepositories().size());
+        //System.out.println("initiateNewSubmission repoId = " + submission.getRepositories().get(0).getId());
 
         List<Grant> grants = new ArrayList<>();
         grants.add(grant);
         submission.setGrants(grants);
+        System.out.println("initiateNewSubmission set grants");
 
         submission.setSource(Source.OTHER);
         submission.setAggregatedDepositStatus(null);
         submission.setSubmitted(false); // false by default, changes to true if there is a repoCopy
         submission.setSubmissionStatus(
             SubmissionStatus.MANUSCRIPT_REQUIRED); //manuscript-required by default, will change later if needed
+        System.out.println("initiateNewSubmission set setSubmissionStatus");
 
         submission.setSubmitter(grant.getPi());
 

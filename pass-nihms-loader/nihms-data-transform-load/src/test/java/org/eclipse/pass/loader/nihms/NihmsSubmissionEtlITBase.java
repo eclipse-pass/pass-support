@@ -65,7 +65,6 @@ public abstract class NihmsSubmissionEtlITBase {
 
     protected static final int RETRIES = 12;
 
-
     protected final PassClient passClient = PassClient.newInstance();
 
     protected final SubmissionStatusService statusService = new SubmissionStatusService(passClient);

@@ -80,6 +80,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         String grantId = createGrant(awardNumber1);
 
+        Repository repo = new Repository(ConfigUtil.getNihmsRepositoryId());
+        passClient.createObject(repo);
+        System.out.println("Created Nihms repo " + repo.getId());
+
         Grant testGrant = passClient.getObject(Grant.class, grantId);
         assertNotNull(testGrant);
 
