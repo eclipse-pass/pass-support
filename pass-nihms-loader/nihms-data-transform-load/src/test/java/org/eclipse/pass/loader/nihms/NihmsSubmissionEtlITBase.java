@@ -107,52 +107,48 @@ public abstract class NihmsSubmissionEtlITBase {
 
         nihmsPassClientService.clearCache();
 
-        //clean out all data from the following (note Grant URIs added to createdUris the createGrant() method as we
-        // don't want to delete pre-loaded data)
+        /*
+            Clean out all data from the following (note Grant IDs added in the createGrant() method as we
+            don't want to delete pre-loaded data). Need to check that the objects were actually deleted
+            otherwise this will cause issues with the next test run.
+        */
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
-        subSelector.setFilter(RSQL.equals("@type", "Submission"));
-        createdEntities.put((PassEntity) passClient.selectObjects(subSelector).getObjects(), Submission.class);
-
-        PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
-        pubSelector.setFilter(RSQL.equals("@type", "Publication"));
-        createdEntities.put((PassEntity) passClient.selectObjects(pubSelector).getObjects(), Publication.class);
+        subSelector.setFilter(RSQL.notEquals("id", "-1"));
+        for (Submission submission : passClient.selectObjects(subSelector).getObjects()) {
+            System.out.println("Deleted submission: " + submission.getId());
+            passClient.deleteObject(submission);
+            assertNull(passClient.getObject(Submission.class, submission.getId()));
+        }
 
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-        repoCopySelector.setFilter(RSQL.equals("@type", "RepositoryCopy"));
-        createdEntities.put((PassEntity) passClient.selectObjects(repoCopySelector).getObjects(), RepositoryCopy.class);
+        repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
+        for (RepositoryCopy repoCopy : passClient.selectObjects(repoCopySelector).getObjects()) {
+            passClient.deleteObject(repoCopy);
+            assertNull(passClient.getObject(Submission.class, repoCopy.getId()));
+        }
 
         PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
-        depoSelector.setFilter(RSQL.equals("@type", "Deposit"));
-        createdEntities.put((PassEntity) passClient.selectObjects(depoSelector).getObjects(), RepositoryCopy.class);
-
-        PassClientSelector<Deposit> repoSelector = new PassClientSelector<>(Deposit.class);
-        repoSelector.setFilter(RSQL.equals("@type", "Repository"));
-        createdEntities.put((PassEntity) passClient.selectObjects(repoSelector).getObjects(), RepositoryCopy.class);
-
-        //need to log fail if this doesn't work as it could mess up re-testing if data isn't cleaned out
-        try {
-            String idCheck = null;
-
-            if (createdEntities.size() > 0) {
-                for (PassEntity entity : createdEntities.keySet()) {
-                    idCheck = entity.getId();
-                    passClient.deleteObject(entity);
-                }
-                final String finalIdCheck = idCheck;
-                attempt(RETRIES, ()  -> {
-                    try {
-                        assertNull(passClient.getObject(PassEntity.class, finalIdCheck),
-                                "Entity " + finalIdCheck + " was not deleted");
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                createdEntities.clear();
-            }
-
-        } catch (Exception ex) {
-            fail("Could not clean up from test, this may interfere with results of other tests");
+        depoSelector.setFilter(RSQL.equals("id", "-1"));
+        for (Deposit deposit : passClient.selectObjects(depoSelector).getObjects()) {
+            passClient.deleteObject(deposit);
+            assertNull(passClient.getObject(Submission.class, deposit.getId()));
         }
+
+        PassClientSelector<Repository> repoSelector = new PassClientSelector<>(Repository.class);
+        repoSelector.setFilter(RSQL.equals("id", "-1"));
+        for (Repository repo : passClient.selectObjects(repoSelector).getObjects()) {
+            passClient.deleteObject(repo);
+            assertNull(passClient.getObject(Submission.class, repo.getId()));
+        }
+
+        PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
+        pubSelector.setFilter(RSQL.notEquals("id", "-1"));
+        for (Publication publication : passClient.selectObjects(pubSelector).getObjects()) {
+            System.out.println("Deleted publication: " + publication.getId());
+            passClient.deleteObject(publication);
+            assertNull(passClient.getObject(Submission.class, publication.getId()));
+        }
+
     }
 
     protected String createGrant(String awardNumber) throws Exception {
