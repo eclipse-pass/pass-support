@@ -16,17 +16,24 @@
 package org.eclipse.pass.loader.nihms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
+import org.eclipse.pass.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
+import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -40,6 +47,7 @@ import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +59,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
-    private final String pmid1 = "9999999999";
+    private final String pmid1 = "11111111";
     private final String awardNumber1 = "R01 AB123456";
     private final String awardNumber2 = "R02 CD123456";
     private final String user1 = "55";
@@ -63,9 +71,10 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
     private final String doi = "10.1000/a.abcd.1234";
     private final String issue = "3";
 
-    private String pubId; //use this to pass an ID out of the scope of attempt()
-    private String submissionId; //use this to pass a uri out of the scope of attempt()
-    private String repoCopyId; //use this to pass a uri out of the scope of attempt()
+    private String pubId;
+    private String submissionId;
+    private String repoCopyId;
+
 
     /**
      * Tests when the publication is completely new and is compliant
@@ -90,10 +99,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         setMockPMRecord(pmid1);
 
         //we should start with no publication for this pmid
-        //pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        //String id = passClient.streamObjects(pubSelector).findAny().get().getId();
-        //assertNull(passClient.selectObjects(pubSelector).getObjects().get(0));
-        //assertNull(id);
+        pubSelector.setFilter(RSQL.equals("pmid", pmid1));
+        Optional<Publication> testPub = passClient.streamObjects(pubSelector).findAny();
+        assertFalse(testPub.isPresent());
 
         //load all new publication, repo copy and submission
         NihmsPublication pub = newCompliantNihmsPub();
@@ -101,10 +109,12 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
                                                                                        mockPmidLookup, statusService);
         transformLoadService.transformAndLoadNihmsPub(pub);
 
-        //wait for new publication to appear
-        String testId = passClient.streamObjects(pubSelector).findFirst().get().getId();
-        assertNotNull(testId);
-        pubId = testId;
+        //The pubmeb publication should be created during the transformAndLoadNihmsPub
+        PassClientSelector<Publication> pmrPubSelector2 = new PassClientSelector<>(Publication.class);
+        pmrPubSelector2.setFilter(RSQL.equals("pmid", pmid1));
+        Publication pmrRecordPub = passClient.streamObjects(pmrPubSelector2).findFirst().get();
+        assertNotNull(pmrRecordPub.getId());
+        pubId = pmrRecordPub.getId();
 
         Publication publication = passClient.getObject(Publication.class, pubId);
         //spot check publication fields
@@ -113,14 +123,17 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(issue, publication.getIssue());
 
         //now make sure we wait for submission, should only be one from the test
-        subSelector.setFilter(RSQL.equals("publication", pubId));
+        subSelector.setFilter(RSQL.equals("publication.id", pubId));
         submissionId = passClient.streamObjects(subSelector).findFirst().get().getId();
         assertNotNull(submissionId);
-        submissionId = testId;
-
+        submissionId = pubId;
+        System.out.println("TransformAndLoadCompliantIT Submission id: " + submissionId);
         Submission submission = passClient.getObject(Submission.class, submissionId);
+        System.out.println("TransformAndLoadCompliantIT Submission: " + submission.getId());
         //check fields in submission
+        System.out.println("TransformAndLoadCompliantIT Submission grant id: " + submission.getGrants().get(0).getId());
         assertEquals(grantId, submission.getGrants().get(0).getId());
+        System.out.println("TransformAndLoadCompliantIT Submission repo id: " + submission.getRepositories().get(0).getId());
         assertEquals(ConfigUtil.getNihmsRepositoryId(), submission.getRepositories().get(0).getId());
         assertEquals(1, submission.getRepositories().size());
         assertEquals(Source.OTHER, submission.getSource());
@@ -653,5 +666,4 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(ConfigUtil.getNihmsRepositoryId(), repoCopy.getRepository().getId());
         assertTrue(repoCopy.getAccessUrl().toString().contains(pmcid1));
     }
-
 }

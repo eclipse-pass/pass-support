@@ -125,6 +125,10 @@ public abstract class NihmsSubmissionEtlITBase {
         depoSelector.setFilter(RSQL.equals("@type", "Deposit"));
         createdEntities.put((PassEntity) passClient.selectObjects(depoSelector).getObjects(), RepositoryCopy.class);
 
+        PassClientSelector<Deposit> repoSelector = new PassClientSelector<>(Deposit.class);
+        repoSelector.setFilter(RSQL.equals("@type", "Repository"));
+        createdEntities.put((PassEntity) passClient.selectObjects(repoSelector).getObjects(), RepositoryCopy.class);
+
         //need to log fail if this doesn't work as it could mess up re-testing if data isn't cleaned out
         try {
             String idCheck = null;
@@ -222,6 +226,7 @@ public abstract class NihmsSubmissionEtlITBase {
         String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("pmidrecord.json"));
         JSONObject rootObj = new JSONObject(json);
         PubMedEntrezRecord pmr = new PubMedEntrezRecord(rootObj);
+        System.out.println("Setup PMR record for " + pmid);
         when(mockPmidLookup.retrievePubMedRecord(eq(pmid))).thenReturn(pmr);
     }
 
