@@ -535,7 +535,7 @@ public class NihmsPassClientService {
 
         //URI publicationId = passClient.createResource(publication);
         passClient.createObject(publication);
-        LOG.info("New Publication created with ID {}", publication.getId());
+        LOG.info("New Publication created with ID {} and PMID {}", publication.getId(), publication.getPmid());
         //add to local cache for faster lookup
         publicationCache.put(publication.getPmid(), publication.getId());
         return publication.getId();
