@@ -181,9 +181,7 @@ public class NihmsPublicationToSubmission {
             // proceed without one.
             //A RuntimeException would be thrown and the transform would fail if there was e.g. a config or
             // connection problem.
-            System.out.println("retrieveOrCreatePublication - calling pmidLookup.retrievePubMedRecord with pmid " + pmid);
             pubmedRecord = pmidLookup.retrievePubMedRecord(pmid);
-            System.out.println("retrieveOrCreatePublication - pubmedRecord is " + pubmedRecord.getPmid());
             if (pubmedRecord != null) {
                 doi = pubmedRecord.getDoi();
             }
@@ -195,7 +193,6 @@ public class NihmsPublicationToSubmission {
         }
 
         if (publication == null) {
-            System.out.println("retrieveOrCreatePublication - publication is null, init new Publication: pubmedRecord is " + pubmedRecord.getPmid());
             publication = initiateNewPublication(nihmsPub, pubmedRecord);
             submissionDTO.setUpdatePublication(true);
         } else {
