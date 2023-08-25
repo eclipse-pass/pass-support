@@ -16,13 +16,19 @@
 
 package org.eclipse.pass.loader.journal.nih;
 
-
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.model.Journal;
@@ -32,14 +38,27 @@ import org.junit.jupiter.api.Test;
 /**
  * @author apb@jhu.edu
  */
+@WireMockTest
 public class DepositIT {
     private final PassClient client = PassClient.newInstance();
 
     @Test
-    public void loadFromFileTest() throws Exception {
-        // First, load all three journals using medline data
+    public void loadFromFileTest(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+        String jmedlineJournals = Files.readString(
+            Path.of(DepositIT.class.getResource("/medline.txt").getPath()));
+        stubFor(get("/pubmed/J_Medline.txt")
+            .willReturn(ok(jmedlineJournals)));
+        String pmcJournlas1 = Files.readString(
+            Path.of(DepositIT.class.getResource("/pmc-1.csv").getPath()));
+        stubFor(get("/pmc/front-page/NIH_PA_journal_list-1.csv")
+            .willReturn(ok(pmcJournlas1)));
+        String pmcJournlas2 = Files.readString(
+            Path.of(DepositIT.class.getResource("/pmc-2.csv").getPath()));
+        stubFor(get("/pmc/front-page/NIH_PA_journal_list-2.csv")
+            .willReturn(ok(pmcJournlas2)));
 
-        System.setProperty("medline", DepositIT.class.getResource("/medline.txt").getPath());
+        final int wmPort = wmRuntimeInfo.getHttpPort();
+        System.setProperty("medline", "http://localhost:" + wmPort + "/pubmed/J_Medline.txt");
         System.setProperty("pmc", "");
         Main.main(new String[] {});
 
@@ -48,7 +67,7 @@ public class DepositIT {
         assertEquals(0, typeA(listJournals()).size());
 
         System.setProperty("medline", "");
-        System.setProperty("pmc", DepositIT.class.getResource("/pmc-1.csv").getPath());
+        System.setProperty("pmc", "http://localhost:" + wmPort + "/pmc/front-page/NIH_PA_journal_list-1.csv");
         Main.main(new String[] {});
 
         // We still expect three journals in the repository, but now two are PMC A
@@ -56,7 +75,7 @@ public class DepositIT {
         assertEquals(2, typeA(listJournals()).size());
 
         System.setProperty("medline", "");
-        System.setProperty("pmc", DepositIT.class.getResource("/pmc-2.csv").getPath());
+        System.setProperty("pmc", "http://localhost:" + wmPort + "/pmc/front-page/NIH_PA_journal_list-2.csv");
         Main.main(new String[] {});
 
         // The last dataset removed a type A journal, so now we expect only one

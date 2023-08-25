@@ -18,9 +18,10 @@ package org.eclipse.pass.loader.journal.nih;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.PassClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,25 +58,24 @@ public class Main {
                 loader.setDryRun(true);
             }
 
-            final String pmcFile = System.getProperty("pmc", null);
-            final String medlineFile = System.getProperty("medline", null);
-
-            if (pmcFile != null && !pmcFile.isEmpty()) {
+            final String pmcUrl = System.getProperty("pmc", null);
+            if (StringUtils.isNotEmpty(pmcUrl)) {
                 LOG.info("Loading pcm data");
 
                 final NihTypeAReader reader = new NihTypeAReader();
 
-                try (InputStream file = new FileInputStream(pmcFile)) {
+                try (InputStream file = new URL(pmcUrl).openStream()) {
                     loader.load(reader.readJournals(file, UTF_8), reader.hasPmcParticipation());
                 }
             }
 
-            if (medlineFile != null && !medlineFile.isEmpty()) {
+            final String medlineUrl = System.getProperty("medline", null);
+            if (StringUtils.isNotEmpty(medlineUrl)) {
                 LOG.info("Loading medline data");
 
                 final MedlineReader reader = new MedlineReader();
 
-                try (InputStream file = new FileInputStream(medlineFile)) {
+                try (InputStream file = new URL(medlineUrl).openStream()) {
                     loader.load(reader.readJournals(file, UTF_8), reader.hasPmcParticipation());
                 }
             }
