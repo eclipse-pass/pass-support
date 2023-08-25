@@ -9,7 +9,7 @@ Parses the PMC type A journal `.csv` file, and/or the medline database `.txt` fi
 
 Using java system properties to launch the journal loader:
 ```
-    java -Dpmc=NIH_PA_journal_list.csv -Dmedline=J_Medline.txt -Dpass.core.url=http://localhost:8080 -Dpass.core.user=USER -Dpass.core.password=PASS -jar pass-journal-loader-nih/target/pass-journal-loader-nih-0.6.0-SNAPSHOT-exe.jar
+    java -Dpmc=https://www.ncbi.nlm.nih.gov/pmc/front-page/NIH_PA_journal_list.csv -Dmedline=https://ftp.ncbi.nih.gov/pubmed/J_Medline.txt -Dpass.core.url=http://localhost:8080 -Dpass.core.user=USER -Dpass.core.password=PASS -jar pass-journal-loader-nih/target/pass-journal-loader-nih-0.6.0-SNAPSHOT-exe.jar
 ```
 ### Properties or Environment Variables
 
@@ -28,12 +28,12 @@ The pass-core backend user password.
 Do not add or update resources in the repository, just give statistics of resources that would be added or updated
 
 `pmc`
-Location of the PMC "type A" journal .csv file, as retrieved
-from [http://www.ncbi.nlm.nih.gov/pmc/front-page/NIH_PA_journal_list.csv]( http://www.ncbi.nlm.nih.gov/pmc/front-page/NIH_PA_journal_list.csv)
+URL of the PMC "type A" journal .csv file, for example
+[https://www.ncbi.nlm.nih.gov/pmc/front-page/NIH_PA_journal_list.csv](https://www.ncbi.nlm.nih.gov/pmc/front-page/NIH_PA_journal_list.csv)
 
 `medline`
-Location of the Medline journal file, as retrieved
-from [ftp://ftp.ncbi.nih.gov/pubmed/J_Medline.txt](ftp://ftp.ncbi.nih.gov/pubmed/J_Medline.txt)
+URL of the Medline journal file, for example
+[https://ftp.ncbi.nih.gov/pubmed/J_Medline.txt](https://ftp.ncbi.nih.gov/pubmed/J_Medline.txt)
 
 `LOG.*`
 Adjust the logging level of a particular component, e.g. `LOG.org.eclipse.pass=WARN`
