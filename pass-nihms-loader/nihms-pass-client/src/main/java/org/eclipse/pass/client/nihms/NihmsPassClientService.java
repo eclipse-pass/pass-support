@@ -490,7 +490,9 @@ public class NihmsPassClientService {
         if (submissionId == null) {
             throw new IllegalArgumentException("submissionId cannot be empty");
         }
-        return (passClient.getObject(Submission.class, submissionId));
+        return (passClient.getObject(Submission.class, submissionId,
+                "publication", "repositories", "submitter", "preparers", "grants", "effectivePolicies",
+                "primaryFunder"));
     }
 
     /**
