@@ -103,18 +103,16 @@ public abstract class NihmsSubmissionEtlITBase {
     @AfterEach
     public void cleanup() throws IOException {
         completedPubsCache.clear();
-
         nihmsPassClientService.clearCache();
 
         /*
             Clean out all data from the following (note Grant IDs added in the createGrant() method as we
-            don't want to delete pre-loaded data). Need to check that the objects were actually deleted
+            don't want to delete preloaded data). Need to check that the objects were actually deleted
             otherwise this will cause issues with the next test run.
         */
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         subSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Submission submission : passClient.selectObjects(subSelector).getObjects()) {
-            System.out.println("Deleted submission: " + submission.getId());
             passClient.deleteObject(submission);
             assertNull(passClient.getObject(Submission.class, submission.getId()));
         }
@@ -143,11 +141,9 @@ public abstract class NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         pubSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Publication publication : passClient.selectObjects(pubSelector).getObjects()) {
-            System.out.println("Deleted publication: " + publication.getId());
             passClient.deleteObject(publication);
             assertNull(passClient.getObject(Submission.class, publication.getId()));
         }
-
     }
 
     protected String createGrant(String awardNumber) throws Exception {
