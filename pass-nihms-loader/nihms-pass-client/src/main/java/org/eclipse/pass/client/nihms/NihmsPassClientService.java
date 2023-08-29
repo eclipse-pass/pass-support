@@ -267,7 +267,6 @@ public class NihmsPassClientService {
      * @throws IOException if there is an error reading the repository copy
      */
     public RepositoryCopy findNihmsRepositoryCopyForPubId(String pubId) throws IOException {
-        System.out.println("findNihmsRepositoryCopyForPubId: " + pubId);
         if (pubId == null) {
             throw new RuntimeException("publicationId cannot be null when searching for existing RepositoryCopy.");
         }
@@ -276,16 +275,13 @@ public class NihmsPassClientService {
         String repoCopyId = nihmsRepoCopyCache.get(pubId);
 
         if (repoCopyId == null) {
-            System.out.println("findNihmsRepositoryCopyForPubId repoCopyId not found in cache");
             String repoCopyFilter = RSQL.and(
                     RSQL.equals(PUBLICATION_FLD, pubId),
                     RSQL.equals(REPOSITORY_FLD, nihmsRepoId));
-            System.out.println("findNihmsRepositoryCopyForPubId repoCopyFilter: " + repoCopyFilter);
 
             PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
             repoCopySelector.setFilter(repoCopyFilter);
             List<RepositoryCopy> repositoryCopies = passClient.streamObjects(repoCopySelector).toList();
-            System.out.println("repositoryCopies count: " + repositoryCopies.size());
 
             if (CollectionUtils.isEmpty(repositoryCopies)) {
                 return null;
@@ -491,8 +487,7 @@ public class NihmsPassClientService {
             throw new IllegalArgumentException("submissionId cannot be empty");
         }
         return (passClient.getObject(Submission.class, submissionId,
-                "publication", "repositories", "submitter", "preparers", "grants", "effectivePolicies",
-                "primaryFunder"));
+                "publication", "repositories", "submitter", "grants"));
     }
 
     /**

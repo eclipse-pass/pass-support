@@ -146,14 +146,12 @@ public abstract class NihmsSubmissionEtlITBase {
         }
     }
 
-    protected String createGrant(String awardNumber) throws Exception {
+    protected String createGrant(String awardNumber, User user) throws Exception {
         Funder primaryFunder = new Funder();
         Funder directFunder = new Funder();
         passClient.createObject(primaryFunder);
         passClient.createObject(directFunder);
-        User user = new User();
         User coPi = new User();
-        passClient.createObject(user);
         passClient.createObject(coPi);
         Grant grant = new Grant();
         grant.setAwardNumber(awardNumber);
@@ -203,7 +201,6 @@ public abstract class NihmsSubmissionEtlITBase {
                 caught = e;
                 try {
                     Thread.sleep(3000);
-                    System.out.println("... waiting for index to update");
                 } catch (final InterruptedException i) {
                     Thread.currentThread().interrupt();
                     return null;
@@ -217,7 +214,6 @@ public abstract class NihmsSubmissionEtlITBase {
         String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("pmidrecord.json"));
         JSONObject rootObj = new JSONObject(json);
         PubMedEntrezRecord pmr = new PubMedEntrezRecord(rootObj);
-        System.out.println("Setup PMR record for " + pmid);
         when(mockPmidLookup.retrievePubMedRecord(eq(pmid))).thenReturn(pmr);
     }
 
