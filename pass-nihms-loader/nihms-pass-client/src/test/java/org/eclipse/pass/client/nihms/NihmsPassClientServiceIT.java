@@ -268,7 +268,8 @@ public class NihmsPassClientServiceIT {
         submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
         repos.add(repo);
         submission.setRepositories(repos);
-        passClient.createObject(submission);
+
+        underTest.createSubmission(submission);
 
         PassClientSelector<Submission> subSelect = new PassClientSelector<>(Submission.class);
         subSelect.setFilter(RSQL.equals("id", submission.getId()));
