@@ -77,7 +77,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if test error
      */
     @Test
-    //@Disabled("Working, but disabled while testing other tests")
+    @Disabled("Working, but disabled while testing other tests")
     public void testNewCompliantPublication() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -157,7 +157,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if errors occurs
      */
     @Test
-    //@Disabled("Working, but disabled while testing other tests")
+    @Disabled("Working, but disabled while testing other tests")
     public void testCompliantPublicationNewConnectedGrant() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -182,6 +182,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //there is a submission for a different grant
         Submission preexistingSub = newSubmission2(grantId2, publication, true, SubmissionStatus.COMPLETE);
+        nihmsPassClientService.createSubmission(preexistingSub);
 
         //now we have an existing publication and submission for different grant/repo... do transform/load
         NihmsPublication pub = newCompliantNihmsPub();
@@ -240,6 +241,12 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      */
     @Test
     public void testCompliantPublicationExistingSubmission() throws Exception {
+        //Count total number of submissions
+        PassClientSelector<Submission> subTestSel = new PassClientSelector<>(Submission.class);
+        subTestSel.setFilter(RSQL.notEquals("id", "-1"));
+        List<Submission> testSub = passClient.streamObjects(subTestSel).toList();
+        System.out.println("Total number of submissions prior to start: " + testSub.size());
+
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
@@ -258,17 +265,32 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         pubId = nihmsPassClientService.createPublication(newPublication());
         System.out.println("pub id= " + pubId);
 
+        //Test total num submissions prior to preexisting submission
+        PassClientSelector<Submission> subTest2Sel = new PassClientSelector<>(Submission.class);
+        subTest2Sel.setFilter(RSQL.notEquals("id", "-1"));
+        List<Submission> test2Sub = passClient.streamObjects(subTest2Sel).toList();
+        System.out.println("Total number of submissions prior to creating preexisting sub: " + test2Sub.size());
+
         //create an existing submission, set status as SUBMITTED - repocopy doesnt exist yet
         Submission preexistingSub = newSubmission1(grantId, user, pubId, true, SubmissionStatus.SUBMITTED);
-        passClient.createObject(preexistingSub);
+        PassClientSelector<Submission> subTest3Sel = new PassClientSelector<>(Submission.class);
+        subTest3Sel.setFilter(RSQL.notEquals("id", "-1"));
+        List<Submission> test3Sub = passClient.streamObjects(subTest3Sel).toList();
+        System.out.println("Total number of submissions prior to calling createSubmission: " + test3Sub.size());
+
+        nihmsPassClientService.createSubmission(preexistingSub);
         System.out.println("preexisting submitter id= " + preexistingSub.getSubmitter().getId());
         System.out.println("preexisting pub id= " + preexistingSub.getPublication().getId());
+        System.out.println("preexisting pub pmid= " + preexistingSub.getPublication().getPmid());
         System.out.println("preexisting grant award number= " + preexistingSub.getGrants().get(0).getAwardNumber());
 
         //check to see if the pub for the submitter exists
         List<Submission> subs = nihmsPassClientService.findSubmissionsByPublicationAndUserId(pubId,
                 preexistingSub.getSubmitter().getId());
         System.out.println("subs size= " + subs.size());
+        for (Submission s : subs) {
+            System.out.println("sub id= " + s.getId());
+        }
 
         //now we have an existing publication and submission for same grant/repo... do transform/load to make sure we
         // get a repocopy
@@ -276,6 +298,11 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
                                                                                        mockPmidLookup, statusService);
         transformLoadService.transformAndLoadNihmsPub(pub);
+
+        //Only 1 submission should exist???
+        List<Submission> subs2 = nihmsPassClientService.findSubmissionsByPublicationAndUserId(pubId,
+                preexistingSub.getSubmitter().getId());
+        System.out.println("subs size= " + subs2.size());
 
         //make sure we wait for RepositoryCopy, should only be one from the test
         //TODO - once pass-core has been updated from 702-rc-hasmember this can be tested again
@@ -336,7 +363,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
                 SubmissionStatus.MANUSCRIPT_REQUIRED);
         preexistingSub.setSource(Source.PASS);
         preexistingSub.setSubmittedDate(null);
-        passClient.createObject(preexistingSub);
+        nihmsPassClientService.createSubmission(preexistingSub);
 
         //wait for fake pre-existing submission to appear
         attempt(RETRIES, () -> {
@@ -426,7 +453,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         //a submission existed but had no repocopy
         Submission preexistingSub = newSubmission1(grantId1, user, publication.getId(), true,
                 SubmissionStatus.COMPLETE);
-        passClient.createObject(preexistingSub);
+        nihmsPassClientService.createSubmission(preexistingSub);
 
         Repository repo = new Repository(ConfigUtil.getNihmsRepositoryId());
         passClient.createObject(repo);
@@ -507,7 +534,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         //a submission existed but had no repocopy
         Submission preexistingSub = newSubmission1(grantId1, user, publication.getId(), true,
                 SubmissionStatus.SUBMITTED);
-        passClient.createObject(preexistingSub);
+        nihmsPassClientService.createSubmission(preexistingSub);
 
         RepositoryCopy preexistingRepoCopy = new RepositoryCopy();
         preexistingRepoCopy.setPublication(new Publication(pubId));
@@ -599,8 +626,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         submission1.setSource(Source.OTHER);
         submission1.setSubmitted(submitted);
         submission1.setSubmissionStatus(status);
-        Repository repo = new Repository(ConfigUtil.getNihmsRepositoryId());
-        passClient.createObject(repo);
+        PassClientSelector<Repository> repoSelect = new PassClientSelector<>(Repository.class);
+        repoSelect.setFilter(RSQL.equals("id", ConfigUtil.getNihmsRepositoryId()));
+        Repository repo = passClient.streamObjects(repoSelect).findFirst().get();
         List<Repository> repos = new ArrayList<>();
         repos.add(repo);
         submission1.setRepositories(repos);
@@ -630,7 +658,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertNotNull(repo.getId());
         repos.add(repo);
         submission2.setRepositories(repos);
-        passClient.createObject(submission2);
         return submission2;
     }
 

@@ -27,17 +27,25 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
+import org.eclipse.pass.support.client.model.Publication;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Source;
+import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
+import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("https://github.com/eclipse-pass/main/issues/679")
 public class NihmsPassClientServiceIT {
 
     private  NihmsPassClientService underTest;
@@ -204,6 +212,7 @@ public class NihmsPassClientServiceIT {
      * @throws Exception
      */
     @Test
+    @Disabled("Variant 2 is not a valid award number and should not be returned")
     public void checkSearchForNonNihGrantWithSimilarId() throws Exception {
         String awardNumber = "R01HL111222";
         String variant1 = "R01HL1112223-01A1";
@@ -212,6 +221,7 @@ public class NihmsPassClientServiceIT {
         String variant4 = "R01-HL111222";
         Grant testGrant = new Grant();
         testGrant.setAwardNumber(awardNumber);
+        passClient.createObject(testGrant);
         Grant foundGrant;
 
         //ensure the search returns the grant with the same award number
@@ -230,6 +240,41 @@ public class NihmsPassClientServiceIT {
 
         foundGrant = underTest.findMostRecentGrantByAwardNumber(variant4);
         assertNull(foundGrant);
+    }
+
+    /**
+     * Test creating of a submission, only 1 submission should be created
+     */
+    @Test
+    public void testCreateSubmission() throws IOException {
+        Submission submission = new Submission();
+        List<Grant> grants = new ArrayList<>();
+        List<Repository> repos = new ArrayList<>();
+        Publication pub = new Publication();
+        passClient.createObject(pub);
+        User user = new User();
+        passClient.createObject(user);
+        Grant grant = new Grant();
+        passClient.createObject(grant);
+        Repository repo = new Repository();
+        passClient.createObject(repo);
+
+        grants.add(grant);
+        submission.setGrants(grants);
+        submission.setPublication(pub);
+        submission.setSubmitter(user);
+        submission.setSource(Source.OTHER);
+        submission.setSubmitted(true);
+        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+        repos.add(repo);
+        submission.setRepositories(repos);
+        passClient.createObject(submission);
+
+        PassClientSelector<Submission> subSelect = new PassClientSelector<>(Submission.class);
+        subSelect.setFilter(RSQL.equals("id", submission.getId()));
+        List<Submission> submissions = passClient.streamObjects(subSelect).toList();
+        assertEquals(1, submissions.size());
+        assertEquals(submission.getId(), submissions.get(0).getId());
     }
 
 }
