@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.eclipse.pass</groupId>
     <artifactId>pass-support</artifactId>
-    <version>0.9.0</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>pass-data-client</artifactId>
-  <version>0.9.0</version>
+  <version>1.0.0-SNAPSHOT</version>
 
   <!-- Properties for ITs -->
   <properties>
