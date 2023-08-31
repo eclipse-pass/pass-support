@@ -67,6 +67,14 @@ public class ConfigUtil {
     }
 
     /**
+     * Sets the NIHMS Repository ID
+     * @param nihmsRepositoryId
+     */
+    public static void setNihmsRepositoryId(String nihmsRepositoryId) {
+        System.setProperty(NIHMS_REPOSITORY_ID_KEY, nihmsRepositoryId);
+    }
+
+    /**
      * This method processes a plain text properties file and returns a {@code Properties} object
      *
      * @param propertiesFile - the properties {@code File} to be read
