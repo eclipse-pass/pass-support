@@ -26,8 +26,6 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.policy.TerminalDepositStatusPolicy;
-import org.eclipse.pass.deposit.policy.TerminalSubmissionStatusPolicy;
 import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.status.SubmissionStatusEvaluator;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
@@ -51,18 +49,11 @@ public class DepositUtil {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositUtil.class);
-
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
-
     private static final String UTC = "UTC";
-
-    private static final TerminalDepositStatusPolicy TERMINAL_DEPOSIT_STATUS_POLICY =
-            new TerminalDepositStatusPolicy(new DepositStatusEvaluator());
-
-    private static final TerminalSubmissionStatusPolicy TERMINAL_SUBMISSION_STATUS_POLICY = new
-        TerminalSubmissionStatusPolicy(new SubmissionStatusEvaluator());
-
     static final String UNKNOWN_DATETIME = "UNKNOWN";
+    private static final DepositStatusEvaluator DEPOSIT_STATUS_EVALUATOR = new DepositStatusEvaluator();
+    private static final SubmissionStatusEvaluator SUBMISSION_STATUS_EVALUATOR = new SubmissionStatusEvaluator();
 
     /**
      * Parses a timestamp into a formatted date and time string.
@@ -169,7 +160,7 @@ public class DepositUtil {
     public static boolean markSubmissionFailed(String submissionId, CriticalRepositoryInteraction cri) {
         CriticalResult<Submission, Submission> updateResult = cri.performCritical(
                 submissionId, Submission.class,
-                (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.test(submission.getAggregatedDepositStatus()),
+                (submission) -> !SUBMISSION_STATUS_EVALUATOR.isTerminal(submission.getAggregatedDepositStatus()),
                 (submission) -> submission.getAggregatedDepositStatus() == AggregatedDepositStatus.FAILED,
                 (submission) -> {
                     submission.setAggregatedDepositStatus(AggregatedDepositStatus.FAILED);
@@ -205,7 +196,7 @@ public class DepositUtil {
     public static boolean markDepositFailed(String depositId, CriticalRepositoryInteraction cri) {
         CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(
                 depositId, Deposit.class,
-                (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.test(deposit.getDepositStatus()),
+                (deposit) -> !DEPOSIT_STATUS_EVALUATOR.isTerminal(deposit.getDepositStatus()),
                 (deposit) -> deposit.getDepositStatus() == DepositStatus.FAILED,
                 (deposit) -> {
                     deposit.setDepositStatus(DepositStatus.FAILED);

@@ -34,8 +34,8 @@ import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.policy.Policy;
 import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
+import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
@@ -65,17 +65,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DepositTask implements Runnable {
+public class DepositTask {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositTask.class);
 
-    private DepositWorkerContext dc;
-
-    private PassClient passClient;
-
-    private Policy<DepositStatus> intermediateDepositStatusPolicy;
-
-    private CriticalRepositoryInteraction cri;
+    private final DepositWorkerContext dc;
+    private final PassClient passClient;
+    private final DepositStatusEvaluator depositStatusEvaluator;
+    private final CriticalRepositoryInteraction cri;
 
     private long swordSleepTimeMs = 10000;
 
@@ -87,16 +84,15 @@ public class DepositTask implements Runnable {
 
     public DepositTask(DepositWorkerContext dc,
                        PassClient passClient,
-                       Policy<DepositStatus> intermediateDepositStatusPolicy,
+                       DepositStatusEvaluator depositStatusEvaluator,
                        CriticalRepositoryInteraction cri) {
         this.dc = dc;
         this.passClient = passClient;
-        this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
+        this.depositStatusEvaluator = depositStatusEvaluator;
         this.cri = cri;
     }
 
-    @Override
-    public void run() {
+    public void executeDeposit() {
 
         LOG.debug("Running {}@{}", DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
 
@@ -106,7 +102,7 @@ public class DepositTask implements Runnable {
                 /*
                  * Only "intermediate" deposits can be processed by {@code DepositTask}
                  */
-                                DepositTaskCriFunc.depositPrecondition(intermediateDepositStatusPolicy),
+                                DepositTaskCriFunc.depositPrecondition(depositStatusEvaluator),
 
                 /*
                  * Determines *physical* success of the Deposit: were the bytes of the package successfully received?
@@ -228,28 +224,12 @@ public class DepositTask implements Runnable {
         transportResponse.onSuccess(dc.submission(), dc.deposit(), dc.repoCopy());
     }
 
-    public String getPrefixToMatch() {
-        return prefixToMatch;
-    }
-
     public void setPrefixToMatch(String prefixToMatch) {
         this.prefixToMatch = prefixToMatch;
     }
 
     public void setReplacementPrefix(String replacementPrefix) {
         this.replacementPrefix = replacementPrefix;
-    }
-
-    public String getReplacementPrefix() {
-        return this.replacementPrefix;
-    }
-
-    public DepositWorkerContext getDepositWorkerContext() {
-        return dc;
-    }
-
-    public long getSwordSleepTimeMs() {
-        return swordSleepTimeMs;
     }
 
     public void setSwordSleepTimeMs(long swordSleepTimeMs) {
@@ -410,12 +390,12 @@ public class DepositTask implements Runnable {
          * is meant to determine whether or not the status of the Deposit is intermediate, or terminal.  If the Deposit
          * status is terminal, the pre-condition should not be met, and the critical function should not be executed.
          *
-         * @param intermediateDepositStatusPolicy
+         * @param depositStatusEvaluator
          * @return
          */
-        static Predicate<Deposit> depositPrecondition(Policy<DepositStatus> intermediateDepositStatusPolicy) {
+        static Predicate<Deposit> depositPrecondition(DepositStatusEvaluator depositStatusEvaluator) {
             return (deposit) -> {
-                boolean accept = intermediateDepositStatusPolicy.test(deposit.getDepositStatus());
+                boolean accept = !depositStatusEvaluator.isTerminal(deposit.getDepositStatus());
                 if (!accept) {
                     LOG.debug("Precondition failed for {}: Deposit must have an intermediate deposit status",
                               deposit.getId());

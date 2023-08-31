@@ -19,8 +19,6 @@ import static org.eclipse.pass.deposit.DepositMessagingTestUtil.randomDepositSta
 import static org.eclipse.pass.deposit.DepositMessagingTestUtil.randomId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,11 +40,8 @@ import org.eclipse.pass.deposit.config.repository.DepositProcessing;
 import org.eclipse.pass.deposit.config.repository.Repositories;
 import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
 import org.eclipse.pass.deposit.config.repository.RepositoryDepositConfig;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.policy.Policy;
 import org.eclipse.pass.deposit.service.DepositTaskHelper.DepositStatusCriFunc;
+import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.status.DepositStatusProcessor;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -54,77 +49,28 @@ import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
-import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.core.task.TaskExecutor;
 
+// TODO this test needs to be redone. It doesn't look to actually test DepositTaskHelper
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DepositTaskHelperTest {
     private PassClient passClient;
-    private TaskExecutor taskExecutor;
-    private Policy<DepositStatus> intermediateDepositStatusPolicy;
-    private Submission submission;
-    private DepositSubmission depositSubmission;
+    private DepositStatusEvaluator depositStatusEvaluator;
     private Repository repository;
-    private Packager packager;
     private Deposit deposit;
-    private DepositTaskHelper depositTaskHelper;
     private Repositories repositories;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         passClient = mock(PassClient.class);
-        taskExecutor = mock(TaskExecutor.class);
-        intermediateDepositStatusPolicy = mock(Policy.class);
-        CriticalRepositoryInteraction cri = mock(CriticalRepositoryInteraction.class);
+        depositStatusEvaluator = mock(DepositStatusEvaluator.class);
         repositories = mock(Repositories.class);
-        submission = mock(Submission.class);
-        depositSubmission = mock(DepositSubmission.class);
         deposit = mock(Deposit.class);
         repository = mock(Repository.class);
-        packager = mock(Packager.class);
-
-        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-            cri, repositories);
-    }
-
-    @Test
-    public void j10sStatementUrlHackWithNullValues() {
-        ArgumentCaptor<DepositTask> dtCaptor = ArgumentCaptor.forClass(DepositTask.class);
-
-        depositTaskHelper.submitDeposit(submission, depositSubmission, repository, deposit, packager);
-
-        verify(taskExecutor).execute(dtCaptor.capture());
-
-        DepositTask depositTask = dtCaptor.getValue();
-        assertNotNull(depositTask);
-
-        assertNull(depositTask.getPrefixToMatch());
-        assertNull(depositTask.getReplacementPrefix());
-    }
-
-    @Test
-    public void j10sStatementUrlHack() {
-        ArgumentCaptor<DepositTask> dtCaptor = ArgumentCaptor.forClass(DepositTask.class);
-        String prefix = "moo";
-        String replacement = "foo";
-
-        depositTaskHelper.setStatementUriPrefix(prefix);
-        depositTaskHelper.setStatementUriReplacement(replacement);
-        depositTaskHelper.submitDeposit(submission, depositSubmission, repository, deposit, packager);
-
-        verify(taskExecutor).execute(dtCaptor.capture());
-
-        DepositTask depositTask = dtCaptor.getValue();
-        assertNotNull(depositTask);
-
-        assertEquals(prefix, depositTask.getPrefixToMatch());
-        assertEquals(replacement, depositTask.getReplacementPrefix());
     }
 
     @Test
@@ -153,7 +99,7 @@ public class DepositTaskHelperTest {
         String repoKey = randomId();
         String repoCopyId = randomId();
 
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
@@ -161,9 +107,9 @@ public class DepositTaskHelperTest {
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
         when(deposit.getRepositoryCopy()).thenReturn(new RepositoryCopy(repoCopyId));
 
-        assertTrue(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
+        assertTrue(DepositStatusCriFunc.precondition(depositStatusEvaluator).test(deposit));
 
-        verify(intermediateDepositStatusPolicy).test(any());
+        verify(depositStatusEvaluator).isTerminal(any());
     }
 
     /**
@@ -171,13 +117,13 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPreconditionFailTerminalStatus() {
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(false);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(true);
         when(deposit.getDepositStatus()).thenReturn(DepositStatus.SUBMITTED);
 
         // don't need any other mocking, because the test for status comes first.
         // use Mockito.verify to insure this
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
+        assertFalse(DepositStatusCriFunc.precondition(depositStatusEvaluator).test(deposit));
         verify(deposit, times(2)).getDepositStatus(); // once for the call, once for the log message
         verify(deposit).getId(); // log message
         verifyNoMoreInteractions(deposit);
@@ -189,7 +135,7 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPreconditionFailDepositStatusRef() {
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
@@ -197,12 +143,12 @@ public class DepositTaskHelperTest {
         // don't need any other mocking, because null is returned by default for the status uri
         // use Mockito.verify to insure this
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
+        assertFalse(DepositStatusCriFunc.precondition(depositStatusEvaluator).test(deposit));
 
         verify(deposit).getDepositStatus();
         verify(deposit).getDepositStatusRef();
         verify(deposit).getId(); // log message
-        verify(intermediateDepositStatusPolicy).test(any());
+        verify(depositStatusEvaluator).isTerminal(any());
         verifyNoMoreInteractions(deposit);
         verifyNoInteractions(passClient);
     }
@@ -215,20 +161,20 @@ public class DepositTaskHelperTest {
     public void depositCriFuncPreconditionFailRepository() {
         String statusRef = randomId();
 
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
+        assertFalse(DepositStatusCriFunc.precondition(depositStatusEvaluator).test(deposit));
 
         verify(deposit).getDepositStatus();
         verify(deposit, atLeastOnce()).getDepositStatusRef();
         verify(deposit).getRepository();
         verify(deposit).getId(); // log message
 
-        verify(intermediateDepositStatusPolicy).test(any());
+        verify(depositStatusEvaluator).isTerminal(any());
         verifyNoMoreInteractions(deposit);
         verifyNoInteractions(passClient);
     }
@@ -246,14 +192,14 @@ public class DepositTaskHelperTest {
         String statusRef = randomId();
         String repoKey = randomId();
 
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef);
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
+        assertFalse(DepositStatusCriFunc.precondition(depositStatusEvaluator).test(deposit));
 
         verify(deposit).getDepositStatus();
         verify(deposit, atLeastOnce()).getDepositStatusRef();
@@ -262,7 +208,7 @@ public class DepositTaskHelperTest {
         verify(deposit).getRepositoryCopy();
         verify(deposit).getId(); // log message
 
-        verify(intermediateDepositStatusPolicy).test(any());
+        verify(depositStatusEvaluator).isTerminal(any());
         verifyNoMoreInteractions(deposit);
         verifyNoInteractions(passClient);
     }
@@ -278,18 +224,18 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncPreconditionFailNullRepoCopy() throws IOException {
+    public void depositCriFuncPreconditionFailNullRepoCopy() {
         String statusRef = randomId();
         String repoKey = randomId();
 
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         when(deposit.getDepositStatus()).thenReturn(
             // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
 
-        assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(deposit));
+        assertFalse(DepositStatusCriFunc.precondition(depositStatusEvaluator).test(deposit));
 
         verify(deposit).getDepositStatus();
         verify(deposit, atLeastOnce()).getDepositStatusRef();
@@ -298,7 +244,7 @@ public class DepositTaskHelperTest {
         verify(deposit).getRepositoryCopy();
         verify(deposit).getId(); // log message
 
-        verify(intermediateDepositStatusPolicy).test(any());
+        verify(depositStatusEvaluator).isTerminal(any());
         verifyNoInteractions(passClient);
         verifyNoMoreInteractions(deposit);
     }

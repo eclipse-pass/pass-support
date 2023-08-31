@@ -15,15 +15,10 @@
  */
 package org.eclipse.pass.deposit.config.spring;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
-
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -31,7 +26,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
-import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.ExceptionHandlingThreadPoolExecutor;
 import org.eclipse.pass.deposit.config.repository.Repositories;
@@ -39,8 +33,6 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.model.InMemoryMapRegistry;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.model.Registry;
-import org.eclipse.pass.deposit.policy.DirtyDepositPolicy;
-import org.eclipse.pass.deposit.service.DepositTask;
 import org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor;
 import org.eclipse.pass.deposit.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.status.DepositStatusResolver;
@@ -57,7 +49,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -68,11 +59,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class DepositConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositConfig.class);
-
-    private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(0);
-
-    @Value("${pass.deposit.workers.concurrency}")
-    private int depositWorkersConcurrency;
 
     @Value("${pass.client.url}")
     private String passClientUrl;
@@ -214,36 +200,6 @@ public class DepositConfig {
     }
 
     @Bean
-    public ThreadPoolTaskExecutor depositWorkers(DepositServiceErrorHandler errorHandler) {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setMaxPoolSize(depositWorkersConcurrency);
-        executor.setQueueCapacity(depositWorkersConcurrency * 2);
-        executor.setRejectedExecutionHandler((rejectedTask, exe) -> {
-            String msg = String.format("Task %s@%s rejected, will be retried later.",
-                                       rejectedTask.getClass().getSimpleName(),
-                                       toHexString(identityHashCode(rejectedTask)));
-            if (rejectedTask instanceof DepositTask && ((DepositTask) rejectedTask).getDepositWorkerContext() != null) {
-                DepositServiceRuntimeException ex = new DepositServiceRuntimeException(msg,
-                        ((DepositTask) rejectedTask).getDepositWorkerContext().deposit());
-                errorHandler.handleError(ex);
-            } else {
-                LOG.error(msg);
-            }
-        });
-
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setThreadNamePrefix("Deposit-Worker-");
-        ThreadFactory tf = r -> {
-            Thread t = new Thread(r);
-            t.setName("Deposit-Worker-" + THREAD_COUNTER.getAndIncrement());
-            t.setUncaughtExceptionHandler((thread, throwable) -> errorHandler.handleError(throwable));
-            return t;
-        };
-        executor.setThreadFactory(tf);
-        return executor;
-    }
-
-    @Bean
     public ResourceResolverImpl resourceResolver(
         @Value("${pass.deposit.transport.swordv2.followRedirects}") boolean followRedirects) {
         return new ResourceResolverImpl(followRedirects);
@@ -255,11 +211,6 @@ public class DepositConfig {
     })
     public DefaultDepositStatusProcessor defaultDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {
         return new DefaultDepositStatusProcessor(statusResolver);
-    }
-
-    @Bean
-    DirtyDepositPolicy dirtyDepositPolicy() {
-        return new DirtyDepositPolicy();
     }
 
     @Bean

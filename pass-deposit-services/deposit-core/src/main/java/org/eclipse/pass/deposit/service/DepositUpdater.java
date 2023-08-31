@@ -36,9 +36,8 @@ public class DepositUpdater {
 
     private static final String STATUS_ATTRIBUTE = "depositStatus";
 
-    private PassClient passClient;
-
-    private DepositTaskHelper depositHelper;
+    private final PassClient passClient;
+    private final DepositTaskHelper depositHelper;
 
     @Autowired
     public DepositUpdater(PassClient passClient, DepositTaskHelper depositHelper) {
@@ -50,18 +49,19 @@ public class DepositUpdater {
         doUpdate(depositIdsToUpdate(passClient));
     }
 
-    void doUpdate(Collection<String> depositUris) {
-        depositUris.forEach(depositUri -> {
+    void doUpdate(Collection<String> depositIds) {
+        depositIds.forEach(depositId -> {
             try {
-                depositHelper.processDepositStatus(depositUri);
+                depositHelper.processDepositStatus(depositId);
             } catch (Exception e) {
-                LOG.warn("Failed to update {}: {}", depositUri, e.getMessage(), e);
+                LOG.warn("Failed to update {}: {}", depositId, e.getMessage(), e);
             }
         });
     }
 
     private static Collection<String> depositIdsToUpdate(PassClient passClient) throws IOException {
         PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+        // TODO should FAILED be removed from this?
         sel.setFilter(RSQL.in(STATUS_ATTRIBUTE, DepositStatus.FAILED.getValue(), DepositStatus.SUBMITTED.getValue()));
 
         return passClient.streamObjects(sel).map(Deposit::getId).toList();
