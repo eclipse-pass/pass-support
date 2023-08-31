@@ -22,17 +22,20 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DepositUpdaterJob {
+public class DepositStatusUpdaterJob {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DepositUpdaterJob.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DepositStatusUpdaterJob.class);
 
     private final DepositUpdater depositUpdater;
 
-    public DepositUpdaterJob(DepositUpdater depositUpdater) {
+    public DepositStatusUpdaterJob(DepositUpdater depositUpdater) {
         this.depositUpdater = depositUpdater;
     }
 
-    @Scheduled(fixedDelayString = "${pass.deposit.jobs.default-interval-ms}")
+    @Scheduled(
+        fixedDelayString = "${pass.deposit.jobs.default-interval-ms}",
+        initialDelayString = "${pass.deposit.jobs.2.init.delay}"
+    )
     public void updateDeposits() {
         try {
             depositUpdater.doUpdate();
