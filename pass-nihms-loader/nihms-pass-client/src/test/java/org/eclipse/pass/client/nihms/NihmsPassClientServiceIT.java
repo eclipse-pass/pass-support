@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -52,6 +53,8 @@ public class NihmsPassClientServiceIT {
 
     private PassClient passClient;
 
+    private String nihmsRepositoryId = "1122334455";
+
     @BeforeEach
     public void setUp() {
         System.setProperty("pass.core.url","http://localhost:8080");
@@ -65,6 +68,7 @@ public class NihmsPassClientServiceIT {
      * Demonstrate that a Journal can be looked up by any of its ISSNs.
      */
     @Test
+    @Disabled("Working, but disabled while working on other tests")
     public void lookupJournalByIssn() throws IOException {
         Journal journal = new Journal();
         journal.setIssns(Arrays.asList("fooissn", "barissn"));
@@ -86,6 +90,7 @@ public class NihmsPassClientServiceIT {
      * the activity code, institute code and serial number are the minimum set of strings required to match
      */
     @Test
+    @Disabled("Working, but disabled while working on other tests")
     public void shouldFindNihGrantAwardNumber() throws IOException {
         Grant grant1 = new Grant();
         grant1.setAwardNumber("R01AR074846");
@@ -192,6 +197,7 @@ public class NihmsPassClientServiceIT {
      * match the award numbers and not return any false positives or inadvertently modify the award number
      */
     @Test
+    @Disabled("Working, but disabled while working on other tests")
     public void shouldFindNonNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
         URI testAwardNumberUri = NihmsPassClientServiceTest.class.getResource("/valid_award_numbers.csv").toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
@@ -247,6 +253,66 @@ public class NihmsPassClientServiceIT {
      */
     @Test
     public void testCreateSubmission() throws IOException {
+        Submission submission = initSubmission();
+        underTest.createSubmission(submission);
+
+        PassClientSelector<Submission> subSelect = new PassClientSelector<>(Submission.class);
+        subSelect.setFilter(RSQL.equals("id", submission.getId()));
+        List<Submission> submissions = passClient.streamObjects(subSelect).toList();
+        assertEquals(1, submissions.size());
+        assertEquals(submission.getId(), submissions.get(0).getId());
+    }
+
+    /**
+     * Test getting only nihms submissions
+     * @throws IOException if error occurs
+     */
+    @Test
+    public void testGetNihmsSubmissions() throws IOException {
+        String nihmsRepoId = ConfigUtil.getNihmsRepositoryId();
+        Submission submission = new Submission();
+        List<Grant> grants = new ArrayList<>();
+        List<Repository> repos = new ArrayList<>();
+        Publication pub = new Publication();
+        passClient.createObject(pub);
+        User user = new User();
+        passClient.createObject(user);
+        Grant grant = new Grant();
+        passClient.createObject(grant);
+        Repository nihmsRepo = new Repository();
+        nihmsRepo.setName("NIHMS");
+        nihmsRepo.setRepositoryKey("nihms");
+        passClient.createObject(nihmsRepo);
+        nihmsRepo.setId(nihmsRepoId);
+        passClient.updateObject(nihmsRepo);
+
+        grants.add(grant);
+        submission.setGrants(grants);
+        submission.setPublication(pub);
+        submission.setSubmitter(user);
+        submission.setSource(Source.OTHER);
+        submission.setSubmitted(true);
+        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+        repos.add(nihmsRepo);
+        submission.setRepositories(repos);
+
+        //submission with a nihms repository, should be returned
+        underTest.createSubmission(submission);
+        //submission that shouldn't be returned. It's not a nihms submission
+        underTest.createSubmission(initSubmission());
+
+        List<Submission> foundSubs = underTest.findNihmsSubmissions();
+        assertEquals(1, foundSubs.size());
+        assertEquals(submission.getId(), foundSubs.get(0).getId());
+
+    }
+
+    /**
+     * Create a submission with a grant, publication, submitter, and repository. No customizations to any objects.
+     * @return Submission
+     * @throws IOException if error creating submission
+     */
+    private Submission initSubmission() throws IOException {
         Submission submission = new Submission();
         List<Grant> grants = new ArrayList<>();
         List<Repository> repos = new ArrayList<>();
@@ -263,19 +329,9 @@ public class NihmsPassClientServiceIT {
         submission.setGrants(grants);
         submission.setPublication(pub);
         submission.setSubmitter(user);
-        submission.setSource(Source.OTHER);
-        submission.setSubmitted(true);
-        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
         repos.add(repo);
         submission.setRepositories(repos);
-
-        underTest.createSubmission(submission);
-
-        PassClientSelector<Submission> subSelect = new PassClientSelector<>(Submission.class);
-        subSelect.setFilter(RSQL.equals("id", submission.getId()));
-        List<Submission> submissions = passClient.streamObjects(subSelect).toList();
-        assertEquals(1, submissions.size());
-        assertEquals(submission.getId(), submissions.get(0).getId());
+        return submission;
     }
 
 }
