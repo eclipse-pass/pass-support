@@ -36,13 +36,12 @@ import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.model.Registry;
-import org.eclipse.pass.deposit.policy.Policy;
-import org.eclipse.pass.deposit.policy.SubmissionPolicy;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.IntegrationType;
 import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,19 +63,17 @@ public class SubmissionProcessor implements Consumer<Submission> {
     protected PassClient passClient;
     protected DepositSubmissionModelBuilder depositSubmissionModelBuilder;
     protected Registry<Packager> packagerRegistry;
-    protected SubmissionPolicy submissionPolicy;
     protected CriticalRepositoryInteraction critical;
     protected DepositTaskHelper depositTaskHelper;
 
     @Autowired
     public SubmissionProcessor(PassClient passClient, DepositSubmissionModelBuilder depositSubmissionModelBuilder,
-                               Registry<Packager> packagerRegistry, SubmissionPolicy passUserSubmittedPolicy,
-                               DepositTaskHelper depositTaskHelper, CriticalRepositoryInteraction critical) {
+                               Registry<Packager> packagerRegistry, DepositTaskHelper depositTaskHelper,
+                               CriticalRepositoryInteraction critical) {
 
         this.passClient = passClient;
         this.depositSubmissionModelBuilder = depositSubmissionModelBuilder;
         this.packagerRegistry = packagerRegistry;
-        this.submissionPolicy = passUserSubmittedPolicy;
         this.critical = critical;
         this.depositTaskHelper = depositTaskHelper;
     }
@@ -89,7 +86,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         CriticalResult<DepositSubmission, Submission> result =
             critical.performCritical(submission.getId(), Submission.class,
-                                     CriFunc.preCondition(submissionPolicy),
+                                     CriFunc.preCondition(),
                                      CriFunc.postCondition(),
                                      CriFunc.critical(depositSubmissionModelBuilder));
 
@@ -137,7 +134,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 });
     }
 
-    void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo) {
+    private void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo) {
         Deposit deposit = null;
         Packager packager = null;
         try {
@@ -235,14 +232,51 @@ public class SubmissionProcessor implements Consumer<Submission> {
         }
 
         /**
-         * Answers a Predicate that will accept the Submission for processing if it is accepted by the supplied
-         * {@link Policy}.
+         * Answers a Predicate that will accept the Submission for processing if it is accepted.
          *
-         * @param submissionPolicy the submission policy
          * @return a Predicate that invokes the submission policy
          */
-        static Predicate<Submission> preCondition(SubmissionPolicy submissionPolicy) {
-            return submissionPolicy::test;
+        static Predicate<Submission> preCondition() {
+            return CriFunc::isSubmittedByUser;
+        }
+
+        /**
+         * Returns {@code true} if the {@code Submission} was submitted using the PASS UI, and if the user of the UI has
+         * interactively pressed the "Submit" button.
+         *
+         * @param submission the Submission
+         * @return {@code true} if the {@code Submission} was submitted by a user of the PASS UI
+         * @see
+         * <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission model documentation</a>
+         */
+        private static boolean isSubmittedByUser(Submission submission) {
+
+            if (submission == null) {
+                LOG.debug("Null submissions not accepted for processing.");
+                return false;
+            }
+
+            if (submission.getSubmitted() != null && submission.getSubmitted() == Boolean.FALSE) {
+                LOG.debug("Submission {} will not be accepted for processing: submitted = {}, " +
+                        "expected submitted = true", submission.getId(), submission.getSubmitted());
+                return false;
+            }
+
+            if (submission.getSource() != Source.PASS) {
+                LOG.debug("Submission {} will not be accepted for processing: source = {}, expected source = {}",
+                    submission.getId(), submission.getSource(), Source.PASS);
+                return false;
+            }
+
+            // Currently we dis-allow FAILED Submissions; the SubmissionProcessor is not capable of "re-processing"
+            // failures.
+            if (submission.getAggregatedDepositStatus() != AggregatedDepositStatus.NOT_STARTED) {
+                LOG.debug("Submission {} will not be accepted for processing: status = {}, expected status = {}",
+                    submission.getId(), submission.getAggregatedDepositStatus(), AggregatedDepositStatus.NOT_STARTED);
+                return false;
+            }
+
+            return true;
         }
     }
 

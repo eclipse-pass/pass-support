@@ -19,10 +19,8 @@ import static org.eclipse.pass.deposit.DepositMessagingTestUtil.randomAggregated
 import static org.eclipse.pass.deposit.DepositMessagingTestUtil.randomId;
 import static org.eclipse.pass.deposit.service.SubmissionProcessor.CriFunc.critical;
 import static org.eclipse.pass.deposit.service.SubmissionProcessor.CriFunc.postCondition;
-import static org.eclipse.pass.deposit.service.SubmissionProcessor.CriFunc.preCondition;
 import static org.eclipse.pass.deposit.service.SubmissionProcessor.getLookupKeys;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -53,19 +52,16 @@ import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.model.Registry;
-import org.eclipse.pass.deposit.policy.Policy;
-import org.eclipse.pass.deposit.policy.SubmissionPolicy;
+import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
-import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.IntegrationType;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.core.task.TaskRejectedException;
+import org.mockito.MockedConstruction;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -74,8 +70,6 @@ public class SubmissionProcessorTest {
     private PassClient passClient;
     private DepositSubmissionModelBuilder depositSubmissionModelBuilder;
     private Registry<Packager> packagerRegistry;
-    private SubmissionPolicy submissionPolicy;
-    private TaskExecutor taskExecutor;
     private CriticalRepositoryInteraction cri;
     private SubmissionProcessor submissionProcessor;
 
@@ -85,15 +79,13 @@ public class SubmissionProcessorTest {
         passClient = mock(PassClient.class);
         depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         packagerRegistry = mock(Registry.class);
-        submissionPolicy = mock(SubmissionPolicy.class);
-        Policy<DepositStatus> intermediateDepositStatusPolicy = mock(Policy.class);
-        taskExecutor = mock(TaskExecutor.class);
+        DepositStatusEvaluator depositStatusEvaluator = mock(DepositStatusEvaluator.class);
         cri = mock(CriticalRepositoryInteraction.class);
         Repositories repositories = mock(Repositories.class);
-        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor,
-            intermediateDepositStatusPolicy, cri, repositories);
+        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, depositStatusEvaluator, cri,
+            repositories);
         submissionProcessor =
-            new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry, submissionPolicy,
+            new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry,
                 depositTaskHelper, cri);
     }
 
@@ -157,33 +149,36 @@ public class SubmissionProcessorTest {
             when(packagerRegistry.get(repo.getName())).thenReturn(mock(Packager.class));
         });
 
-        // WHEN
-        submissionProcessor.accept(submission);
+        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
 
-        // THEN
-        // Verify the CRI executed successfully and the results obtained properly
-        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
-        verify(criResult).success();
-        verify(criResult).resource();
-        verify(criResult).result();
+            // WHEN
+            submissionProcessor.accept(submission);
 
-        // Verify we created a Deposit for each Repository
-        verify(passClient, times(submission.getRepositories().size()))
-            .createObject(any(Deposit.class));
+            // THEN
+            // Verify the CRI executed successfully and the results obtained properly
+            verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
+            verify(criResult).success();
+            verify(criResult).resource();
+            verify(criResult).result();
 
-        // Verify that each Repository was read from the Pass Core repository, and that a Packager for each
-        // Repository was resolved from the PackagerRegistry
-        repositories.forEach(repo -> {
-            try {
-                verify(passClient).getObject(repo);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            verify(packagerRegistry).get(repo.getName());
-        });
+            // Verify we created a Deposit for each Repository
+            verify(passClient, times(submission.getRepositories().size()))
+                .createObject(any(Deposit.class));
 
-        // Insure that a DepositTask was submitted for each Deposit (number of Repositories == number of Deposits)
-        verify(taskExecutor, times(submission.getRepositories().size())).execute(any(DepositTask.class));
+            // Verify that each Repository was read from the Pass Core repository, and that a Packager for each
+            // Repository was resolved from the PackagerRegistry
+            repositories.forEach(repo -> {
+                try {
+                    verify(passClient).getObject(repo);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                verify(packagerRegistry).get(repo.getName());
+            });
+
+            // A DepositTask was submitted for each Deposit (number of Repositories == number of Deposits)
+            assertEquals(submission.getRepositories().size(), mockDepositTask.constructed().size());
+        }
     }
 
     /**
@@ -197,7 +192,7 @@ public class SubmissionProcessorTest {
         // Mock a DepositTaskHelper for this test.
         DepositTaskHelper mockHelper = mock(DepositTaskHelper.class);
         submissionProcessor = new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry,
-            submissionPolicy, mockHelper, cri);
+            mockHelper, cri);
 
         // Mock the Repositories that the submission is going to
         Repository repository1 = mock(Repository.class);
@@ -265,21 +260,23 @@ public class SubmissionProcessorTest {
         // This should never happen, but Deposit Services checks to be sure that the resource() isn't empty.
         when(criResult.resource()).thenReturn(Optional.empty());
 
-        DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-            submissionProcessor.accept(submission);
-        });
+        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
+            DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
+                submissionProcessor.accept(submission);
+            });
 
-        assertEquals("Missing expected Submission " + submission.getId(), exception.getMessage());
+            assertEquals("Missing expected Submission " + submission.getId(), exception.getMessage());
 
-        // Verify the CRI execution failed
-        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
-        verify(criResult).success();
+            // Verify the CRI execution failed
+            verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
+            verify(criResult).success();
 
-        // Exception thrown before this is called
-        verify(criResult, times(0)).result();
+            // Exception thrown before this is called
+            verify(criResult, times(0)).result();
 
-        // Verify nothing was sent to the DepositTask task executor
-        verifyNoInteractions(taskExecutor);
+            // Verify no DepositTasks were created
+            assertEquals(0, mockDepositTask.constructed().size());
+        }
     }
 
     @Test
@@ -298,19 +295,21 @@ public class SubmissionProcessorTest {
         // This should never happen, but Deposit Services checks to be sure that the resource() isn't empty.
         when(criResult.result()).thenReturn(Optional.empty());
 
-        DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-            submissionProcessor.accept(submission);
-        });
+        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
+            DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
+                submissionProcessor.accept(submission);
+            });
 
-        assertEquals("Missing expected DepositSubmission", exception.getMessage());
+            assertEquals("Missing expected DepositSubmission", exception.getMessage());
 
-        // Verify the CRI execution failed
-        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
-        verify(criResult).success();
-        verify(criResult).result();
+            // Verify the CRI execution failed
+            verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
+            verify(criResult).success();
+            verify(criResult).result();
 
-        // Verify nothing was sent to the DepositTask task executor
-        verifyNoInteractions(taskExecutor);
+            // Verify no DepositTasks were created
+            assertEquals(0, mockDepositTask.constructed().size());
+        }
     }
 
     /**
@@ -335,20 +334,22 @@ public class SubmissionProcessorTest {
         when(criResult.result()).thenReturn(Optional.of(new DepositSubmission()));
         when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
-        DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-            submissionProcessor.accept(submission);
-        });
+        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
+            DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
+                submissionProcessor.accept(submission);
+            });
 
-        assertEquals("Unable to update status of " + submission.getId() + " to 'IN_PROGRESS': Failed CRI",
-            exception.getMessage());
+            assertEquals("Unable to update status of " + submission.getId() + " to 'IN_PROGRESS': Failed CRI",
+                exception.getMessage());
 
-        // Verify the CRI execution failed
-        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
-        verify(criResult).success();
-        verify(criResult, times(0)).result();
+            // Verify the CRI execution failed
+            verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
+            verify(criResult).success();
+            verify(criResult, times(0)).result();
 
-        // Verify nothing was sent to the DepositTask task executor
-        verifyNoInteractions(taskExecutor);
+            // Verify no DepositTasks were created
+            assertEquals(0, mockDepositTask.constructed().size());
+        }
     }
 
     @Test
@@ -385,57 +386,16 @@ public class SubmissionProcessorTest {
             }
         });
 
-        DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-            submissionProcessor.accept(submission);
-        });
+        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
+            DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
+                submissionProcessor.accept(submission);
+            });
 
-        assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
+            assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
                 "Error saving Deposit resource.", exception.getMessage());
-        verifyNoInteractions(taskExecutor);
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void taskRejection() throws Exception {
-        // Set the Repositories on the Submission, and create a DepositSubmission (the Submission mapped to the
-        // Deposit Services' model).
-
-        Repository repository1 = mock(Repository.class);
-        when(repository1.getName()).thenReturn("repo-1-name");
-        List<Repository> repositories = List.of(repository1);
-        Submission submission = new Submission();
-        submission.setId("test-submission-id");
-        submission.setRepositories(repositories);
-        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
-        DepositSubmission depositSubmission = new DepositSubmission();
-
-        // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
-
-        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
-        when(criResult.success()).thenReturn(true);
-        when(criResult.resource()).thenReturn(Optional.of(submission));
-        when(criResult.result()).thenReturn(Optional.of(depositSubmission));
-        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
-
-        repositories.forEach(repo -> {
-            try {
-                when(passClient.getObject(repo)).thenReturn(repo);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            when(packagerRegistry.get(repo.getName())).thenReturn(mock(Packager.class));
-        });
-
-        doThrow(TaskRejectedException.class).when(taskExecutor).execute(any(DepositTask.class));
-
-        DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-            submissionProcessor.accept(submission);
-        });
-
-        assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: null",
-            exception.getMessage());
-        assertEquals(exception.getCause().getClass(), TaskRejectedException.class);
-        verify(taskExecutor).execute(any(DepositTask.class));
+            // Verify no DepositTasks were created
+            assertEquals(0, mockDepositTask.constructed().size());
+        }
     }
 
     /**
@@ -479,18 +439,21 @@ public class SubmissionProcessorTest {
             when(packagerRegistry.get(repo.getName())).thenReturn(null);
         });
 
-        DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-            submissionProcessor.accept(submission);
-        });
+        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
+            DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
+                submissionProcessor.accept(submission);
+            });
 
-        assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
-                "No Packager found for tuple [test-submission-id, null, null]: Missing Packager for Repository " +
-                "named 'repo-1-name' (key: null)",
-            exception.getMessage());
-        assertEquals(exception.getCause().getClass(), NullPointerException.class);
-        verify(packagerRegistry).get(any());
-        verify(passClient, times(0)).createObject(any(Deposit.class));
-        verifyNoInteractions(taskExecutor);
+            assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
+                    "No Packager found for tuple [test-submission-id, null, null]: Missing Packager for Repository " +
+                    "named 'repo-1-name' (key: null)",
+                exception.getMessage());
+            assertEquals(exception.getCause().getClass(), NullPointerException.class);
+            verify(packagerRegistry).get(any());
+            verify(passClient, times(0)).createObject(any(Deposit.class));
+            // Verify no DepositTasks were created
+            assertEquals(0, mockDepositTask.constructed().size());
+        }
     }
 
     /* Assure the right repo keys are used for lookup */
@@ -519,32 +482,6 @@ public class SubmissionProcessorTest {
         Collection<String> keys = getLookupKeys(repo);
 
         assertTrue(keys.isEmpty());
-    }
-
-    /**
-     * The submission is accepted if the submission policy supplied to the precondition accepts the submission
-     */
-    @Test
-    public void criFuncPreconditionSuccess() {
-        Submission s = mock(Submission.class);
-        when(submissionPolicy.test(s)).thenReturn(true);
-
-        assertTrue(preCondition(submissionPolicy).test(s));
-
-        verify(submissionPolicy).test(s);
-    }
-
-    /**
-     * The submission is rejected if the submission policy supplied to the precondition rejects the submission
-     */
-    @Test
-    public void criFuncPreconditionFail() {
-        Submission s = mock(Submission.class);
-        when(submissionPolicy.test(s)).thenReturn(false);
-
-        assertFalse(preCondition(submissionPolicy).test(s));
-
-        verify(submissionPolicy).test(s);
     }
 
     /**

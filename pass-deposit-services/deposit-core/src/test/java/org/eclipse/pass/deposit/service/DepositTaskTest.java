@@ -35,7 +35,7 @@ import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.cri.CriticalPath;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.policy.Policy;
+import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
@@ -43,7 +43,6 @@ import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
-import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,13 +58,8 @@ import org.swordapp.client.SwordIdentifier;
 public class DepositTaskTest {
 
     private DepositUtil.DepositWorkerContext dc;
-
     private PassClient passClient;
-
-    private Policy<DepositStatus> intermediateDepositStatusPolicy;
-
-    private CriticalRepositoryInteraction cri;
-
+    private DepositStatusEvaluator depositStatusEvaluator;
     private DepositTask depositTask;
 
     @BeforeEach
@@ -74,15 +68,15 @@ public class DepositTaskTest {
         DepositUtil.DepositWorkerContext dwc = new DepositUtil.DepositWorkerContext();
         dc = Mockito.spy(dwc);
         passClient = mock(PassClient.class);
-        intermediateDepositStatusPolicy = mock(Policy.class);
-        cri = new CriticalPath(passClient);
-        depositTask = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
+        depositStatusEvaluator = mock(DepositStatusEvaluator.class);
+        CriticalRepositoryInteraction cri = new CriticalPath(passClient);
+        depositTask = new DepositTask(dc, passClient, depositStatusEvaluator, cri);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void j10sStatementUrlHack() throws Exception {
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         String prefix = "http://moo";
         String replacement = "http://foo";
 
@@ -103,14 +97,14 @@ public class DepositTaskTest {
         depositTask.setReplacementPrefix(replacement);
         depositTask.setPrefixToMatch(prefix);
 
-        depositTask.run();
+        depositTask.executeDeposit();
 
         assertEquals(replacement, d.getDepositStatusRef());
     }
 
     @Test
     public void j10sStatementUrlHackWithNullValues() throws Exception {
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         String prefix = "http://moo";
         String replacement = null;
 
@@ -131,14 +125,14 @@ public class DepositTaskTest {
         depositTask.setReplacementPrefix(replacement);
         depositTask.setPrefixToMatch(prefix);
 
-        depositTask.run();
+        depositTask.executeDeposit();
 
         assertEquals(prefix, d.getDepositStatusRef());
     }
 
     @Test
     public void j10sStatementUrlHackWithNonMatchingValues() throws Exception {
-        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         String href = "http://baz";
         String prefix = "http://moo";
         String replacement = "http://foo";
@@ -160,7 +154,7 @@ public class DepositTaskTest {
         depositTask.setReplacementPrefix(replacement);
         depositTask.setPrefixToMatch(prefix);
 
-        depositTask.run();
+        depositTask.executeDeposit();
 
         assertEquals(href, d.getDepositStatusRef());
     }

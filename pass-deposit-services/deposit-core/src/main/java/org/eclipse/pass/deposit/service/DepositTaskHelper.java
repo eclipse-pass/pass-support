@@ -20,7 +20,6 @@ import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.eclipse.deposit.util.loggers.Loggers.WORKERS_LOGGER;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
@@ -30,15 +29,13 @@ import java.util.function.Predicate;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.RemedialDepositException;
-import org.eclipse.pass.deposit.config.repository.AuthRealm;
-import org.eclipse.pass.deposit.config.repository.BasicAuthRealm;
 import org.eclipse.pass.deposit.config.repository.Repositories;
 import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.policy.Policy;
+import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.status.DepositStatusProcessor;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -51,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -69,32 +65,22 @@ public class DepositTaskHelper {
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessor.class);
 
     public static final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
-
     public static final String MISSING_PACKAGER = "No Packager found for tuple [{}, {}, {}]: " +
                                                   "Missing Packager for Repository named '{}', marking Deposit as " +
                                                   "FAILED.";
-
     private static final String PRECONDITION_FAILED = "Refusing to update {}, the following pre-condition failed: ";
-
     private static final String ERR_RESOLVE_REPOSITORY = "Unable to resolve Repository Configuration for Repository " +
                                                          "%s (%s).  Verify the Deposit Services runtime configuration" +
                                                          " location and " + "content.";
-
     private static final String ERR_PARSING_STATUS_DOC = "Failed to update deposit status for [%s], parsing the " +
                                                          "status document referenced by %s failed: %s";
-
     private static final String ERR_MAPPING_STATUS = "Failed to update deposit status for [%s], mapping the status " +
                                                      "obtained from  %s failed";
-
     private static final String ERR_UPDATE_REPOCOPY = "Failed to create or update RepositoryCopy '%s' for %s";
 
-    private PassClient passClient;
-
-    private TaskExecutor taskExecutor;
-
-    private Policy<DepositStatus> intermediateDepositStatusPolicy;
-
-    private CriticalRepositoryInteraction cri;
+    private final PassClient passClient;
+    private final DepositStatusEvaluator depositStatusEvaluator;
+    private final CriticalRepositoryInteraction cri;
 
     @Value("${pass.deposit.transport.swordv2.sleep-time-ms}")
     private long swordDepositSleepTimeMs;
@@ -105,17 +91,15 @@ public class DepositTaskHelper {
     @Value("${jscholarship.hack.sword.statement.uri-replacement}")
     private String statementUriReplacement;
 
-    private Repositories repositories;
+    private final Repositories repositories;
 
     @Autowired
     public DepositTaskHelper(PassClient passClient,
-                             TaskExecutor depositWorkers,
-                             Policy<DepositStatus> intermediateDepositStatusPolicy,
+                             DepositStatusEvaluator depositStatusEvaluator,
                              CriticalRepositoryInteraction cri,
                              Repositories repositories) {
         this.passClient = passClient;
-        this.taskExecutor = depositWorkers;
-        this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
+        this.depositStatusEvaluator = depositStatusEvaluator;
         this.cri = cri;
         this.repositories = repositories;
     }
@@ -147,7 +131,7 @@ public class DepositTaskHelper {
         try {
             DepositUtil.DepositWorkerContext dc = DepositUtil.toDepositWorkerContext(
                 deposit, submission, depositSubmission, repo, packager);
-            DepositTask depositTask = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
+            DepositTask depositTask = new DepositTask(dc, passClient, depositStatusEvaluator, cri);
             depositTask.setSwordSleepTimeMs(swordDepositSleepTimeMs);
             depositTask.setPrefixToMatch(statementUriPrefix);
             depositTask.setReplacementPrefix(statementUriReplacement);
@@ -155,7 +139,7 @@ public class DepositTaskHelper {
             WORKERS_LOGGER.debug("Submitting task ({}@{}) for tuple [{}, {}, {}]",
                                  depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
                                  submission.getId(), repo.getId(), deposit.getId());
-            taskExecutor.execute(depositTask);
+            depositTask.executeDeposit();
         } catch (Exception e) {
             // For example, if the task isn't accepted by the taskExecutor
             String msg = format(FAILED_TO_PROCESS_DEPOSIT, submission.getId(), repo.getId(),
@@ -168,8 +152,7 @@ public class DepositTaskHelper {
 
         CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositId, Deposit.class,
                                                                          DepositStatusCriFunc.precondition(
-                                                                             intermediateDepositStatusPolicy,
-                                                                             passClient),
+                                                                             depositStatusEvaluator),
                                                                          DepositStatusCriFunc.postcondition(),
                                                                          DepositStatusCriFunc.critical(repositories,
                                                                                                        passClient));
@@ -201,35 +184,11 @@ public class DepositTaskHelper {
         LOG.info("Successfully processed Deposit {}", depositId);
     }
 
-    String getStatementUriPrefix() {
-        return statementUriPrefix;
-    }
-
-    void setStatementUriPrefix(String statementUriPrefix) {
-        this.statementUriPrefix = statementUriPrefix;
-    }
-
-    String getStatementUriReplacement() {
-        return statementUriReplacement;
-    }
-
-    void setStatementUriReplacement(String statementUriReplacement) {
-        this.statementUriReplacement = statementUriReplacement;
-    }
-
     static Optional<RepositoryConfig> lookupConfig(Repository passRepository, Repositories repositories) {
         if (passRepository.getRepositoryKey() != null) {
             return Optional.of(repositories.getConfig(passRepository.getRepositoryKey()));
         }
         return Optional.empty();
-    }
-
-    static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
-        return authRealms.stream()
-                         .filter(realm -> realm instanceof BasicAuthRealm)
-                         .map(realm -> (BasicAuthRealm) realm)
-                         .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
-                         .findAny();
     }
 
     static class DepositStatusCriFunc {
@@ -243,9 +202,9 @@ public class DepositTaskHelper {
          *     <li>Deposit must have a RepositoryCopy, even if it is just a placeholder</li>
          * </ul>
          */
-        static Predicate<Deposit> precondition(Policy<DepositStatus> statusPolicy, PassClient passClient) {
+        static Predicate<Deposit> precondition(DepositStatusEvaluator depositStatusEvaluator) {
             return (deposit) -> {
-                if (!statusPolicy.test(deposit.getDepositStatus())) {
+                if (depositStatusEvaluator.isTerminal(deposit.getDepositStatus())) {
                     LOG.debug(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
                               deposit.getId(), deposit.getDepositStatus());
                     return false;
@@ -334,22 +293,20 @@ public class DepositTaskHelper {
                     RepositoryCopy repoCopy = passClient.getObject(deposit.getRepositoryCopy());
 
                     switch (status.get()) {
-                        case ACCEPTED: {
+                        case ACCEPTED -> {
                             LOG.debug("Deposit {} was accepted.", deposit.getId());
                             deposit.setDepositStatus(DepositStatus.ACCEPTED);
                             repoCopy.setCopyStatus(CopyStatus.COMPLETE);
                             passClient.updateObject(repoCopy);
-                            break;
                         }
-
-                        case REJECTED: {
+                        case REJECTED -> {
                             LOG.debug("Deposit {} was rejected.", deposit.getId());
                             deposit.setDepositStatus(DepositStatus.REJECTED);
                             repoCopy.setCopyStatus(CopyStatus.REJECTED);
                             passClient.updateObject(repoCopy);
-                            break;
                         }
-                        default:
+                        default -> {
+                        }
                     }
                     return repoCopy;
                 } catch (Exception e) {
