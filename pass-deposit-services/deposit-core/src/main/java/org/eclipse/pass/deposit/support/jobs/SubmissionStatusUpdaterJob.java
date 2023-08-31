@@ -38,7 +38,10 @@ public class SubmissionStatusUpdaterJob {
         this.updater = updater;
     }
 
-    @Scheduled(fixedDelayString = "${pass.deposit.jobs.default-interval-ms}")
+    @Scheduled(
+        fixedDelayString = "${pass.deposit.jobs.default-interval-ms}",
+        initialDelayString = "${pass.deposit.jobs.1.init.delay}"
+    )
     public void updateSubmissions() {
         LOG.trace("Starting {}", this.getClass().getSimpleName());
         try {
