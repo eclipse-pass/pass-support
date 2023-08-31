@@ -28,6 +28,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
@@ -60,22 +61,25 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     private final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
 
-    protected PassClient passClient;
-    protected DepositSubmissionModelBuilder depositSubmissionModelBuilder;
-    protected Registry<Packager> packagerRegistry;
-    protected CriticalRepositoryInteraction critical;
-    protected DepositTaskHelper depositTaskHelper;
+    private final PassClient passClient;
+    private final DepositSubmissionModelBuilder depositSubmissionModelBuilder;
+    private final Registry<Packager> packagerRegistry;
+    private final CriticalRepositoryInteraction critical;
+    private final DepositTaskHelper depositTaskHelper;
+    private final DepositServiceErrorHandler depositServiceErrorHandler;
 
     @Autowired
     public SubmissionProcessor(PassClient passClient, DepositSubmissionModelBuilder depositSubmissionModelBuilder,
                                Registry<Packager> packagerRegistry, DepositTaskHelper depositTaskHelper,
-                               CriticalRepositoryInteraction critical) {
+                               CriticalRepositoryInteraction critical,
+                               DepositServiceErrorHandler errorHandler) {
 
         this.passClient = passClient;
         this.depositSubmissionModelBuilder = depositSubmissionModelBuilder;
         this.packagerRegistry = packagerRegistry;
         this.critical = critical;
         this.depositTaskHelper = depositTaskHelper;
+        this.depositServiceErrorHandler = errorHandler;
     }
 
     @Override
@@ -130,7 +134,12 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 })
                 .filter(repo -> IntegrationType.WEB_LINK != repo.getIntegrationType())
                 .forEach(repo -> {
-                    submitDeposit(updatedS, depositSubmission, repo);
+                    try {
+                        submitDeposit(updatedS, depositSubmission, repo);
+                    } catch (Exception e) {
+                        depositServiceErrorHandler.handleError(e);
+                        throw e;
+                    }
                 });
     }
 

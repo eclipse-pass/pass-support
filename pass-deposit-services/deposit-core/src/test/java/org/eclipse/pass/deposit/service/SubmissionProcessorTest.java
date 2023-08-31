@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
+import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.config.repository.Repositories;
@@ -82,11 +83,12 @@ public class SubmissionProcessorTest {
         DepositStatusEvaluator depositStatusEvaluator = mock(DepositStatusEvaluator.class);
         cri = mock(CriticalRepositoryInteraction.class);
         Repositories repositories = mock(Repositories.class);
+        DepositServiceErrorHandler depositServiceErrorHandler = mock(DepositServiceErrorHandler.class);
         DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, depositStatusEvaluator, cri,
             repositories);
         submissionProcessor =
             new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry,
-                depositTaskHelper, cri);
+                depositTaskHelper, cri, depositServiceErrorHandler);
     }
 
     /**
@@ -191,8 +193,9 @@ public class SubmissionProcessorTest {
         // GIVEN
         // Mock a DepositTaskHelper for this test.
         DepositTaskHelper mockHelper = mock(DepositTaskHelper.class);
+        DepositServiceErrorHandler depositServiceErrorHandler = mock(DepositServiceErrorHandler.class);
         submissionProcessor = new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry,
-            mockHelper, cri);
+            mockHelper, cri, depositServiceErrorHandler);
 
         // Mock the Repositories that the submission is going to
         Repository repository1 = mock(Repository.class);
