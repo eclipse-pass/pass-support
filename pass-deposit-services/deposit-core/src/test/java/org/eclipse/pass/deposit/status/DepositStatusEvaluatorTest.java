@@ -16,11 +16,9 @@
 package org.eclipse.pass.deposit.status;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.pass.support.client.model.DepositStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,24 +26,13 @@ import org.junit.jupiter.api.Test;
  */
 public class DepositStatusEvaluatorTest {
 
-    private DepositStatusEvaluator underTest;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        underTest = new DepositStatusEvaluator();
-    }
-
     @Test
     public void testIsTerminal() {
-        assertTrue(underTest.isTerminal(DepositStatus.ACCEPTED));
-        assertTrue(underTest.isTerminal(DepositStatus.REJECTED));
-        assertFalse(underTest.isTerminal(DepositStatus.SUBMITTED));
+        DepositStatusEvaluator depositStatusEvaluator = new DepositStatusEvaluator();
+        assertTrue(depositStatusEvaluator.isTerminal(DepositStatus.ACCEPTED));
+        assertTrue(depositStatusEvaluator.isTerminal(DepositStatus.REJECTED));
+        assertFalse(depositStatusEvaluator.isTerminal(DepositStatus.SUBMITTED));
+        assertFalse(depositStatusEvaluator.isTerminal(null));
     }
 
-    @Test
-    public void testNullStatus() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            underTest.isTerminal(null);
-        });
-    }
 }
