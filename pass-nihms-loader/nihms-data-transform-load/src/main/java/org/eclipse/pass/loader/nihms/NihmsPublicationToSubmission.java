@@ -323,13 +323,10 @@ public class NihmsPublicationToSubmission {
             List<Submission> submissions = clientService.findSubmissionsByPublicationAndUserId(publicationId,
                                                                                                grant.getPi().getId());
 
-            if (!CollectionUtils.isEmpty(submissions)) {
+            if (CollectionUtils.isNotEmpty(submissions)) {
                 // is there already a nihms submission in the system for this publication? if so add to it instead of
                 // making a new one
-                List<Submission> nihmsSubmissions = submissions.stream()
-                                                               .filter(s -> s.getRepositories()
-                                                                             .contains(nihmsRepositoryId))
-                                                               .collect(Collectors.toList());
+                List<Submission> nihmsSubmissions = clientService.findNihmsSubmissions();
 
                 if (nihmsSubmissions.size() == 1) {
                     submission = nihmsSubmissions.get(0);

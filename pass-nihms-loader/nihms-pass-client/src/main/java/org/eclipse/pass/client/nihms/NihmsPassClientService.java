@@ -18,9 +18,7 @@ package org.eclipse.pass.client.nihms;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -322,9 +320,9 @@ public class NihmsPassClientService {
             throw new RuntimeException("userId cannot be null when searching for existing Submissions");
         }
 
-        String userIdPubIdKey = userIdPubIdKey(userId, pubId);
+        //String userIdPubIdKey = userIdPubIdKey(userId, pubId);
 
-        Set<String> subIds = new HashSet<>();
+        //Set<String> subIds = new HashSet<>();
         String subFilter = RSQL.and(
                 RSQL.equals(PUBLICATION_FLD, pubId),
                 RSQL.equals(SUBMITTER_FLD, userId));
@@ -333,7 +331,7 @@ public class NihmsPassClientService {
         PassClientResult<Submission> subResult = passClient.selectObjects(subSelector);
         List<Submission> submissions = subResult.getObjects();
 
-        for (Submission submission : submissions) {
+        /*for (Submission submission : submissions) {
             subIds.add(submission.getId());
         }
 
@@ -341,15 +339,12 @@ public class NihmsPassClientService {
         Set<String> cachedIds = userPubSubsCache.get(userIdPubIdKey);
 
         if (cachedIds != null) {
-            //merge the two sets of URIs to make sure we have all of them
+            //merge the two sets of IDs to make sure we have all of them
             subIds.addAll(cachedIds);
-            //add the cached ids to the list of submissions to be returned
-            for (String id : cachedIds) {
-                submissions.add(passClient.getObject(Submission.class, id));
-            }
         }
+
         //update the cache with all of the submission IDs
-        userPubSubsCache.put(userIdPubIdKey, subIds);
+        userPubSubsCache.put(userIdPubIdKey, subIds);*/
 
         return submissions;
     }
@@ -448,6 +443,17 @@ public class NihmsPassClientService {
     }
 
     /**
+     * Find all Submissions that are associated with the NIHMS repository
+     */
+    public List<Submission> findNihmsSubmissions() throws IOException {
+        PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
+        subSelector.setFilter(RSQL.equals("repositories.id", nihmsRepoId));
+        subSelector.setInclude("repositories");
+
+        return passClient.streamObjects(subSelector).toList();
+    }
+
+    /**
      * Retrieve full grant record from database
      *
      * @param grantId the grant id
@@ -530,7 +536,6 @@ public class NihmsPassClientService {
             throw new RuntimeException(ERR_CREATE_PUBLICATION);
         }
 
-        //URI publicationId = passClient.createResource(publication);
         passClient.createObject(publication);
         LOG.info("New Publication created with ID {} and PMID {}", publication.getId(), publication.getPmid());
         //add to local cache for faster lookup
