@@ -70,7 +70,7 @@ public abstract class NihmsSubmissionEtlITBase {
 
     protected final SubmissionStatusService statusService = new SubmissionStatusService(passClient);
 
-    protected final NihmsPassClientService nihmsPassClientService = new NihmsPassClientService(passClient);
+    protected NihmsPassClientService nihmsPassClientService;
 
     protected static String path = Objects.requireNonNull(TransformAndLoadSmokeIT.class.getClassLoader()
             .getResource("data")).getPath();
@@ -98,6 +98,9 @@ public abstract class NihmsSubmissionEtlITBase {
         System.setProperty("nihmsetl.loader.cachepath", cachepath);
         completedPubsCache = CompletedPublicationsCache.getInstance();
         initiateNihmsRepoCopy();
+        // need to init the nihmsPassClientService after the nihmsRepoCopy is initialized,
+        // as the nihmsRepoId needs to be set in the ConfigUtil
+        nihmsPassClientService = new NihmsPassClientService(passClient);
     }
 
     @AfterEach
@@ -121,28 +124,28 @@ public abstract class NihmsSubmissionEtlITBase {
         repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
         for (RepositoryCopy repoCopy : passClient.selectObjects(repoCopySelector).getObjects()) {
             passClient.deleteObject(repoCopy);
-            assertNull(passClient.getObject(Submission.class, repoCopy.getId()));
+            assertNull(passClient.getObject(RepositoryCopy.class, repoCopy.getId()));
         }
 
         PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
         depoSelector.setFilter(RSQL.equals("id", "-1"));
         for (Deposit deposit : passClient.selectObjects(depoSelector).getObjects()) {
             passClient.deleteObject(deposit);
-            assertNull(passClient.getObject(Submission.class, deposit.getId()));
+            assertNull(passClient.getObject(Deposit.class, deposit.getId()));
         }
 
         PassClientSelector<Repository> repoSelector = new PassClientSelector<>(Repository.class);
         repoSelector.setFilter(RSQL.equals("id", "-1"));
         for (Repository repo : passClient.selectObjects(repoSelector).getObjects()) {
             passClient.deleteObject(repo);
-            assertNull(passClient.getObject(Submission.class, repo.getId()));
+            assertNull(passClient.getObject(Repository.class, repo.getId()));
         }
 
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         pubSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Publication publication : passClient.selectObjects(pubSelector).getObjects()) {
             passClient.deleteObject(publication);
-            assertNull(passClient.getObject(Submission.class, publication.getId()));
+            assertNull(passClient.getObject(Publication.class, publication.getId()));
         }
     }
 
@@ -221,8 +224,8 @@ public abstract class NihmsSubmissionEtlITBase {
         Repository nihmsRepo = new Repository();
         nihmsRepo.setName("NIHMS");
         nihmsRepo.setRepositoryKey("nihms");
-        nihmsRepo.setId(ConfigUtil.getNihmsRepositoryId());
         passClient.createObject(nihmsRepo);
+        ConfigUtil.setNihmsRepositoryId(nihmsRepo.getId());
     }
 
 }

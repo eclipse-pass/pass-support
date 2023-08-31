@@ -320,31 +320,14 @@ public class NihmsPassClientService {
             throw new RuntimeException("userId cannot be null when searching for existing Submissions");
         }
 
-        //String userIdPubIdKey = userIdPubIdKey(userId, pubId);
-
-        //Set<String> subIds = new HashSet<>();
         String subFilter = RSQL.and(
                 RSQL.equals(PUBLICATION_FLD, pubId),
                 RSQL.equals(SUBMITTER_FLD, userId));
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         subSelector.setFilter(subFilter);
+        subSelector.setInclude("publication", "repositories", "submitter", "grants");
         PassClientResult<Submission> subResult = passClient.selectObjects(subSelector);
         List<Submission> submissions = subResult.getObjects();
-
-        /*for (Submission submission : submissions) {
-            subIds.add(submission.getId());
-        }
-
-        //in addition we will check the cache to see if it has any other Submissions that the indexer didn't detect
-        Set<String> cachedIds = userPubSubsCache.get(userIdPubIdKey);
-
-        if (cachedIds != null) {
-            //merge the two sets of IDs to make sure we have all of them
-            subIds.addAll(cachedIds);
-        }
-
-        //update the cache with all of the submission IDs
-        userPubSubsCache.put(userIdPubIdKey, subIds);*/
 
         return submissions;
     }
@@ -449,7 +432,6 @@ public class NihmsPassClientService {
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         subSelector.setFilter(RSQL.equals("repositories.id", nihmsRepoId));
         subSelector.setInclude("repositories");
-
         return passClient.streamObjects(subSelector).toList();
     }
 
@@ -530,7 +512,6 @@ public class NihmsPassClientService {
      * @throws IOException if there is an error creating the publication
      */
     public String createPublication(Publication publication) throws IOException {
-
         // Publication resource must have either a PMID or a DOI
         if (publication.getPmid() == null && publication.getDoi() == null) {
             throw new RuntimeException(ERR_CREATE_PUBLICATION);
