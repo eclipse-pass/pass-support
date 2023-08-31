@@ -15,6 +15,8 @@
  */
 package org.eclipse.pass.deposit.status;
 
+import java.util.Objects;
+
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.springframework.stereotype.Component;
 
@@ -31,25 +33,20 @@ public class DepositStatusEvaluator implements StatusEvaluator<DepositStatus> {
 
     /**
      * Determine if {@code status} is in a <em>terminal</em> state, {@link DepositStatus#ACCEPTED} or
-     * {@link DepositStatus#REJECTED}
+     * {@link DepositStatus#REJECTED}.  A null status is not Terminal.
      *
      * @param status the status the PASS {@code DepositStatus}
      * @return {@code true} if the status is terminal
-     * @throws IllegalArgumentException if {@code status} is {@code null}
      */
     @Override
     public boolean isTerminal(DepositStatus status) {
-        if (status == null) {
-            throw new IllegalArgumentException("Deposit status must not be null.");
+        if (Objects.isNull(status)) {
+            return false;
         }
-
-        switch (status) {
-            case ACCEPTED:
-            case REJECTED:
-                return true;
-            default:
-                return false;
-        }
+        return switch (status) {
+            case ACCEPTED, REJECTED -> true;
+            default -> false;
+        };
     }
 
 }

@@ -139,6 +139,7 @@ public class DepositTaskHelper {
             WORKERS_LOGGER.debug("Submitting task ({}@{}) for tuple [{}, {}, {}]",
                                  depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
                                  submission.getId(), repo.getId(), deposit.getId());
+
             depositTask.executeDeposit();
         } catch (Exception e) {
             // For example, if the task isn't accepted by the taskExecutor
