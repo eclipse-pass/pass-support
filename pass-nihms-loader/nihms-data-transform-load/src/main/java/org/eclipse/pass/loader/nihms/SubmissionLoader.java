@@ -119,5 +119,4 @@ public class SubmissionLoader {
             statusService.calculateAndUpdateSubmissionStatus(submission.getId());
         }
     }
-
 }
