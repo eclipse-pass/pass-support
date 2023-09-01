@@ -23,8 +23,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
-import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
-import org.eclipse.pass.deposit.status.SubmissionStatusEvaluator;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -41,19 +39,13 @@ public class DepositProcessor implements Consumer<Deposit> {
     static final String SUBMISSION_REL = "submission.id";
     private static final Logger LOG = LoggerFactory.getLogger(DepositProcessor.class);
 
-    private final DepositStatusEvaluator depositStatusEvaluator;
-    private final SubmissionStatusEvaluator submissionStatusEvaluator;
     private final CriticalRepositoryInteraction cri;
     private final PassClient passClient;
     private final DepositTaskHelper depositHelper;
 
-    public DepositProcessor(DepositStatusEvaluator depositStatusEvaluator,
-                            SubmissionStatusEvaluator submissionStatusEvaluator,
-                            CriticalRepositoryInteraction cri,
+    public DepositProcessor(CriticalRepositoryInteraction cri,
                             PassClient passClient,
                             DepositTaskHelper depositHelper) {
-        this.depositStatusEvaluator = depositStatusEvaluator;
-        this.submissionStatusEvaluator = submissionStatusEvaluator;
         this.cri = cri;
         this.passClient = passClient;
         this.depositHelper = depositHelper;
@@ -62,12 +54,12 @@ public class DepositProcessor implements Consumer<Deposit> {
     @Override
     public void accept(Deposit deposit) {
 
-        if (depositStatusEvaluator.isTerminal(deposit.getDepositStatus())) {
+        if (DepositStatus.isTerminalStatus(deposit.getDepositStatus())) {
             // terminal Deposit status, so update its Submission aggregate deposit status.
             cri.performCritical(deposit.getSubmission().getId(), Submission.class,
-                                DepositProcessorCriFunc.precondition(submissionStatusEvaluator),
+                                DepositProcessorCriFunc.precondition(),
                                 DepositProcessorCriFunc.postcondition(),
-                                DepositProcessorCriFunc.critical(passClient, depositStatusEvaluator));
+                                DepositProcessorCriFunc.critical(passClient));
         } else {
             // intermediate status, process the Deposit depositStatusRef
 
@@ -89,12 +81,11 @@ public class DepositProcessor implements Consumer<Deposit> {
          * practice, the Policy must accept Submissions with an intermediate deposit status, and reject those with a
          * terminal status.
          *
-         * @param submissionStatusEvaluator a Policy that accepts Submissions with an intermediate status, and rejects
-         *                                 those with a terminal status
          * @return the Predicate that applies the supplied policy to the Submission
          */
-        static Predicate<Submission> precondition(SubmissionStatusEvaluator submissionStatusEvaluator) {
-            return (criSubmission) -> !submissionStatusEvaluator.isTerminal(criSubmission.getAggregatedDepositStatus());
+        static Predicate<Submission> precondition() {
+            return (criSubmission) ->
+                !AggregatedDepositStatus.isTerminalStatus(criSubmission.getAggregatedDepositStatus());
         }
 
         /**
@@ -123,12 +114,10 @@ public class DepositProcessor implements Consumer<Deposit> {
          * AggregatedDepositStatus is updated to REJECTED.
          * </p>
          *
-         * @param passClient           used to query the PASS repository for resources
-         * @param depositStatusEvaluator accepts DepositStatuses in a terminal state.
+         * @param passClient           used to query the PASS repository for resource
          * @return the critical function that may modify the Submission.AggregatedDepositStatus based on its Deposits
          */
-        static Function<Submission, Submission> critical(PassClient passClient,
-                                                        DepositStatusEvaluator depositStatusEvaluator) {
+        static Function<Submission, Submission> critical(PassClient passClient) {
             return (criSubmission) -> {
                 PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
                 sel.setFilter(RSQL.equals(SUBMISSION_REL,  criSubmission.getId()));
@@ -149,7 +138,7 @@ public class DepositProcessor implements Consumer<Deposit> {
                 // the submission
                 if (deposits.stream()
                             .allMatch((criDeposit) ->
-                                depositStatusEvaluator.isTerminal(criDeposit.getDepositStatus()))) {
+                                DepositStatus.isTerminalStatus(criDeposit.getDepositStatus()))) {
 
                     if (deposits.stream()
                                 .allMatch((criDeposit) -> DepositStatus.ACCEPTED == criDeposit.getDepositStatus())) {

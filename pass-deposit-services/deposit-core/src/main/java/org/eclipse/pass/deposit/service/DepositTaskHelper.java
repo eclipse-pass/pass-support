@@ -35,7 +35,6 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.status.DepositStatusProcessor;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -79,7 +78,6 @@ public class DepositTaskHelper {
     private static final String ERR_UPDATE_REPOCOPY = "Failed to create or update RepositoryCopy '%s' for %s";
 
     private final PassClient passClient;
-    private final DepositStatusEvaluator depositStatusEvaluator;
     private final CriticalRepositoryInteraction cri;
 
     @Value("${pass.deposit.transport.swordv2.sleep-time-ms}")
@@ -95,11 +93,9 @@ public class DepositTaskHelper {
 
     @Autowired
     public DepositTaskHelper(PassClient passClient,
-                             DepositStatusEvaluator depositStatusEvaluator,
                              CriticalRepositoryInteraction cri,
                              Repositories repositories) {
         this.passClient = passClient;
-        this.depositStatusEvaluator = depositStatusEvaluator;
         this.cri = cri;
         this.repositories = repositories;
     }
@@ -131,7 +127,7 @@ public class DepositTaskHelper {
         try {
             DepositUtil.DepositWorkerContext dc = DepositUtil.toDepositWorkerContext(
                 deposit, submission, depositSubmission, repo, packager);
-            DepositTask depositTask = new DepositTask(dc, passClient, depositStatusEvaluator, cri);
+            DepositTask depositTask = new DepositTask(dc, passClient, cri);
             depositTask.setSwordSleepTimeMs(swordDepositSleepTimeMs);
             depositTask.setPrefixToMatch(statementUriPrefix);
             depositTask.setReplacementPrefix(statementUriReplacement);
@@ -152,8 +148,7 @@ public class DepositTaskHelper {
     public void processDepositStatus(String depositId) {
 
         CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositId, Deposit.class,
-                                                                         DepositStatusCriFunc.precondition(
-                                                                             depositStatusEvaluator),
+                                                                         DepositStatusCriFunc.precondition(),
                                                                          DepositStatusCriFunc.postcondition(),
                                                                          DepositStatusCriFunc.critical(repositories,
                                                                                                        passClient));
@@ -203,9 +198,9 @@ public class DepositTaskHelper {
          *     <li>Deposit must have a RepositoryCopy, even if it is just a placeholder</li>
          * </ul>
          */
-        static Predicate<Deposit> precondition(DepositStatusEvaluator depositStatusEvaluator) {
+        static Predicate<Deposit> precondition() {
             return (deposit) -> {
-                if (depositStatusEvaluator.isTerminal(deposit.getDepositStatus())) {
+                if (DepositStatus.isTerminalStatus(deposit.getDepositStatus())) {
                     LOG.debug(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
                               deposit.getId(), deposit.getDepositStatus());
                     return false;
