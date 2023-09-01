@@ -17,6 +17,7 @@ package org.eclipse.pass.support.client.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Possible deposit statuses. Note that some repositories may not go through every status.
@@ -25,21 +26,21 @@ public enum DepositStatus {
     /**
      * PASS has sent a package to the target Repository and is waiting for an update on the status
      */
-    SUBMITTED("submitted"),
+    SUBMITTED("submitted", false),
     /**
      * The target Repository has accepted the files into the repository. More steps may be performed by the
      * Repository, but the
      * requirements of the Deposit have been satisfied
      */
-    ACCEPTED("accepted"),
+    ACCEPTED("accepted", true),
     /**
      * The target Repository has rejected the Deposit
      */
-    REJECTED("rejected"),
+    REJECTED("rejected", true),
     /**
      * A failure occurred performing the deposit; it may be re-tried later.
      */
-    FAILED("failed");
+    FAILED("failed", false);
 
     private static final Map<String, DepositStatus> map = new HashMap<>(values().length, 1);
 
@@ -50,9 +51,11 @@ public enum DepositStatus {
     }
 
     private final String value;
+    private final boolean terminal;
 
-    DepositStatus(String value) {
+    DepositStatus(String value, boolean terminal) {
         this.value = value;
+        this.terminal = terminal;
     }
 
     /**
@@ -70,9 +73,28 @@ public enum DepositStatus {
     }
 
     /**
+     * Returns if {@code depositStatus} is in a <em>terminal</em> state.
+     * A null status is not Terminal.
+     *
+     * @param depositStatus the status the PASS {@code DepositStatus}
+     * @return {@code true} if the status is terminal
+     */
+    public static boolean isTerminalStatus(DepositStatus depositStatus) {
+        return Objects.nonNull(depositStatus) && depositStatus.terminal;
+    }
+
+    /**
      * @return public value
      */
     public String getValue() {
         return value;
+    }
+
+    /**
+     * Returns if enum value is terminal.
+     * @return true if terminal
+     */
+    public boolean isTerminal() {
+        return terminal;
     }
 }

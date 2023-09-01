@@ -17,6 +17,7 @@ package org.eclipse.pass.support.client.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Possible aggregatedDepositStatus of a submission, this is dependent on information from the server and
@@ -26,28 +27,28 @@ public enum AggregatedDepositStatus {
     /**
      * No Deposits have been initiated for the Submission
      */
-    NOT_STARTED("not-started"),
+    NOT_STARTED("not-started", false),
 
     /**
      * One or more Deposits for the Submission have been initiated, and at least one
      * has not reached the status of "accepted"
      */
-    IN_PROGRESS("in-progress"),
+    IN_PROGRESS("in-progress", false),
 
     /**
      * One or more Deposits for the Submission has a status of "failed"
      */
-    FAILED("failed"),
+    FAILED("failed", false),
 
     /**
      * All related Deposits have a status of "accepted"
      */
-    ACCEPTED("accepted"),
+    ACCEPTED("accepted", true),
 
     /**
      * One or more Deposits for the Submission has a status of "rejected"
      */
-    REJECTED("rejected");
+    REJECTED("rejected", true);
 
     private static final Map<String, AggregatedDepositStatus> map = new HashMap<>(values().length, 1);
 
@@ -57,10 +58,12 @@ public enum AggregatedDepositStatus {
         }
     }
 
-    private String value;
+    private final String value;
+    private final boolean terminal;
 
-    private AggregatedDepositStatus(String value) {
+    AggregatedDepositStatus(String value, boolean terminal) {
         this.value = value;
+        this.terminal = terminal;
     }
 
     /**
@@ -78,9 +81,28 @@ public enum AggregatedDepositStatus {
     }
 
     /**
+     * Returns if {@code aggregatedDepositStatus} is in a <em>terminal</em> state.
+     * A null status is not Terminal.
+     *
+     * @param aggregatedDepositStatus the status the PASS {@code DepositStatus}
+     * @return {@code true} if the status is terminal
+     */
+    public static boolean isTerminalStatus(AggregatedDepositStatus aggregatedDepositStatus) {
+        return Objects.nonNull(aggregatedDepositStatus) && aggregatedDepositStatus.terminal;
+    }
+
+    /**
      * @return public value
      */
     public String getValue() {
         return value;
+    }
+
+    /**
+     * Returns if enum value is terminal.
+     * @return true if terminal
+     */
+    public boolean isTerminal() {
+        return terminal;
     }
 }

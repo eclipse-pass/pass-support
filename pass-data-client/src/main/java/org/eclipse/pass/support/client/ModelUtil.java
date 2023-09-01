@@ -68,7 +68,8 @@ public class ModelUtil {
      *  4) Leading zeros in the first set of the string: 000A01 BC123456
      *  5) Leading zeros following by a hyphen: 000-A01 BC123456
      *  5) Application type that has a leading number 1-9: 1A01 BC123456
-     * @param awardNumber
+     * @param awardNumber the award number
+     * @param rsqlFieldName the rsql field name
      * @return RSQL
      */
     public static String createAwardNumberQuery(String awardNumber, String rsqlFieldName) {
