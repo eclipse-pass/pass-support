@@ -35,7 +35,6 @@ import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.cri.CriticalPath;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
@@ -59,7 +58,6 @@ public class DepositTaskTest {
 
     private DepositUtil.DepositWorkerContext dc;
     private PassClient passClient;
-    private DepositStatusEvaluator depositStatusEvaluator;
     private DepositTask depositTask;
 
     @BeforeEach
@@ -68,15 +66,13 @@ public class DepositTaskTest {
         DepositUtil.DepositWorkerContext dwc = new DepositUtil.DepositWorkerContext();
         dc = Mockito.spy(dwc);
         passClient = mock(PassClient.class);
-        depositStatusEvaluator = mock(DepositStatusEvaluator.class);
         CriticalRepositoryInteraction cri = new CriticalPath(passClient);
-        depositTask = new DepositTask(dc, passClient, depositStatusEvaluator, cri);
+        depositTask = new DepositTask(dc, passClient, cri);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void j10sStatementUrlHack() throws Exception {
-        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         String prefix = "http://moo";
         String replacement = "http://foo";
 
@@ -104,7 +100,6 @@ public class DepositTaskTest {
 
     @Test
     public void j10sStatementUrlHackWithNullValues() throws Exception {
-        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         String prefix = "http://moo";
         String replacement = null;
 
@@ -132,7 +127,6 @@ public class DepositTaskTest {
 
     @Test
     public void j10sStatementUrlHackWithNonMatchingValues() throws Exception {
-        when(depositStatusEvaluator.isTerminal(any())).thenReturn(false);
         String href = "http://baz";
         String prefix = "http://moo";
         String replacement = "http://foo";

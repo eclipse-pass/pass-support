@@ -53,7 +53,6 @@ import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.model.Registry;
-import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -80,12 +79,10 @@ public class SubmissionProcessorTest {
         passClient = mock(PassClient.class);
         depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         packagerRegistry = mock(Registry.class);
-        DepositStatusEvaluator depositStatusEvaluator = mock(DepositStatusEvaluator.class);
         cri = mock(CriticalRepositoryInteraction.class);
         Repositories repositories = mock(Repositories.class);
         DepositServiceErrorHandler depositServiceErrorHandler = mock(DepositServiceErrorHandler.class);
-        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, depositStatusEvaluator, cri,
-            repositories);
+        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, cri, repositories);
         submissionProcessor =
             new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry,
                 depositTaskHelper, cri, depositServiceErrorHandler);

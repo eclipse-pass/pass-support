@@ -26,8 +26,6 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
-import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
-import org.eclipse.pass.deposit.status.SubmissionStatusEvaluator;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -52,8 +50,6 @@ public class DepositUtil {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
     private static final String UTC = "UTC";
     static final String UNKNOWN_DATETIME = "UNKNOWN";
-    private static final DepositStatusEvaluator DEPOSIT_STATUS_EVALUATOR = new DepositStatusEvaluator();
-    private static final SubmissionStatusEvaluator SUBMISSION_STATUS_EVALUATOR = new SubmissionStatusEvaluator();
 
     /**
      * Parses a timestamp into a formatted date and time string.
@@ -160,7 +156,7 @@ public class DepositUtil {
     public static boolean markSubmissionFailed(String submissionId, CriticalRepositoryInteraction cri) {
         CriticalResult<Submission, Submission> updateResult = cri.performCritical(
                 submissionId, Submission.class,
-                (submission) -> !SUBMISSION_STATUS_EVALUATOR.isTerminal(submission.getAggregatedDepositStatus()),
+                (submission) -> !AggregatedDepositStatus.isTerminalStatus(submission.getAggregatedDepositStatus()),
                 (submission) -> submission.getAggregatedDepositStatus() == AggregatedDepositStatus.FAILED,
                 (submission) -> {
                     submission.setAggregatedDepositStatus(AggregatedDepositStatus.FAILED);
@@ -196,7 +192,7 @@ public class DepositUtil {
     public static boolean markDepositFailed(String depositId, CriticalRepositoryInteraction cri) {
         CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(
                 depositId, Deposit.class,
-                (deposit) -> !DEPOSIT_STATUS_EVALUATOR.isTerminal(deposit.getDepositStatus()),
+                (deposit) -> !DepositStatus.isTerminalStatus(deposit.getDepositStatus()),
                 (deposit) -> deposit.getDepositStatus() == DepositStatus.FAILED,
                 (deposit) -> {
                     deposit.setDepositStatus(DepositStatus.FAILED);

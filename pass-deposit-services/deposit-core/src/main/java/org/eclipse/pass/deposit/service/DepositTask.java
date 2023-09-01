@@ -35,7 +35,6 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
-import org.eclipse.pass.deposit.status.DepositStatusEvaluator;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
@@ -71,7 +70,6 @@ public class DepositTask {
 
     private final DepositWorkerContext dc;
     private final PassClient passClient;
-    private final DepositStatusEvaluator depositStatusEvaluator;
     private final CriticalRepositoryInteraction cri;
 
     private long swordSleepTimeMs = 10000;
@@ -84,11 +82,9 @@ public class DepositTask {
 
     public DepositTask(DepositWorkerContext dc,
                        PassClient passClient,
-                       DepositStatusEvaluator depositStatusEvaluator,
                        CriticalRepositoryInteraction cri) {
         this.dc = dc;
         this.passClient = passClient;
-        this.depositStatusEvaluator = depositStatusEvaluator;
         this.cri = cri;
     }
 
@@ -102,7 +98,7 @@ public class DepositTask {
                 /*
                  * Only "intermediate" deposits can be processed by {@code DepositTask}
                  */
-                                DepositTaskCriFunc.depositPrecondition(depositStatusEvaluator),
+                                DepositTaskCriFunc.depositPrecondition(),
 
                 /*
                  * Determines *physical* success of the Deposit: were the bytes of the package successfully received?
@@ -390,12 +386,11 @@ public class DepositTask {
          * is meant to determine whether or not the status of the Deposit is intermediate, or terminal.  If the Deposit
          * status is terminal, the pre-condition should not be met, and the critical function should not be executed.
          *
-         * @param depositStatusEvaluator
          * @return
          */
-        static Predicate<Deposit> depositPrecondition(DepositStatusEvaluator depositStatusEvaluator) {
+        static Predicate<Deposit> depositPrecondition() {
             return (deposit) -> {
-                boolean accept = !depositStatusEvaluator.isTerminal(deposit.getDepositStatus());
+                boolean accept = !DepositStatus.isTerminalStatus(deposit.getDepositStatus());
                 if (!accept) {
                     LOG.debug("Precondition failed for {}: Deposit must have an intermediate deposit status",
                               deposit.getId());
