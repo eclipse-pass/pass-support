@@ -243,7 +243,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         /**
          * Answers a Predicate that will accept the Submission for processing if it is accepted.
          *
-         * @return a Predicate that invokes the submission policy
+         * @return a Predicate that invokes the precondition
          */
         static Predicate<Submission> preCondition() {
             return CriFunc::isSubmittedByUser;

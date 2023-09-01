@@ -102,7 +102,7 @@ public class SubmissionProcessorTest {
      * The issue with this test is that it doesn't test the CRI in SubmissionProcessor that updates the status of the
      * incoming Submission to "IN-PROGRESS".  The CRI is completely mocked and so:
      * <ul>
-     *     <li>CRI precondition that uses the SubmissionPolicy is untested</li>
+     *     <li>CRI precondition is not tested</li>
      *     <li>CRI postcondition is not tested</li>
      *     <li>The critical update that builds the DepositSubmission and sets the Submission aggregated deposit
      *         status is not tested</li>

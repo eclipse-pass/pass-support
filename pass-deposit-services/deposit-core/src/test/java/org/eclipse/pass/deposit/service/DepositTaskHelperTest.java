@@ -97,7 +97,6 @@ public class DepositTaskHelperTest {
         String repoCopyId = randomId();
 
         when(deposit.getDepositStatus()).thenReturn(
-            // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(deposit.getDepositStatusRef()).thenReturn(randomId());
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
@@ -129,7 +128,6 @@ public class DepositTaskHelperTest {
     @Test
     public void depositCriFuncPreconditionFailDepositStatusRef() {
         when(deposit.getDepositStatus()).thenReturn(
-            // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
 
         // don't need any other mocking, because null is returned by default for the status uri
@@ -152,9 +150,8 @@ public class DepositTaskHelperTest {
     public void depositCriFuncPreconditionFailRepository() {
         String statusRef = randomId();
         when(deposit.getDepositStatus()).thenReturn(
-            // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
-        when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
+        when(deposit.getDepositStatusRef()).thenReturn(statusRef);
 
         assertFalse(DepositStatusCriFunc.precondition().test(deposit));
 
@@ -180,7 +177,6 @@ public class DepositTaskHelperTest {
         String statusRef = randomId();
         String repoKey = randomId();
         when(deposit.getDepositStatus()).thenReturn(
-            // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef);
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
@@ -213,7 +209,6 @@ public class DepositTaskHelperTest {
         String statusRef = randomId();
         String repoKey = randomId();
         when(deposit.getDepositStatus()).thenReturn(
-            // this doesn't really matter since the status policy is mocked to always return true
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));

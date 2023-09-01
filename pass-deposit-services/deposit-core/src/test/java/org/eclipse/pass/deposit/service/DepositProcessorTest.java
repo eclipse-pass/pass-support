@@ -67,7 +67,7 @@ public class DepositProcessorTest {
     }
 
     @Test
-    public void criFuncPreconditionFailStatusPolicy() {
+    public void criFuncPreconditionFailStatus() {
         when(submission.getAggregatedDepositStatus()).thenReturn(randomTerminalAggregatedDepositStatus.get());
 
         assertFalse(DepositProcessorCriFunc.precondition().test(submission));

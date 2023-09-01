@@ -115,7 +115,7 @@ After the `CriticalPath` executes, its `CriticalResult` can be examined for succ
                  * Pre-condition: only "dirty" deposits can be processed by {@code DepositTask}
                  */
                 (deposit) -> {
-                    boolean accept = dirtyDepositPolicy.accept(deposit.getDepositStatus());
+                    boolean accept = DepositStatus.isTerminalStatus(deposit.getDepositStatus());
                     if (!accept) {
                         LOG.debug(">>>> Update precondition failed for {}", deposit.getId());
                     }

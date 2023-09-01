@@ -63,7 +63,7 @@ import org.eclipse.pass.support.client.model.PassEntity;
  *  critical.performCritical(submission.getId(), Submission.class,
  *      // pre-condition which is supplied the resource retrieved from submission.getId()
  *      (submission) -&gt; {
- *          return submissionPolicy.accept(submission);
+ *          return !AggregatedDepositStatus.isTerminalStatus(submission.getAggregatedDepositStatus());
  *      },
  *      // post-condition which is supplied the resource resulting from updating the repository with the modified
  *      // resource resulting from the critical path; that is to say, critical path executes, a round trip to the

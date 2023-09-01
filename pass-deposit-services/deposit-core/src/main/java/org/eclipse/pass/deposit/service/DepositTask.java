@@ -382,11 +382,11 @@ public class DepositTask {
     static class DepositTaskCriFunc {
 
         /**
-         * Answers a {@code Predicate} that applies the {@code Policy} to the {@code Deposit.depositStatus}.  The policy
-         * is meant to determine whether or not the status of the Deposit is intermediate, or terminal.  If the Deposit
+         * Answers a {@code Predicate} that checks the {@code Deposit.depositStatus}.  It is meant to determine
+         * whether the status of the Deposit is intermediate, or terminal.  If the Deposit
          * status is terminal, the pre-condition should not be met, and the critical function should not be executed.
          *
-         * @return
+         * @return the predicate with the precondition
          */
         static Predicate<Deposit> depositPrecondition() {
             return (deposit) -> {
