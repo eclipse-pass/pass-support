@@ -18,7 +18,6 @@ package org.eclipse.pass.loader.nihms;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -133,7 +132,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //now retrieve repositoryCopy
         repoCopySelector.setFilter(RSQL.equals("publication.id", pubId));
-        repoCopyId = passClient.streamObjects(repoCopySelector).findFirst().orElseThrow().getId();
+        repoCopyId = passClient.streamObjects(repoCopySelector).findAny().orElseThrow().getId();
         assertNotNull(repoCopyId);
 
         RepositoryCopy repoCopy = passClient.getObject(RepositoryCopy.class, repoCopyId);
@@ -189,12 +188,15 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //get the submission, should only be one from the test
         subSelector.setFilter(RSQL.equals("grants.id", grantId1));
-        submissionId = passClient.streamObjects(subSelector).findFirst().orElseThrow().getId();
+        List<Submission> submissionsTest = passClient.streamObjects(subSelector).toList();
+        assertEquals(1,submissionsTest.size());
+        submissionId = submissionsTest.get(0).getId();
         assertNotNull(submissionId);
 
         //we should have two submissions for this publication
-        subSelector.setFilter(RSQL.equals("publication.id", pubId));
-        List<Submission> submissions = passClient.streamObjects(subSelector).toList();
+        PassClientSelector<Submission> subTwoSel = new PassClientSelector<>(Submission.class);
+        subTwoSel.setFilter(RSQL.equals("publication.id", pubId));
+        List<Submission> submissions = passClient.streamObjects(subTwoSel).toList();
         assertEquals(2, submissions.size());
 
         Submission reloadedPreexistingSub = nihmsPassClientService.readSubmission(preexistingSub.getId());
@@ -268,15 +270,18 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //make sure we wait for RepositoryCopy, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
-        repoCopyId = passClient.streamObjects(repoCopySelector).findFirst().orElseThrow().getId();
+        List<RepositoryCopy> repoCopy = passClient.streamObjects(repoCopySelector).toList();
+        assertEquals(1, repoCopy.size());
+        repoCopyId = repoCopy.get(0).getId();
         assertNotNull(repoCopyId);
 
         Submission reloadedPreexistingSub = passClient.getObject(Submission.class, preexistingSub.getId());
         assertEquals(SubmissionStatus.COMPLETE, reloadedPreexistingSub.getSubmissionStatus());
 
         //we should have ONLY ONE submission for this pmid
-        subSelector.setFilter(RSQL.equals("publication.id", pubId));
-        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
+        PassClientSelector subOneSel = new PassClientSelector<>(Submission.class);
+        subOneSel.setFilter(RSQL.equals("publication.id", pubId));
+        assertEquals(1, passClient.streamObjects(subOneSel).toList().size());
 
         //we should have ONLY ONE publication for this pmid
         PassClientSelector<Publication> onePubSel = new PassClientSelector<>(Publication.class);
@@ -284,8 +289,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(1, passClient.streamObjects(onePubSel).toList().size());
 
         //we should have ONLY ONE repoCopy for this publication
-        repoCopySelector.setFilter(RSQL.equals("publication.id", pubId));
-        assertEquals(1, passClient.streamObjects(repoCopySelector).toList().size());
+        PassClientSelector<RepositoryCopy> oneRepoCopySel = new PassClientSelector<>(RepositoryCopy.class);
+        oneRepoCopySel.setFilter(RSQL.equals("publication.id", pubId));
+        assertEquals(1, passClient.streamObjects(oneRepoCopySel).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
@@ -349,8 +355,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(SubmissionStatus.COMPLETE, reloadedSub.getSubmissionStatus());
 
         //we should have ONLY ONE submission for this pmid
-        subSelector.setFilter(RSQL.equals("publication.id", pubId));
-        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
+        PassClientSelector<Submission> subSelOne = new PassClientSelector<>(Submission.class);
+        subSelOne.setFilter(RSQL.equals("publication.id", pubId));
+        assertEquals(1, passClient.streamObjects(subSelOne).toList().size());
 
         //we should have ONLY ONE publication for this pmid
         PassClientSelector<Publication> pubSelOne = new PassClientSelector<>(Publication.class);
@@ -373,10 +380,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Disabled
+    //@Disabled
     public void testCompliantPublicationExistingSubmissionAndDeposit() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
-        PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         User user = new User();
         passClient.createObject(user);
@@ -415,17 +421,20 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
                                                                                        mockPmidLookup, statusService);
         transformLoadService.transformAndLoadNihmsPub(pub);
 
-        //make sure we wait for submission, should only be one from the test
+        //make sure we wait for repoCopy, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
-        repoCopyId = passClient.streamObjects(repoCopySelector).findFirst().orElseThrow().getId();
+        List<RepositoryCopy> repoCopy = passClient.streamObjects(repoCopySelector).toList();
+        assertEquals(1, repoCopy.size());
+        repoCopyId = repoCopy.get(0).getId();
         assertNotNull(repoCopyId);
 
         Submission reloadedPreexistingSub = passClient.getObject(Submission.class, preexistingSub.getId());
         assertEquals(SubmissionStatus.COMPLETE, reloadedPreexistingSub.getSubmissionStatus());
 
         //we should have ONLY ONE submission for this pmid
-        subSelector.setFilter(RSQL.equals("publication.id", pubId));
-        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
+        PassClientSelector<Submission> subSelOne = new PassClientSelector<>(Submission.class);
+        subSelOne.setFilter(RSQL.equals("publication.id", pubId));
+        assertEquals(1, passClient.streamObjects(subSelOne).toList().size());
 
         //we should have ONLY ONE publication for this pmid
         PassClientSelector<Publication> pubSelOne = new PassClientSelector<>(Publication.class);
@@ -433,8 +442,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(1, passClient.streamObjects(pubSelOne).toList().size());
 
         //we should have ONLY ONE repoCopy for this publication
-        repoCopySelector.setFilter(RSQL.equals("publication.id", pubId));
-        assertEquals(1, passClient.streamObjects(repoCopySelector).toList().size());
+        PassClientSelector<RepositoryCopy> repoCopySelOne = new PassClientSelector<>(RepositoryCopy.class);
+        repoCopySelOne.setFilter(RSQL.equals("publication.id", pubId));
+        assertEquals(1, passClient.streamObjects(repoCopySelOne).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
@@ -443,7 +453,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         Deposit deposit = passClient.getObject(Deposit.class, preexistingDeposit.getId());
         assertEquals(DepositStatus.ACCEPTED, deposit.getDepositStatus());
         assertEquals(repoCopyId, deposit.getRepositoryCopy().getId());
-
     }
 
     /**
@@ -454,10 +463,9 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Disabled
+    //@Disabled
     public void testCompliantPublicationExistingSubmissionAndRepoCopy() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
-        PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         User user = new User();
         passClient.createObject(user);
@@ -465,9 +473,8 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertThrows(Exception.class, () -> {
-            passClient.streamObjects(pubSelector).findFirst().orElseThrow();
-        });
+        Optional<Publication> testPub = passClient.streamObjects(pubSelector).findAny();
+        assertFalse(testPub.isPresent());
 
         //create existing publication
         Publication publication = newPublication();
@@ -479,27 +486,17 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         nihmsPassClientService.createSubmission(preexistingSub);
 
         RepositoryCopy preexistingRepoCopy = new RepositoryCopy();
-        preexistingRepoCopy.setPublication(new Publication(pubId));
-        preexistingRepoCopy.setRepository(new Repository(ConfigUtil.getNihmsRepositoryId()));
+        Publication preexistingPub = new Publication();
+        passClient.createObject(preexistingPub);
+        preexistingRepoCopy.setPublication(preexistingPub);
+        preexistingRepoCopy.setRepository(getNihmsRepo());
         preexistingRepoCopy.setCopyStatus(CopyStatus.IN_PROGRESS);
         List<String> externalIds = new ArrayList<>();
         externalIds.add(nihmsId1);
         preexistingRepoCopy.setExternalIds(externalIds);
         passClient.createObject(preexistingRepoCopy);
 
-        //wait for pre-existing repoCopy to appear
-        attempt(RETRIES, () -> {
-            final String testId;
-            repoCopySelector.setFilter(RSQL.equals("@id", repoCopyId));
-            try {
-                testId = passClient.streamObjects(repoCopySelector).findFirst().orElseThrow().getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testId);
-        });
-
-        //now we have an existing publication and submission for same grant/repo... do transform/load to make sure we
+        // now we have an existing publication and submission for same grant/repo... do transform/load to make sure we
         // get a repocopy
         NihmsPublication pub = newCompliantNihmsPub();
         NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
@@ -507,28 +504,27 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         transformLoadService.transformAndLoadNihmsPub(pub);
 
         //wait for repoCopy to update
-        attempt(RETRIES, () -> {
-            final String testId;
-            repoCopySelector.setFilter(RSQL.equals("externalIds", pub.getPmcId()));
-            try {
-                testId = passClient.streamObjects(repoCopySelector).findFirst().orElseThrow().getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testId);
-        });
+        repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
+        List<RepositoryCopy> repoCopy = passClient.streamObjects(repoCopySelector).toList();
+        assertEquals(1, repoCopy.size());
+        repoCopyId = repoCopy.get(0).getId();
+        assertNotNull(repoCopyId);
 
         //we should have ONLY ONE submission for this pmid
-        subSelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.streamObjects(subSelector).toList().size());
+        PassClientSelector<Submission> subSelOne = new PassClientSelector<>(Submission.class);
+        //TODO : expected: <1> but was: <0>
+        subSelOne.setFilter(RSQL.equals("publication.id", preexistingPub.getId()));
+        assertEquals(1, passClient.streamObjects(subSelOne).toList().size());
 
         //we should have ONLY ONE publication for this pmid
-        pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertEquals(1, passClient.streamObjects(pubSelector).toList().size());
+        PassClientSelector<Publication> pubSelOne = new PassClientSelector<>(Publication.class);
+        pubSelOne.setFilter(RSQL.equals("pmid", pmid1));
+        assertEquals(1, passClient.streamObjects(pubSelOne).toList().size());
 
         //we should have ONLY ONE repoCopy for this publication
-        repoCopySelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.streamObjects(repoCopySelector).toList().size());
+        PassClientSelector<RepositoryCopy> repoCopySelOne = new PassClientSelector<>(RepositoryCopy.class);
+        repoCopySelOne.setFilter(RSQL.equals("publication.id", preexistingPub.getId()));
+        assertEquals(1, passClient.streamObjects(repoCopySelOne).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
@@ -641,5 +637,11 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(preexistingGrants.getAwardDate(), reloadedGrants.getAwardDate());
         assertEquals(preexistingGrants.getAwardStatus(), reloadedGrants.getAwardStatus());
         assertEquals(preexistingGrants.getLocalKey(), reloadedGrants.getLocalKey());
+    }
+
+    private Repository getNihmsRepo() throws IOException {
+        PassClientSelector<Repository> nihmsRepoSel = new PassClientSelector<>(Repository.class);
+        nihmsRepoSel.setFilter(RSQL.equals("id", ConfigUtil.getNihmsRepositoryId()));
+        return passClient.streamObjects(nihmsRepoSel).findFirst().orElseThrow();
     }
 }

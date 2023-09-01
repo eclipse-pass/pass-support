@@ -112,14 +112,16 @@ public abstract class NihmsSubmissionEtlITBase {
             Clean out all data from the following (note Grant IDs added in the createGrant() method as we
             don't want to delete preloaded data). Need to check that the objects were actually deleted
             otherwise this will cause issues with the next test run.
-            NOTE: these need to be run in this order bc of the FK constraints: Repository, Submission,
-            RepositoryCopy, Publication, Deposit
+            NOTE: these need to be run in this order due to the FK constraints: Deposit, Submission, RepositoryCopy,
+            Repository, Publication
         */
-        PassClientSelector<Repository> repoSelector = new PassClientSelector<>(Repository.class);
-        repoSelector.setFilter(RSQL.equals("id", "-1"));
-        for (Repository repo : passClient.selectObjects(repoSelector).getObjects()) {
-            passClient.deleteObject(repo);
-            assertNull(passClient.getObject(Repository.class, repo.getId()));
+
+        PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
+        depoSelector.setFilter(RSQL.notEquals("id", "-1"));
+        for (Deposit deposit : passClient.selectObjects(depoSelector).getObjects()) {
+            System.out.print("Deleting deposit " + deposit.getId() + "...");
+            passClient.deleteObject(deposit);
+            assertNull(passClient.getObject(Deposit.class, deposit.getId()));
         }
 
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -133,8 +135,17 @@ public abstract class NihmsSubmissionEtlITBase {
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
         for (RepositoryCopy repoCopy : passClient.selectObjects(repoCopySelector).getObjects()) {
+            System.out.print("Deleting repository copy " + repoCopy.getId() + "...");
             passClient.deleteObject(repoCopy);
             assertNull(passClient.getObject(RepositoryCopy.class, repoCopy.getId()));
+        }
+
+        PassClientSelector<Repository> repoSelector = new PassClientSelector<>(Repository.class);
+        repoSelector.setFilter(RSQL.notEquals("id", "-1"));
+        for (Repository repo : passClient.selectObjects(repoSelector).getObjects()) {
+            System.out.print("Deleting repository " + repo.getId() + "...");
+            passClient.deleteObject(repo);
+            assertNull(passClient.getObject(Repository.class, repo.getId()));
         }
 
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
@@ -143,13 +154,6 @@ public abstract class NihmsSubmissionEtlITBase {
             System.out.print("Deleting publication " + publication.getId() + "...");
             passClient.deleteObject(publication);
             assertNull(passClient.getObject(Publication.class, publication.getId()));
-        }
-
-        PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
-        depoSelector.setFilter(RSQL.equals("id", "-1"));
-        for (Deposit deposit : passClient.selectObjects(depoSelector).getObjects()) {
-            passClient.deleteObject(deposit);
-            assertNull(passClient.getObject(Deposit.class, deposit.getId()));
         }
     }
 
