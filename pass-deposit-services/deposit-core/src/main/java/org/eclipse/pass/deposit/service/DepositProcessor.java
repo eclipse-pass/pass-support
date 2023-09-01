@@ -77,11 +77,10 @@ public class DepositProcessor implements Consumer<Deposit> {
     static class DepositProcessorCriFunc {
 
         /**
-         * Answers a Predicate that accepts the Submission for processing if it satisfies the supplied Policy.  In
-         * practice, the Policy must accept Submissions with an intermediate deposit status, and reject those with a
-         * terminal status.
+         * Answers a Predicate that accepts the Submission for processing.  It must accept Submissions with an
+         * intermediate deposit status, and reject those with a terminal status.
          *
-         * @return the Predicate that applies the supplied policy to the Submission
+         * @return the Predicate that applies the precondition
          */
         static Predicate<Submission> precondition() {
             return (criSubmission) ->

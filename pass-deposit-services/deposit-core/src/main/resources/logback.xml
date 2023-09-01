@@ -50,15 +50,6 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
-  <!-- DEBUG level will show policy messages that refuse to process Submissions based on some attribute of the
-       *Submission*, TRACE level will show policy messages that refuse the JMS message for some lower-level reason:
-       e.g. the user-agent of the message, or the type of the Pass Core resource -->
-
-  <logger name="org.eclipse.pass.deposit.policy" additivity="false"
-          level="${org.eclipse.pass.deposit.policy.level:-INFO}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-
   <!-- DEBUG level will show FTP session opening and closing, TRACE will log more details of a session. -->
 
   <logger name="org.eclipse.pass.deposit.transport.ftp" additivity="false"
