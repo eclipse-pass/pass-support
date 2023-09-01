@@ -73,6 +73,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if test error
      */
     @Test
+    //@Disabled("Working, disabled while working on other tests")
     public void testNewCompliantPublication() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -152,6 +153,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if errors occurs
      */
     @Test
+    //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationNewConnectedGrant() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -234,6 +236,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if anything goes wrong
      */
     @Test
+    //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationExistingSubmission() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -262,10 +265,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
                                                                                        mockPmidLookup, statusService);
         transformLoadService.transformAndLoadNihmsPub(pub);
-
-        //Only 1 submission should exist???
-        List<Submission> subs2 = nihmsPassClientService.findSubmissionsByPublicationAndUserId(pubId,
-                preexistingSub.getSubmitter().getId());
 
         //make sure we wait for RepositoryCopy, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
@@ -302,6 +301,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
+    //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationExistingUnsubmittedSubmission() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -384,9 +384,8 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertThrows(Exception.class, () -> {
-            passClient.streamObjects(pubSelector).findFirst().orElseThrow();
-        });
+        Optional<Publication> testPub = passClient.streamObjects(pubSelector).findAny();
+        assertFalse(testPub.isPresent());
 
         //create existing publication
         Publication newExistingPub = newPublication();
@@ -397,12 +396,13 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
                 SubmissionStatus.COMPLETE);
         nihmsPassClientService.createSubmission(preexistingSub);
 
-        Repository repo = new Repository(ConfigUtil.getNihmsRepositoryId());
-        passClient.createObject(repo);
+        PassClientSelector<Repository> nihmsRepoSel = new PassClientSelector<>(Repository.class);
+        nihmsRepoSel.setFilter(RSQL.equals("id", ConfigUtil.getNihmsRepositoryId()));
+        Repository nihmsRepo = passClient.streamObjects(nihmsRepoSel).findAny().orElseThrow();
 
         Deposit preexistingDeposit = new Deposit();
         preexistingDeposit.setDepositStatus(DepositStatus.SUBMITTED);
-        preexistingDeposit.setRepository(repo);
+        preexistingDeposit.setRepository(nihmsRepo);
         preexistingDeposit.setSubmission(preexistingSub);
         passClient.createObject(preexistingDeposit);
 
@@ -413,7 +413,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         NihmsPublication pub = newCompliantNihmsPub();
         NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
                                                                                        mockPmidLookup, statusService);
-
         transformLoadService.transformAndLoadNihmsPub(pub);
 
         //make sure we wait for submission, should only be one from the test
