@@ -34,8 +34,6 @@ public class DepositUpdater {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositUpdater.class);
 
-    private static final String STATUS_ATTRIBUTE = "depositStatus";
-
     private final PassClient passClient;
     private final DepositTaskHelper depositHelper;
 
@@ -49,7 +47,7 @@ public class DepositUpdater {
         doUpdate(depositIdsToUpdate(passClient));
     }
 
-    void doUpdate(Collection<String> depositIds) {
+    private void doUpdate(Collection<String> depositIds) {
         depositIds.forEach(depositId -> {
             try {
                 depositHelper.processDepositStatus(depositId);
@@ -61,8 +59,7 @@ public class DepositUpdater {
 
     private static Collection<String> depositIdsToUpdate(PassClient passClient) throws IOException {
         PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
-        // TODO should FAILED be removed from this?
-        sel.setFilter(RSQL.in(STATUS_ATTRIBUTE, DepositStatus.FAILED.getValue(), DepositStatus.SUBMITTED.getValue()));
+        sel.setFilter(RSQL.equals("depositStatus", DepositStatus.SUBMITTED.getValue()));
 
         return passClient.streamObjects(sel).map(Deposit::getId).toList();
     }

@@ -63,13 +63,13 @@ public class FailedDepositRetry {
     }
 
     public void retryFailedDeposits() throws IOException {
-        Stream<Deposit> deposits = depositsToUpdate();
+        Stream<Deposit> deposits = depositsToRetry();
         deposits.forEach(deposit -> {
             try {
                 final Submission submission = deposit.getSubmission();
                 final Repository repository = deposit.getRepository();
 
-                final Packager packager = packagerRegistry.get(repository.getName());
+                final Packager packager = packagerRegistry.get(repository.getRepositoryKey());
                 if (Objects.isNull(packager)) {
                     LOG.warn(MISSING_PACKAGER, submission.getId(), repository.getId(), deposit.getId(),
                         repository.getName());
@@ -102,11 +102,10 @@ public class FailedDepositRetry {
         });
     }
 
-    private Stream<Deposit> depositsToUpdate() throws IOException {
+    private Stream<Deposit> depositsToRetry() throws IOException {
         PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
         // TODO see if filter by date, otherwise, need to check in forEach
-        // TODO filter so only FAILED and null status
-        sel.setFilter(RSQL.in("depositStatus", FAILED.getValue()));
+        sel.setFilter(RSQL.equals("depositStatus", FAILED.getValue()));
         sel.setInclude("submission", "repository");
         return passClient.streamObjects(sel);
     }
