@@ -21,10 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
@@ -42,7 +42,6 @@ import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -221,7 +220,6 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Disabled
     public void testAddingToExistingUnsubmittedSubmission() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -231,42 +229,39 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         User user2 = new User();
         passClient.createObject(user2);
 
-        String grantUri1 = createGrant(grant1, user1);
-        String grantUri2 = createGrant(grant2, user2);
+        String grantId1 = createGrant(grant1, user1);
+        String grantId2 = createGrant(grant2, user2);
 
         //we should start with no publication for this pmid
         pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertNull(passClient.selectObjects(pubSelector).getObjects().get(0).getId());
+        Optional<Publication> testPub = passClient.streamObjects(pubSelector).findAny();
+        assertFalse(testPub.isPresent());
 
         //create existing publication
         Publication publication = newPublication();
         passClient.createObject(publication);
 
         //a submission existed for the user/pub combo and is unsubmitted, but has a different grant/repo
-        Submission preexistingSub = newSubmission1(grantUri1, publication.getId(), user1, false,
+        Submission preexistingSub = newSubmission1(grantId1, publication.getId(), user1, false,
                 SubmissionStatus.MANUSCRIPT_REQUIRED);
         preexistingSub.setSubmitted(false);
         preexistingSub.setSource(Source.PASS);
         List<Grant> grants = new ArrayList<>();
-        grants.add(new Grant(grantUri2));
+        PassClientSelector<Grant> addGrantSel = new PassClientSelector<>(Grant.class);
+        addGrantSel.setFilter(RSQL.equals("id", grantId2));
+        grants.add(passClient.streamObjects(addGrantSel).findFirst().get());
         preexistingSub.setGrants(grants);
         List<Repository> repos = new ArrayList<>();
-        repos.add(new Repository("fake:repo"));
+        Repository testRepo = new Repository();
+        passClient.createObject(testRepo);
+        repos.add(testRepo);
         preexistingSub.setRepositories(repos);
         passClient.createObject(preexistingSub);
 
         //now make sure we wait for submission, should only be one from the test
-        attempt(RETRIES, () -> {
-            final String testId;
-            subSelector.setFilter(RSQL.equals("publication", pubId));
-            try {
-                testId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testId);
-            submissionId = testId;
-        });
+        subSelector.setFilter(RSQL.equals("publication.id", publication.getId()));
+        submissionId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
+        assertNotNull(submissionId);
 
         //now we have an existing publication, submission for same user/publication...
         //do transform/load to make sure we get an updated submission that includes grant/repo
@@ -275,41 +270,31 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
                                                                                        mockPmidLookup, statusService);
         transformLoadService.transformAndLoadNihmsPub(pub);
 
-        //make sure we wait for submission, should only be one from the test
-        attempt(RETRIES, () -> {
-            subSelector.setFilter(RSQL.equals("repositories", ConfigUtil.getNihmsRepositoryId()));
-            final String testId;
-            try {
-                testId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertNotNull(testId);
-        });
-
-        Submission reloadedPreexistingSub = passClient.getObject(Submission.class, preexistingSub.getId());
+        Submission reloadedPreexistingSub = nihmsPassClientService.readSubmission(preexistingSub.getId());
         assertFalse(reloadedPreexistingSub.getSubmitted());
         assertTrue(reloadedPreexistingSub.getRepositories()
-                .contains(new Repository(ConfigUtil.getNihmsRepositoryId())));
-        assertTrue(reloadedPreexistingSub.getRepositories().contains(new Repository("fake:repo")));
+                .contains(nihmsPassClientService.readRepository(ConfigUtil.getNihmsRepositoryId())));
+        assertTrue(reloadedPreexistingSub.getRepositories().contains(testRepo));
         assertEquals(2, reloadedPreexistingSub.getRepositories().size());
-        assertTrue(reloadedPreexistingSub.getGrants().contains(new Grant(grantUri1)));
-        assertTrue(reloadedPreexistingSub.getGrants().contains(new Grant(grantUri2)));
+        assertTrue(reloadedPreexistingSub.getGrants().stream().map(Grant::getId).collect(Collectors.toList())
+                .contains(grantId1));
+        assertTrue(reloadedPreexistingSub.getGrants().stream().map(Grant::getId).collect(Collectors.toList())
+                .contains(grantId2));
         assertEquals(2, reloadedPreexistingSub.getGrants().size());
         assertEquals(SubmissionStatus.MANUSCRIPT_REQUIRED, reloadedPreexistingSub.getSubmissionStatus());
 
         //we should have ONLY ONE submission for this pmid
-        subSelector.setFilter(RSQL.equals("publication", pubId));
+        subSelector.setFilter(RSQL.equals("publication.id", publication.getId()));
         assertEquals(1, passClient.selectObjects(subSelector).getObjects().size());
 
         //we should have ONLY ONE publication for this pmid
-        pubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        assertEquals(1, passClient.selectObjects(pubSelector).getObjects().size());
+        PassClientSelector<Publication> pubSelOne = new PassClientSelector<>(Publication.class);
+        pubSelOne.setFilter(RSQL.equals("pmid", pmid1));
+        assertEquals(1, passClient.selectObjects(pubSelOne).getObjects().size());
 
-        //we should have ONLY ONE repoCopy for this publication
-        repoCopySelector.setFilter(RSQL.equals("publication", pubId));
-        assertEquals(1, passClient.selectObjects(repoCopySelector).getObjects().size());
-
+        //we should have ZERO Repository Copies for this publication
+        repoCopySelector.setFilter(RSQL.equals("publication.id", publication.getId()));
+        assertEquals(0, passClient.selectObjects(repoCopySelector).getObjects().size());
     }
 
     private NihmsPublication newNonCompliantNihmsPub() {
