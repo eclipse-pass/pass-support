@@ -73,5 +73,4 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
         return actualSubmission;
     }
 
-
 }
