@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.loader.nihms;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -229,6 +230,31 @@ public abstract class NihmsSubmissionEtlITBase {
         nihmsRepo.setRepositoryKey("nihms");
         passClient.createObject(nihmsRepo);
         ConfigUtil.setNihmsRepositoryId(nihmsRepo.getId());
+    }
+
+    protected void verifySubmission(Submission preexistingSub, Submission reloadedSub) {
+        assertEquals(preexistingSub.getId(), reloadedSub.getId());
+        assertEquals(preexistingSub.getSource(), reloadedSub.getSource());
+        assertEquals(preexistingSub.getSubmitted(), reloadedSub.getSubmitted());
+        assertEquals(preexistingSub.getSubmittedDate(), reloadedSub.getSubmittedDate());
+        assertEquals(preexistingSub.getAggregatedDepositStatus(), reloadedSub.getAggregatedDepositStatus());
+
+        //test publications
+        Publication preexistingPub = preexistingSub.getPublication();
+        Publication reloadedPub = reloadedSub.getPublication();
+        assertEquals(preexistingPub.getId(), reloadedPub.getId());
+        assertEquals(preexistingPub.getTitle(), reloadedPub.getTitle());
+        assertEquals(preexistingPub.getDoi(), reloadedPub.getDoi());
+        assertEquals(preexistingPub.getPmid(), reloadedPub.getPmid());
+
+        //test the first grant
+        Grant preexistingGrants = preexistingSub.getGrants().get(0);
+        Grant reloadedGrants = reloadedSub.getGrants().get(0);
+        assertEquals(preexistingGrants.getId(), reloadedGrants.getId());
+        assertEquals(preexistingGrants.getAwardNumber(), reloadedGrants.getAwardNumber());
+        assertEquals(preexistingGrants.getAwardDate(), reloadedGrants.getAwardDate());
+        assertEquals(preexistingGrants.getAwardStatus(), reloadedGrants.getAwardStatus());
+        assertEquals(preexistingGrants.getLocalKey(), reloadedGrants.getLocalKey());
     }
 
 }

@@ -43,7 +43,6 @@ import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -56,7 +55,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *
  * @author Karen Hanson
  */
-@Disabled("Works, but disabled until TransformAndLoadCompliantIT is fixed")
 @ExtendWith(MockitoExtension.class)
 public class SubmissionTransformerTest {
 

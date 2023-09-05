@@ -605,34 +605,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertTrue(repoCopy.getAccessUrl().toString().contains(pmcid1));
     }
 
-    /**
-     * Spot check fields of a submission, to compare two submission objects that should be equal.
-     */
-    private void verifySubmission(Submission preexistingSub, Submission reloadedSub) {
-        assertEquals(preexistingSub.getId(), reloadedSub.getId());
-        assertEquals(preexistingSub.getSource(), reloadedSub.getSource());
-        assertEquals(preexistingSub.getSubmitted(), reloadedSub.getSubmitted());
-        assertEquals(preexistingSub.getSubmittedDate(), reloadedSub.getSubmittedDate());
-        assertEquals(preexistingSub.getAggregatedDepositStatus(), reloadedSub.getAggregatedDepositStatus());
-
-        //test publications
-        Publication preexistingPub = preexistingSub.getPublication();
-        Publication reloadedPub = reloadedSub.getPublication();
-        assertEquals(preexistingPub.getId(), reloadedPub.getId());
-        assertEquals(preexistingPub.getTitle(), reloadedPub.getTitle());
-        assertEquals(preexistingPub.getDoi(), reloadedPub.getDoi());
-        assertEquals(preexistingPub.getPmid(), reloadedPub.getPmid());
-
-        //test the first grant
-        Grant preexistingGrants = preexistingSub.getGrants().get(0);
-        Grant reloadedGrants = reloadedSub.getGrants().get(0);
-        assertEquals(preexistingGrants.getId(), reloadedGrants.getId());
-        assertEquals(preexistingGrants.getAwardNumber(), reloadedGrants.getAwardNumber());
-        assertEquals(preexistingGrants.getAwardDate(), reloadedGrants.getAwardDate());
-        assertEquals(preexistingGrants.getAwardStatus(), reloadedGrants.getAwardStatus());
-        assertEquals(preexistingGrants.getLocalKey(), reloadedGrants.getLocalKey());
-    }
-
     private Repository getNihmsRepo() throws IOException {
         PassClientSelector<Repository> nihmsRepoSel = new PassClientSelector<>(Repository.class);
         nihmsRepoSel.setFilter(RSQL.equals("id", ConfigUtil.getNihmsRepositoryId()));
