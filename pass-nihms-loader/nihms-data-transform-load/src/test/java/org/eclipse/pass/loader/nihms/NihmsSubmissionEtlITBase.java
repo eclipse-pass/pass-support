@@ -119,7 +119,6 @@ public abstract class NihmsSubmissionEtlITBase {
         PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
         depoSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Deposit deposit : passClient.selectObjects(depoSelector).getObjects()) {
-            System.out.print("Deleting deposit " + deposit.getId() + "...");
             passClient.deleteObject(deposit);
             assertNull(passClient.getObject(Deposit.class, deposit.getId()));
         }
@@ -127,7 +126,6 @@ public abstract class NihmsSubmissionEtlITBase {
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         subSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Submission submission : passClient.selectObjects(subSelector).getObjects()) {
-            System.out.print("Deleting submission " + submission.getId() + "...");
             passClient.deleteObject(submission);
             assertNull(passClient.getObject(Submission.class, submission.getId()));
         }
@@ -135,7 +133,6 @@ public abstract class NihmsSubmissionEtlITBase {
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
         for (RepositoryCopy repoCopy : passClient.selectObjects(repoCopySelector).getObjects()) {
-            System.out.print("Deleting repository copy " + repoCopy.getId() + "...");
             passClient.deleteObject(repoCopy);
             assertNull(passClient.getObject(RepositoryCopy.class, repoCopy.getId()));
         }
@@ -143,7 +140,6 @@ public abstract class NihmsSubmissionEtlITBase {
         PassClientSelector<Repository> repoSelector = new PassClientSelector<>(Repository.class);
         repoSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Repository repo : passClient.selectObjects(repoSelector).getObjects()) {
-            System.out.print("Deleting repository " + repo.getId() + "...");
             passClient.deleteObject(repo);
             assertNull(passClient.getObject(Repository.class, repo.getId()));
         }
@@ -151,7 +147,6 @@ public abstract class NihmsSubmissionEtlITBase {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         pubSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Publication publication : passClient.selectObjects(pubSelector).getObjects()) {
-            System.out.print("Deleting publication " + publication.getId() + "...");
             passClient.deleteObject(publication);
             assertNull(passClient.getObject(Publication.class, publication.getId()));
         }
