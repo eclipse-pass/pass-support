@@ -305,7 +305,6 @@ public class NihmsPassClientServiceIT {
         List<Submission> foundSubs = underTest.findNihmsSubmissions();
         assertEquals(1, foundSubs.size());
         assertEquals(submission.getId(), foundSubs.get(0).getId());
-
     }
 
     /**
