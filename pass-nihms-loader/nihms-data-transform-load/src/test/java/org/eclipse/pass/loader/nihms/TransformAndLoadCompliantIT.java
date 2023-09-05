@@ -41,7 +41,6 @@ import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -241,7 +240,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
     //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationExistingSubmission() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
-        PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         User user = new User();
         passClient.createObject(user);
@@ -279,7 +277,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(SubmissionStatus.COMPLETE, reloadedPreexistingSub.getSubmissionStatus());
 
         //we should have ONLY ONE submission for this pmid
-        PassClientSelector subOneSel = new PassClientSelector<>(Submission.class);
+        PassClientSelector<Submission> subOneSel = new PassClientSelector<>(Submission.class);
         subOneSel.setFilter(RSQL.equals("publication.id", pubId));
         assertEquals(1, passClient.streamObjects(subOneSel).toList().size());
 
@@ -310,7 +308,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
     //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationExistingUnsubmittedSubmission() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
-        PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         User user = new User();
         passClient.createObject(user);
@@ -486,9 +483,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         nihmsPassClientService.createSubmission(preexistingSub);
 
         RepositoryCopy preexistingRepoCopy = new RepositoryCopy();
-        Publication preexistingPub = new Publication();
-        passClient.createObject(preexistingPub);
-        preexistingRepoCopy.setPublication(preexistingPub);
+        preexistingRepoCopy.setPublication(publication);
         preexistingRepoCopy.setRepository(getNihmsRepo());
         preexistingRepoCopy.setCopyStatus(CopyStatus.IN_PROGRESS);
         List<String> externalIds = new ArrayList<>();
@@ -512,8 +507,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have ONLY ONE submission for this pmid
         PassClientSelector<Submission> subSelOne = new PassClientSelector<>(Submission.class);
-        //TODO : expected: <1> but was: <0>
-        subSelOne.setFilter(RSQL.equals("publication.id", preexistingPub.getId()));
+        subSelOne.setFilter(RSQL.equals("publication.id", publication.getId()));
         assertEquals(1, passClient.streamObjects(subSelOne).toList().size());
 
         //we should have ONLY ONE publication for this pmid
@@ -523,13 +517,13 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //we should have ONLY ONE repoCopy for this publication
         PassClientSelector<RepositoryCopy> repoCopySelOne = new PassClientSelector<>(RepositoryCopy.class);
-        repoCopySelOne.setFilter(RSQL.equals("publication.id", preexistingPub.getId()));
+        repoCopySelOne.setFilter(RSQL.equals("publication.id", publication.getId()));
         assertEquals(1, passClient.streamObjects(repoCopySelOne).toList().size());
 
         //validate the new repo copy.
         validateRepositoryCopy(repoCopyId);
 
-        Submission submission = passClient.getObject(Submission.class, submissionId);
+        Submission submission = passClient.getObject(Submission.class, preexistingSub.getId());
         assertEquals(SubmissionStatus.COMPLETE, submission.getSubmissionStatus());
     }
 
