@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
+import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.eclipse.deposit.util.async.Condition;
@@ -47,7 +49,11 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
         mockSword();
 
         // WHEN
-        depositUpdater.doUpdate();
+        try {
+            depositUpdater.doUpdate();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // THEN
         Condition<Set<Deposit>> actualDeposits = depositsForSubmission(submission.getId(), 1,
@@ -59,6 +65,8 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
     private Submission initFailedSubmissionDeposit() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
+        submission.setSubmittedDate(ZonedDateTime.now());
+        passClient.updateObject(submission);
         mockSword();
         doThrow(new SWORDError(400, "Testing deposit error"))
             .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
