@@ -108,7 +108,6 @@ public class FailedDepositRetry {
             .map(DepositFile::getName)
             .collect(Collectors.joining(", "));
 
-        // TODO check joining of each scenario
         if (StringUtils.isNotEmpty(filesMissingLocations)) {
             LOG.warn(FAILED_TO_PROCESS, depositSubmission.getId(),
                 "The following DepositFiles are missing locations: " + filesMissingLocations);

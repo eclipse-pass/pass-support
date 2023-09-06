@@ -43,13 +43,13 @@ public class SubmissionStatusUpdaterJob {
         initialDelayString = "${pass.deposit.jobs.1.init.delay}"
     )
     public void updateSubmissions() {
-        LOG.trace("Starting {}", this.getClass().getSimpleName());
+        LOG.warn("Starting {}", this.getClass().getSimpleName());
         try {
             updater.doUpdate();
         } catch (IOException e) {
             throw new DepositServiceRuntimeException("Submission status updater failed", e);
         }
-        LOG.trace("Finished {}", this.getClass().getSimpleName());
+        LOG.warn("Finished {}", this.getClass().getSimpleName());
     }
 
 }

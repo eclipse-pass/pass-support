@@ -37,11 +37,13 @@ public class DepositStatusUpdaterJob {
         initialDelayString = "${pass.deposit.jobs.2.init.delay}"
     )
     public void updateDeposits() {
+        LOG.warn("Starting {}", this.getClass().getSimpleName());
         try {
             depositUpdater.doUpdate();
         } catch (Exception e) {
             LOG.error("DepositUpdaterJob execution failed: {}", e.getMessage(), e);
         }
+        LOG.warn("Finished {}", this.getClass().getSimpleName());
     }
 
 }

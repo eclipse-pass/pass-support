@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.eclipse.pass.deposit.service;
 
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -63,16 +63,20 @@ public class DepositUpdater {
                 RSQL.gte("submission.submittedDate", DATE_TIME_FORMATTER.format(submissionFromDate))
             )
         );
+        List<Deposit> deposits = passClient.streamObjects(sel).toList();
+        LOG.warn("Deposit Count for updating: " + deposits.size());
 
-        passClient.streamObjects(sel).forEach(deposit -> {
+        deposits.forEach(deposit -> {
             try {
                 if (deposit.getDepositStatus() == DepositStatus.FAILED) {
+                    LOG.info("Retrying FAILED Deposit for {}", deposit.getId());
                     failedDepositRetry.retryFailedDeposit(deposit);
                 } else {
+                    LOG.info("Updating Deposit.depositStatus for {}", deposit.getId());
                     depositHelper.processDepositStatus(deposit.getId());
                 }
             } catch (Exception e) {
-                LOG.warn("Failed to update {}: {}", deposit.getId(), e.getMessage(), e);
+                LOG.warn("Failed to update Deposit {}: {}", deposit.getId(), e.getMessage(), e);
             }
         });
     }

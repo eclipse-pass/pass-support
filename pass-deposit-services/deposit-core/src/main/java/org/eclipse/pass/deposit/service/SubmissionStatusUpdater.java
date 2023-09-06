@@ -81,11 +81,10 @@ public class SubmissionStatusUpdater {
      */
     public void doUpdate(Collection<String> submissionIds) {
         if (submissionIds == null || submissionIds.size() == 0) {
-            LOG.trace("No submissions to update.");
+            LOG.warn("No submissions to update.");
             return;
         } else {
-            LOG.trace("Updating the Submission.submissionStatus of {} Submission{}", submissionIds.size(),
-                      submissionIds.size() > 1 ? "s" : "");
+            LOG.warn("Updating the Submission.submissionStatus of {} Submissions", submissionIds.size());
         }
 
         submissionIds.forEach(id -> {
@@ -113,7 +112,7 @@ public class SubmissionStatusUpdater {
         String[] values = Stream.of(SubmissionStatus.values())
         .filter(status -> status != SubmissionStatus.COMPLETE)
         .filter(status -> status != SubmissionStatus.CANCELLED)
-        .map(status -> status.getValue()).toArray(String[]::new);
+        .map(SubmissionStatus::getValue).toArray(String[]::new);
 
         sel.setFilter(RSQL.in("submissionStatus", values));
 
