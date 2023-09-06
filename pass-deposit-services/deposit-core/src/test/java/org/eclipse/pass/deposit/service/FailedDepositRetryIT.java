@@ -18,7 +18,9 @@ package org.eclipse.pass.deposit.service;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -29,6 +31,7 @@ import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +63,12 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
             (deposit, repo) -> true);
         assertTrue(actualDeposits.awaitAndVerify(deposits -> deposits.size() == 1 &&
             DepositStatus.SUBMITTED == deposits.iterator().next().getDepositStatus()));
+
+        Deposit actualDeposit = actualDeposits.getResult().iterator().next();
+        Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
+        RepositoryCopy popRepoCopy = passClient.getObject(updatedDeposit.getRepositoryCopy(), "repository");
+        updatedDeposit.setRepositoryCopy(popRepoCopy);
+        verify(passClient).updateObject(eq(updatedDeposit));
     }
 
     private Submission initFailedSubmissionDeposit() throws Exception {
