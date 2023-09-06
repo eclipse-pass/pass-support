@@ -326,7 +326,9 @@ public class NihmsPublicationToSubmission {
             if (CollectionUtils.isNotEmpty(submissions)) {
                 // is there already a nihms submission in the system for this publication? if so add to it instead of
                 // making a new one
-                List<Submission> nihmsSubmissions = clientService.findNihmsSubmissionsByPublicationId(publicationId);
+                List<Submission> nihmsSubmissions = submissions.stream()
+                        .filter(s -> s.getRepositories().stream()
+                                .anyMatch(repo -> ConfigUtil.getNihmsRepositoryId().equals(repo.getId()))).toList();
 
                 if (nihmsSubmissions.size() == 1) {
                     submission = nihmsSubmissions.get(0);

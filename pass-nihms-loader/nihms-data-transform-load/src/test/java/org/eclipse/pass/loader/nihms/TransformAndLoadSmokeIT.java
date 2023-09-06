@@ -54,7 +54,7 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         List<Publication> publications = passClient.selectObjects(publicationSelector).getObjects();
         assertEquals(37, publications.size());
 
-        submissionSelector.setFilter(RSQL.equals("@type", "Submission"));
+        submissionSelector.setFilter(RSQL.notEquals("id", "-1"));
         List<Submission> submissions = passClient.selectObjects(submissionSelector).getObjects();
         assertEquals(45, submissions.size());
 
@@ -128,6 +128,7 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         createGrant("R01 RRRRRR", user);
         createGrant("U01 BBBBBB", user);
         createGrant("K23 BBBBBB", user);
+        createGrant("T32 XXXXXX", user);
         createGrant("U54 EB007958", user);
         createGrant("T32 HD094687", user);
         createGrant("R01 HL153178", user);
