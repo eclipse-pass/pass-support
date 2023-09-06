@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -46,7 +48,7 @@ public class PmidLookup {
 
     /**
      * The default Entrez path does not include an API path. This property can be overridden with a System Property
-     * Note that as of May 2018, Entrez supports 3 seconds per second without an API key, above this will result in
+     * Note that as of May 2018, Entrez supports 3 requests per second without an API key, above this will result in
      * delayed responses.
      * https://www.ncbi.nlm.nih.gov/books/NBK25497/
      */
@@ -121,6 +123,8 @@ public class PmidLookup {
         try {
             HttpClient client = HttpClientBuilder
                 .create()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                    .setCookieSpec(CookieSpecs.STANDARD).build())
                 .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
                 .build();
             HttpGet httpget = new HttpGet(new URI(path));
