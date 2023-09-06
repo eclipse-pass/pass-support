@@ -21,7 +21,6 @@ import static org.mockito.Mockito.verify;
 
 import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.deposit.service.DepositUpdater;
-import org.eclipse.pass.deposit.service.FailedDepositRetry;
 import org.eclipse.pass.deposit.service.SubmissionStatusUpdater;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,14 +36,12 @@ import org.springframework.test.context.TestPropertySource;
     "pass.deposit.jobs.disabled=false",
     "pass.deposit.jobs.default-interval-ms=1500",
     "pass.deposit.jobs.1.init.delay=50",
-    "pass.deposit.jobs.2.init.delay=100",
-    "pass.deposit.jobs.3.init.delay=150"
+    "pass.deposit.jobs.2.init.delay=100"
 })
 public class ScheduledJobsTest {
 
     @MockBean private SubmissionStatusUpdater submissionStatusUpdater;
     @MockBean private DepositUpdater depositUpdater;
-    @MockBean private FailedDepositRetry failedDepositRetry;
 
     @Test
     void testDepositUpdaterJob() {
@@ -64,12 +61,4 @@ public class ScheduledJobsTest {
         });
     }
 
-    @Test
-    void testFailedDepositRetryJob() {
-        // GIVEN/WHEN
-        // failedDepositRetry.retryFailedDeposits() will be called from Scheduled method in job
-        await().atMost(3, SECONDS).untilAsserted(() -> {
-            verify(failedDepositRetry).retryFailedDeposits();
-        });
-    }
 }

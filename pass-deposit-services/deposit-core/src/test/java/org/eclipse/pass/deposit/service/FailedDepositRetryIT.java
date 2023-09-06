@@ -38,7 +38,7 @@ import org.swordapp.client.SWORDError;
  */
 public class FailedDepositRetryIT extends AbstractDepositIT {
 
-    @Autowired private FailedDepositRetry failedDepositRetry;
+    @Autowired private DepositUpdater depositUpdater;
 
     @Test
     public void testFailedDepositRetry() throws Exception {
@@ -47,7 +47,7 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
         mockSword();
 
         // WHEN
-        failedDepositRetry.retryFailedDeposits();
+        depositUpdater.doUpdate();
 
         // THEN
         Condition<Set<Deposit>> actualDeposits = depositsForSubmission(submission.getId(), 1,

@@ -15,22 +15,25 @@
  */
 package org.eclipse.pass.deposit.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.stream.Stream;
+import java.util.List;
 
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.model.Registry;
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -51,18 +54,21 @@ public class FailedDepositRetryTest {
             packagerRegistry, depositSubmissionModelBuilder);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
-        when(passClient.streamObjects(any())).thenReturn(Stream.of(deposit1));
+        deposit1.setDepositStatus(DepositStatus.FAILED);
+        deposit1.setRepository(new Repository());
+        deposit1.setSubmission(new Submission());
+        when(passClient.getObject(same(deposit1), any())).thenReturn(deposit1);
         when(packagerRegistry.get(any())).thenReturn(null);
 
         // WHEN
-        failedDepositRetry.retryFailedDeposits();
+        failedDepositRetry.retryFailedDeposit(deposit1);
 
         // THEN
         verifyNoInteractions(depositTaskHelper);
 
-        ArgumentCaptor<PassClientSelector<Deposit>> argument = ArgumentCaptor.forClass(PassClientSelector.class);
-        verify(passClient).streamObjects(argument.capture());
-        assertEquals("depositStatus=='failed'", argument.getValue().getFilter());
+        ArgumentCaptor<String[]> argument = ArgumentCaptor.forClass(String[].class);
+        verify(passClient).getObject(same(deposit1), argument.capture());
+        assertIterableEquals(List.of("submission", "repository"), argument.getAllValues());
     }
 
 }
