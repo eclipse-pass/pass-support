@@ -16,12 +16,9 @@
 package org.eclipse.pass.deposit.service;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.List;
 import java.util.stream.Stream;
 
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -52,113 +49,51 @@ public class SubmissionStatusUpdater {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionStatusUpdater.class);
 
-    private SubmissionStatusService statusService;
-
-    private PassClient passClient;
-
-    private CriticalRepositoryInteraction cri;
+    private final SubmissionStatusService statusService;
+    private final PassClient passClient;
 
     @Autowired
-    public SubmissionStatusUpdater(SubmissionStatusService statusService, PassClient passClient,
-                                   CriticalRepositoryInteraction cri) {
+    public SubmissionStatusUpdater(SubmissionStatusService statusService, PassClient passClient) {
         this.statusService = statusService;
         this.passClient = passClient;
-        this.cri = cri;
     }
 
     /**
      * Determines the Submissions to be updated, and updates the status of each in turn.
-     * @throws IOException
+     * @throws IOException io exception
      */
     public void doUpdate() throws IOException {
-        doUpdate(toUpdate(passClient));
-    }
+        PassClientSelector<Submission> sel = new PassClientSelector<>(Submission.class);
+        sel.setFilter(
+            RSQL.and(
+                RSQL.in("submissionStatus", getSubmissionStatusFilter()),
+                RSQL.equals("submitted", "true")
+            )
+        );
+        List<Submission> submissions = passClient.streamObjects(sel).toList();
+        LOG.warn("Submission Count for updating: " + submissions.size());
 
-    /**
-     * Accepts a collection of Submissions to be updated, and updates the status of each in turn.
-     *
-     * @param submissionIds a collection of Submission IDs to be updated
-     */
-    public void doUpdate(Collection<String> submissionIds) {
-        if (submissionIds == null || submissionIds.size() == 0) {
-            LOG.warn("No submissions to update.");
-            return;
-        } else {
-            LOG.warn("Updating the Submission.submissionStatus of {} Submissions", submissionIds.size());
-        }
-
-        submissionIds.forEach(id -> {
+        submissions.forEach(submission -> {
             try {
-                LOG.trace("Updating Submission.submissionStatus for {}", id);
-                cri.performCritical(id, Submission.class, CriFunc.preCondition, CriFunc.postCondition,
-                                    CriFunc.critical(statusService));
+                LOG.info("Processing Submission.submissionStatus for {}", submission.getId());
+                SubmissionStatus newStatus = statusService.calculateSubmissionStatus(submission);
+                if (newStatus != submission.getSubmissionStatus()) {
+                    LOG.info("Status changed for Submission {} from {} to {}", submission.getId(),
+                        submission.getSubmissionStatus(), newStatus);
+                    submission.setSubmissionStatus(newStatus);
+                    passClient.updateObject(submission);
+                }
             } catch (Exception e) {
-                LOG.warn("Unable to update the 'submissionStatus' of {}", id, e);
+                LOG.warn("Unable to update the 'submissionStatus' of {}", submission.getId(), e);
             }
         });
     }
 
-    /**
-     * Returns all Submissions that have any Submission.SubmissionStatus <em>except</em> SubmissionStatus.COMPLETE or
-     * SubmissionStatus.CANCELLED.
-     *
-     * @param passClient the client used to communicate with the index
-     * @return the URIs of Submissions that may need their SubmissionStatus updated
-     * @throws IOException
-     */
-    static Collection<String> toUpdate(PassClient passClient) throws IOException {
-        PassClientSelector<Submission> sel = new PassClientSelector<>(Submission.class);
-
-        String[] values = Stream.of(SubmissionStatus.values())
-        .filter(status -> status != SubmissionStatus.COMPLETE)
-        .filter(status -> status != SubmissionStatus.CANCELLED)
-        .map(SubmissionStatus::getValue).toArray(String[]::new);
-
-        sel.setFilter(RSQL.in("submissionStatus", values));
-
-        return passClient.streamObjects(sel).map(Submission::getId).toList();
-    }
-
-    /**
-     * Convenience class encapsulating the pre- and post-conditions for executing the critical function over the
-     * Submission.
-     */
-    static class CriFunc {
-
-        /**
-         * Verifies the expected state of the Submission before updating the Submission.submissionStatus:
-         * <ul>
-         *     <li>Submission.submitted must be 'true'</li>
-         *     <li>Submission.submissionStatus must not be 'COMPLETE'</li>
-         *     <li>Submission.submissionStatus must not be 'CANCELLED'</li>
-         * </ul>
-         */
-        static Predicate<Submission> preCondition = (submission) ->
-                submission.getSubmissionStatus() != null &&
-                submission.getSubmissionStatus() != SubmissionStatus.COMPLETE &&
-                submission.getSubmissionStatus() != SubmissionStatus.CANCELLED &&
-                Boolean.TRUE == submission.getSubmitted();
-
-        /**
-         * Verifies the expected state of the Submission after updating Submission.submissionStatus:
-         * <ul>
-         *     <li>Submission.submissionStatus must not be 'null'</li>
-         *     <li>Submission.submitted must be 'true'</li>
-         * </ul>
-         */
-        static Predicate<Submission> postCondition = (submission -> submission.getSubmissionStatus() != null &&
-                                                                    Boolean.TRUE == submission.getSubmitted());
-
-        /**
-         * Critical section calculates the Submission.submissionStatus, which may or may not be different from the
-         * initial Submission.submissionStatus.
-         */
-        static Function<Submission, Submission> critical(SubmissionStatusService statusService) {
-            return (submission -> {
-                submission.setSubmissionStatus(statusService.calculateSubmissionStatus(submission));
-                return submission;
-            });
-        }
+    private String[] getSubmissionStatusFilter() {
+        return Stream.of(SubmissionStatus.values())
+            .filter(status -> status != SubmissionStatus.COMPLETE)
+            .filter(status -> status != SubmissionStatus.CANCELLED)
+            .map(SubmissionStatus::getValue).toArray(String[]::new);
     }
 
 }

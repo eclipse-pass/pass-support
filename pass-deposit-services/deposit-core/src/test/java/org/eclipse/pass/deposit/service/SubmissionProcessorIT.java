@@ -119,7 +119,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             && expectedRepoKey.containsAll(repoKeys));
 
         // WHEN
-        submissionStatusUpdater.doUpdate(List.of(actualSubmission.getId()));
+        submissionStatusUpdater.doUpdate();
 
         // THEN
         final Submission statusSubmission = passClient.getObject(Submission.class, submission.getId());
