@@ -291,7 +291,7 @@ public class NihmsPassClientServiceIT {
         //submission that shouldn't be returned. It's not a nihms submission
         underTest.createSubmission(initSubmission());
 
-        List<Submission> foundSubs = underTest.findNihmsSubmissions();
+        List<Submission> foundSubs = underTest.findNihmsSubmissionsByPublicationId(pub.getId());
         assertEquals(1, foundSubs.size());
         assertEquals(submission.getId(), foundSubs.get(0).getId());
     }

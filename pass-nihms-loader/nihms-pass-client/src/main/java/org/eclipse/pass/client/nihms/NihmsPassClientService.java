@@ -426,11 +426,12 @@ public class NihmsPassClientService {
     }
 
     /**
-     * Find all Submissions that are associated with the NIHMS repository
+     * Find all Submissions with a publication that are associated with the NIHMS repository
      */
-    public List<Submission> findNihmsSubmissions() throws IOException {
+    public List<Submission> findNihmsSubmissionsByPublicationId(String publicationId) throws IOException {
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
-        subSelector.setFilter(RSQL.equals("repositories.id", nihmsRepoId));
+        subSelector.setFilter(RSQL.and(RSQL.equals("repositories.id", nihmsRepoId),
+                        RSQL.equals("publication.id", publicationId)));
         subSelector.setInclude("repositories");
         return passClient.streamObjects(subSelector).toList();
     }
