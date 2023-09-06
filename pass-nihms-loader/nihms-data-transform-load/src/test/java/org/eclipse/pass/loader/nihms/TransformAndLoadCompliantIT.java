@@ -71,7 +71,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if test error
      */
     @Test
-    //@Disabled("Working, disabled while working on other tests")
     public void testNewCompliantPublication() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -151,7 +150,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if errors occurs
      */
     @Test
-    //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationNewConnectedGrant() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
@@ -237,7 +235,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if anything goes wrong
      */
     @Test
-    //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationExistingSubmission() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
@@ -305,7 +302,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
-    //@Disabled("Working, disabled while working on other tests")
     public void testCompliantPublicationExistingUnsubmittedSubmission() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
@@ -377,7 +373,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
-    //@Disabled
     public void testCompliantPublicationExistingSubmissionAndDeposit() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
@@ -460,7 +455,6 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
-    //@Disabled
     public void testCompliantPublicationExistingSubmissionAndRepoCopy() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
