@@ -44,7 +44,6 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class NihmsPassClientServiceIT {
@@ -53,14 +52,13 @@ public class NihmsPassClientServiceIT {
 
     private PassClient passClient;
 
-    private String nihmsRepositoryId = "1122334455";
-
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         System.setProperty("pass.core.url","http://localhost:8080");
         System.setProperty("pass.core.user","backend");
         System.setProperty("pass.core.password","backend");
         passClient = PassClient.newInstance();
+        initiateNihmsRepo(); //need to initiate the nihms repository before init the NihmsPassClientService
         underTest = new NihmsPassClientService(passClient);
     }
 
@@ -68,7 +66,6 @@ public class NihmsPassClientServiceIT {
      * Demonstrate that a Journal can be looked up by any of its ISSNs.
      */
     @Test
-    @Disabled("Working, but disabled while working on other tests")
     public void lookupJournalByIssn() throws IOException {
         Journal journal = new Journal();
         journal.setIssns(Arrays.asList("fooissn", "barissn"));
@@ -90,7 +87,6 @@ public class NihmsPassClientServiceIT {
      * the activity code, institute code and serial number are the minimum set of strings required to match
      */
     @Test
-    @Disabled("Working, but disabled while working on other tests")
     public void shouldFindNihGrantAwardNumber() throws IOException {
         Grant grant1 = new Grant();
         grant1.setAwardNumber("R01AR074846");
@@ -197,7 +193,6 @@ public class NihmsPassClientServiceIT {
      * match the award numbers and not return any false positives or inadvertently modify the award number
      */
     @Test
-    @Disabled("Working, but disabled while working on other tests")
     public void shouldFindNonNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
         URI testAwardNumberUri = NihmsPassClientServiceTest.class.getResource("/valid_award_numbers.csv").toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
@@ -218,11 +213,10 @@ public class NihmsPassClientServiceIT {
      * @throws Exception
      */
     @Test
-    @Disabled("Variant 2 is not a valid award number and should not be returned")
     public void checkSearchForNonNihGrantWithSimilarId() throws Exception {
         String awardNumber = "R01HL111222";
         String variant1 = "R01HL1112223-01A1";
-        String variant2 = "000R01HL1112223";
+        String variant2 = "000R01HL1132223";
         String variant3 = "R01 HL211222";
         String variant4 = "R01-HL111222";
         Grant testGrant = new Grant();
@@ -268,9 +262,7 @@ public class NihmsPassClientServiceIT {
      * @throws IOException if error occurs
      */
     @Test
-    @Disabled("Need to fix the nihms repoId issue - Cannot set the repoId to the nihms repoId via the config file")
     public void testGetNihmsSubmissions() throws IOException {
-        String nihmsRepoId = ConfigUtil.getNihmsRepositoryId();
         Submission submission = new Submission();
         List<Grant> grants = new ArrayList<>();
         List<Repository> repos = new ArrayList<>();
@@ -280,12 +272,7 @@ public class NihmsPassClientServiceIT {
         passClient.createObject(user);
         Grant grant = new Grant();
         passClient.createObject(grant);
-        Repository nihmsRepo = new Repository();
-        nihmsRepo.setName("NIHMS");
-        nihmsRepo.setRepositoryKey("nihms");
-        passClient.createObject(nihmsRepo);
-        nihmsRepo.setId(nihmsRepoId);
-        passClient.updateObject(nihmsRepo);
+        Repository nihmsRepo = underTest.readRepository(ConfigUtil.getNihmsRepositoryId());
 
         grants.add(grant);
         submission.setGrants(grants);
@@ -332,6 +319,14 @@ public class NihmsPassClientServiceIT {
         repos.add(repo);
         submission.setRepositories(repos);
         return submission;
+    }
+
+    private void initiateNihmsRepo() throws IOException {
+        Repository nihmsRepo = new Repository();
+        nihmsRepo.setName("NIHMS");
+        nihmsRepo.setRepositoryKey("nihms");
+        passClient.createObject(nihmsRepo);
+        ConfigUtil.setNihmsRepositoryId(nihmsRepo.getId());
     }
 
 }
