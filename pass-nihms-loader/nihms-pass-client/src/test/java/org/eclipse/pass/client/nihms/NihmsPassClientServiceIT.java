@@ -30,6 +30,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.PassClient;
@@ -194,7 +195,8 @@ public class NihmsPassClientServiceIT {
      */
     @Test
     public void shouldFindNonNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
-        URI testAwardNumberUri = NihmsPassClientServiceTest.class.getResource("/valid_award_numbers.csv").toURI();
+        URI testAwardNumberUri = Objects.requireNonNull(NihmsPassClientServiceTest.class
+                .getResource("/valid_award_numbers.csv")).toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
 
         for (String award : awardNumbers) {
@@ -210,7 +212,7 @@ public class NihmsPassClientServiceIT {
 
     /**
      * Test that the search for a non-NIH grant with a similar award number returns null
-     * @throws Exception
+     * @throws Exception if the test fails
      */
     @Test
     public void checkSearchForNonNihGrantWithSimilarId() throws Exception {
