@@ -17,6 +17,9 @@
 package org.eclipse.pass.deposit.service;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -26,16 +29,22 @@ import org.eclipse.pass.support.client.model.DepositStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DepositUpdater {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositUpdater.class);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
     private final PassClient passClient;
     private final DepositTaskHelper depositHelper;
     private final FailedDepositRetry failedDepositRetry;
+
+    @Value("${pass.deposit.update.window.days}")
+    private long updateWindowDays;
 
     @Autowired
     public DepositUpdater(PassClient passClient, DepositTaskHelper depositHelper,
@@ -46,8 +55,15 @@ public class DepositUpdater {
     }
 
     public void doUpdate() throws IOException {
+        ZonedDateTime submissionFromDate = ZonedDateTime.now(ZoneOffset.UTC).minusDays(updateWindowDays);
         PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
-        sel.setFilter(RSQL.in("depositStatus", DepositStatus.SUBMITTED.getValue(), DepositStatus.FAILED.getValue()));
+        sel.setFilter(
+            RSQL.and(
+                RSQL.in("depositStatus", DepositStatus.SUBMITTED.getValue(), DepositStatus.FAILED.getValue()),
+                RSQL.gte("submission.submittedDate", DATE_TIME_FORMATTER.format(submissionFromDate))
+            )
+        );
+
         passClient.streamObjects(sel).forEach(deposit -> {
             try {
                 if (deposit.getDepositStatus() == DepositStatus.FAILED) {

@@ -15,7 +15,7 @@
  */
 package org.eclipse.pass.deposit.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -61,6 +61,7 @@ public class DepositUpdaterTest {
 
         ArgumentCaptor<PassClientSelector<Deposit>> argument = ArgumentCaptor.forClass(PassClientSelector.class);
         verify(passClient).streamObjects(argument.capture());
-        assertEquals("depositStatus=in=('submitted','failed')", argument.getValue().getFilter());
+        assertTrue(argument.getValue().getFilter().startsWith(
+            "(depositStatus=in=('submitted','failed');submission.submittedDate>="));
     }
 }
