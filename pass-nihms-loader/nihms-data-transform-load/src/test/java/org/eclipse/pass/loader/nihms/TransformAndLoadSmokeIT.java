@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -15,7 +14,6 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.Test;
  *
  * @author Karen Hanson
  */
-@Disabled("https://github.com/eclipse-pass/main/issues/679")
 public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
 
     @BeforeEach
@@ -49,38 +46,17 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         //now that it has run lets do some basic tallys to make sure they are as expected:
 
         //make sure RepositoryCopies are all in before moving on so we can be sure the counts are done.
-        attempt(RETRIES, () -> {
-            final List<RepositoryCopy> repoCopies;
-            repoCopySelector.setFilter(RSQL.equals("@type", "RepositoryCopy"));
-            try {
-                repoCopies = passClient.selectObjects(repoCopySelector).getObjects();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertEquals(26, repoCopies.size());
-        });
+        repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
+        List<RepositoryCopy> repositoryCopies = passClient.selectObjects(repoCopySelector).getObjects();
+        assertEquals(26, repositoryCopies.size());
 
-        attempt(RETRIES, () -> {
-            final List<Publication> publications;
-            publicationSelector.setFilter(RSQL.equals("@type", "Publication"));
-            try {
-                publications = passClient.selectObjects(publicationSelector).getObjects();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertEquals(37, publications.size());
-        });
+        publicationSelector.setFilter(RSQL.notEquals("id", "-1"));
+        List<Publication> publications = passClient.selectObjects(publicationSelector).getObjects();
+        assertEquals(37, publications.size());
 
-        attempt(RETRIES, () -> {
-            final List<Submission> submissions;
-            submissionSelector.setFilter(RSQL.equals("@type", "Submission"));
-            try {
-                submissions = passClient.selectObjects(submissionSelector).getObjects();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            assertEquals(45, submissions.size());
-        });
+        submissionSelector.setFilter(RSQL.equals("@type", "Submission"));
+        List<Submission> submissions = passClient.selectObjects(submissionSelector).getObjects();
+        assertEquals(45, submissions.size());
 
         //reset file names:
         File downloadDir = new File(path);

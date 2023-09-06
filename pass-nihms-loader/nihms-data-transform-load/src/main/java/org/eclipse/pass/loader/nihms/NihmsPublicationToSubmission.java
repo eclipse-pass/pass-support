@@ -57,7 +57,7 @@ public class NihmsPublicationToSubmission {
     private static final String PMC_URL_TEMPLATE_KEY = "nihmsetl.pmcurl.template";
     private static final String PMC_URL_TEMPLATE_DEFAULT = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s/";
 
-    private static final String NIHMS_CSV_DATE_PATTERN = "MM/dd/yyyy";
+    private static final String NIHMS_CSV_DATE_PATTERN = "M/d/yyyy";
 
     /**
      * The Nihms client service communicates with the Pass Client to perform database interactions for the
@@ -326,7 +326,7 @@ public class NihmsPublicationToSubmission {
             if (CollectionUtils.isNotEmpty(submissions)) {
                 // is there already a nihms submission in the system for this publication? if so add to it instead of
                 // making a new one
-                List<Submission> nihmsSubmissions = clientService.findNihmsSubmissions();
+                List<Submission> nihmsSubmissions = clientService.findNihmsSubmissionsByPublicationId(publicationId);
 
                 if (nihmsSubmissions.size() == 1) {
                     submission = nihmsSubmissions.get(0);
