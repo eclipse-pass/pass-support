@@ -308,6 +308,135 @@ public class JsonApiPassClientIT {
         assertTrue(result.getObjects().stream().noneMatch(user -> Objects.equals(user.getUsername(), "johndoe2")));
     }
 
+    @Test
+    public void testSelectDepositObjects_Success_WithEqualsSubmissionDateFilter() throws IOException {
+        Submission submission = new Submission();
+        submission.setSubmittedDate(dt("2023-09-01T02:01:20.300Z"));
+
+        client.createObject(submission);
+
+        Deposit deposit = new Deposit();
+        deposit.setSubmission(submission);
+
+        client.createObject(deposit);
+
+        PassClientSelector<Deposit> selector = new PassClientSelector<>(Deposit.class);
+        selector.setFilter(RSQL.equals("submission.submittedDate", "2023-09-01T02:01:20.300Z"));
+        PassClientResult<Deposit> result = client.selectObjects(selector);
+
+        assertEquals(1, result.getObjects().size());
+        Deposit foundDeposit = result.getObjects().get(0);
+        assertEquals(deposit.getId(), foundDeposit.getId());
+        assertEquals(submission.getId(), foundDeposit.getSubmission().getId());
+    }
+
+    @Test
+    public void testSelectDepositObjects_Success_WithGteSubmissionDateFoundFilter() throws IOException {
+        Submission submission = new Submission();
+        submission.setSubmittedDate(dt("2023-09-02T02:01:20.300Z"));
+
+        client.createObject(submission);
+
+        Deposit deposit = new Deposit();
+        deposit.setDepositStatusRef("gte-found");
+        deposit.setSubmission(submission);
+
+        client.createObject(deposit);
+
+        PassClientSelector<Deposit> selector = new PassClientSelector<>(Deposit.class);
+        selector.setFilter(
+            RSQL.and(
+                RSQL.gte("submission.submittedDate", "2023-09-01T02:01:20.300Z"),
+                RSQL.equals("depositStatusRef", "gte-found")
+            )
+        );
+        PassClientResult<Deposit> result = client.selectObjects(selector);
+
+        assertEquals(1, result.getObjects().size());
+        Deposit foundDeposit = result.getObjects().get(0);
+        assertEquals(deposit.getId(), foundDeposit.getId());
+        assertEquals(submission.getId(), foundDeposit.getSubmission().getId());
+    }
+
+    @Test
+    public void testSelectDepositObjects_Success_WithGteSubmissionDateFilter() throws IOException {
+        Submission submission = new Submission();
+        submission.setSubmittedDate(dt("2023-09-01T01:01:20.300Z"));
+
+        client.createObject(submission);
+
+        Deposit deposit = new Deposit();
+        deposit.setDepositStatusRef("gte-notfound");
+        deposit.setSubmission(submission);
+
+        client.createObject(deposit);
+
+        PassClientSelector<Deposit> selector = new PassClientSelector<>(Deposit.class);
+        selector.setFilter(
+            RSQL.and(
+                RSQL.gte("submission.submittedDate", "2023-09-02T01:01:20.300Z"),
+                RSQL.equals("depositStatusRef", "gte-notfound")
+            )
+        );
+        PassClientResult<Deposit> result = client.selectObjects(selector);
+
+        assertEquals(0, result.getObjects().size());
+    }
+
+    @Test
+    public void testSelectDepositObjects_Success_WithLteSubmissionDateFoundFilter() throws IOException {
+        Submission submission = new Submission();
+        submission.setSubmittedDate(dt("2023-09-02T01:01:20.300Z"));
+
+        client.createObject(submission);
+
+        Deposit deposit = new Deposit();
+        deposit.setDepositStatusRef("lte-found");
+        deposit.setSubmission(submission);
+
+        client.createObject(deposit);
+
+        PassClientSelector<Deposit> selector = new PassClientSelector<>(Deposit.class);
+        selector.setFilter(
+            RSQL.and(
+                RSQL.lte("submission.submittedDate", "2023-09-03T02:01:20.300Z"),
+                RSQL.equals("depositStatusRef", "lte-found")
+            )
+        );
+        PassClientResult<Deposit> result = client.selectObjects(selector);
+
+        assertEquals(1, result.getObjects().size());
+        Deposit foundDeposit = result.getObjects().get(0);
+        assertEquals(deposit.getId(), foundDeposit.getId());
+        assertEquals(submission.getId(), foundDeposit.getSubmission().getId());
+    }
+
+    @Test
+    public void testSelectDepositObjects_Success_WithLteSubmissionDateFilter() throws IOException {
+        Submission submission = new Submission();
+        submission.setSubmittedDate(dt("2023-09-02T02:01:20.300Z"));
+
+        client.createObject(submission);
+
+        Deposit deposit = new Deposit();
+        deposit.setDepositStatusRef("lte-notfound");
+        deposit.setSubmission(submission);
+
+        client.createObject(deposit);
+
+        PassClientSelector<Deposit> selector = new PassClientSelector<>(Deposit.class);
+        selector.setFilter(RSQL.lte("submission.submittedDate", "2023-09-01T02:01:20.300Z"));
+        selector.setFilter(
+            RSQL.and(
+                RSQL.lte("submission.submittedDate", "2023-09-01T02:01:20.300Z"),
+                RSQL.equals("depositStatusRef", "lte-notfound")
+            )
+        );
+        PassClientResult<Deposit> result = client.selectObjects(selector);
+
+        assertEquals(0, result.getObjects().size());
+    }
+
     private static ZonedDateTime dt(String s) {
         return ZonedDateTime.parse(s, ModelUtil.dateTimeFormatter());
     }

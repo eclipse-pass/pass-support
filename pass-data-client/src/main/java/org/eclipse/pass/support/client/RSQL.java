@@ -57,6 +57,24 @@ public class RSQL {
 
     /**
      * @param name Name of field
+     * @param value Value of field
+     * @return RSQL expression testing that object has a field gte value
+     */
+    public static String gte(String name, String value) {
+        return comparison(name, ">=", value);
+    }
+
+    /**
+     * @param name Name of field
+     * @param value Value of field
+     * @return RSQL expression testing that object has a field lte value
+     */
+    public static String lte(String name, String value) {
+        return comparison(name, "<=", value);
+    }
+
+    /**
+     * @param name Name of field
      * @param values Values of field
      * @return RSQL expression testing that object has a field with at least one of the values
      */
