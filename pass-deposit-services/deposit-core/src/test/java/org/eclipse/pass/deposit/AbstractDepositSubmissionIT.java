@@ -47,6 +47,7 @@ import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -97,7 +98,7 @@ public abstract class AbstractDepositSubmissionIT {
         .withExposedPorts(8080);
 
     @Autowired protected SubmissionTestUtil submissionTestUtil;
-    @Autowired protected PassClient passClient;
+    @SpyBean protected PassClient passClient;
 
     @DynamicPropertySource
     static void updateProperties(DynamicPropertyRegistry registry) {
