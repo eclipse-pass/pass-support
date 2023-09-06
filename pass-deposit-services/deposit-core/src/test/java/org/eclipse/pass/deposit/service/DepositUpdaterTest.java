@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -41,10 +42,13 @@ public class DepositUpdaterTest {
         // GIVEN
         final PassClient passClient = mock(PassClient.class);
         final DepositTaskHelper depositTaskHelper = mock(DepositTaskHelper.class);
-        final DepositUpdater depositUpdater = new DepositUpdater(passClient, depositTaskHelper);
+        final FailedDepositRetry failedDepositRetry = mock(FailedDepositRetry.class);
+        final DepositUpdater depositUpdater = new DepositUpdater(passClient, depositTaskHelper, failedDepositRetry);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
+        deposit1.setDepositStatus(DepositStatus.SUBMITTED);
         Deposit deposit2 = new Deposit();
+        deposit2.setDepositStatus(DepositStatus.SUBMITTED);
         deposit2.setId("dp-2");
         when(passClient.streamObjects(any())).thenReturn(Stream.of(deposit1, deposit2));
 
@@ -57,6 +61,6 @@ public class DepositUpdaterTest {
 
         ArgumentCaptor<PassClientSelector<Deposit>> argument = ArgumentCaptor.forClass(PassClientSelector.class);
         verify(passClient).streamObjects(argument.capture());
-        assertEquals("depositStatus=='submitted'", argument.getValue().getFilter());
+        assertEquals("depositStatus=in=('submitted','failed')", argument.getValue().getFilter());
     }
 }

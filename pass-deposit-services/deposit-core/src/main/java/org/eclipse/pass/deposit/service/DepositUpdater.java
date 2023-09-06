@@ -17,7 +17,6 @@
 package org.eclipse.pass.deposit.service;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -36,32 +35,29 @@ public class DepositUpdater {
 
     private final PassClient passClient;
     private final DepositTaskHelper depositHelper;
+    private final FailedDepositRetry failedDepositRetry;
 
     @Autowired
-    public DepositUpdater(PassClient passClient, DepositTaskHelper depositHelper) {
+    public DepositUpdater(PassClient passClient, DepositTaskHelper depositHelper,
+                          FailedDepositRetry failedDepositRetry) {
         this.passClient = passClient;
         this.depositHelper = depositHelper;
+        this.failedDepositRetry = failedDepositRetry;
     }
 
     public void doUpdate() throws IOException {
-        doUpdate(depositIdsToUpdate(passClient));
-    }
-
-    private void doUpdate(Collection<String> depositIds) {
-        depositIds.forEach(depositId -> {
+        PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+        sel.setFilter(RSQL.in("depositStatus", DepositStatus.SUBMITTED.getValue(), DepositStatus.FAILED.getValue()));
+        passClient.streamObjects(sel).forEach(deposit -> {
             try {
-                depositHelper.processDepositStatus(depositId);
+                if (deposit.getDepositStatus() == DepositStatus.FAILED) {
+                    failedDepositRetry.retryFailedDeposit(deposit);
+                } else {
+                    depositHelper.processDepositStatus(deposit.getId());
+                }
             } catch (Exception e) {
-                LOG.warn("Failed to update {}: {}", depositId, e.getMessage(), e);
+                LOG.warn("Failed to update {}: {}", deposit.getId(), e.getMessage(), e);
             }
         });
     }
-
-    private static Collection<String> depositIdsToUpdate(PassClient passClient) throws IOException {
-        PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
-        sel.setFilter(RSQL.equals("depositStatus", DepositStatus.SUBMITTED.getValue()));
-
-        return passClient.streamObjects(sel).map(Deposit::getId).toList();
-    }
-
 }
