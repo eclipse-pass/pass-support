@@ -1,6 +1,7 @@
 package org.eclipse.pass.loader.nihms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -66,6 +67,7 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
     private void resetPaths(File folder) {
         try {
             File[] listOfFiles = folder.listFiles();
+            assertNotNull(listOfFiles);
             for (File filepath : listOfFiles) {
                 if (filepath.getAbsolutePath().endsWith(".done")) {
                     String fp = filepath.getAbsolutePath();
@@ -80,7 +82,7 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
     }
 
     private void preLoadGrants() throws Exception {
-        PassClientSelector<Grant> grantSelector = new PassClientSelector(Grant.class);
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
 
         User user = new User();
         passClient.createObject(user);
@@ -153,7 +155,7 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         String checkableGrantId = createGrant(checkableAwardNumber, user);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", checkableAwardNumber));
-        String testGrantId = passClient.streamObjects(grantSelector).findFirst().get().getId().toString();
+        String testGrantId = passClient.streamObjects(grantSelector).findFirst().orElseThrow().getId();
         assertEquals(checkableGrantId, testGrantId);
 
     }
