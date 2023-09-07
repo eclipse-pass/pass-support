@@ -146,13 +146,13 @@ public class NihmsPassClientServiceTest {
         grant6.setStartDate(ZonedDateTime.now());
 
         //test with same grant number, different start dates
-        Stream<Grant> mockGrantResult = List.of(grant1, grant2).stream();
+        Stream<Grant> mockGrantResult = Stream.of(grant1, grant2);
 
         //test other standardized grant numbers
-        Stream<Grant> mockGrantResult1 = List.of(grant3).stream();
-        Stream<Grant> mockGrantResult2 = List.of(grant4).stream();
-        Stream<Grant> mockGrantResult3 = List.of(grant5).stream();
-        Stream<Grant> mockGrantResult4 = List.of(grant6).stream();
+        Stream<Grant> mockGrantResult1 = Stream.of(grant3);
+        Stream<Grant> mockGrantResult2 = Stream.of(grant4);
+        Stream<Grant> mockGrantResult3 = Stream.of(grant5);
+        Stream<Grant> mockGrantResult4 = Stream.of(grant6);
 
         doReturn(mockGrantResult)
                 .when(mockClient).streamObjects(
@@ -215,9 +215,9 @@ public class NihmsPassClientServiceTest {
         grant3.setAwardNumber("R55 AR050026");
         grant3.setStartDate(ZonedDateTime.now());
 
-        Stream<Grant> mockGrantResult1 = List.of(grant1).stream();
-        Stream<Grant> mockGrantResult2 = List.of(grant2).stream();
-        Stream<Grant> mockGrantResult3 = List.of(grant3).stream();
+        Stream<Grant> mockGrantResult1 = Stream.of(grant1);
+        Stream<Grant> mockGrantResult2 = Stream.of(grant2);
+        Stream<Grant> mockGrantResult3 = Stream.of(grant3);
 
         doReturn(mockGrantResult1)
                 .when(mockClient)
