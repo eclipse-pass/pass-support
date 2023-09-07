@@ -24,7 +24,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <http-client.version>4.5.2</http-client.version>
+        <http-client.version>4.5.13</http-client.version>
         <org-json.version>20180130</org-json.version>
         <commons.csv.version>1.6</commons.csv.version>
         <selenium.version>3.11.0</selenium.version>
