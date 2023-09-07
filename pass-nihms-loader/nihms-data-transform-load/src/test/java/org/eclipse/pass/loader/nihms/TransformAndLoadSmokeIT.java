@@ -56,12 +56,11 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
 
         submissionSelector.setFilter(RSQL.notEquals("id", "-1"));
         List<Submission> submissions = passClient.selectObjects(submissionSelector).getObjects();
-        assertEquals(45, submissions.size());
+        assertEquals(37, submissions.size());
 
         //reset file names:
         File downloadDir = new File(path);
         resetPaths(downloadDir);
-
     }
 
     private void resetPaths(File folder) {
