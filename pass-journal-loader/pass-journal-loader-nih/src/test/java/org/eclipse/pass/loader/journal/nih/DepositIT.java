@@ -22,7 +22,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -45,15 +45,15 @@ public class DepositIT {
     @Test
     public void loadFromFileTest(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
         String jmedlineJournals = Files.readString(
-            Path.of(DepositIT.class.getResource("/medline.txt").getPath()));
+            Paths.get(DepositIT.class.getResource("/medline.txt").toURI()));
         stubFor(get("/pubmed/J_Medline.txt")
             .willReturn(ok(jmedlineJournals)));
         String pmcJournlas1 = Files.readString(
-            Path.of(DepositIT.class.getResource("/pmc-1.csv").getPath()));
+            Paths.get(DepositIT.class.getResource("/pmc-1.csv").toURI()));
         stubFor(get("/pmc/front-page/NIH_PA_journal_list-1.csv")
             .willReturn(ok(pmcJournlas1)));
         String pmcJournlas2 = Files.readString(
-            Path.of(DepositIT.class.getResource("/pmc-2.csv").getPath()));
+            Paths.get(DepositIT.class.getResource("/pmc-2.csv").toURI()));
         stubFor(get("/pmc/front-page/NIH_PA_journal_list-2.csv")
             .willReturn(ok(pmcJournlas2)));
 
