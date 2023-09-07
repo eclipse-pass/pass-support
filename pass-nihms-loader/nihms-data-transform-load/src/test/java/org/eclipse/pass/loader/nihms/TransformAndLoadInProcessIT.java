@@ -52,25 +52,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
 
-    private String pmid1 = "9999999999";
-    private String grant1 = "R01 AB123456";
-    private String user1 = "55";
-    private String nihmsId1 = "NIHMS987654321";
-    private String dateval = "12/12/2017";
-    private String title = "Article A";
-    private String doi = "10.1000/a.abcd.1234";
-    private String issue = "3";
-
-    private String pubId; //use this to pass a uri out of the scope of attempt()
-    private String submissionId; //use this to pass a uri out of the scope of attempt()
-    private String repoCopyId; //use this to pass a uri out of the scope of attempt()
-
+    private final String pmid1 = "9999999999";
+    private final String grant1 = "R01 AB123456";
+    private final String nihmsId1 = "NIHMS987654321";
+    private final String title = "Article A";
+    private final String doi = "10.1000/a.abcd.1234";
+    private final String issue = "3";
 
     /**
      * Tests when the publication is completely new and is an in-process
      * publication, submission and RepositoryCopy are created
      *
-     * @throws Exception
+     * @throws Exception if there is an error
      */
     @Test
     public void testNewInProcessPublication() throws Exception {
@@ -97,21 +90,21 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
         //wait for publication to appear
         PassClientSelector<Publication> testPubSelector = new PassClientSelector<>(Publication.class);
         testPubSelector.setFilter(RSQL.equals("pmid", pmid1));
-        pubId = passClient.selectObjects(testPubSelector).getObjects().get(0).getId();
-        assertNotNull(pubId);
+        List<Publication> testPubs = passClient.streamObjects(testPubSelector).toList();
+        assertNotNull(testPubs.get(0));
 
-        Publication publication = passClient.getObject(Publication.class, pubId);
+        Publication publication = passClient.getObject(Publication.class, testPubs.get(0).getId());
         //spot check publication fields
         assertEquals(doi, publication.getDoi());
         assertEquals(title, publication.getTitle());
         assertEquals(issue, publication.getIssue());
 
         //now make sure we wait for submission to appear
-        subSelector.setFilter(RSQL.equals("publication.id", pubId));
-        submissionId = passClient.selectObjects(subSelector).getObjects().get(0).getId();
-        assertNotNull(submissionId);
+        subSelector.setFilter(RSQL.equals("publication.id", testPubs.get(0).getId()));
+        List<Submission> testSubs = passClient.streamObjects(subSelector).toList();
+        assertNotNull(testSubs.get(0));
 
-        Submission submission = passClient.getObject(Submission.class, submissionId);
+        Submission submission = passClient.getObject(Submission.class, testSubs.get(0).getId());
         //check fields in submission
         assertEquals(grantId, submission.getGrants().get(0).getId());
         assertEquals(ConfigUtil.getNihmsRepositoryId(), submission.getRepositories().get(0).getId());
@@ -124,8 +117,8 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
         assertEquals(2017, submission.getSubmittedDate().getYear());
         assertEquals(SubmissionStatus.SUBMITTED, submission.getSubmissionStatus());
 
-        repoCopySelector.setFilter(RSQL.equals("publication.id", pubId));
-        repoCopyId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+        repoCopySelector.setFilter(RSQL.equals("publication.id", testPubs.get(0).getId()));
+        String repoCopyId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
         RepositoryCopy repoCopy = passClient.getObject(RepositoryCopy.class, repoCopyId);
         //check fields in repoCopy
         validateRepositoryCopy(repoCopy);
@@ -141,7 +134,6 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
     @Test
     public void testInProcessExistingSubmissionDeposit() throws Exception {
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
-        PassClientSelector<Deposit> depoSelector = new PassClientSelector<>(Deposit.class);
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         User user = new User();
@@ -177,7 +169,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
 
         //make sure we wait for submission, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getNihmsId()));
-        repoCopyId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
+        String repoCopyId = passClient.selectObjects(repoCopySelector).getObjects().get(0).getId();
         assertNotNull(repoCopyId);
 
         Submission reloadedPreexistingSub = nihmsPassClientService.readSubmission(preexistingSub.getId());
@@ -208,6 +200,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
     }
 
     private NihmsPublication newInProcessNihmsPub() {
+        String dateval = "12/12/2017";
         return new NihmsPublication(NihmsStatus.IN_PROCESS, pmid1, grant1, nihmsId1, null, dateval, dateval, null, null,
                                     title);
     }
