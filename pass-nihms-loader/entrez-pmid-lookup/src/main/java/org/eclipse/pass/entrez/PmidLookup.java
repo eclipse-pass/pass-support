@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -121,6 +123,8 @@ public class PmidLookup {
         try {
             HttpClient client = HttpClientBuilder
                 .create()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                .setCookieSpec(CookieSpecs.STANDARD).build())
                 .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
                 .build();
             HttpGet httpget = new HttpGet(new URI(path));
