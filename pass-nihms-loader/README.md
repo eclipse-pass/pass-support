@@ -19,7 +19,7 @@ The NIHMS Data Harvest CLI uses the NIH API to download the PACM data.
 The following are required to run this tool:
 
 * Java 8 or later
-* Download the latest nihms-data-harvest-cli-{version}-shaded.jar from
+* Download the latest nihms-data-harvest-cli-exec.jar from
   the [releases page](https://github.com/OA-PASS/nihms-submission-etl/releases) and place in a folder on the machine
   where the application will run.
 * Get an account for the NIH PACM website, and obtain an API key. The API key is only valid for 3 months, so it will 
@@ -41,7 +41,7 @@ the java application. You can override the location of the properties file by de
 for `nihmsetl.harvester.configfile` e.g.
 
 ```
-> java -Dnihmsetl.harvester.configfile=/path/to/configfile.properties -jar nihms-data-harvest-cli-1.0.0-SNAPSHOT-shaded.jar 
+> java -Dnihmsetl.harvester.configfile=/path/to/configfile.properties -jar nihms-data-harvest-cli-exec.jar
 ```
 
 The configuration file should look like this:
@@ -89,7 +89,7 @@ nihmsetl.api.url.param.ipf=4134401
 # The API token retrieved from the PACM website.  These expire every three months.
 nihmsetl.api.url.param.api-token=XXXXXXX-XXXX-XXXX-XXXXXX
 
-# Date in MM/YYYY format that the PACM data should start from (may be set using the `-s` harvester command line option).  By default this date will be set to the current month, one year ago 
+# Date in MM/YYYY format that the PACM data should start from (may be set using the `-s` harvester command line option). By default, this date will be set to the current month, one year ago 
 # nihmsetl.api.url.param.pdf = 07/2018
 
 # Date in MM/YYYY format that the PACM data should end at (leave commented to default to the current month)
@@ -123,7 +123,7 @@ download. You can change this by adding a start date parameter:
 So, for example, to download the compliant publications published since December 2012, you would do the following:
 
 ```
-> java -jar nihms-data-harvest-cli-1.0.0-SNAPSHOT-shaded.jar -s 12-2012 -c
+> java -jar nihms-data-harvest-cli-exec.jar -s 12-2012 -c
 ```
 
 On running this command, files will be downloaded and renamed with a prefix according to their status ("compliant", "
@@ -139,7 +139,7 @@ PASS compliant data and loads them into the PASS database.
 The following is required to run this tool:
 
 * Java 8 or later
-* Download latest nihms-data-transform-load-cli-{version}-shaded.jar from
+* Download latest nihms-data-transform-load-cli-exec.jar from
   the [releases page](https://github.com/OA-PASS/nihms-submission-etl/releases) and place in a folder on the machine
   where the application will run.
 
@@ -156,7 +156,7 @@ the java application. You can override the location of the properties file by de
 for `nihmsetl.harvester.configfile` e.g.
 
 ```
-> java -Dnihmsetl.loader.configfile=/path/to/configfile.properties -jar nihms-data-transform-load-1.0.0-SNAPSHOT-shaded.jar 
+> java -Dnihmsetl.loader.configfile=/path/to/configfile.properties -jar nihms-data-transform-load-exec.jar 
 ```
 
 The configuration file should look like this:
@@ -197,7 +197,7 @@ one or two of them, you can add them individually at the command line:
 So, for example, to process non-compliant spreadsheets only:
 
 ```
-> java -jar nihms-data-transform-load-cli-1.0.0-SNAPSHOT-shaded.jar -n
+> java -jar nihms-data-transform-load-cli-exec.jar -n
 ```
 
 When run, each row will be loaded into the application and new Publications, Submissions, and RepositoryCopies will be
