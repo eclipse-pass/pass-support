@@ -156,35 +156,38 @@ use `PASS_DEPOSIT_REPOSITORY_CONFIGURATION=http://example.org/deposit-services.j
 
 A "failed" `Deposit` or `Submission` has `Deposit.DepositStatus = FAILED`
 or `Submission.AggregateDepositStatus = FAILED`. When a resource has been marked `FAILED`, Deposit Services will ignore
-any messages relating to the resource when in `listen` mode (see below for more information on modes). Intervention (
-automated or manual) is required to update the failed resource.
+any messages relating to the resource. Failed `Deposit` resources will be retried as part of the 
+`DepositStatusUpdaterJob` job.  Once all `Deposit` resource are successful, the failed 
+`Submission.AggregateDepositStatus` will be updated.
 
 A resource will be considered as failed when errors occur during the processing of `Submission` and `Deposit` resources.
-Some errors may be caused by transient network issues, or a server being rebooted, but for now Deposit Services does not
-contain any logic for retrying when there are low-level communication errors with an endpoint.
+Some errors may be caused by transient network issues, or a server being rebooted.  In the case of such failures,
+Deposit Services will retry for n number of days after the `Submission` is created. The number of days
+is set in an application property named `pass.deposit.update.window.days`.
 
 `Submission` resources are failed when:
 
 1. Failure to build the Deposit Services model for a Submission
 1. There are no files attached to the Submission
 1. Any file attached to the Submission is missing a location URI (the URI used to retrieve the bytes of the file).
-1. An error occurs saving the state of the `Submission` in the repository (arguably a transient error, but DS does not
-   perform any retries when there are errors communicating with the repository)
+1. An error occurs saving the state of the `Submission` in the repository (arguably a transient error)
 
-See `SubmissionProcessor` for details. Right now, when a `Submission` is failed, manual intervention is required.
-Deposit Services does not provide any support for dealing with failed submissions. It is likely the end-user will need
-to re-create the submission in the user interface, and resubmit it.
+See `SubmissionProcessor` for details. Right now, when a `Submission` is failed, manual intervention may be required.
+Deposit Services does retry the failed `Deposit` resources of the `Submission`. However, some of the failure scenarios
+above would have to be resolved by the user. It is possible the end-user will need to re-create the submission in 
+the user interface, and resubmit it.
 
 `Deposit` resources are failed when:
 
 1. An error occurs building a package
 1. An error occurs streaming a package to a `Repository` (arguably transient)
-1. An error occurs polling (arguably transient, but DS does not perform retries) or parsing the status of a `Deposit`
-1. An error occurs saving the state of a `Deposit` in the repository (again, arguably transient, but DS doesn't perform
-   retries when there are errors communicating with the repository)
+1. An error occurs polling (arguably transient) or parsing the status of a `Deposit`
+1. An error occurs saving the state of a `Deposit` in the repository (again, arguably transient)
 
 See `DepositTask` for details. Deposits fail for transient reasons; a server being down, an interruption in network
-communication, or invalid credentials for the downstream repository are just a few examples.
+communication, or invalid credentials for the downstream repository are just a few examples. As stated, DS will retry
+failed `Deposit` resources for n number of days after the creation of the associated `Submission`.  The number of days
+is set in an application property named `pass.deposit.update.window.days`.
 
 ## Build and Deployment
 
