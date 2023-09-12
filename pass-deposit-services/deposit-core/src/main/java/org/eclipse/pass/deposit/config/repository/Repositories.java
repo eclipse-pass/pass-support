@@ -17,21 +17,19 @@
 package org.eclipse.pass.deposit.config.repository;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class Repositories {
 
-    private final Map<String, RepositoryConfig> repositoryConfigs = new HashMap<>();
+    private final Map<String, RepositoryConfig> repositoryConfigs = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public void addRepositoryConfig(String key, RepositoryConfig config) {
-        String lowerKey = key.toLowerCase();
-        repositoryConfigs.put(lowerKey, config);
+        repositoryConfigs.put(key, config);
     }
 
     public RepositoryConfig getConfig(String key) {
-        String lowerKey = key.toLowerCase();
-        return repositoryConfigs.get(lowerKey);
+        return repositoryConfigs.get(key);
     }
 
     public Collection<RepositoryConfig> getAllConfigs() {
