@@ -1,5 +1,5 @@
 {
-  "pmc": {
+  "Pmc": {
     "deposit-config": {
       "processing": {
         "beanName": "org.eclipse.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
