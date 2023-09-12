@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit.config.spring;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -81,7 +82,9 @@ public class DepositConfig {
 
     @Bean
     public Registry<Packager> packagerRegistry(Map<String, Packager> packagers) {
-        return new InMemoryMapRegistry<>(packagers);
+        Map<String, Packager> packagerTreeMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        packagerTreeMap.putAll(packagers);
+        return new InMemoryMapRegistry<>(packagerTreeMap);
     }
 
     @Bean
