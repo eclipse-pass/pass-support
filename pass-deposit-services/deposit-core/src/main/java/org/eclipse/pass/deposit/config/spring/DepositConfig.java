@@ -81,81 +81,74 @@ public class DepositConfig {
     }
 
     @Bean
-    public Registry<Packager> packagerRegistry(Map<String, Packager> packagers) {
+    public Registry<Packager> packagerRegistry(Repositories repositories, ApplicationContext appCtx) {
+        Map<String, Assembler> assemblers = getAssemblers(appCtx);
+        Map<String, Transport> transports = getTransports(appCtx);
+        Map<String, Packager> packagers = repositories.getAllConfigs().stream()
+            .map(repoConfig -> {
+                String dspBeanName = null;
+                DepositStatusProcessor dsp = null;
+                if (repoConfig.getRepositoryDepositConfig() != null &&
+                    repoConfig.getRepositoryDepositConfig().getDepositProcessing() != null) {
+                    dspBeanName = repoConfig.getRepositoryDepositConfig()
+                        .getDepositProcessing()
+                        .getBeanName();
+                    dsp = null;
+                    if (dspBeanName != null) {
+                        dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
+                        repoConfig.getRepositoryDepositConfig()
+                            .getDepositProcessing().setProcessor(dsp);
+                    }
+                }
+
+                String repositoryKey = repoConfig.getRepositoryKey();
+                String transportProtocol = repoConfig.getTransportConfig()
+                    .getProtocolBinding()
+                    .getProtocol();
+                String assemblerBean = repoConfig.getAssemblerConfig()
+                    .getBeanName();
+
+                // Resolve the Transport impl from the protocol binding,
+                // currently assumes a 1:1 protocol binding to transport impl
+                Transport transport = transports.values()
+                    .stream()
+                    .filter(
+                        candidate -> candidate.protocol()
+                            .name()
+                            .equalsIgnoreCase(
+                                transportProtocol))
+                    .findAny()
+                    .orElseThrow(() ->
+                        new RuntimeException(
+                            "Missing Transport implementation for protocol binding " +
+                                transportProtocol));
+
+                LOG.info(
+                    "Configuring Packager for Repository configuration {}",
+                    repoConfig.getRepositoryKey());
+                LOG.info("  Repository Key: {}", repositoryKey);
+                LOG.info("  Assembler: {}", assemblerBean);
+                LOG.info("  Transport Binding: {}", transportProtocol);
+                LOG.info("  Transport Implementation: {}", transport);
+                if (dspBeanName != null) {
+                    LOG.info("  Deposit Status Processor: {}", dspBeanName);
+                }
+
+                return new Packager(repositoryKey,
+                    assemblers.get(assemblerBean),
+                    transport,
+                    repoConfig,
+                    dsp);
+            })
+            .collect(
+                Collectors.toMap(Packager::getName, Function.identity()));
+
         Map<String, Packager> packagerTreeMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         packagerTreeMap.putAll(packagers);
         return new InMemoryMapRegistry<>(packagerTreeMap);
     }
 
-    @Bean
-    public Map<String, Packager> packagers(@Value("#{assemblers}") Map<String, Assembler> assemblers,
-                                           @Value("#{transports}") Map<String, Transport> transports,
-                                           Repositories repositories,
-                                           ApplicationContext appCtx) {
-        Map<String, Packager> packagers = repositories.getAllConfigs().stream()
-              .map(repoConfig -> {
-                  String dspBeanName = null;
-                  DepositStatusProcessor dsp = null;
-                  if (repoConfig.getRepositoryDepositConfig() != null &&
-                          repoConfig.getRepositoryDepositConfig().getDepositProcessing() != null) {
-                      dspBeanName = repoConfig.getRepositoryDepositConfig()
-                                              .getDepositProcessing()
-                                              .getBeanName();
-                      dsp = null;
-                      if (dspBeanName != null) {
-                          dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
-                          repoConfig.getRepositoryDepositConfig()
-                                    .getDepositProcessing().setProcessor(dsp);
-                      }
-                  }
-
-                  String repositoryKey = repoConfig.getRepositoryKey();
-                  String transportProtocol = repoConfig.getTransportConfig()
-                                                       .getProtocolBinding()
-                                                       .getProtocol();
-                  String assemblerBean = repoConfig.getAssemblerConfig()
-                                                   .getBeanName();
-
-                  // Resolve the Transport impl from the protocol binding,
-                  // currently assumes a 1:1 protocol binding to transport impl
-                  Transport transport = transports.values()
-                      .stream()
-                      .filter(
-                          candidate -> candidate.protocol()
-                                                .name()
-                                                .equalsIgnoreCase(
-                                                    transportProtocol))
-                      .findAny()
-                      .orElseThrow(() ->
-                                       new RuntimeException(
-                                           "Missing Transport implementation for protocol binding " +
-                                           transportProtocol));
-
-                  LOG.info(
-                      "Configuring Packager for Repository configuration {}",
-                      repoConfig.getRepositoryKey());
-                  LOG.info("  Repository Key: {}", repositoryKey);
-                  LOG.info("  Assembler: {}", assemblerBean);
-                  LOG.info("  Transport Binding: {}", transportProtocol);
-                  LOG.info("  Transport Implementation: {}", transport);
-                  if (dspBeanName != null) {
-                      LOG.info("  Deposit Status Processor: {}", dspBeanName);
-                  }
-
-                  return new Packager(repositoryKey,
-                                      assemblers.get(assemblerBean),
-                                      transport,
-                                      repoConfig,
-                                      dsp);
-              })
-              .collect(
-                  Collectors.toMap(Packager::getName, Function.identity()));
-
-        return packagers;
-    }
-
-    @Bean
-    public Map<String, Transport> transports(ApplicationContext appCtx) {
+    private Map<String, Transport> getTransports(ApplicationContext appCtx) {
 
         Map<String, Transport> transports = appCtx.getBeansOfType(Transport.class);
 
@@ -167,16 +160,15 @@ public class DepositConfig {
         transports.forEach((beanName, impl) -> {
             LOG.debug("Discovered Transport implementation {}: {}", beanName, impl.getClass().getName());
             if (!appCtx.isSingleton(beanName)) {
-                LOG.warn("Transport implementation {} with beanName {} is *not* a singleton; this will likely " +
-                         "result in corrupted packages being streamed to downstream Repositories.");
+                LOG.warn("Transport implementation with beanName {} is *not* a singleton; this will likely " +
+                         "result in corrupted packages being streamed to downstream Repositories.", beanName);
             }
         });
 
         return transports;
     }
 
-    @Bean
-    public Map<String, Assembler> assemblers(ApplicationContext appCtx) {
+    private Map<String, Assembler> getAssemblers(ApplicationContext appCtx) {
         Map<String, Assembler> assemblers = appCtx.getBeansOfType(Assembler.class);
 
         if (assemblers.size() == 0) {
@@ -187,8 +179,8 @@ public class DepositConfig {
         assemblers.forEach((beanName, impl) -> {
             LOG.debug("Discovered Assembler implementation {}: {}", beanName, impl.getClass().getName());
             if (!appCtx.isSingleton(beanName)) {
-                LOG.warn("Assembler implementation {} with beanName {} is *not* a singleton; this will likely " +
-                         "result in corrupted packages being streamed to downstream Repositories.");
+                LOG.warn("Assembler implementation with beanName {} is *not* a singleton; this will likely " +
+                         "result in corrupted packages being streamed to downstream Repositories.", beanName);
             }
         });
 
