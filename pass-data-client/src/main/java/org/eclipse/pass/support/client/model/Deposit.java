@@ -30,12 +30,17 @@ import jsonapi.ToOne;
  */
 
 @Resource(type = "deposit")
-public class Deposit implements PassEntity {
+public class Deposit implements PassEntity, PassVersionedEntity {
     /**
      * Unique id for the resource.
      */
     @Id
     private String id;
+
+    /**
+     * Optimistic Locking Version
+     */
+    private Long version;
 
     /**
      * A URL or some kind of reference that can be dereferenced, entity body parsed, and used to determine the status
@@ -94,6 +99,18 @@ public class Deposit implements PassEntity {
         this.submission = deposit.submission;
         this.repository = deposit.repository;
         this.repositoryCopy = deposit.repositoryCopy;
+    }
+
+    /**
+     * @return the deposit version
+     */
+    public Long getVersion() {
+        return version;
+    }
+
+    @Override
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     /**
@@ -189,8 +206,9 @@ public class Deposit implements PassEntity {
         }
         Deposit other = (Deposit) obj;
         return depositStatus == other.depositStatus && Objects.equals(depositStatusRef, other.depositStatusRef)
-                && Objects.equals(id, other.id) && Objects.equals(repository, other.repository)
-                && Objects.equals(repositoryCopy, other.repositoryCopy) && Objects.equals(submission, other.submission);
+            && Objects.equals(id, other.id) && Objects.equals(repository, other.repository)
+            && Objects.equals(repositoryCopy, other.repositoryCopy) && Objects.equals(submission, other.submission)
+            && Objects.equals(version, other.version);
     }
 
     @Override

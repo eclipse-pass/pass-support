@@ -34,12 +34,17 @@ import jsonapi.ToOne;
  */
 
 @Resource(type = "submission")
-public class Submission implements PassEntity {
+public class Submission implements PassEntity, PassVersionedEntity {
     /**
      * Unique id for the resource.
      */
     @Id
     private String id;
+
+    /**
+     * Optimistic Locking Version
+     */
+    private Long version;
 
     /**
      * Stringified JSON representation of metadata captured by the relevant
@@ -167,6 +172,18 @@ public class Submission implements PassEntity {
         this.preparers = new ArrayList<User>(submission.preparers);
         this.grants = new ArrayList<Grant>(submission.grants);
         this.effectivePolicies = new ArrayList<>(submission.effectivePolicies);
+    }
+
+    /**
+     * @return the submission version
+     */
+    public Long getVersion() {
+        return version;
+    }
+
+    @Override
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     /**
@@ -403,15 +420,16 @@ public class Submission implements PassEntity {
         }
         Submission other = (Submission) obj;
         return aggregatedDepositStatus == other.aggregatedDepositStatus
-                && Objects.equals(effectivePolicies, other.effectivePolicies) && Objects.equals(grants, other.grants)
-                && Objects.equals(id, other.id) && Objects.equals(metadata, other.metadata)
-                && Objects.equals(preparers, other.preparers) && Objects.equals(publication, other.publication)
-                && Objects.equals(repositories, other.repositories) && source == other.source
-                && submissionStatus == other.submissionStatus && Objects.equals(submitted, other.submitted)
-                && Objects.equals(submittedDate == null ? null : submittedDate.toInstant(),
-                        other.submittedDate == null ? null : other.submittedDate.toInstant())
-                && Objects.equals(submitter, other.submitter) && Objects.equals(submitterEmail, other.submitterEmail)
-                && Objects.equals(submitterName, other.submitterName);
+            && Objects.equals(effectivePolicies, other.effectivePolicies) && Objects.equals(grants, other.grants)
+            && Objects.equals(id, other.id) && Objects.equals(metadata, other.metadata)
+            && Objects.equals(preparers, other.preparers) && Objects.equals(publication, other.publication)
+            && Objects.equals(repositories, other.repositories) && source == other.source
+            && submissionStatus == other.submissionStatus && Objects.equals(submitted, other.submitted)
+            && Objects.equals(submittedDate == null ? null : submittedDate.toInstant(),
+                    other.submittedDate == null ? null : other.submittedDate.toInstant())
+            && Objects.equals(submitter, other.submitter) && Objects.equals(submitterEmail, other.submitterEmail)
+            && Objects.equals(submitterName, other.submitterName)
+            && Objects.equals(version, other.version);
     }
 
     @Override
