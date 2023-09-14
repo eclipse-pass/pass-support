@@ -55,6 +55,9 @@ public class SubmissionReader {
             }).toList();
         submission.setGrants(populatedGrants);
 
+        entities.removeIf(passEntity -> passEntity.getId().equals(submission.getId()));
+        entities.add(submission);
+
         PassClientSelector<File> fileSelector = new PassClientSelector<>(File.class);
         fileSelector.setFilter(RSQL.equals("submission.id", submission.getId()));
         PassClientResult<File> resultFile = passClient.selectObjects(fileSelector);
