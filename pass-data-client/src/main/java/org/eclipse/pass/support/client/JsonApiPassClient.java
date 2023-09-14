@@ -51,6 +51,7 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PassEntity;
+import org.eclipse.pass.support.client.model.PassVersionedEntity;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.Repository;
@@ -184,13 +185,15 @@ public class JsonApiPassClient implements PassClient {
             }
             Document<T> result_doc = adapter.fromJson(response.body().string());
             obj.setId(result_doc.requireData().getId());
+            setVersionIfNeeded(result_doc, obj);
         }
     }
 
     @Override
     public <T extends PassEntity> void updateObject(T obj) throws IOException {
         // Use adapters that will serialize null values for attributes
-        JsonAdapter<Object> adapter = update_moshi.adapter(Types.newParameterizedType(Document.class, obj.getClass()));
+        JsonAdapter<Document<T>> adapter = update_moshi.adapter(Types.newParameterizedType(Document.class,
+            obj.getClass()));
         Document<T> doc = Document.with(obj).includedSerialization(IncludedSerialization.NONE).build();
 
         String json = adapter.toJson(doc);
@@ -208,6 +211,16 @@ public class JsonApiPassClient implements PassClient {
                 throw new IOException(
                         "Update failed: " + url + " returned " + response.code() + " " + response.body().string());
             }
+        }
+
+        Document<T> result_doc = adapter.fromJson(response.body().string());
+        setVersionIfNeeded(result_doc, obj);
+    }
+
+    private <T extends PassEntity> void setVersionIfNeeded(Document<T> resultDoc, T obj) {
+        if (resultDoc.requireData() instanceof PassVersionedEntity passVersionedEntity) {
+            Long version = passVersionedEntity.getVersion();
+            ((PassVersionedEntity) obj).setVersion(version);
         }
     }
 
