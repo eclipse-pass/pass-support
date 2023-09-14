@@ -131,8 +131,31 @@ public class JsonApiPassClientIT {
     }
 
     @Test
-    public void testUpdateObject_OptimisticLock_Submission() throws IOException {
+    public void testUpdateObject_VersionUpdating() throws IOException {
+        // GIVEN
+        Submission sub = new Submission();
+        sub.setAggregatedDepositStatus(AggregatedDepositStatus.NOT_STARTED);
+        sub.setSource(Source.PASS);
+        sub.setSubmitterName("Name");
+        sub.setSubmitted(false);
 
+        // WHEN
+        client.createObject(sub);
+
+        // THEN
+        assertEquals(0, sub.getVersion());
+
+        // WHEN
+        sub.setSource(Source.OTHER);
+        client.updateObject(sub);
+
+        // THEN
+        assertEquals(1, sub.getVersion());
+    }
+
+    @Test
+    public void testUpdateObject_OptimisticLock_Submission() throws IOException {
+        // GIVEN
         Submission sub = new Submission();
         sub.setAggregatedDepositStatus(AggregatedDepositStatus.NOT_STARTED);
         sub.setSource(Source.PASS);
@@ -147,6 +170,7 @@ public class JsonApiPassClientIT {
         updateSubmission1.setSource(Source.OTHER);
         client.updateObject(updateSubmission1);
 
+        // WHEN/THEN
         IOException ioException = assertThrows(IOException.class, () -> {
             updateSubmission2.setSubmitterName("Anothernewname");
             client.updateObject(updateSubmission2);
@@ -163,7 +187,7 @@ public class JsonApiPassClientIT {
 
     @Test
     public void testUpdateObject_OptimisticLock_Deposit() throws IOException {
-
+        // GIVEN
         Deposit deposit = new Deposit();
         deposit.setDepositStatus(DepositStatus.SUBMITTED);
 
@@ -175,6 +199,7 @@ public class JsonApiPassClientIT {
         updateDeposit1.setDepositStatus(DepositStatus.FAILED);
         client.updateObject(updateDeposit1);
 
+        // WHEN/THEN
         IOException ioException = assertThrows(IOException.class, () -> {
             updateDeposit2.setDepositStatus(DepositStatus.ACCEPTED);
             client.updateObject(updateDeposit2);
