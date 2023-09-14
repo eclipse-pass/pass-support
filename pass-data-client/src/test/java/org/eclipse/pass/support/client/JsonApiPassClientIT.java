@@ -3,6 +3,7 @@ package org.eclipse.pass.support.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -127,6 +128,65 @@ public class JsonApiPassClientIT {
         grant.setDirectFunder(funder);
 
         assertEquals(grant, test);
+    }
+
+    @Test
+    public void testUpdateObject_OptimisticLock_Submission() throws IOException {
+
+        Submission sub = new Submission();
+        sub.setAggregatedDepositStatus(AggregatedDepositStatus.NOT_STARTED);
+        sub.setSource(Source.PASS);
+        sub.setSubmitterName("Name");
+        sub.setSubmitted(false);
+
+        client.createObject(sub);
+
+        Submission updateSubmission1 = client.getObject(Submission.class, sub.getId());
+        Submission updateSubmission2 = client.getObject(Submission.class, sub.getId());
+
+        updateSubmission1.setSource(Source.OTHER);
+        client.updateObject(updateSubmission1);
+
+        IOException ioException = assertThrows(IOException.class, () -> {
+            updateSubmission2.setSubmitterName("Anothernewname");
+            client.updateObject(updateSubmission2);
+        });
+
+        assertTrue(ioException.getMessage().contains("Update failed: http://localhost:8080/data/submission/"));
+        assertTrue(ioException.getMessage().contains(
+            "returned 409 {\"errors\":[{\"detail\":\"Optimistic lock check failed for Submission [ID="));
+        assertTrue(ioException.getMessage().contains("Request version: 0, Stored version: 1\"}]}"));
+
+        Submission updateSubmission3 = client.getObject(Submission.class, sub.getId());
+        assertEquals("Name", updateSubmission3.getSubmitterName());
+    }
+
+    @Test
+    public void testUpdateObject_OptimisticLock_Deposit() throws IOException {
+
+        Deposit deposit = new Deposit();
+        deposit.setDepositStatus(DepositStatus.SUBMITTED);
+
+        client.createObject(deposit);
+
+        Deposit updateDeposit1 = client.getObject(Deposit.class, deposit.getId());
+        Deposit updateDeposit2 = client.getObject(Deposit.class, deposit.getId());
+
+        updateDeposit1.setDepositStatus(DepositStatus.FAILED);
+        client.updateObject(updateDeposit1);
+
+        IOException ioException = assertThrows(IOException.class, () -> {
+            updateDeposit2.setDepositStatus(DepositStatus.ACCEPTED);
+            client.updateObject(updateDeposit2);
+        });
+
+        assertTrue(ioException.getMessage().contains("Update failed: http://localhost:8080/data/deposit/"));
+        assertTrue(ioException.getMessage().contains(
+            "returned 409 {\"errors\":[{\"detail\":\"Optimistic lock check failed for Deposit [ID="));
+        assertTrue(ioException.getMessage().contains("Request version: 0, Stored version: 1\"}]}"));
+
+        Deposit updateDeposit3 = client.getObject(Deposit.class, deposit.getId());
+        assertEquals(DepositStatus.FAILED, updateDeposit3.getDepositStatus());
     }
 
     @Test
