@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.AwardStatus;
-import org.eclipse.pass.support.client.model.Contributor;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -34,7 +33,6 @@ import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PmcParticipation;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.Publication;
-import org.eclipse.pass.support.client.model.Publisher;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Source;
@@ -53,29 +51,6 @@ import org.eclipse.pass.support.client.model.UserRole;
 public class TestObjectCreator {
 
     private TestObjectCreator() {
-    }
-
-    /**
-     * Creates an instance of a Contributor
-     *
-     * @param contributorId the id for the object to be created
-     * @param userId        parameter for the user on this object
-     * @return the Contributor @
-     */
-    public static Contributor createContributor(String contributorId, String userId) {
-        Contributor contributor = new Contributor();
-        contributor.setId(contributorId);
-        contributor.setFirstName(TestValues.USER_FIRST_NAME);
-        contributor.setMiddleName(TestValues.USER_MIDDLE_NAME);
-        contributor.setLastName(TestValues.USER_LAST_NAME);
-        contributor.setDisplayName(TestValues.USER_DISPLAY_NAME);
-        contributor.setEmail(TestValues.USER_EMAIL);
-        contributor.setOrcidId(TestValues.USER_ORCID_ID);
-        contributor.setAffiliation(TestValues.USER_AFFILIATION);
-        contributor.setUser(createUser(userId));
-        contributor.setPublication(createPublication(TestValues.PUBLICATION_ID_1));
-
-        return contributor;
     }
 
     /**
@@ -157,7 +132,6 @@ public class TestObjectCreator {
         issns.add(TestValues.JOURNAL_ISSN_1);
         issns.add(TestValues.JOURNAL_ISSN_2);
         journal.setIssns(issns);
-        journal.setPublisher(createPublisher(TestValues.PUBLISHER_ID_1));
         journal.setNlmta(TestValues.JOURNAL_NLMTA);
         journal.setPmcParticipation(PmcParticipation.valueOf(TestValues.JOURNAL_PMCPARTICIPATION));
         return journal;
@@ -203,21 +177,6 @@ public class TestObjectCreator {
         publication.setIssue(TestValues.PUBLICATION_ISSUE);
         publication.setJournal(createJournal(TestValues.JOURNAL_ID_1));
         return publication;
-    }
-
-    /**
-     * Creates an instance of a Publisher
-     *
-     * @param publisherId the id for the object to be created
-     * @return the Publisher @
-     */
-    public static Publisher createPublisher(String publisherId) {
-        Publisher publisher = new Publisher();
-        publisher.setId(publisherId);
-        publisher.setName(TestValues.PUBLISHER_NAME);
-        publisher.setPmcParticipation(PmcParticipation.valueOf(TestValues.PUBLISHER_PMCPARTICIPATION));
-
-        return publisher;
     }
 
     /**

@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.AwardStatus;
-import org.eclipse.pass.support.client.model.Contributor;
-import org.eclipse.pass.support.client.model.ContributorRole;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -37,7 +35,6 @@ import org.eclipse.pass.support.client.model.PerformerRole;
 import org.eclipse.pass.support.client.model.PmcParticipation;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.Publication;
-import org.eclipse.pass.support.client.model.Publisher;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Source;
@@ -525,17 +522,11 @@ public class JsonApiPassClientIT {
         grant.setProjectName("Moo Thru revival");
         grant.setStartDate(dt("2011-02-13T01:05:20.300Z"));
 
-        Publisher publisher = new Publisher();
-
-        publisher.setName("Publisher ");
-        publisher.setPmcParticipation(null);
-
         Journal journal = new Journal();
 
         journal.setIssns(Arrays.asList("issn1"));
         journal.setJournalName("Ice Cream International");
         journal.setPmcParticipation(PmcParticipation.A);
-        journal.setPublisher(publisher);
 
         Publication publication = new Publication();
 
@@ -593,23 +584,10 @@ public class JsonApiPassClientIT {
         deposit.setRepository(repository);
         deposit.setRepositoryCopy(rc);
 
-        Contributor contrib = new Contributor();
-
-        contrib.setAffiliation(Collections.singleton("field"));
-        contrib.setDisplayName("Connie Contributor");
-        contrib.setEmail("connie@example.com");
-        contrib.setFirstName("Connie");
-        contrib.setMiddleName("Charlie");
-        contrib.setLastName("Contributor");
-        contrib.setOrcidId("35xx-xxxx-xxxx-xxxx");
-        contrib.setRoles(Arrays.asList(ContributorRole.CORRESPONDING_AUTHOR));
-        contrib.setUser(pi);
-        contrib.setPublication(publication);
-
         // Check that all the objects can be created.
         // Order such that relationship targets are created first.
         List<PassEntity> objects = Arrays.asList(pi, copi, preparer, repository, policy, primary, direct, grant,
-                publisher, journal, publication, submission, event, rc, file, deposit, contrib);
+                journal, publication, submission, event, rc, file, deposit);
 
         objects.forEach(o -> {
             try {
@@ -630,7 +608,6 @@ public class JsonApiPassClientIT {
         grant.setPi(new User(pi.getId()));
         grant.setDirectFunder(new Funder(direct.getId()));
         grant.setPrimaryFunder(new Funder(primary.getId()));
-        journal.setPublisher(new Publisher(publisher.getId()));
         publication.setJournal(new Journal(journal.getId()));
         submission.setGrants(Arrays.asList(new Grant(grant.getId())));
         submission.setEffectivePolicies(Arrays.asList(new Policy(policy.getId())));
@@ -644,8 +621,6 @@ public class JsonApiPassClientIT {
         file.setSubmission(new Submission(submission.getId()));
         deposit.setRepository(new Repository(repository.getId()));
         deposit.setRepositoryCopy(new RepositoryCopy(rc.getId()));
-        contrib.setUser(new User(pi.getId()));
-        contrib.setPublication(new Publication(publication.getId()));
 
         objects.forEach(o -> {
             try {
