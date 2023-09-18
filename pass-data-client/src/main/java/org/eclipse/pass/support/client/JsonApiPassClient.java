@@ -177,15 +177,14 @@ public class JsonApiPassClient implements PassClient {
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
                 .addHeader("Content-Type", JSON_API_CONTENT_TYPE).post(body).build();
 
-        Response response = client.newCall(request).execute();
-
-        if (!response.isSuccessful()) {
-            throw new IOException(
-                    "Create failed: " + url + " returned " + response.code() + " " + response.body().string());
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException(
+                        "Create failed: " + url + " returned " + response.code() + " " + response.body().string());
+            }
+            Document<T> result_doc = adapter.fromJson(response.body().string());
+            obj.setId(result_doc.requireData().getId());
         }
-
-        Document<T> result_doc = adapter.fromJson(response.body().string());
-        obj.setId(result_doc.requireData().getId());
     }
 
     @Override
@@ -204,11 +203,11 @@ public class JsonApiPassClient implements PassClient {
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
                 .addHeader("Content-Type", JSON_API_CONTENT_TYPE).patch(body).build();
 
-        Response response = client.newCall(request).execute();
-
-        if (!response.isSuccessful()) {
-            throw new IOException(
-                    "Update failed: " + url + " returned " + response.code() + " " + response.body().string());
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException(
+                        "Update failed: " + url + " returned " + response.code() + " " + response.body().string());
+            }
         }
     }
 
@@ -548,16 +547,18 @@ public class JsonApiPassClient implements PassClient {
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
                 .addHeader("Content-Type", JSON_API_CONTENT_TYPE).get().build();
 
-        Response response = client.newCall(request).execute();
+        String body;
+        try (Response response = client.newCall(request).execute()) {
 
-        if (response.code() == 404) {
-            return null;
-        }
+            if (response.code() == 404) {
+                return null;
+            }
 
-        String body = response.body().string();
+            body = response.body().string();
 
-        if (!response.isSuccessful()) {
-            throw new IOException("Get failed: " + url + " returned " + response.code() + " " + body);
+            if (!response.isSuccessful()) {
+                throw new IOException("Get failed: " + url + " returned " + response.code() + " " + body);
+            }
         }
 
         Document<T> doc = adapter.fromJson(body);
@@ -573,11 +574,11 @@ public class JsonApiPassClient implements PassClient {
         String url = get_url(type, id);
 
         Request request = new Request.Builder().url(url).delete().build();
-        Response response = client.newCall(request).execute();
-
-        if (!response.isSuccessful()) {
-            throw new IOException(
-                    "Delete failed: " + url + " returned " + response.code() + " " + response.body().string());
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException(
+                        "Delete failed: " + url + " returned " + response.code() + " " + response.body().string());
+            }
         }
     }
 
@@ -609,16 +610,18 @@ public class JsonApiPassClient implements PassClient {
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
                 .addHeader("Content-Type", JSON_API_CONTENT_TYPE).get().build();
 
-        Response response = client.newCall(request).execute();
+        String body;
+        try (Response response = client.newCall(request).execute()) {
 
-        if (response.code() == 404) {
-            return null;
-        }
+            if (response.code() == 404) {
+                return null;
+            }
 
-        String body = response.body().string();
+            body = response.body().string();
 
-        if (!response.isSuccessful()) {
-            throw new IOException("Select failed: " + url + " returned " + response.code() + " " + body);
+            if (!response.isSuccessful()) {
+                throw new IOException("Select failed: " + url + " returned " + response.code() + " " + body);
+            }
         }
 
         Document<List<T>> doc = adapter.fromJson(body);
@@ -670,39 +673,40 @@ public class JsonApiPassClient implements PassClient {
 
         Request request = new Request.Builder().url(url).post(body).build();
 
-        Response response = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
 
-        if (!response.isSuccessful()) {
-            throw new IOException(
-                    "File upload failed: " + url + " returned " + response.code()
-                        + " " + response.body().string());
-        }
-
-        // Grab the id field
-        String id = null;
-        try (Buffer buffer = new Buffer(); JsonReader reader =
-                JsonReader.of(buffer.writeUtf8(response.body().string()))) {
-            reader.beginObject();
-
-            while (reader.hasNext()) {
-                switch (reader.nextName()) {
-                    case "id":
-                        id = reader.nextString();
-                        break;
-
-                    default:
-                        reader.skipValue();
-                        break;
-                }
+            if (!response.isSuccessful()) {
+                throw new IOException(
+                        "File upload failed: " + url + " returned " + response.code()
+                                + " " + response.body().string());
             }
 
-            reader.endObject();
-        }
+            // Grab the id field
+            String id = null;
+            try (Buffer buffer = new Buffer(); JsonReader reader =
+                    JsonReader.of(buffer.writeUtf8(response.body().string()))) {
+                reader.beginObject();
 
-        if (id == null) {
-            throw new IOException("Could not find id field after upload");
-        }
+                while (reader.hasNext()) {
+                    switch (reader.nextName()) {
+                        case "id":
+                            id = reader.nextString();
+                            break;
 
-        return url.newBuilder().addPathSegments(id).build().uri();
+                        default:
+                            reader.skipValue();
+                            break;
+                    }
+                }
+
+                reader.endObject();
+            }
+
+            if (id == null) {
+                throw new IOException("Could not find id field after upload");
+            }
+
+            return url.newBuilder().addPathSegments(id).build().uri();
+        }
     }
 }
