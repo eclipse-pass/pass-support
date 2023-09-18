@@ -21,7 +21,6 @@ import java.util.Objects;
 
 import jsonapi.Id;
 import jsonapi.Resource;
-import jsonapi.ToOne;
 
 /**
  * Describes a Journal and the path of it's participation in PubMedCentral
@@ -47,12 +46,6 @@ public class Journal implements PassEntity {
      * Array of ISSN(s) for Journal
      */
     private List<String> issns = new ArrayList<>();
-
-    /**
-     * The publisher
-     */
-    @ToOne(name = "publisher")
-    private Publisher publisher;
 
     /**
      * National Library of Medicine Title Abbreviation
@@ -89,7 +82,6 @@ public class Journal implements PassEntity {
         this.id = journal.id;
         this.journalName = journal.journalName;
         this.issns = new ArrayList<String>(journal.issns);
-        this.publisher = journal.publisher;
         this.nlmta = journal.nlmta;
         this.pmcParticipation = journal.pmcParticipation;
     }
@@ -120,20 +112,6 @@ public class Journal implements PassEntity {
      */
     public void setIssns(List<String> issn) {
         this.issns = issn;
-    }
-
-    /**
-     * @return the publisher ID
-     */
-    public Publisher getPublisher() {
-        return publisher;
-    }
-
-    /**
-     * @param publisher the publisher to set
-     */
-    public void setPublisher(Publisher publisher) {
-        this.publisher = publisher;
     }
 
     /**
@@ -188,7 +166,7 @@ public class Journal implements PassEntity {
         Journal other = (Journal) obj;
         return Objects.equals(id, other.id) && Objects.equals(issns, other.issns)
                 && Objects.equals(journalName, other.journalName) && Objects.equals(nlmta, other.nlmta)
-                && pmcParticipation == other.pmcParticipation && Objects.equals(publisher, other.publisher);
+                && pmcParticipation == other.pmcParticipation;
     }
 
     @Override
@@ -198,7 +176,7 @@ public class Journal implements PassEntity {
 
     @Override
     public String toString() {
-        return "Journal [id=" + id + ", journalName=" + journalName + ", issns=" + issns + ", publisher=" + publisher
+        return "Journal [id=" + id + ", journalName=" + journalName + ", issns=" + issns
                 + ", nlmta=" + nlmta + ", pmcParticipation=" + pmcParticipation + "]";
     }
 }

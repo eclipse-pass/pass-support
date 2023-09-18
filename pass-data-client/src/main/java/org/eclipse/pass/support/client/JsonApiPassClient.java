@@ -34,7 +34,6 @@ import okhttp3.Response;
 import okio.Buffer;
 import org.eclipse.pass.support.client.adapter.AggregatedDepositStatusAdapter;
 import org.eclipse.pass.support.client.adapter.AwardStatusAdapter;
-import org.eclipse.pass.support.client.adapter.ContributorRoleAdapter;
 import org.eclipse.pass.support.client.adapter.CopyStatusAdapter;
 import org.eclipse.pass.support.client.adapter.DepositStatusAdapter;
 import org.eclipse.pass.support.client.adapter.EventTypeAdapter;
@@ -46,7 +45,6 @@ import org.eclipse.pass.support.client.adapter.SubmissionStatusAdapter;
 import org.eclipse.pass.support.client.adapter.UriAdapter;
 import org.eclipse.pass.support.client.adapter.UserRoleAdapter;
 import org.eclipse.pass.support.client.adapter.ZonedDateTimeAdapter;
-import org.eclipse.pass.support.client.model.Contributor;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.Funder;
@@ -55,7 +53,6 @@ import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.Publication;
-import org.eclipse.pass.support.client.model.Publisher;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
@@ -107,8 +104,8 @@ public class JsonApiPassClient implements PassClient {
     }
 
     private Moshi create_moshi(boolean serialize_nulls) {
-        Factory factory = new JsonApiFactory.Builder().addTypes(Contributor.class, Deposit.class, File.class,
-                Funder.class, Grant.class, Journal.class, Policy.class, Publication.class, Publisher.class,
+        Factory factory = new JsonApiFactory.Builder().addTypes(Deposit.class, File.class,
+                Funder.class, Grant.class, Journal.class, Policy.class, Publication.class,
                 Repository.class, RepositoryCopy.class, Submission.class, SubmissionEvent.class, User.class).build();
 
         Moshi.Builder builder = new Moshi.Builder().add(factory);
@@ -129,7 +126,7 @@ public class JsonApiPassClient implements PassClient {
         }
 
         builder.add(new AggregatedDepositStatusAdapter()).add(new AwardStatusAdapter())
-                .add(new ContributorRoleAdapter()).add(new CopyStatusAdapter()).add(new DepositStatusAdapter())
+                .add(new CopyStatusAdapter()).add(new DepositStatusAdapter())
                 .add(new EventTypeAdapter()).add(new FileRoleAdapter()).add(new IntegrationTypeAdapter())
                 .add(new PerformerRoleAdapter()).add(new SourceAdapter()).add(new SubmissionStatusAdapter())
                 .add(new ZonedDateTimeAdapter()).add(new UriAdapter()).add(new UserRoleAdapter());
