@@ -211,10 +211,9 @@ public class JsonApiPassClient implements PassClient {
                 throw new IOException(
                         "Update failed: " + url + " returned " + response.code() + " " + response.body().string());
             }
+            Document<T> result_doc = adapter.fromJson(response.body().string());
+            setVersionIfNeeded(result_doc, obj);
         }
-
-        Document<T> result_doc = adapter.fromJson(response.body().string());
-        setVersionIfNeeded(result_doc, obj);
     }
 
     private <T extends PassEntity> void setVersionIfNeeded(Document<T> resultDoc, T obj) {
