@@ -69,25 +69,31 @@ import org.junit.jupiter.api.Test;
 @WireMockTest
 public class JhuPassUpdaterIT {
 
-    private final String[] grantAwardNumber = {"B10000000", "B10000001", "B10000002"};
+    private final String[] grantAwardNumber = {"B10000000", "B10000001", "B10000002", "B10000003", "B10000004"};
     private final String[] grantLocalKey =
-        {"10000001", "10000001", "10000001"}; //all the same, different from other ITs tho
+        {"10000001", "10000001", "10000001", "10000002", "10000003"}; //all the same, different from other ITs tho
     private final String[] grantProjectName =
-        {"Stupendous Research Project I", "Stupendous Research Project II", "Stupendous Research ProjectIII"};
-    private final String[] grantAwardDate = {"01/01/1999", "01/01/2001", "01/01/2003"};
+        {"Stupendous Research Project I", "Stupendous Research Project II", "Stupendous Research ProjectIII",
+            "Stupendous Research ProjectIV", "Stupendous Research ProjectV"};
+    private final String[] grantAwardDate = {"01/01/1999", "01/01/2001", "01/01/2003", "01/01/2004", "01/01/2005"};
+    //these appear to ge the same for all awards
     private final String[] grantStartDate =
-        {"07/01/2000", "07/01/2000", "07/01/2000"}; //these appear to ge the same for all awards
+        {"07/01/2000", "07/01/2000", "07/01/2000", "07/01/2000", "07/01/2000"};
+    //these seem to be the same for all awards
     private final String[] grantEndDate =
-        {"06/30/2004", "06/30/2004", "06/30/2004"};//these seem to be the same for all awards
+        {"06/30/2004", "06/30/2004", "06/30/2004", "06/30/2004", "06/30/2004"};
     private final String[] grantUpdateTimestamp =
-        {"2006-03-11 00:00:00.0", "2010-04-05 00:00:00.0", "2015-11-11 00:00:00.0"};
-    private final String[] userEmployeeId = {"31000000", "31000001", "31000002"};
-    private final String[] userInstitutionalId = {"arecko1", "sclass1", "jgunn1"};
-    private final String[] userHopkinsId = {"DOMNAR", "NROAD", "ROMAND"};
-    private final String[] userFirstName = {"Amanda", "Skip", "Janie"};
-    private final String[] userMiddleName = {"Bea", "Avery", "Gotta"};
-    private final String[] userLastName = {"Reckondwith", "Class", "Gunn"};
-    private final String[] userEmail = {"arecko1@jhu.edu", "sclass1@jhu.edu", "jgunn1@jhu.edu"};
+        {"2006-03-11 00:00:00.0", "2010-04-05 00:00:00.0", "2015-11-11 00:00:00.0", "2016-11-11 00:00:00.0",
+            "2016-12-11 00:00:00.0"};
+    private final String[] userEmployeeId = {"31000000", "31000001", "31000002", "31000003", "31000004"};
+    private final String[] userInstitutionalId = {"arecko1", "sclass1", "jgunn1", "jdoe1", "jdoe2"};
+    private final String[] userHopkinsId = {"DOMNAR", "NROAD", "ROMAND", "test-hopkins-id-jdoe1",
+        "test-hopkins-id-jdoe2"};
+    private final String[] userFirstName = {"Amanda", "Skip", "Janie", "John", "James"};
+    private final String[] userMiddleName = {"Bea", "Avery", "Gotta", "Nobody", ""};
+    private final String[] userLastName = {"Reckondwith", "Class", "Gunn", "Doe1", "Doe2"};
+    private final String[] userEmail = {"arecko1@jhu.edu", "sclass1@jhu.edu", "jgunn1@jhu.edu", "jdoe1@jhu.edu",
+        "jdoe2@jhu.edu"};
 
     private String primaryFunderPolicyUriString;
     private String directFunderPolicyUriString;
@@ -212,6 +218,193 @@ public class JhuPassUpdaterIT {
         assertEquals(2, updatePassGrant.getCoPis().size());
         assertTrue(updatePassGrant.getCoPis().contains(user0));//Reckondwith
         assertTrue(updatePassGrant.getCoPis().contains(user2));//Gunn
+    }
+
+    @Test
+    public void processGrantIT_UpdateUserLocatorsHopkinsId(WireMockRuntimeInfo wmRuntimeInfo) throws IOException {
+        // GIVEN
+        // no stub for user dir service, so call will fail, thus no hopkins ID set user is created set
+        Map<String, String> piRecord0 = makeRowMap(3, 3, "P");
+
+        List<Map<String, String>> resultSet = new ArrayList<>();
+        resultSet.add(piRecord0);
+
+        Properties connProps = new Properties();
+        final int wmPort = wmRuntimeInfo.getHttpPort();
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_BASE_URL, "http://localhost:" + wmPort + "/user");
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_ID, "test-client-id");
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_SECRET, "test-client-secret");
+        JhuPassUpdater passUpdater = new JhuPassUpdater(connProps);
+
+        // WHEN
+        passUpdater.updatePass(resultSet, "grant");
+
+        // THEN
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[3]));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant passGrant = resultGrant.getObjects().get(0);
+
+        PassClientSelector<User> user2Selector = new PassClientSelector<>(User.class);
+        user2Selector.setFilter(RSQL.hasMember("locatorIds", EMPLOYEE_LOCATOR_ID + userEmployeeId[3]));
+        PassClientResult<User> resultUser2 = passClient.selectObjects(user2Selector);
+        assertEquals(1, resultUser2.getTotal());
+        User addedUser = resultUser2.getObjects().get(0);
+        assertEquals(2, addedUser.getLocatorIds().size());
+        assertEquals(EMPLOYEE_LOCATOR_ID + userEmployeeId[3], addedUser.getLocatorIds().get(0));
+        assertEquals(JHED_LOCATOR_ID + userInstitutionalId[3], addedUser.getLocatorIds().get(1));
+
+        assertEquals(grantAwardNumber[3], passGrant.getAwardNumber());
+        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertEquals(grantIdPrefix + grantLocalKey[3], passGrant.getLocalKey());
+        assertEquals(grantProjectName[3], passGrant.getProjectName());
+        assertEquals(createZonedDateTime(grantAwardDate[3]), passGrant.getAwardDate());
+        assertEquals(createZonedDateTime(grantStartDate[3]), passGrant.getStartDate());
+        assertEquals(createZonedDateTime(grantEndDate[3]), passGrant.getEndDate());
+        assertEquals(grantUpdateTimestamp[3], passUpdater.getLatestUpdate());//latest
+        assertEquals(addedUser, passGrant.getPi());
+        assertEquals(0, passGrant.getCoPis().size());
+
+        //check statistics
+        assertEquals(1, passUpdater.getStatistics().getGrantsCreated());
+        assertEquals(1, passUpdater.getStatistics().getUsersCreated());
+        assertEquals(1, passUpdater.getStatistics().getPisAdded());
+        assertEquals(0, passUpdater.getStatistics().getCoPisAdded());
+
+        // WHEN
+        // User Hopkins ID update on next grant update
+        stubFor(get("/user/EmployeeID_to_HopkinsID?employeeid=" + userEmployeeId[3])
+            .willReturn(okJson("{ \"" + userEmployeeId[3] + "\": \"" + userHopkinsId[3] + "\" }")));
+
+        Map<String, String> piRecordUpdate = makeRowMap(3, 3, "P");
+
+        //add in everything since the initial pull
+        resultSet.clear();
+        resultSet.add(piRecordUpdate);
+
+        passUpdater.updatePass(resultSet, "grant");
+
+        // THEN
+        resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant updatePassGrant = resultGrant.getObjects().get(0);
+
+        PassClientSelector<User> updatedUserSelector = new PassClientSelector<>(User.class);
+        updatedUserSelector.setFilter(RSQL.hasMember("locatorIds", EMPLOYEE_LOCATOR_ID + userEmployeeId[3]));
+        PassClientResult<User> resultUpdateUser = passClient.selectObjects(updatedUserSelector);
+        assertEquals(1, resultUpdateUser.getTotal());
+        User updatedUser = resultUpdateUser.getObjects().get(0);
+        assertEquals(3, updatedUser.getLocatorIds().size());
+        assertEquals(EMPLOYEE_LOCATOR_ID + userEmployeeId[3], updatedUser.getLocatorIds().get(0));
+        assertEquals(HOPKINS_LOCATOR_ID + userHopkinsId[3], updatedUser.getLocatorIds().get(1));
+        assertEquals(JHED_LOCATOR_ID + userInstitutionalId[3], addedUser.getLocatorIds().get(1));
+
+        assertEquals(grantAwardNumber[3], updatePassGrant.getAwardNumber());//initial
+        assertEquals(AwardStatus.ACTIVE, updatePassGrant.getAwardStatus());
+        assertEquals(grantIdPrefix + grantLocalKey[3], updatePassGrant.getLocalKey());
+        assertEquals(grantProjectName[3], updatePassGrant.getProjectName());//initial
+        assertEquals(createZonedDateTime(grantAwardDate[3]), updatePassGrant.getAwardDate());//initial
+        assertEquals(createZonedDateTime(grantStartDate[3]), updatePassGrant.getStartDate());//initial
+        assertEquals(createZonedDateTime(grantEndDate[3]), updatePassGrant.getEndDate());//latest
+        assertEquals(grantUpdateTimestamp[3], passUpdater.getLatestUpdate());//latest
+        assertEquals(updatedUser, updatePassGrant.getPi());//Class
+        assertEquals(0, updatePassGrant.getCoPis().size());
+    }
+
+    @Test
+    public void processGrantIT_UpdateUserLocatorsJhed(WireMockRuntimeInfo wmRuntimeInfo) throws IOException {
+        // GIVEN
+        stubFor(get("/user/EmployeeID_to_HopkinsID?employeeid=" + userEmployeeId[4])
+            .willReturn(okJson("{ \"" + userEmployeeId[4] + "\": \"" + userHopkinsId[4] + "\" }")));
+
+        Map<String, String> piRecord0 = makeRowMap(4, 4, "P");
+
+        List<Map<String, String>> resultSet = new ArrayList<>();
+        resultSet.add(piRecord0);
+
+        Properties connProps = new Properties();
+        final int wmPort = wmRuntimeInfo.getHttpPort();
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_BASE_URL, "http://localhost:" + wmPort + "/user");
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_ID, "test-client-id");
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_SECRET, "test-client-secret");
+        JhuPassUpdater passUpdater = new JhuPassUpdater(connProps);
+
+        // WHEN
+        passUpdater.updatePass(resultSet, "grant");
+
+        // THEN
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[4]));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant passGrant = resultGrant.getObjects().get(0);
+
+        PassClientSelector<User> user2Selector = new PassClientSelector<>(User.class);
+        user2Selector.setFilter(RSQL.hasMember("locatorIds", EMPLOYEE_LOCATOR_ID + userEmployeeId[4]));
+        PassClientResult<User> resultUser2 = passClient.selectObjects(user2Selector);
+        assertEquals(1, resultUser2.getTotal());
+        User addedUser = resultUser2.getObjects().get(0);
+        assertEquals(3, addedUser.getLocatorIds().size());
+        assertEquals(EMPLOYEE_LOCATOR_ID + userEmployeeId[4], addedUser.getLocatorIds().get(0));
+        assertEquals(HOPKINS_LOCATOR_ID + userHopkinsId[4], addedUser.getLocatorIds().get(1));
+        assertEquals(JHED_LOCATOR_ID + userInstitutionalId[4], addedUser.getLocatorIds().get(2));
+
+        assertEquals(grantAwardNumber[4], passGrant.getAwardNumber());
+        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertEquals(grantIdPrefix + grantLocalKey[4], passGrant.getLocalKey());
+        assertEquals(grantProjectName[4], passGrant.getProjectName());
+        assertEquals(createZonedDateTime(grantAwardDate[4]), passGrant.getAwardDate());
+        assertEquals(createZonedDateTime(grantStartDate[4]), passGrant.getStartDate());
+        assertEquals(createZonedDateTime(grantEndDate[4]), passGrant.getEndDate());
+        assertEquals(grantUpdateTimestamp[4], passUpdater.getLatestUpdate());//latest
+        assertEquals(addedUser, passGrant.getPi());
+        assertEquals(0, passGrant.getCoPis().size());
+
+        //check statistics
+        assertEquals(1, passUpdater.getStatistics().getGrantsCreated());
+        assertEquals(1, passUpdater.getStatistics().getUsersCreated());
+        assertEquals(1, passUpdater.getStatistics().getPisAdded());
+        assertEquals(0, passUpdater.getStatistics().getCoPisAdded());
+
+        // WHEN
+        // JHED ID and Hopkins ID update from coeus
+        Map<String, String> piRecordUpdate = makeRowMap(4, 4, "P");
+        piRecordUpdate.put(C_USER_INSTITUTIONAL_ID, "newjdoe1jhed");
+
+        //add in everything since the initial pull
+        resultSet.clear();
+        resultSet.add(piRecordUpdate);
+
+        passUpdater.updatePass(resultSet, "grant");
+
+        // THEN
+        resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant updatePassGrant = resultGrant.getObjects().get(0);
+
+        PassClientSelector<User> updatedUserSelector = new PassClientSelector<>(User.class);
+        updatedUserSelector.setFilter(RSQL.hasMember("locatorIds", EMPLOYEE_LOCATOR_ID + userEmployeeId[4]));
+        PassClientResult<User> resultUpdateUser = passClient.selectObjects(updatedUserSelector);
+        assertEquals(1, resultUpdateUser.getTotal());
+        User updatedUser = resultUpdateUser.getObjects().get(0);
+        assertEquals(3, updatedUser.getLocatorIds().size());
+        assertEquals(EMPLOYEE_LOCATOR_ID + userEmployeeId[4], updatedUser.getLocatorIds().get(0));
+        assertEquals(HOPKINS_LOCATOR_ID + userHopkinsId[4], updatedUser.getLocatorIds().get(1));
+        assertEquals(JHED_LOCATOR_ID + "newjdoe1jhed", updatedUser.getLocatorIds().get(2));
+
+        assertEquals(grantAwardNumber[4], updatePassGrant.getAwardNumber());//initial
+        assertEquals(AwardStatus.ACTIVE, updatePassGrant.getAwardStatus());
+        assertEquals(grantIdPrefix + grantLocalKey[4], updatePassGrant.getLocalKey());
+        assertEquals(grantProjectName[4], updatePassGrant.getProjectName());//initial
+        assertEquals(createZonedDateTime(grantAwardDate[4]), updatePassGrant.getAwardDate());//initial
+        assertEquals(createZonedDateTime(grantStartDate[4]), updatePassGrant.getStartDate());//initial
+        assertEquals(createZonedDateTime(grantEndDate[4]), updatePassGrant.getEndDate());//latest
+        assertEquals(grantUpdateTimestamp[4], passUpdater.getLatestUpdate());//latest
+        assertEquals(updatedUser, updatePassGrant.getPi());//Class
+        assertEquals(0, updatePassGrant.getCoPis().size());
     }
 
     private User getVerifiedUser(int userIndex) throws IOException {

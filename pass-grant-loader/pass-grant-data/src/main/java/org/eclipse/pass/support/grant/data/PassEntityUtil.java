@@ -62,4 +62,19 @@ public interface PassEntityUtil {
      */
     Grant update(Grant system, Grant stored);
 
+    /**
+     * Set any institutional User properties that are needed.
+     * @param user the User
+     * @throws GrantDataException if problem occurs setting props
+     */
+    void setInstitutionalUserProps(User user) throws GrantDataException;
+
+    /**
+     * Returns the employee locator ID of the user.
+     * @param user the user
+     * @return the employee id
+     * @throws GrantDataException of the employee ID is not found
+     */
+    String getEmployeeLocatorId(User user) throws GrantDataException;
+
 }
