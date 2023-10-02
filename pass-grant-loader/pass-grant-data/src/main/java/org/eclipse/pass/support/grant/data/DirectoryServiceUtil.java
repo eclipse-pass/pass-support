@@ -56,7 +56,6 @@ class DirectoryServiceUtil {
     private final JsonFactory factory = new JsonFactory();
 
     //these are for caching results
-    private final Map<String, String> hopkins2ee = new HashMap<>();
     private final Map<String, String> ee2hopkins = new HashMap<>();
 
     DirectoryServiceUtil(Properties connectionProperties) {
@@ -80,31 +79,6 @@ class DirectoryServiceUtil {
     }
 
     /**
-     * an enum to hold values for the service URL ending, and the query parameter name
-     * for these lookup services
-     */
-    private enum Type {
-        EMPLOYEE2HOPKINS("EmployeeID_to_HopkinsID", "employeeid"),
-        HOPKINS2EMPLOYEE("HopkinsID_to_EmployeeID", "hopkinsid");
-
-        private final String serviceUrlEnding;
-        private final String queryParameter;
-
-        Type(String serviceUrlEnding, String queryParameter) {
-            this.serviceUrlEnding = serviceUrlEnding;
-            this.queryParameter = queryParameter;
-        }
-
-        public String getServiceUrlEnding() {
-            return serviceUrlEnding;
-        }
-
-        public String getQueryParameter() {
-            return queryParameter;
-        }
-    }
-
-    /**
      * Return Hopkins ID for a given employee ID. we cache lookups in a map so that we only need to perform
      * a lookup once per session per user.
      *
@@ -115,7 +89,7 @@ class DirectoryServiceUtil {
     String getHopkinsIdForEmployeeId(String employeeId) throws IOException {
         String hopkinsId;
         if (!ee2hopkins.containsKey(employeeId)) {
-            hopkinsId = askDirectoryForMappedValue(Type.EMPLOYEE2HOPKINS, employeeId);
+            hopkinsId = getHopkinsId(employeeId);
             ee2hopkins.put(employeeId, hopkinsId);
         } else {
             hopkinsId = ee2hopkins.get(employeeId);
@@ -123,40 +97,26 @@ class DirectoryServiceUtil {
         return hopkinsId;
     }
 
-    /**
-     * Return employee ID for a given Hopkins ID. we cache lookups in a map so that we only need to perform
-     * a lookup once per session per user.
-     *
-     * @param hopkinsId the user's Hopkins ID
-     * @return the user's employee ID if it exists; null if it does not
-     * @throws IOException if there is an IO exception
-     */
-    String getEmployeeIdForHopkinsId(String hopkinsId) throws IOException {
-        String employeeId;
-        if (!hopkins2ee.containsKey(hopkinsId)) {
-            employeeId = askDirectoryForMappedValue(Type.HOPKINS2EMPLOYEE, hopkinsId);
-            hopkins2ee.put(hopkinsId, employeeId);
-        } else {
-            employeeId = hopkins2ee.get(hopkinsId);
-        }
-        return employeeId;
-    }
-
-    private String askDirectoryForMappedValue(Type type, String sourceId) throws IOException {
-        String name = type.getQueryParameter();
-        String suffix = type.getServiceUrlEnding();
+    private String getHopkinsId(String employeeId) throws IOException {
+        String name = "employeeid";
+        String suffix = "EmployeeID_to_HopkinsID";
         String serviceUrl;
         if (!directoryBaseUrl.endsWith("/")) {
             directoryBaseUrl = directoryBaseUrl + "/";
         }
         serviceUrl = directoryBaseUrl + suffix;
 
-        HttpUrl.Builder urlBuilder = Objects.requireNonNull(HttpUrl.parse(serviceUrl)).newBuilder()
-                                            .addQueryParameter(name, sourceId);
-        String url = urlBuilder.build().toString();
+        String url = Objects.requireNonNull(HttpUrl.parse(serviceUrl))
+            .newBuilder()
+            .addQueryParameter(name, employeeId)
+            .build()
+            .toString();
 
-        Request request = new Request.Builder().header("client_id", directoryClientId)
-                                               .header("client_secret", directoryClientSecret).url(url).build();
+        Request request = new Request.Builder()
+            .header("client_id", directoryClientId)
+            .header("client_secret", directoryClientSecret)
+            .url(url)
+            .build();
 
         Response response = client.newCall(request).execute();
 
@@ -168,7 +128,7 @@ class DirectoryServiceUtil {
             if (JsonToken.FIELD_NAME.equals(jsonToken)) {
                 String fieldName = parser.getCurrentName();
                 parser.nextToken();
-                if (sourceId.equals(fieldName)) {
+                if (employeeId.equals(fieldName)) {
                     mappedValue = parser.getValueAsString();
                     mappedValue = mappedValue.equals("NULL") ? null : mappedValue;
                 }

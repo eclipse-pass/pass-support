@@ -273,7 +273,7 @@ abstract class BaseGrantLoaderApp {
 
         //update PASS if required
         if (!action.equals("pull")) {
-            PassUpdater passUpdater = configureUpdater();
+            PassUpdater passUpdater = configureUpdater(connectionProperties);
             try {
                 passUpdater.updatePass(resultSet, mode);
             } catch (RuntimeException e) {
@@ -446,6 +446,6 @@ abstract class BaseGrantLoaderApp {
 
     abstract GrantConnector configureConnector(Properties connectionProperties, Properties policyProperties);
 
-    abstract PassUpdater configureUpdater();
+    abstract PassUpdater configureUpdater(Properties connectionProperties);
 
 }

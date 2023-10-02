@@ -170,6 +170,7 @@ public class CoeusPassEntityUtil implements PassEntityUtil {
                                                   .equals(stored.getLastName()) : stored.getLastName() != null) {
             return true;
         }
+        // TODO employeeid and unique-id never change, only update jhedid if needed
         if (system.getLocatorIds() != null ? !stored.getLocatorIds().containsAll(
             system.getLocatorIds()) : stored.getLocatorIds() != null) {
             return true;
@@ -203,6 +204,7 @@ public class CoeusPassEntityUtil implements PassEntityUtil {
         Set<String> idSet = new HashSet<>();
         idSet.addAll(stored.getLocatorIds());
         idSet.addAll(system.getLocatorIds());
+        // TODO employeeid and unique-id never change, only update jhedid if needed
         stored.setLocatorIds(idSet.stream().collect(Collectors.toList()));
         //populate null fields if we can
         if ((stored.getEmail() == null) && (system.getEmail() != null)) {

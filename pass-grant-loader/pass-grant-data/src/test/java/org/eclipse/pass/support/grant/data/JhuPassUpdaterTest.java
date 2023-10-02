@@ -26,7 +26,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.model.AwardStatus;
@@ -34,6 +36,7 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -50,8 +53,16 @@ public class JhuPassUpdaterTest {
     @Mock
     private PassClient passClientMock;
 
+    @BeforeEach
+    public void beforeTest() {
+        System.setProperty("pass.core.url", "http://test-host");
+        System.setProperty("pass.core.user", "test-user");
+        System.setProperty("pass.core.password", "test-password");
+    }
+
+    @SuppressWarnings("unchecked")
     @Test
-    public void testUpdatePassGrant_Success_NewGrant() throws IOException {
+    public void testUpdatePassGrant_Success_NewGrant() throws IOException, IllegalAccessException {
 
         List<Map<String, String>> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
@@ -63,18 +74,21 @@ public class JhuPassUpdaterTest {
                                 passClientSelector.getFilter().equals(
                                         "localKey=='johnshopkins.edu:grant:8675309'")));
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(passClientMock);
+        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+        FieldUtils.writeField(passUpdater, "passClient", passClientMock, true);
         passUpdater.updatePass(resultSet, "grant");
 
         Map<String, Grant> grantMap = passUpdater.getGrantResultMap();
         assertEquals(1, grantMap.size());
         Grant grant = grantMap.get("8675309");
         assertEquals(1, grant.getCoPis().size());
-        assertEquals(2, passUpdater.getFunderMap().size());
-        assertEquals(grant.getDirectFunder(), passUpdater.getFunderMap().get("000029282"));
-        assertEquals(grant.getPrimaryFunder(), passUpdater.getFunderMap().get("8675309"));
-        assertEquals(grant.getPi(), passUpdater.getUserMap().get("0000333"));
-        assertEquals(grant.getCoPis().get(0), passUpdater.getUserMap().get("0000222"));
+        Map<String, Funder> funderMap = (Map<String, Funder>) FieldUtils.readField(passUpdater, "funderMap", true);
+        assertEquals(2, funderMap.size());
+        assertEquals(grant.getDirectFunder(), funderMap.get("000029282"));
+        assertEquals(grant.getPrimaryFunder(), funderMap.get("8675309"));
+        Map<String, User> userMap = (Map<String, User>) FieldUtils.readField(passUpdater, "userMap", true);
+        assertEquals(grant.getPi(), userMap.get("0000333"));
+        assertEquals(grant.getCoPis().get(0), userMap.get("0000222"));
 
         assertEquals("12345678", grant.getAwardNumber());
         assertEquals(AwardStatus.ACTIVE, grant.getAwardStatus());
@@ -89,7 +103,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUpdatePassGrant_Success_SkipDuplicateGrantInPass() throws IOException {
+    public void testUpdatePassGrant_Success_SkipDuplicateGrantInPass() throws IOException, IllegalAccessException {
 
         List<Map<String, String>> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
@@ -103,7 +117,8 @@ public class JhuPassUpdaterTest {
                                 passClientSelector.getFilter().equals(
                                         "localKey=='johnshopkins.edu:grant:8675309'")));
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(passClientMock);
+        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+        FieldUtils.writeField(passUpdater, "passClient", passClientMock, true);
         passUpdater.updatePass(resultSet, "grant");
 
         Map<String, Grant> grantMap = passUpdater.getGrantResultMap();
@@ -233,18 +248,16 @@ public class JhuPassUpdaterTest {
         rowMap.put(CoeusFieldNames.C_USER_EMAIL, "mlartz3@jhu.edu");
         rowMap.put(CoeusFieldNames.C_USER_INSTITUTIONAL_ID, "MLARTZ5");
         rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, "0000222");
-        rowMap.put(CoeusFieldNames.C_USER_HOPKINS_ID, "A1A1A1");
         rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, "2018-01-01 0:00:00.0");
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(passClientMock);
+        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
         User newUser = passUpdater.buildUser(rowMap);
 
         //unusual fields
         assertEquals("Marsha Lartz", newUser.getDisplayName());
         //test ids
         assertEquals("johnshopkins.edu:employeeid:0000222", newUser.getLocatorIds().get(0));
-        assertEquals("johnshopkins.edu:unique-id:A1A1A1", newUser.getLocatorIds().get(1));
-        assertEquals("johnshopkins.edu:eppn:mlartz5", newUser.getLocatorIds().get(2));
+        assertEquals("johnshopkins.edu:eppn:mlartz5", newUser.getLocatorIds().get(1));
     }
 
     @Test
@@ -254,7 +267,7 @@ public class JhuPassUpdaterTest {
         rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY, "8675309");
         rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_POLICY, "policy1");
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(passClientMock);
+        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
         Funder newFunder = passUpdater.buildPrimaryFunder(rowMap);
 
         assertEquals("Funder Name", newFunder.getName());
@@ -271,7 +284,7 @@ public class JhuPassUpdaterTest {
             rowMap.put(CoeusFieldNames.C_GRANT_LOCAL_KEY, CoeusFieldNames.C_GRANT_LOCAL_KEY);
             grantResultSet.add(rowMap);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater(passClientMock);
+            JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
 
             passUpdater.updatePass(grantResultSet, "user");
         });
@@ -285,7 +298,7 @@ public class JhuPassUpdaterTest {
             rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, CoeusFieldNames.C_USER_EMPLOYEE_ID);
             userResultSet.add(rowMap);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater(passClientMock);
+            JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
 
             passUpdater.updatePass(userResultSet, "grant");
         });
@@ -299,7 +312,7 @@ public class JhuPassUpdaterTest {
             rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, CoeusFieldNames.C_USER_EMPLOYEE_ID);
             userResultSet.add(rowMap);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater(passClientMock);
+            JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
 
             passUpdater.updatePass(userResultSet, "funder");
         });
