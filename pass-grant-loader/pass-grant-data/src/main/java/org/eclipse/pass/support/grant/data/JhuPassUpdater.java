@@ -22,11 +22,9 @@ import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_INSTITU
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_LAST_NAME;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_MIDDLE_NAME;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.client.model.UserRole;
 import org.slf4j.Logger;
@@ -50,15 +48,12 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     static final String HOPKINS_LOCATOR_ID = DOMAIN + ":" + HOPKINS_ID_TYPE + ":";
     static final String JHED_LOCATOR_ID = DOMAIN + ":" + JHED_ID_TYPE + ":";
 
-    private final DirectoryServiceUtil directoryServiceUtil;
-
     /**
      * Constructor.
      * @param connectionProperties properties for connection to user dir service
      */
     public JhuPassUpdater(Properties connectionProperties) {
-        this.directoryServiceUtil = new DirectoryServiceUtil(connectionProperties);
-        setPassEntityUtil(new CoeusPassEntityUtil());
+        setPassEntityUtil(new CoeusPassEntityUtil(connectionProperties));
         setDomain(DOMAIN);
     }
 
@@ -87,30 +82,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         user.getRoles().add(UserRole.SUBMITTER);
         LOG.debug("Built user with employee ID {}", employeeId);
         return user;
-    }
-
-    @Override
-    String getEmployeeLocatorId(User user) throws GrantDataException {
-        return user.getLocatorIds().stream()
-            .filter(locatorId -> locatorId.startsWith(EMPLOYEE_LOCATOR_ID))
-            .findFirst()
-            .orElseThrow(() -> new GrantDataException("Unable to find employee id locator id"));
-    }
-
-    @Override
-    void setInstitutionalUserProps(User user) throws GrantDataException {
-        String employeeIdLocator = getEmployeeLocatorId(user);
-        String employeeId = employeeIdLocator.replace(EMPLOYEE_LOCATOR_ID, "");
-        try {
-            String hopkinsId = directoryServiceUtil.getHopkinsIdForEmployeeId(employeeId);
-            if (StringUtils.isNotBlank(hopkinsId)) {
-                user.getLocatorIds().add(1, HOPKINS_LOCATOR_ID + hopkinsId);
-            } else {
-                LOG.warn("Hopkins ID is null or blank for employee ID: " + employeeId);
-            }
-        } catch (IOException e) {
-            LOG.error("Error getting Hopkins ID for employee ID: " + employeeId);
-        }
     }
 
 }

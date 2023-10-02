@@ -15,13 +15,21 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import static org.eclipse.pass.support.grant.data.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
+import static org.eclipse.pass.support.grant.data.JhuPassUpdater.HOPKINS_LOCATOR_ID;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A utility class for handling Grants, Users or Funders. One function performed is comparison of two instances of
@@ -35,6 +43,17 @@ import org.eclipse.pass.support.client.model.User;
  * @author jrm@jhu.edu
  */
 public class CoeusPassEntityUtil implements PassEntityUtil {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CoeusPassEntityUtil.class);
+    private final DirectoryServiceUtil directoryServiceUtil;
+
+    /**
+     * Constructor.
+     * @param connectionProperties properties for connection to user dir service
+     */
+    public CoeusPassEntityUtil(Properties connectionProperties) {
+        this.directoryServiceUtil = new DirectoryServiceUtil(connectionProperties);
+    }
 
     /**
      * This method takes a COEUS Funder, calculates whether it needs to be updated, and if so, returns the updated
@@ -65,6 +84,28 @@ public class CoeusPassEntityUtil implements PassEntityUtil {
             return updateUser(system, stored);
         }
         return null;
+    }
+
+    public void setInstitutionalUserProps(User user) {
+        try {
+            String employeeIdLocator = getEmployeeLocatorId(user);
+            String employeeId = employeeIdLocator.replace(EMPLOYEE_LOCATOR_ID, "");
+            String hopkinsId = directoryServiceUtil.getHopkinsIdForEmployeeId(employeeId);
+            if (StringUtils.isNotBlank(hopkinsId)) {
+                user.getLocatorIds().add(1, HOPKINS_LOCATOR_ID + hopkinsId);
+            } else {
+                LOG.warn("Hopkins ID is null or blank for employee ID: " + employeeId);
+            }
+        } catch (IOException | GrantDataException e) {
+            LOG.error("Error getting Hopkins ID for User: " + user.getEmail());
+        }
+    }
+
+    public String getEmployeeLocatorId(User user) throws GrantDataException {
+        return user.getLocatorIds().stream()
+            .filter(locatorId -> locatorId.startsWith(EMPLOYEE_LOCATOR_ID))
+            .findFirst()
+            .orElseThrow(() -> new GrantDataException("Unable to find employee id locator id"));
     }
 
     /**
@@ -170,9 +211,12 @@ public class CoeusPassEntityUtil implements PassEntityUtil {
                                                   .equals(stored.getLastName()) : stored.getLastName() != null) {
             return true;
         }
-        // TODO employeeid and unique-id never change, only update jhedid if needed
-        if (system.getLocatorIds() != null ? !stored.getLocatorIds().containsAll(
-            system.getLocatorIds()) : stored.getLocatorIds() != null) {
+        String hopkinsLocatorId = findLocatorId(stored, HOPKINS_LOCATOR_ID);
+        if (Objects.isNull(hopkinsLocatorId)) {
+            return true;
+        }
+        String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
+        if (Objects.nonNull(systemUserJhedLocatorId) && !stored.getLocatorIds().contains(systemUserJhedLocatorId)) {
             return true;
         }
         //next, other fields which require some reasoning to decide whether an update is necessary
@@ -183,6 +227,13 @@ public class CoeusPassEntityUtil implements PassEntityUtil {
             return true;
         }
         return false;
+    }
+
+    private String findLocatorId(User user, String locatorIdPrefix) {
+        return user.getLocatorIds().stream()
+            .filter(locatorId -> locatorId.startsWith(locatorIdPrefix))
+            .findFirst()
+            .orElse(null);
     }
 
     /**
@@ -204,8 +255,15 @@ public class CoeusPassEntityUtil implements PassEntityUtil {
         Set<String> idSet = new HashSet<>();
         idSet.addAll(stored.getLocatorIds());
         idSet.addAll(system.getLocatorIds());
-        // TODO employeeid and unique-id never change, only update jhedid if needed
-        stored.setLocatorIds(idSet.stream().collect(Collectors.toList()));
+        String hopkinsLocatorId = findLocatorId(stored, HOPKINS_LOCATOR_ID);
+        if (Objects.isNull(hopkinsLocatorId)) {
+            setInstitutionalUserProps(stored);
+        }
+        String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
+        if (Objects.nonNull(systemUserJhedLocatorId) && !stored.getLocatorIds().contains(systemUserJhedLocatorId)) {
+            stored.getLocatorIds().removeIf(locatorId -> locatorId.startsWith(JhuPassUpdater.JHED_LOCATOR_ID));
+            stored.getLocatorIds().add(systemUserJhedLocatorId);
+        }
         //populate null fields if we can
         if ((stored.getEmail() == null) && (system.getEmail() != null)) {
             stored.setEmail(system.getEmail());

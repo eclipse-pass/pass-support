@@ -28,7 +28,7 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
      */
     public JhuPassInitUpdater(Properties connectionProperties) {
         super(connectionProperties);
-        setPassEntityUtil(new CoeusPassInitEntityUtil());
+        setPassEntityUtil(new CoeusPassInitEntityUtil(connectionProperties));
     }
 
 }

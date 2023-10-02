@@ -16,6 +16,7 @@
 package org.eclipse.pass.support.grant.data;
 
 import java.util.HashSet;
+import java.util.Properties;
 
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
@@ -25,6 +26,14 @@ import org.eclipse.pass.support.client.model.User;
  * normally consider the PASS information to be authoritative.
  */
 public class CoeusPassInitEntityUtil extends CoeusPassEntityUtil {
+
+    /**
+     * Constructor.
+     * @param connectionProperties properties for connection to user dir service
+     */
+    public CoeusPassInitEntityUtil(Properties connectionProperties) {
+        super(connectionProperties);
+    }
 
     @Override
     public Grant update(Grant system, Grant stored) {
