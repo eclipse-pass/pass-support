@@ -83,7 +83,6 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
     private final Map<String, Funder> funderMap = new HashMap<>();
     private final Map<String, User> userMap = new HashMap<>();
 
-    private PassEntityUtil passEntityUtil;
     private String mode;
 
     AbstractDefaultPassUpdater() {
@@ -109,12 +108,6 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             default:
                 break;
         }
-    }
-
-    abstract User buildUser(Map<String, String> rowMap);
-
-    void setPassEntityUtil(PassEntityUtil passEntityUtil) {
-        this.passEntityUtil = passEntityUtil;
     }
 
     void setDomain(String domain) {
@@ -454,7 +447,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
         if (!result.getObjects().isEmpty()) {
             Funder storedFunder = getSingleObject(result, fullLocalKey);
-            Funder updatedFunder = passEntityUtil.update(systemFunder, storedFunder);
+            Funder updatedFunder = update(systemFunder, storedFunder);
             if (Objects.nonNull(updatedFunder)) { //need to update
                 passClient.updateObject(updatedFunder);
                 statistics.addFundersUpdated();
@@ -479,7 +472,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
      */
     private User updateUserInPass(User systemUser) throws IOException, GrantDataException {
         PassClientSelector<User> selector = new PassClientSelector<>(User.class);
-        String employeeIdLocator = passEntityUtil.getEmployeeLocatorId(systemUser);
+        String employeeIdLocator = getEmployeeLocatorId(systemUser);
         selector.setFilter(RSQL.hasMember("locatorIds", employeeIdLocator));
         PassClientResult<User> result = passClient.selectObjects(selector);
         User passUser = result.getObjects().isEmpty()
@@ -487,7 +480,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             : getSingleObject(result, employeeIdLocator);
 
         if (Objects.nonNull(passUser)) {
-            User updatedUser = passEntityUtil.update(systemUser, passUser);
+            User updatedUser = update(systemUser, passUser);
             if (Objects.nonNull(updatedUser)) { //need to update
                 //post COEUS processing goes here
                 if (!updatedUser.getRoles().contains(UserRole.SUBMITTER)) {
@@ -499,7 +492,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             }
         } else if (!mode.equals("user")) { //don't have a stored User for this URI - this one is new to Pass
             //but don't update if we are in user mode - just update existing users
-            passEntityUtil.setInstitutionalUserProps(systemUser);
+            setInstitutionalUserProps(systemUser);
             passClient.createObject(systemUser);
             statistics.addUsersCreated();
             return systemUser;
@@ -528,7 +521,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         if (!result.getObjects().isEmpty()) {
             LOG.debug("Found grant with localKey {}", fullLocalKey);
             Grant storedGrant = getSingleObject(result, fullLocalKey);
-            Grant updatedGrant = passEntityUtil.update(systemGrant, storedGrant);
+            Grant updatedGrant = update(systemGrant, storedGrant);
             if (Objects.nonNull(updatedGrant)) { //need to update
                 passClient.updateObject(updatedGrant);
                 statistics.addGrantsUpdated();
