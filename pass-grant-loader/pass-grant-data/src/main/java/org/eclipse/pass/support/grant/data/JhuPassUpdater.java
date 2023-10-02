@@ -138,6 +138,33 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         return null;
     }
 
+    @Override
+    public User buildUser(Map<String, String> rowMap) {
+        User user = new User();
+        user.setFirstName(rowMap.get(C_USER_FIRST_NAME));
+        if (rowMap.containsKey(C_USER_MIDDLE_NAME)) {
+            user.setMiddleName(rowMap.get(C_USER_MIDDLE_NAME));
+        }
+        user.setLastName(rowMap.get(C_USER_LAST_NAME));
+        user.setDisplayName(rowMap.get(C_USER_FIRST_NAME) + " " + rowMap.get(C_USER_LAST_NAME));
+        user.setEmail(rowMap.get(C_USER_EMAIL));
+        String employeeId = rowMap.get(C_USER_EMPLOYEE_ID);
+        String jhedId = null;
+        if (rowMap.get(C_USER_INSTITUTIONAL_ID) != null) {
+            jhedId = rowMap.get(C_USER_INSTITUTIONAL_ID).toLowerCase();
+        }
+        //Build the List of locatorIds - put the most reliable ids first
+        if (employeeId != null) {
+            user.getLocatorIds().add(EMPLOYEE_LOCATOR_ID + employeeId);
+        }
+        if (jhedId != null) {
+            user.getLocatorIds().add(JHED_LOCATOR_ID + jhedId);
+        }
+        user.getRoles().add(UserRole.SUBMITTER);
+        LOG.debug("Built user with employee ID {}", employeeId);
+        return user;
+    }
+
     private boolean funderNeedsUpdate(Funder system, Funder stored) {
 
         //this adjustment handles the case where we take data from policy.properties file, which has no name info
@@ -283,33 +310,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         stored.setCoPis(system.getCoPis());
         stored.setEndDate(system.getEndDate());
         return stored;
-    }
-
-    @Override
-    public User buildUser(Map<String, String> rowMap) {
-        User user = new User();
-        user.setFirstName(rowMap.get(C_USER_FIRST_NAME));
-        if (rowMap.containsKey(C_USER_MIDDLE_NAME)) {
-            user.setMiddleName(rowMap.get(C_USER_MIDDLE_NAME));
-        }
-        user.setLastName(rowMap.get(C_USER_LAST_NAME));
-        user.setDisplayName(rowMap.get(C_USER_FIRST_NAME) + " " + rowMap.get(C_USER_LAST_NAME));
-        user.setEmail(rowMap.get(C_USER_EMAIL));
-        String employeeId = rowMap.get(C_USER_EMPLOYEE_ID);
-        String jhedId = null;
-        if (rowMap.get(C_USER_INSTITUTIONAL_ID) != null) {
-            jhedId = rowMap.get(C_USER_INSTITUTIONAL_ID).toLowerCase();
-        }
-        //Build the List of locatorIds - put the most reliable ids first
-        if (employeeId != null) {
-            user.getLocatorIds().add(EMPLOYEE_LOCATOR_ID + employeeId);
-        }
-        if (jhedId != null) {
-            user.getLocatorIds().add(JHED_LOCATOR_ID + jhedId);
-        }
-        user.getRoles().add(UserRole.SUBMITTER);
-        LOG.debug("Built user with employee ID {}", employeeId);
-        return user;
     }
 
 }
