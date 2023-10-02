@@ -31,18 +31,13 @@ import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUND
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_NAME;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_POLICY;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_UPDATE_TIMESTAMP;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMAIL;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMPLOYEE_ID;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_FIRST_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_LAST_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_MIDDLE_NAME;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -68,11 +63,10 @@ import org.slf4j.LoggerFactory;
  * @author jrm@jhu.edu
  */
 
-public class DefaultPassUpdater implements PassUpdater {
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultPassUpdater.class);
+abstract class AbstractDefaultPassUpdater implements PassUpdater {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractDefaultPassUpdater.class);
 
     private static final String GRANT_ID_TYPE = "grant";
-    private static final String EMPLOYEE_ID_TYPE = "employeeid";
     private static final String FUNDER_ID_TYPE = "funder";
 
     private String domain = "default.domain";
@@ -80,7 +74,6 @@ public class DefaultPassUpdater implements PassUpdater {
 
     private final PassClient passClient;
     private final PassUpdateStatistics statistics = new PassUpdateStatistics();
-    private final PassEntityUtil passEntityUtil;
 
     private final Map<String, Grant> grantResultMap = new HashMap<>();
 
@@ -90,17 +83,11 @@ public class DefaultPassUpdater implements PassUpdater {
     private final Map<String, Funder> funderMap = new HashMap<>();
     private final Map<String, User> userMap = new HashMap<>();
 
+    private PassEntityUtil passEntityUtil;
     private String mode;
 
-    DefaultPassUpdater(PassEntityUtil passEntityUtil) {
-        this.passEntityUtil = passEntityUtil;
+    AbstractDefaultPassUpdater() {
         this.passClient = PassClient.newInstance();
-    }
-
-    //used in unit testing for injecting a mock client
-    DefaultPassUpdater(PassEntityUtil passEntityUtil, PassClient passClient) {
-        this.passEntityUtil = passEntityUtil;
-        this.passClient = passClient;
     }
 
     public void updatePass(Collection<Map<String, String>> results, String mode) {
@@ -122,6 +109,52 @@ public class DefaultPassUpdater implements PassUpdater {
             default:
                 break;
         }
+    }
+
+    abstract User buildUser(Map<String, String> rowMap);
+
+    abstract String getEmployeeLocatorId(User user) throws GrantDataException;
+
+    abstract void setInstitutionalUserProps(User user) throws GrantDataException;
+
+    void setPassEntityUtil(PassEntityUtil passEntityUtil) {
+        this.passEntityUtil = passEntityUtil;
+    }
+
+    void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    /**
+     * This method provides the latest timestamp of all records processed. After processing, this timestamp
+     * will be used to be tha base timestamp for the next run of the app
+     *
+     * @return the latest update timestamp string
+     */
+    public String getLatestUpdate() {
+        return this.latestUpdateString;
+    }
+
+    /**
+     * This returns the final statistics of the processing of the Grant or User Set
+     *
+     * @return the report
+     */
+    public String getReport() {
+        return statistics.getReport();
+    }
+
+    /**
+     * This returns the final statistics Object - useful in testing
+     *
+     * @return the statistics object
+     */
+    public PassUpdateStatistics getStatistics() {
+        return statistics;
+    }
+
+    public Map<String, Grant> getGrantResultMap() {
+        return grantResultMap;
     }
 
     /**
@@ -369,24 +402,6 @@ public class DefaultPassUpdater implements PassUpdater {
         statistics.setReport(results.size(), funderProcessedCounter);
     }
 
-    User buildUser(Map<String, String> rowMap) {
-        User user = new User();
-        user.setFirstName(rowMap.get(C_USER_FIRST_NAME));
-        user.setMiddleName(rowMap.getOrDefault(C_USER_MIDDLE_NAME, null));
-        user.setLastName(rowMap.get(C_USER_LAST_NAME));
-        user.setDisplayName(rowMap.get(C_USER_FIRST_NAME) + " " + rowMap.get(C_USER_LAST_NAME));
-        user.setEmail(rowMap.get(C_USER_EMAIL));
-        String employeeId = rowMap.get(C_USER_EMPLOYEE_ID);
-        //Build the List of locatorIds - put the most reliable ids first
-        if (employeeId != null) {
-            String localKey = GrantDataUtils.buildLocalKey(domain, EMPLOYEE_ID_TYPE, employeeId);
-            user.getLocatorIds().add(localKey);
-        }
-        user.getRoles().add(UserRole.SUBMITTER);
-        LOG.debug("Built user with employee ID {}", employeeId);
-        return user;
-    }
-
     /**
      * this method gets called on a grant mode process if the primary funder is different from direct, and also
      * any time the updater is called in funder mode
@@ -467,22 +482,13 @@ public class DefaultPassUpdater implements PassUpdater {
      * @return the URI for the resource representing the updated User in Pass
      */
     private User updateUserInPass(User systemUser) throws IOException, GrantDataException {
-        //we first check to see if the user is known by the Hopkins ID. If not, we check the employee ID.
-        //last attempt is the JHED ID. this order is specified by the order of the List as constructed on updatedUser
-        User passUser = null;
-        ListIterator<String> idIterator = systemUser.getLocatorIds().listIterator();
-
-        while (passUser == null && idIterator.hasNext()) {
-            String id = String.valueOf(idIterator.next());
-            if (id != null) {
-                PassClientSelector<User> selector = new PassClientSelector<>(User.class);
-                selector.setFilter(RSQL.hasMember("locatorIds", id));
-                PassClientResult<User> result = passClient.selectObjects(selector);
-                passUser = result.getObjects().isEmpty()
-                        ? null
-                        : getSingleObject(result, id);;
-            }
-        }
+        PassClientSelector<User> selector = new PassClientSelector<>(User.class);
+        String employeeIdLocator = getEmployeeLocatorId(systemUser);
+        selector.setFilter(RSQL.hasMember("locatorIds", employeeIdLocator));
+        PassClientResult<User> result = passClient.selectObjects(selector);
+        User passUser = result.getObjects().isEmpty()
+            ? null
+            : getSingleObject(result, employeeIdLocator);
 
         if (Objects.nonNull(passUser)) {
             User updatedUser = passEntityUtil.update(systemUser, passUser);
@@ -497,6 +503,7 @@ public class DefaultPassUpdater implements PassUpdater {
             }
         } else if (!mode.equals("user")) { //don't have a stored User for this URI - this one is new to Pass
             //but don't update if we are in user mode - just update existing users
+            setInstitutionalUserProps(systemUser);
             passClient.createObject(systemUser);
             statistics.addUsersCreated();
             return systemUser;
@@ -546,52 +553,6 @@ public class DefaultPassUpdater implements PassUpdater {
             throw new GrantDataException("More than a single object returned for key: " + key);
         }
         return result.getObjects().get(0);
-    }
-
-    /**
-     * This method provides the latest timestamp of all records processed. After processing, this timestamp
-     * will be used to be tha base timestamp for the next run of the app
-     *
-     * @return the latest update timestamp string
-     */
-    public String getLatestUpdate() {
-        return this.latestUpdateString;
-    }
-
-    /**
-     * This returns the final statistics of the processing of the Grant or User Set
-     *
-     * @return the report
-     */
-    public String getReport() {
-        return statistics.getReport();
-    }
-
-    /**
-     * This returns the final statistics Object - useful in testing
-     *
-     * @return the statistics object
-     */
-    public PassUpdateStatistics getStatistics() {
-        return statistics;
-    }
-
-    public Map<String, Grant> getGrantResultMap() {
-        return grantResultMap;
-    }
-
-    //used in unit test
-    Map<String, Funder> getFunderMap() {
-        return funderMap;
-    }
-
-    //used in unit test
-    Map<String, User> getUserMap() {
-        return userMap;
-    }
-
-    void setDomain(String domain) {
-        this.domain = domain;
     }
 
 }

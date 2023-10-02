@@ -15,6 +15,9 @@
  */
 package org.eclipse.pass.support.grant.data;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_ABBREVIATED_ROLE;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_NAME;
@@ -33,11 +36,13 @@ import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_UPDATE_TIMES
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMAIL;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMPLOYEE_ID;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_FIRST_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_HOPKINS_ID;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_INSTITUTIONAL_ID;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_LAST_NAME;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_MIDDLE_NAME;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
+import static org.eclipse.pass.support.grant.data.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
+import static org.eclipse.pass.support.grant.data.JhuPassUpdater.HOPKINS_LOCATOR_ID;
+import static org.eclipse.pass.support.grant.data.JhuPassUpdater.JHED_LOCATOR_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,7 +51,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -58,6 +66,7 @@ import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@WireMockTest
 public class JhuPassUpdaterIT {
 
     private final String[] grantAwardNumber = {"B10000000", "B10000001", "B10000002"};
@@ -85,13 +94,8 @@ public class JhuPassUpdaterIT {
 
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
     //private final String funderIdPrefix = "johnshopkins.edu:funder:";
-    //private final String hopkinsidPrefix = "johnshopkins.edu:hopkinsid:";
-    private final String employeeidPrefix = "johnshopkins.edu:employeeid:";
-    //String jhedidPrefis = "johnshopkins.edu:jhed:";
 
     private final PassClient passClient = PassClient.newInstance();
-    private final JhuPassUpdater passUpdater = new JhuPassUpdater(passClient);
-    private final PassUpdateStatistics statistics = passUpdater.getStatistics();
 
     @BeforeEach
     public void setup() throws IOException {
@@ -110,25 +114,37 @@ public class JhuPassUpdaterIT {
 
     /**
      * we put an initial award for a grant into PASS, then simulate a pull of all subsequent records
-     *
+     * <p>
      * We expect to see some fields retained from the initial award, and others updated. The most
      * interesting fields are the investigator fields: all CO-PIs ever on the grant should stay on the
      * co-pi field throughout iterations. If a PI is changed, they should appear on the CO-PI field
      *
      */
     @Test
-    public void processGrantIT() throws IOException {
-        List<Map<String, String>> resultSet = new ArrayList<>();
+    public void processGrantIT(WireMockRuntimeInfo wmRuntimeInfo) throws IOException {
+        // GIVEN
+        stubRequest(0);
+        stubRequest(1);
 
         //put in initial iteration as a correct existing record - PI is Reckondwith, Co-pi is Class
         Map<String, String> piRecord0 = makeRowMap(0, 0, "P");
         Map<String, String> coPiRecord0 = makeRowMap(0, 1, "C");
 
+        List<Map<String, String>> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
 
+        Properties connProps = new Properties();
+        final int wmPort = wmRuntimeInfo.getHttpPort();
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_BASE_URL, "http://localhost:" + wmPort + "/user");
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_ID, "test-client-id");
+        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_SECRET, "test-client-secret");
+        JhuPassUpdater passUpdater = new JhuPassUpdater(connProps);
+
+        // WHEN
         passUpdater.updatePass(resultSet, "grant");
 
+        // THEN
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[2]));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
@@ -136,17 +152,8 @@ public class JhuPassUpdaterIT {
         assertEquals(1, resultGrant.getTotal());
         Grant passGrant = resultGrant.getObjects().get(0);
 
-        PassClientSelector<User> user0Selector = new PassClientSelector<>(User.class);
-        user0Selector.setFilter(RSQL.hasMember("locatorIds", employeeidPrefix + userEmployeeId[0]));
-        PassClientResult<User> resultUser0 = passClient.selectObjects(user0Selector);
-        assertEquals(1, resultUser0.getTotal());
-        User user0 = resultUser0.getObjects().get(0);
-
-        PassClientSelector<User> user1Selector = new PassClientSelector<>(User.class);
-        user1Selector.setFilter(RSQL.hasMember("locatorIds", employeeidPrefix + userEmployeeId[1]));
-        PassClientResult<User> resultUser1 = passClient.selectObjects(user1Selector);
-        assertEquals(1, resultUser1.getTotal());
-        User user1 = resultUser1.getObjects().get(0);
+        User user0 = getVerifiedUser(0);
+        User user1 = getVerifiedUser(1);
 
         assertEquals(grantAwardNumber[0], passGrant.getAwardNumber());
         assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
@@ -161,14 +168,16 @@ public class JhuPassUpdaterIT {
         assertEquals(user1, passGrant.getCoPis().get(0));
 
         //check statistics
-        assertEquals(1, statistics.getGrantsCreated());
-        assertEquals(2, statistics.getUsersCreated());
-        assertEquals(1, statistics.getPisAdded());
-        assertEquals(1, statistics.getCoPisAdded());
+        assertEquals(1, passUpdater.getStatistics().getGrantsCreated());
+        assertEquals(2, passUpdater.getStatistics().getUsersCreated());
+        assertEquals(1, passUpdater.getStatistics().getPisAdded());
+        assertEquals(1, passUpdater.getStatistics().getCoPisAdded());
 
+        // WHEN
         //now simulate an incremental pull since the initial,  adjust the stored grant
         //we add a new co-pi Jones in the "1" iteration, and change the pi to Einstein in the "2" iteration
         //we drop co-pi jones in the last iteration
+        stubRequest(2);
 
         Map<String, String> piRecord1 = makeRowMap(1, 0, "P");
         Map<String, String> coPiRecord1 = makeRowMap(1, 1, "C");
@@ -184,15 +193,12 @@ public class JhuPassUpdaterIT {
 
         passUpdater.updatePass(resultSet, "grant");
 
+        // THEN
         resultGrant = passClient.selectObjects(grantSelector);
         assertEquals(1, resultGrant.getTotal());
         Grant updatePassGrant = resultGrant.getObjects().get(0);
 
-        PassClientSelector<User> user2Selector = new PassClientSelector<>(User.class);
-        user2Selector.setFilter(RSQL.hasMember("locatorIds", employeeidPrefix + userEmployeeId[2]));
-        PassClientResult<User> resultUser2 = passClient.selectObjects(user2Selector);
-        assertEquals(1, resultUser2.getTotal());
-        User user2 = resultUser2.getObjects().get(0);
+        User user2 = getVerifiedUser(2);
 
         assertEquals(grantAwardNumber[0], updatePassGrant.getAwardNumber());//initial
         assertEquals(AwardStatus.ACTIVE, updatePassGrant.getAwardStatus());
@@ -206,6 +212,19 @@ public class JhuPassUpdaterIT {
         assertEquals(2, updatePassGrant.getCoPis().size());
         assertTrue(updatePassGrant.getCoPis().contains(user0));//Reckondwith
         assertTrue(updatePassGrant.getCoPis().contains(user2));//Gunn
+    }
+
+    private User getVerifiedUser(int userIndex) throws IOException {
+        PassClientSelector<User> user2Selector = new PassClientSelector<>(User.class);
+        user2Selector.setFilter(RSQL.hasMember("locatorIds", EMPLOYEE_LOCATOR_ID + userEmployeeId[userIndex]));
+        PassClientResult<User> resultUser2 = passClient.selectObjects(user2Selector);
+        assertEquals(1, resultUser2.getTotal());
+        User user = resultUser2.getObjects().get(0);
+        assertEquals(3, user.getLocatorIds().size());
+        assertEquals(EMPLOYEE_LOCATOR_ID + userEmployeeId[userIndex], user.getLocatorIds().get(0));
+        assertEquals(HOPKINS_LOCATOR_ID + userHopkinsId[userIndex], user.getLocatorIds().get(1));
+        assertEquals(JHED_LOCATOR_ID + userInstitutionalId[userIndex], user.getLocatorIds().get(2));
+        return user;
     }
 
     /**
@@ -237,7 +256,6 @@ public class JhuPassUpdaterIT {
         rowMap.put(C_USER_EMAIL, userEmail[user]);
         rowMap.put(C_USER_INSTITUTIONAL_ID, userInstitutionalId[user]);
         rowMap.put(C_USER_EMPLOYEE_ID, userEmployeeId[user]);
-        rowMap.put(C_USER_HOPKINS_ID, userHopkinsId[user]);
 
         rowMap.put(C_UPDATE_TIMESTAMP, grantUpdateTimestamp[iteration]);
         rowMap.put(C_ABBREVIATED_ROLE, abbrRole);
@@ -246,6 +264,11 @@ public class JhuPassUpdaterIT {
         rowMap.put(C_PRIMARY_FUNDER_POLICY, primaryFunderPolicyUriString);
 
         return rowMap;
+    }
+
+    private void stubRequest(int userIndex) {
+        stubFor(get("/user/EmployeeID_to_HopkinsID?employeeid=" + userEmployeeId[userIndex])
+            .willReturn(okJson("{ \"" + userEmployeeId[userIndex] + "\": \"" + userHopkinsId[userIndex] + "\" }")));
     }
 
 }
