@@ -50,8 +50,6 @@ public class CoeusConnector implements GrantConnector {
 
     private final Properties funderPolicyProperties;
 
-    private DirectoryServiceUtil directoryServiceUtil;
-
     /**
      * Class constructor.
      * @param connectionProperties the connection props
@@ -69,7 +67,6 @@ public class CoeusConnector implements GrantConnector {
             if (connectionProperties.getProperty(COEUS_PASS) != null) {
                 this.coeusPassword = connectionProperties.getProperty(COEUS_PASS);
             }
-            this.directoryServiceUtil = new DirectoryServiceUtil(connectionProperties);
         }
 
         this.funderPolicyProperties = funderPolicyProperties;
@@ -94,7 +91,7 @@ public class CoeusConnector implements GrantConnector {
      * @return the {@code ResultSet} from the query
      */
     private List<Map<String, String>> retrieveGrantUpdates(String queryString)
-        throws ClassNotFoundException, SQLException, IOException {
+        throws ClassNotFoundException, SQLException {
 
         List<Map<String, String>> mapList = new ArrayList<>();
 
@@ -129,12 +126,6 @@ public class CoeusConnector implements GrantConnector {
                         rs.getString(CoeusFieldNames.C_USER_INSTITUTIONAL_ID));
                 rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, rs.getString(CoeusFieldNames.C_UPDATE_TIMESTAMP));
                 rowMap.put(CoeusFieldNames.C_ABBREVIATED_ROLE, rs.getString(CoeusFieldNames.C_ABBREVIATED_ROLE));
-
-                String employeeId = rs.getString(CoeusFieldNames.C_USER_EMPLOYEE_ID);
-                if (employeeId != null) {
-                    rowMap.put(CoeusFieldNames.C_USER_HOPKINS_ID,
-                            directoryServiceUtil.getHopkinsIdForEmployeeId(employeeId));
-                }
 
                 String primaryFunderLocalKey = rs.getString(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY);
                 rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY, primaryFunderLocalKey);
@@ -225,18 +216,11 @@ public class CoeusConnector implements GrantConnector {
                         rs.getString(CoeusFieldNames.C_USER_INSTITUTIONAL_ID));
                 rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, rs.getString(CoeusFieldNames.C_USER_EMPLOYEE_ID));
                 rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, rs.getString(CoeusFieldNames.C_UPDATE_TIMESTAMP));
-                String employeeId = rs.getString(CoeusFieldNames.C_USER_EMPLOYEE_ID);
-                if (employeeId != null) {
-                    rowMap.put(CoeusFieldNames.C_USER_HOPKINS_ID,
-                            directoryServiceUtil.getHopkinsIdForEmployeeId(employeeId));
-                }
                 LOG.debug("Record processed: {}", rowMap);
                 if (!mapList.contains(rowMap)) {
                     mapList.add(rowMap);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         LOG.info("Retrieved result set from COEUS: {} records processed", mapList.size());
         return mapList;
