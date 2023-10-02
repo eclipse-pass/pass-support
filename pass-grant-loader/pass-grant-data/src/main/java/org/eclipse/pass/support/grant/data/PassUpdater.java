@@ -18,7 +18,9 @@ package org.eclipse.pass.support.grant.data;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.User;
 
 /**
  * An interface specifying behavior of a class that processes grant data into PASS.
@@ -31,6 +33,61 @@ public interface PassUpdater {
      * @param mode the mode of update
      */
     void updatePass(Collection<Map<String, String>> results, String mode);
+
+    /**
+     * This method takes a Funder from the data source, calculates whether it needs to be updated, and if so, returns
+     * the updated object
+     * to be be ingested into the repository. if not, returns null.
+     *
+     * @param stored the Funder as it is stored in the PASS backend
+     * @param system the version of the Funder from the data sourcee pull
+     * @return the updated Funder - null if the Funder does not need to be updated
+     */
+    Funder update(Funder system, Funder stored);
+
+    /**
+     * This method takes a User from the data source, calculates whether it needs to be updated, and if so, returns
+     * the updated object
+     * to be be ingested into the repository. if not, returns null.
+     *
+     * @param stored the User as it is stored in the PASS backend
+     * @param system the version of the User from the data sourcee pull
+     * @return the updated User - null if the User does not need to be updated
+     */
+    User update(User system, User stored);
+
+    /**
+     * This method takes a Grantfrom the data source, calculates whether it needs to be updated, and if so, returns
+     * the updated object
+     * to be be ingested into the repository. if not, returns null.
+     *
+     * @param stored the Grant as it is stored in the PASS backend
+     * @param system the version of the Grant from the data sourcee pull
+     * @return the updated Grant - null if the Grant does not need to be updated
+     */
+    Grant update(Grant system, Grant stored);
+
+    /**
+     * Build a User for the institution based on the result set Map.
+     * @param rowMap a result set map
+     * @return a User
+     */
+    User buildUser(Map<String, String> rowMap);
+
+    /**
+     * Set any institutional User properties that are needed.
+     * @param user the User
+     * @throws GrantDataException if problem occurs setting props
+     */
+    void setInstitutionalUserProps(User user) throws GrantDataException;
+
+    /**
+     * Returns the employee locator ID of the user.
+     * @param user the user
+     * @return the employee id
+     * @throws GrantDataException of the employee ID is not found
+     */
+    String getEmployeeLocatorId(User user) throws GrantDataException;
 
     /**
      * Returns the latest update timestamp string.
