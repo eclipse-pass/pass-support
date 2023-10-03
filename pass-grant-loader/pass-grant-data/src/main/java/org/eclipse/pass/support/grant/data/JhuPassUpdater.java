@@ -67,47 +67,7 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     }
 
     @Override
-    public Funder update(Funder system, Funder stored) {
-        if (funderNeedsUpdate(system, stored)) {
-            return updateFunder(system, stored);
-        }
-        return null;
-    }
-
-    @Override
-    public User update(User system, User stored) {
-        if (userNeedsUpdate(system, stored)) {
-            return updateUser(system, stored);
-        }
-        return null;
-    }
-
-    @Override
-    public void setInstitutionalUserProps(User user) {
-        try {
-            String employeeIdLocator = getEmployeeLocatorId(user);
-            String employeeId = employeeIdLocator.replace(EMPLOYEE_LOCATOR_ID, "");
-            String hopkinsId = directoryServiceUtil.getHopkinsIdForEmployeeId(employeeId);
-            if (StringUtils.isNotBlank(hopkinsId)) {
-                user.getLocatorIds().add(1, HOPKINS_LOCATOR_ID + hopkinsId);
-            } else {
-                LOG.warn("Hopkins ID is null or blank for employee ID: " + employeeId);
-            }
-        } catch (IOException | GrantDataException e) {
-            LOG.error("Error getting Hopkins ID for User: " + user.getEmail());
-        }
-    }
-
-    @Override
-    public String getEmployeeLocatorId(User user) throws GrantDataException {
-        return user.getLocatorIds().stream()
-            .filter(locatorId -> locatorId.startsWith(EMPLOYEE_LOCATOR_ID))
-            .findFirst()
-            .orElseThrow(() -> new GrantDataException("Unable to find employee id locator id"));
-    }
-
-    @Override
-    public Grant update(Grant system, Grant stored) {
+    public Grant updateGrantIfNeeded(Grant system, Grant stored) {
         //adjust the system view of co-pis  by merging in the stored view of pi and co-pis
         for (User coPiUser : stored.getCoPis()) {
             if (!system.getCoPis().contains(coPiUser)) {
@@ -136,6 +96,46 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
             return updateGrant(system, stored);
         }
         return null;
+    }
+
+    @Override
+    public Funder updateFunderIfNeeded(Funder system, Funder stored) {
+        if (funderNeedsUpdate(system, stored)) {
+            return updateFunder(system, stored);
+        }
+        return null;
+    }
+
+    @Override
+    public User updateUserIfNeeded(User system, User stored) {
+        if (userNeedsUpdate(system, stored)) {
+            return updateUser(system, stored);
+        }
+        return null;
+    }
+
+    @Override
+    public void setInstitutionalUserProps(User user) {
+        try {
+            String employeeIdLocator = getEmployeeLocatorId(user);
+            String employeeId = employeeIdLocator.replace(EMPLOYEE_LOCATOR_ID, "");
+            String hopkinsId = directoryServiceUtil.getHopkinsIdForEmployeeId(employeeId);
+            if (StringUtils.isNotBlank(hopkinsId)) {
+                user.getLocatorIds().add(1, HOPKINS_LOCATOR_ID + hopkinsId);
+            } else {
+                LOG.warn("Hopkins ID is null or blank for employee ID: " + employeeId);
+            }
+        } catch (IOException | GrantDataException e) {
+            LOG.error("Error getting Hopkins ID for User: " + user.getEmail() + ", " + e.getMessage());
+        }
+    }
+
+    @Override
+    public String getEmployeeLocatorId(User user) throws GrantDataException {
+        return user.getLocatorIds().stream()
+            .filter(locatorId -> locatorId.startsWith(EMPLOYEE_LOCATOR_ID))
+            .findFirst()
+            .orElseThrow(() -> new GrantDataException("Unable to find employee id locator id"));
     }
 
     @Override

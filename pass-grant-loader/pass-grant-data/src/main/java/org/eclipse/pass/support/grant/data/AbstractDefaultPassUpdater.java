@@ -96,17 +96,11 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         statistics.reset();
         statistics.setType(mode);
         switch (mode) {
-            case "grant":
-                updateGrants(results);
-                break;
-            case "user":
-                updateUsers(results);
-                break;
-            case "funder":
-                updateFunders(results);
-                break;
-            default:
-                break;
+            case "grant" -> updateGrants(results);
+            case "user" -> updateUsers(results);
+            case "funder" -> updateFunders(results);
+            default -> {
+            }
         }
     }
 
@@ -447,7 +441,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
         if (!result.getObjects().isEmpty()) {
             Funder storedFunder = getSingleObject(result, fullLocalKey);
-            Funder updatedFunder = update(systemFunder, storedFunder);
+            Funder updatedFunder = updateFunderIfNeeded(systemFunder, storedFunder);
             if (Objects.nonNull(updatedFunder)) { //need to update
                 passClient.updateObject(updatedFunder);
                 statistics.addFundersUpdated();
@@ -480,7 +474,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             : getSingleObject(result, employeeIdLocator);
 
         if (Objects.nonNull(passUser)) {
-            User updatedUser = update(systemUser, passUser);
+            User updatedUser = updateUserIfNeeded(systemUser, passUser);
             if (Objects.nonNull(updatedUser)) { //need to update
                 //post COEUS processing goes here
                 if (!updatedUser.getRoles().contains(UserRole.SUBMITTER)) {
@@ -490,8 +484,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 statistics.addUsersUpdated();
                 return updatedUser;
             }
-        } else if (!mode.equals("user")) { //don't have a stored User for this URI - this one is new to Pass
-            //but don't update if we are in user mode - just update existing users
+        } else if (!mode.equals("user")) {
             setInstitutionalUserProps(systemUser);
             passClient.createObject(systemUser);
             statistics.addUsersCreated();
@@ -521,7 +514,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         if (!result.getObjects().isEmpty()) {
             LOG.debug("Found grant with localKey {}", fullLocalKey);
             Grant storedGrant = getSingleObject(result, fullLocalKey);
-            Grant updatedGrant = update(systemGrant, storedGrant);
+            Grant updatedGrant = updateGrantIfNeeded(systemGrant, storedGrant);
             if (Objects.nonNull(updatedGrant)) { //need to update
                 passClient.updateObject(updatedGrant);
                 statistics.addGrantsUpdated();

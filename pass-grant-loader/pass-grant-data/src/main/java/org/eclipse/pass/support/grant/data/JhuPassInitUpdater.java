@@ -35,7 +35,7 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
     }
 
     @Override
-    public Grant update(Grant system, Grant stored) {
+    public Grant updateGrantIfNeeded(Grant system, Grant stored) {
         //adjust the system view of co-pis  by merging in the stored view of pi and co-pis
         for (User coPiUser : stored.getCoPis()) {
             if (!system.getCoPis().contains(coPiUser)) {
