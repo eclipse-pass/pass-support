@@ -288,7 +288,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                                     ? grantUpdateString
                                     : DateTimeUtil.returnLaterUpdate(grantUpdateString, latestUpdateString);
                 }
-            } catch (IOException | GrantDataException e) {
+            } catch (Exception e) {
                 LOG.error("Error building Grant Row with localKey: " + grantLocalKey, e);
             }
         }
@@ -340,7 +340,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                                     ? userUpdateString
                                     : DateTimeUtil.returnLaterUpdate(userUpdateString, latestUpdateString);
                 }
-            } catch (IOException | GrantDataException e) {
+            } catch (Exception e) {
                 LOG.error("Error processing User: " + rowUser, e);
             }
         }
@@ -464,14 +464,12 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
      * @param systemUser the new User object populated from COEUS
      * @return the URI for the resource representing the updated User in Pass
      */
-    private User updateUserInPass(User systemUser) throws IOException, GrantDataException {
-        PassClientSelector<User> selector = new PassClientSelector<>(User.class);
-        String employeeIdLocator = getEmployeeLocatorId(systemUser);
-        selector.setFilter(RSQL.hasMember("locatorIds", employeeIdLocator));
-        PassClientResult<User> result = passClient.selectObjects(selector);
-        User passUser = result.getObjects().isEmpty()
-            ? null
-            : getSingleObject(result, employeeIdLocator);
+    private User updateUserInPass(User systemUser) throws IOException {
+        User passUser = systemUser.getLocatorIds().stream()
+            .map(this::lookupPassUser)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
 
         if (Objects.nonNull(passUser)) {
             User updatedUser = updateUserIfNeeded(systemUser, passUser);
@@ -490,6 +488,17 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             return systemUser;
         }
         return passUser;
+    }
+
+    private User lookupPassUser(String locatorId) {
+        try {
+            PassClientSelector<User> selector = new PassClientSelector<>(User.class);
+            selector.setFilter(RSQL.hasMember("locatorIds", locatorId));
+            PassClientResult<User> result = passClient.selectObjects(selector);
+            return result.getObjects().isEmpty() ? null : getSingleObject(result, locatorId);
+        } catch (IOException | GrantDataException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
