@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.List;
@@ -21,8 +20,8 @@ import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
@@ -32,9 +31,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
  */
 @ExtendWith(MockitoExtension.class)
 public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
-
-    @Mock
-    private PmidLookup pmidLookup;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -49,22 +45,16 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
      */
     @Test
     public void smokeTestLoadAndTransform() throws Exception {
+
         NihmsTransformLoadApp app = new NihmsTransformLoadApp(null);
-        NihmsTransformLoadApp spyApp = Mockito.spy(app);
 
-        // mocking the entrez pmid lookup. it will not return an entrez record because these are fake grants.
-        // this will save runtime
-        //when(pmidLookup.retrievePubMedRecord(any())).thenReturn(null);
-        doReturn(null).when(pmidLookup).retrievePubMedRecord(any());
-
-        spyApp.run();
+        app.run();
 
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         PassClientSelector<Publication> publicationSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> submissionSelector = new PassClientSelector<>(Submission.class);
 
         //now that it has run lets do some basic tallys to make sure they are as expected:
-
         //make sure RepositoryCopies are all in before moving on so we can be sure the counts are done.
         repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
         List<RepositoryCopy> repositoryCopies = passClient.selectObjects(repoCopySelector).getObjects();
