@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.eclipse.pass.support.client.PassClient;
@@ -74,7 +73,7 @@ public class JhuPassUpdaterTest {
                                 passClientSelector.getFilter().equals(
                                         "localKey=='johnshopkins.edu:grant:8675309'")));
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+        JhuPassUpdater passUpdater = new JhuPassUpdater();
         FieldUtils.writeField(passUpdater, "passClient", passClientMock, true);
         passUpdater.updatePass(resultSet, "grant");
 
@@ -117,7 +116,7 @@ public class JhuPassUpdaterTest {
                                 passClientSelector.getFilter().equals(
                                         "localKey=='johnshopkins.edu:grant:8675309'")));
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+        JhuPassUpdater passUpdater = new JhuPassUpdater();
         FieldUtils.writeField(passUpdater, "passClient", passClientMock, true);
         passUpdater.updatePass(resultSet, "grant");
 
@@ -250,7 +249,7 @@ public class JhuPassUpdaterTest {
         rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, "0000222");
         rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, "2018-01-01 0:00:00.0");
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+        JhuPassUpdater passUpdater = new JhuPassUpdater();
         User newUser = passUpdater.buildUser(rowMap);
 
         //unusual fields
@@ -267,7 +266,7 @@ public class JhuPassUpdaterTest {
         rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY, "8675309");
         rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_POLICY, "policy1");
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+        JhuPassUpdater passUpdater = new JhuPassUpdater();
         Funder newFunder = passUpdater.buildPrimaryFunder(rowMap);
 
         assertEquals("Funder Name", newFunder.getName());
@@ -284,7 +283,7 @@ public class JhuPassUpdaterTest {
             rowMap.put(CoeusFieldNames.C_GRANT_LOCAL_KEY, CoeusFieldNames.C_GRANT_LOCAL_KEY);
             grantResultSet.add(rowMap);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+            JhuPassUpdater passUpdater = new JhuPassUpdater();
 
             passUpdater.updatePass(grantResultSet, "user");
         });
@@ -298,7 +297,7 @@ public class JhuPassUpdaterTest {
             rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, CoeusFieldNames.C_USER_EMPLOYEE_ID);
             userResultSet.add(rowMap);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+            JhuPassUpdater passUpdater = new JhuPassUpdater();
 
             passUpdater.updatePass(userResultSet, "grant");
         });
@@ -312,7 +311,7 @@ public class JhuPassUpdaterTest {
             rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, CoeusFieldNames.C_USER_EMPLOYEE_ID);
             userResultSet.add(rowMap);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater(new Properties());
+            JhuPassUpdater passUpdater = new JhuPassUpdater();
 
             passUpdater.updatePass(userResultSet, "funder");
         });

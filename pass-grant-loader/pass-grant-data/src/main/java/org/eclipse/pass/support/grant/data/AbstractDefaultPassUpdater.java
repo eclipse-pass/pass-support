@@ -485,7 +485,6 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 return updatedUser;
             }
         } else if (!mode.equals("user")) {
-            setInstitutionalUserProps(systemUser);
             passClient.createObject(systemUser);
             statistics.addUsersCreated();
             return systemUser;
