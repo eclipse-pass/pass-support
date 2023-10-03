@@ -56,17 +56,21 @@ public class PmidLookup {
                                                       ".fcgi?db=pubmed&retmode=json&rettype=abstract&id=%s";
 
     private static final String ENTREZ_PATH_KEY = "entrez.pmid.path";
+    private static final String ENTREZ_TIME_OUT_KEY = "entrez.time.out";
+    private static final String ENTREZ_TIME_OUT = "400";
 
     private static final String JSON_ERROR_KEY = "error";
     private static final String JSON_RESULT_KEY = "result";
 
     private String entrezPath;
+    private String entrezTimeout;
 
     /**
      * Default constructor uses the default Entrez path
      */
     public PmidLookup() {
         entrezPath = System.getProperty(ENTREZ_PATH_KEY, DEFAULT_ENTREZ_PATH);
+        entrezTimeout = System.getProperty(ENTREZ_TIME_OUT_KEY, ENTREZ_TIME_OUT);
     }
 
     /**
@@ -101,7 +105,7 @@ public class PmidLookup {
             if (jsonRecord == null) {
                 // pause and retry once to allow for API limitations
                 LOG.info("Pausing before trying to pull PMID {} from Entrez again", pmid);
-                TimeUnit.MILLISECONDS.sleep(400);
+                TimeUnit.MILLISECONDS.sleep(Long.parseLong(entrezTimeout));
                 jsonRecord = retrieveJsonFromApi(pmid);
             }
         } catch (InterruptedException e) {
