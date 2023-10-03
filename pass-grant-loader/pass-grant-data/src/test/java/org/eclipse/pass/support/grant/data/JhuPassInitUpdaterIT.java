@@ -15,9 +15,6 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_ABBREVIATED_ROLE;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_NAME;
@@ -41,7 +38,6 @@ import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_LAST_NA
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_MIDDLE_NAME;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
 import static org.eclipse.pass.support.grant.data.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
-import static org.eclipse.pass.support.grant.data.JhuPassUpdater.HOPKINS_LOCATOR_ID;
 import static org.eclipse.pass.support.grant.data.JhuPassUpdater.JHED_LOCATOR_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -51,10 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -66,7 +59,6 @@ import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@WireMockTest
 public class JhuPassInitUpdaterIT {
 
     private final String[] grantAwardNumber = {"A10000000", "A10000001", "A10000002"};
@@ -80,7 +72,6 @@ public class JhuPassInitUpdaterIT {
         {"2006-03-11 00:00:00.0", "2010-04-05 00:00:00.0", "2015-11-11 00:00:00.0"};
     private final String[] userEmployeeId = {"30000000", "30000001", "30000002"};
     private final String[] userInstitutionalId = {"amelon1", "aeinst1", "jjones1"};
-    private final String[] userHopkinsId = {"RANDOM", "OMRNDA", "DRMONA"};
     private final String[] userFirstName = {"Andrew", "Albert", "Junie"};
     private final String[] userMiddleName = {"Smith", "Carnegie", "Beatrice"};
     private final String[] userLastName = {"Melon", "Einstein", "Jones"};
@@ -119,22 +110,15 @@ public class JhuPassInitUpdaterIT {
      *
      */
     @Test
-    public void processInitGrantIT(WireMockRuntimeInfo wmRuntimeInfo) throws IOException {
+    public void processInitGrantIT() throws IOException {
         // GIVEN
-        stubRequest(1);
-
         List<Map<String, String>> resultSet = new ArrayList<>();
 
         //put in last iteration as existing record - PI is Einstein
         Map<String, String> piRecord2 = makeRowMap(2, 1, "P");
         resultSet.add(piRecord2);
 
-        Properties connProps = new Properties();
-        final int wmPort = wmRuntimeInfo.getHttpPort();
-        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_BASE_URL, "http://localhost:" + wmPort + "/user");
-        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_ID, "test-client-id");
-        connProps.setProperty(DirectoryServiceUtil.DIRECTORY_SERVICE_CLIENT_SECRET, "test-client-secret");
-        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater(connProps);
+        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater();
         passUpdater.updatePass(resultSet, "grant");
 
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
@@ -165,8 +149,6 @@ public class JhuPassInitUpdaterIT {
         //now simulate a complete pull from the Beginning of Time and adjust the stored grant
         //we add a new co-pi Jones in the "1" iteration, and change the pi to Einstein in the "2" iteration
         //we drop co-pi jones in the last iteration
-        stubRequest(0);
-        stubRequest(2);
         Map<String, String> piRecord0 = makeRowMap(0, 0, "P");
         Map<String, String> coPiRecord0 = makeRowMap(0, 1, "C");
         Map<String, String> piRecord1 = makeRowMap(1, 0, "P");
@@ -206,15 +188,14 @@ public class JhuPassInitUpdaterIT {
     }
 
     private User getVerifiedUser(int userIndex) throws IOException {
-        PassClientSelector<User> user2Selector = new PassClientSelector<>(User.class);
-        user2Selector.setFilter(RSQL.hasMember("locatorIds", EMPLOYEE_LOCATOR_ID + userEmployeeId[userIndex]));
-        PassClientResult<User> resultUser2 = passClient.selectObjects(user2Selector);
-        assertEquals(1, resultUser2.getTotal());
-        User user = resultUser2.getObjects().get(0);
-        assertEquals(3, user.getLocatorIds().size());
+        PassClientSelector<User> userSelector = new PassClientSelector<>(User.class);
+        userSelector.setFilter(RSQL.hasMember("locatorIds", EMPLOYEE_LOCATOR_ID + userEmployeeId[userIndex]));
+        PassClientResult<User> resultUser = passClient.selectObjects(userSelector);
+        assertEquals(1, resultUser.getTotal());
+        User user = resultUser.getObjects().get(0);
+        assertEquals(2, user.getLocatorIds().size());
         assertEquals(EMPLOYEE_LOCATOR_ID + userEmployeeId[userIndex], user.getLocatorIds().get(0));
-        assertEquals(HOPKINS_LOCATOR_ID + userHopkinsId[userIndex], user.getLocatorIds().get(1));
-        assertEquals(JHED_LOCATOR_ID + userInstitutionalId[userIndex], user.getLocatorIds().get(2));
+        assertEquals(JHED_LOCATOR_ID + userInstitutionalId[userIndex], user.getLocatorIds().get(1));
         return user;
     }
 
@@ -255,11 +236,6 @@ public class JhuPassInitUpdaterIT {
         rowMap.put(C_PRIMARY_FUNDER_POLICY, primaryFunderPolicyUriString);
 
         return rowMap;
-    }
-
-    private void stubRequest(int userIndex) {
-        stubFor(get("/user/EmployeeID_to_HopkinsID?employeeid=" + userEmployeeId[userIndex])
-            .willReturn(okJson("{ \"" + userEmployeeId[userIndex] + "\": \"" + userHopkinsId[userIndex] + "\" }")));
     }
 
 }

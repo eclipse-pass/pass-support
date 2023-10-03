@@ -45,11 +45,11 @@ class JhuGrantLoaderApp extends BaseGrantLoaderApp {
     }
 
     @Override
-    PassUpdater configureUpdater(Properties connectionProperties) {
+    PassUpdater configureUpdater() {
         if (init) {
-            return new JhuPassInitUpdater(connectionProperties);
+            return new JhuPassInitUpdater();
         }
-        return new JhuPassUpdater(connectionProperties);
+        return new JhuPassUpdater();
     }
 
 }

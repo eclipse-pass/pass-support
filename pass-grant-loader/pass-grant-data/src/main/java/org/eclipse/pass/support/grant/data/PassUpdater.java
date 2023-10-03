@@ -75,13 +75,6 @@ public interface PassUpdater {
     User buildUser(Map<String, String> rowMap);
 
     /**
-     * Set any institutional User properties that are needed.
-     * @param user the User
-     * @throws GrantDataException if problem occurs setting props
-     */
-    void setInstitutionalUserProps(User user) throws GrantDataException;
-
-    /**
      * Returns the employee locator ID of the user.
      * @param user the user
      * @return the employee id

@@ -22,14 +22,11 @@ import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_INSTITU
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_LAST_NAME;
 import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_MIDDLE_NAME;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
@@ -48,21 +45,15 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     private static final Logger LOG = LoggerFactory.getLogger(JhuPassUpdater.class);
     private static final String DOMAIN = "johnshopkins.edu";
     private static final String EMPLOYEE_ID_TYPE = "employeeid";
-    private static final String HOPKINS_ID_TYPE = "unique-id";
     private static final String JHED_ID_TYPE = "eppn";
 
     static final String EMPLOYEE_LOCATOR_ID = DOMAIN + ":" + EMPLOYEE_ID_TYPE + ":";
-    static final String HOPKINS_LOCATOR_ID = DOMAIN + ":" + HOPKINS_ID_TYPE + ":";
     static final String JHED_LOCATOR_ID = DOMAIN + ":" + JHED_ID_TYPE + ":";
-
-    private final DirectoryServiceUtil directoryServiceUtil;
 
     /**
      * Constructor.
-     * @param connectionProperties properties for connection to user dir service
      */
-    public JhuPassUpdater(Properties connectionProperties) {
-        this.directoryServiceUtil = new DirectoryServiceUtil(connectionProperties);
+    public JhuPassUpdater() {
         setDomain(DOMAIN);
     }
 
@@ -112,22 +103,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
             return updateUser(system, stored);
         }
         return null;
-    }
-
-    @Override
-    public void setInstitutionalUserProps(User user) {
-        try {
-            String employeeIdLocator = getEmployeeLocatorId(user);
-            String employeeId = employeeIdLocator.replace(EMPLOYEE_LOCATOR_ID, "");
-            String hopkinsId = directoryServiceUtil.getHopkinsIdForEmployeeId(employeeId);
-            if (StringUtils.isNotBlank(hopkinsId)) {
-                user.getLocatorIds().add(1, HOPKINS_LOCATOR_ID + hopkinsId);
-            } else {
-                LOG.warn("Hopkins ID is null or blank for employee ID: " + employeeId);
-            }
-        } catch (IOException | GrantDataException e) {
-            LOG.error("Error getting Hopkins ID for User: " + user.getEmail() + ", " + e.getMessage());
-        }
     }
 
     @Override
@@ -206,10 +181,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
             .equals(stored.getLastName()) : stored.getLastName() != null) {
             return true;
         }
-        String hopkinsLocatorId = findLocatorId(stored, HOPKINS_LOCATOR_ID);
-        if (Objects.isNull(hopkinsLocatorId)) {
-            return true;
-        }
         String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
         if (Objects.nonNull(systemUserJhedLocatorId) && !stored.getLocatorIds().contains(systemUserJhedLocatorId)) {
             return true;
@@ -250,10 +221,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         Set<String> idSet = new HashSet<>();
         idSet.addAll(stored.getLocatorIds());
         idSet.addAll(system.getLocatorIds());
-        String hopkinsLocatorId = findLocatorId(stored, HOPKINS_LOCATOR_ID);
-        if (Objects.isNull(hopkinsLocatorId)) {
-            setInstitutionalUserProps(stored);
-        }
         String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
         if (Objects.nonNull(systemUserJhedLocatorId) && !stored.getLocatorIds().contains(systemUserJhedLocatorId)) {
             stored.getLocatorIds().removeIf(locatorId -> locatorId.startsWith(JhuPassUpdater.JHED_LOCATOR_ID));

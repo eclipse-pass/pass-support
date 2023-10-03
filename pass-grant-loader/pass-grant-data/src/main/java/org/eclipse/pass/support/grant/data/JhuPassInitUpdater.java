@@ -16,7 +16,6 @@
 package org.eclipse.pass.support.grant.data;
 
 import java.util.HashSet;
-import java.util.Properties;
 
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
@@ -25,14 +24,6 @@ import org.eclipse.pass.support.client.model.User;
  * The Init Grant Pass Updater for data sourced from Jhu Coeus.
  */
 public class JhuPassInitUpdater extends JhuPassUpdater {
-
-    /**
-     * Constructor.
-     * @param connectionProperties properties for connection to user dir service
-     */
-    public JhuPassInitUpdater(Properties connectionProperties) {
-        super(connectionProperties);
-    }
 
     @Override
     public Grant updateGrantIfNeeded(Grant system, Grant stored) {
