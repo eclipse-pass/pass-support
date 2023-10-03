@@ -57,7 +57,7 @@ public class PmidLookup {
 
     private static final String ENTREZ_PATH_KEY = "entrez.pmid.path";
     private static final String ENTREZ_TIME_OUT_KEY = "entrez.time.out";
-    private static final String ENTREZ_TIME_OUT = "400";
+    private static final String DEFAULT_ENTREZ_TIME_OUT = "400";
 
     private static final String JSON_ERROR_KEY = "error";
     private static final String JSON_RESULT_KEY = "result";
@@ -70,7 +70,7 @@ public class PmidLookup {
      */
     public PmidLookup() {
         entrezPath = System.getProperty(ENTREZ_PATH_KEY, DEFAULT_ENTREZ_PATH);
-        entrezTimeout = System.getProperty(ENTREZ_TIME_OUT_KEY, ENTREZ_TIME_OUT);
+        entrezTimeout = System.getProperty(ENTREZ_TIME_OUT_KEY, DEFAULT_ENTREZ_TIME_OUT);
     }
 
     /**

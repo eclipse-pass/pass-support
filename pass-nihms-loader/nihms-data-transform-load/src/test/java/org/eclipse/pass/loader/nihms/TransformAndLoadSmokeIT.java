@@ -3,13 +3,11 @@ package org.eclipse.pass.loader.nihms;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 
 import java.io.File;
 import java.util.List;
 
-import org.eclipse.pass.entrez.PmidLookup;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Grant;
@@ -19,17 +17,13 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Smoke tests loads in some test data from spreadsheets and verifies it all loaded in as expected
  *
  * @author Karen Hanson
  */
-@ExtendWith(MockitoExtension.class)
+@WireMockTest
 public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
 
     @BeforeEach
@@ -45,7 +39,6 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
      */
     @Test
     public void smokeTestLoadAndTransform() throws Exception {
-
         NihmsTransformLoadApp app = new NihmsTransformLoadApp(null);
 
         app.run();
