@@ -1,5 +1,9 @@
 package org.eclipse.pass.loader.nihms;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -7,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.util.List;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -38,7 +43,16 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
      * @throws Exception if an error occurs
      */
     @Test
-    public void smokeTestLoadAndTransform() throws Exception {
+    public void smokeTestLoadAndTransform(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+        final int wmPort = wmRuntimeInfo.getHttpPort();
+        System.setProperty("entrez.pmid.path", "http://localhost:" + wmPort +
+                "/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&rettype=abstract&id=%s");
+        System.setProperty("entrez.time.out", "0");
+        String jsonErrorResponse = "{\"error\": \"cannot get document summary\"}";
+
+        stubFor(get(urlMatching("/entrez/eutils/esummary.fcgi\\?db=pubmed&retmode=json&rettype=abstract&id=([0-9]*)"))
+                .willReturn(ok(jsonErrorResponse)));
+
         NihmsTransformLoadApp app = new NihmsTransformLoadApp(null);
 
         app.run();
