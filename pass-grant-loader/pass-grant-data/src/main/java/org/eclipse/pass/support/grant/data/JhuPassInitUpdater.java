@@ -153,8 +153,10 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
 
     private void logDifferences(Grant system, Grant stored) {
         LOG.info("Updated Grant with ID: " + stored.getId());
-        List<String> diffs = getDifference(stored, system, stored.getId());
-        diffs.forEach(LOG::info);
+        if (LOG.isInfoEnabled()) {
+            List<String> diffs = getDifference(stored, system, stored.getId());
+            diffs.forEach(LOG::info);
+        }
     }
 
     private List<String> getDifference(Object s1, Object s2, String grantId) {
