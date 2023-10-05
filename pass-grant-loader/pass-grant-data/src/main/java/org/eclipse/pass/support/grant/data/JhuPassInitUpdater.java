@@ -15,26 +15,24 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The Init Grant Pass Updater for data sourced from Jhu Coeus.
  */
 public class JhuPassInitUpdater extends JhuPassUpdater {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JhuPassInitUpdater.class);
+    private final DifferenceLogger differenceLogger;
+
+    /**
+     * Default constructor.
+     */
+    public JhuPassInitUpdater() {
+        differenceLogger = new DifferenceLogger();
+    }
 
     @Override
     public Grant updateGrantIfNeeded(Grant system, Grant stored) {
@@ -134,7 +132,7 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
      * @return the Grant object which represents the Pass object, with any new information from COEUS merged in
      */
     private Grant updateGrant(Grant system, Grant stored) {
-        logDifferences(system, stored);
+        differenceLogger.log(system, stored);
         stored.setAwardNumber(system.getAwardNumber());
         stored.setAwardStatus(system.getAwardStatus());
         stored.setLocalKey(system.getLocalKey());
@@ -149,53 +147,6 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
         stored.setStartDate(system.getStartDate());
         stored.setEndDate(system.getEndDate());
         return stored;
-    }
-
-    private void logDifferences(Grant system, Grant stored) {
-        LOG.info("Updated Grant with ID: " + stored.getId());
-        if (LOG.isInfoEnabled()) {
-            List<String> diffs = getDifference(stored, system, stored.getId());
-            diffs.forEach(LOG::info);
-        }
-    }
-
-    private List<String> getDifference(Object s1, Object s2, String grantId) {
-        List<String> values = new ArrayList<>();
-        try {
-            for (Field field : s1.getClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                Object value1 = field.get(s1);
-                Object value2 = field.get(s2);
-                if (value1 instanceof Funder || value2 instanceof Funder) {
-                    getFunderDiffs((Funder) value1, (Funder) value2, values, field);
-                } else if (field.getName().equals("coPis")) {
-                    getCoPisDiffs((List<User>) value1, (List<User>) value2, values);
-                } else if (!Objects.equals(value1, value2)) {
-                    values.add(field.getName() + ": " + value1 + " -> " + value2);
-                }
-            }
-        } catch (IllegalAccessException e) {
-            LOG.error("Error printing diffs Grant ID: " + grantId, e);
-        }
-        return values;
-    }
-
-    private void getFunderDiffs(Funder value1, Funder value2, List<String> values, Field field) {
-        String funder1Id = Objects.nonNull(value1) ? value1.getId() : null;
-        String funder2Id = Objects.nonNull(value2) ? value2.getId() : null;
-        if (!Objects.equals(funder1Id, funder2Id)) {
-            values.add(field.getName() + " Funder IDs: " + funder1Id + " -> " + funder2Id);
-        }
-    }
-
-    private void getCoPisDiffs(List<User> value1, List<User> value2, List<String> values) {
-        Set<String> coPiIds1 = Objects.nonNull(value1) ?
-            value1.stream().map(User::getId).collect(Collectors.toSet()) : null;
-        Set<String> coPiIds2 = Objects.nonNull(value2) ?
-            value2.stream().map(User::getId).collect(Collectors.toSet()) : null;
-        if (!Objects.equals(coPiIds1, coPiIds2)) {
-            values.add("coPis User IDs: " + coPiIds1 + " -> " + coPiIds2);
-        }
     }
 
 }
