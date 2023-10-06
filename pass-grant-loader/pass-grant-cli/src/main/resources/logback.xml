@@ -27,4 +27,7 @@
   <logger name="org.eclipse.pass" additivity="false">
     <appender-ref ref="STDOUT"/>
   </logger>
+  <logger name="org.eclipse.pass.support.grant.data.DifferenceLogger" additivity="false" level="INFO">
+    <appender-ref ref="STDOUT"/>
+  </logger>
 </configuration>

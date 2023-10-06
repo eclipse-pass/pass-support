@@ -22,10 +22,14 @@ import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.JhuPassInitUpdater;
 import org.eclipse.pass.support.grant.data.JhuPassUpdater;
 import org.eclipse.pass.support.grant.data.PassUpdater;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class JhuGrantLoaderApp extends BaseGrantLoaderApp {
 
-    boolean init;
+    private static final Logger LOG = LoggerFactory.getLogger(JhuGrantLoaderApp.class);
+
+    private final boolean init;
 
     JhuGrantLoaderApp(String startDate, String awardEndDate, boolean email, String mode, String action,
                       String dataFileName, boolean init, String grant) {
@@ -47,6 +51,7 @@ class JhuGrantLoaderApp extends BaseGrantLoaderApp {
     @Override
     PassUpdater configureUpdater() {
         if (init) {
+            LOG.warn("**Grant Loader running in init mode**");
             return new JhuPassInitUpdater();
         }
         return new JhuPassUpdater();
