@@ -195,6 +195,7 @@ public class NihmsPassClientServiceIT {
      */
     @Test
     public void shouldFindNonNormalizedNihGrantAwardNumber() throws IOException, URISyntaxException {
+        long startTime = System.nanoTime();
         URI testAwardNumberUri = Objects.requireNonNull(NihmsPassClientServiceTest.class
                 .getResource("/valid_award_numbers.csv")).toURI();
         List<String> awardNumbers = Files.readAllLines(Paths.get(testAwardNumberUri));
@@ -208,6 +209,9 @@ public class NihmsPassClientServiceIT {
             assertEquals(award, found.getAwardNumber());
             assertEquals(grant.getId(), found.getId());
         }
+        long endTime = System.nanoTime();
+        double elapsedTimeInMS = (endTime - startTime) / 1_000_000.0;
+        System.out.println("Elapsed Time: " + elapsedTimeInMS + " ms");
     }
 
     /**
