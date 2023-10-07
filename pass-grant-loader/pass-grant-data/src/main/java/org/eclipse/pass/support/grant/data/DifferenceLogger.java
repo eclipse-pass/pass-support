@@ -59,7 +59,8 @@ public class DifferenceLogger {
                     getPassEntityDiffs((PassEntity) value1, (PassEntity) value2, values, field);
                 } else if (value1 instanceof List || value2 instanceof List) {
                     getListDiffs((List<PassEntity>) value1, (List<PassEntity>) value2, values, field);
-                } else if (!Objects.equals(value1, value2)) {
+                } else if (!field.getName().equals("id")
+                    && !Objects.equals(value1, value2)) {
                     values.add(field.getName() + ": " + value1 + " -> " + value2);
                 }
             }
