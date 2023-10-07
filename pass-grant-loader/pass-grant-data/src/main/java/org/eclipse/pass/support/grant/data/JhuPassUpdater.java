@@ -146,11 +146,14 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         if (system.getName() != null && !system.getName().equals(stored.getName())) {
             return true;
         }
-        if (system.getLocalKey() != null ? !system.getLocalKey()
-            .equals(stored.getLocalKey()) : stored.getLocalKey() != null) {
+        if (system.getLocalKey() != null
+            ? !system.getLocalKey().equals(stored.getLocalKey())
+            : stored.getLocalKey() != null) {
             return true;
         }
-        if (system.getPolicy() != null ? !system.getPolicy().equals(stored.getPolicy()) : stored.getPolicy() != null) {
+        if (system.getPolicy() != null
+            ? !system.getPolicy().getId().equals(getPassEntityId(stored.getPolicy()))
+            : stored.getPolicy() != null) {
             return true;
         }
         return false;
@@ -244,20 +247,24 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
      * @return a boolean which asserts whether the two supplied Grants are "COEUS equal"
      */
     private boolean grantNeedsUpdate(Grant system, Grant stored) {
-        if (system.getAwardStatus() != null ? !system.getAwardStatus()
-            .equals(
-                stored.getAwardStatus()) : stored.getAwardStatus() != null) {
+        if (system.getAwardStatus() != null
+            ? !system.getAwardStatus().equals(stored.getAwardStatus())
+            : stored.getAwardStatus() != null) {
             return true;
         }
-        if (system.getPi() != null ? !system.getPi().equals(stored.getPi()) : stored.getPi() != null) {
+        if (system.getPi() != null
+            ? !system.getPi().getId().equals(getPassEntityId(stored.getPi()))
+            : stored.getPi() != null) {
             return true;
         }
-        if (system.getCoPis() != null ? !new HashSet(system.getCoPis()).equals(
-            new HashSet(stored.getCoPis())) : stored.getCoPis() != null) {
+        if (system.getCoPis() != null
+            ? !getPassEntityIds(system.getCoPis()).equals(getPassEntityIds(stored.getCoPis()))
+            : stored.getCoPis() != null) {
             return true;
         }
-        if (system.getEndDate() != null ? system.getEndDate()
-            .isAfter(stored.getEndDate()) : stored.getEndDate() != null) {
+        if (system.getEndDate() != null
+            ? system.getEndDate().isAfter(stored.getEndDate())
+            : stored.getEndDate() != null) {
             return true;
         }
         return false;

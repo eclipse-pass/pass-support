@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import java.util.HashSet;
-
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 
@@ -75,50 +73,59 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
      */
 
     private boolean grantNeedsUpdate(Grant system, Grant stored) {
-        if (system.getAwardNumber() != null ? !system.getAwardNumber()
-            .equals(
-                stored.getAwardNumber()) : stored.getAwardNumber() != null) {
+        if (system.getAwardNumber() != null
+            ? !system.getAwardNumber().equals(stored.getAwardNumber())
+            : stored.getAwardNumber() != null) {
             return true;
         }
-        if (system.getAwardStatus() != null ? !system.getAwardStatus()
-            .equals(
-                stored.getAwardStatus()) : stored.getAwardStatus() != null) {
+        if (system.getAwardStatus() != null
+            ? !system.getAwardStatus().equals(stored.getAwardStatus())
+            : stored.getAwardStatus() != null) {
             return true;
         }
-        if (system.getLocalKey() != null ? !system.getLocalKey()
-            .equals(stored.getLocalKey()) : stored.getLocalKey() != null) {
+        if (system.getLocalKey() != null
+            ? !system.getLocalKey().equals(stored.getLocalKey())
+            : stored.getLocalKey() != null) {
             return true;
         }
-        if (system.getProjectName() != null ? !system.getProjectName()
-            .equals(
-                stored.getProjectName()) : stored.getProjectName() != null) {
+        if (system.getProjectName() != null
+            ? !system.getProjectName().equals(stored.getProjectName())
+            : stored.getProjectName() != null) {
             return true;
         }
-        if (system.getPrimaryFunder() != null ? !system.getPrimaryFunder().equals(
-            stored.getPrimaryFunder()) : stored.getPrimaryFunder() != null) {
+        if (system.getPrimaryFunder() != null
+            ? !system.getPrimaryFunder().getId().equals(getPassEntityId(stored.getPrimaryFunder()))
+            : stored.getPrimaryFunder() != null) {
             return true;
         }
-        if (system.getDirectFunder() != null ? !system.getDirectFunder().equals(
-            stored.getDirectFunder()) : stored.getDirectFunder() != null) {
+        if (system.getDirectFunder() != null
+            ? !system.getDirectFunder().getId().equals(getPassEntityId(stored.getDirectFunder()))
+            : stored.getDirectFunder() != null) {
             return true;
         }
-        if (system.getPi() != null ? !system.getPi().equals(stored.getPi()) : stored.getPi() != null) {
+        if (system.getPi() != null
+            ? !system.getPi().getId().equals(getPassEntityId(stored.getPi()))
+            : stored.getPi() != null) {
             return true;
         }
-        if (system.getCoPis() != null ? !new HashSet(system.getCoPis()).equals(
-            new HashSet(stored.getCoPis())) : stored.getCoPis() != null) {
+        if (system.getCoPis() != null
+            ? !getPassEntityIds(system.getCoPis()).equals(getPassEntityIds(stored.getCoPis()))
+            : stored.getCoPis() != null) {
             return true;
         }
-        if (system.getAwardDate() != null ? system.getAwardDate()
-            .isBefore(stored.getAwardDate()) : stored.getAwardDate() != null) {
+        if (system.getAwardDate() != null
+            ? system.getAwardDate().isBefore(stored.getAwardDate())
+            : stored.getAwardDate() != null) {
             return true;
         }
-        if (system.getStartDate() != null ? system.getStartDate()
-            .isBefore(stored.getStartDate()) : stored.getStartDate() != null) {
+        if (system.getStartDate() != null
+            ? system.getStartDate().isBefore(stored.getStartDate())
+            : stored.getStartDate() != null) {
             return true;
         }
-        if (system.getEndDate() != null ? system.getEndDate()
-            .isAfter(stored.getEndDate()) : stored.getEndDate() != null) {
+        if (system.getEndDate() != null
+            ? system.getEndDate().isAfter(stored.getEndDate())
+            : stored.getEndDate() != null) {
             return true;
         }
         return false;
@@ -132,7 +139,7 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
      * @return the Grant object which represents the Pass object, with any new information from COEUS merged in
      */
     private Grant updateGrant(Grant system, Grant stored) {
-        differenceLogger.log(system, stored);
+        differenceLogger.log(stored, system);
         stored.setAwardNumber(system.getAwardNumber());
         stored.setAwardStatus(system.getAwardStatus());
         stored.setLocalKey(system.getLocalKey());
