@@ -41,6 +41,10 @@ import static org.eclipse.pass.support.grant.data.JhuPassUpdater.EMPLOYEE_LOCATO
 import static org.eclipse.pass.support.grant.data.JhuPassUpdater.JHED_LOCATOR_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -56,7 +61,6 @@ import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class JhuPassUpdaterIT {
@@ -85,28 +89,10 @@ public class JhuPassUpdaterIT {
     private final String[] userEmail = {"arecko1@jhu.edu", "sclass1@jhu.edu", "jgunn1@jhu.edu", "jdoe1@jhu.edu",
         "jdoe2@jhu.edu"};
 
-    private String primaryFunderPolicyUriString;
-    private String directFunderPolicyUriString;
-
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
     //private final String funderIdPrefix = "johnshopkins.edu:funder:";
 
     private final PassClient passClient = PassClient.newInstance();
-
-    @BeforeEach
-    public void setup() throws IOException {
-        Policy policy1 = new Policy();
-        policy1.setTitle("Primary Policy 2");
-        policy1.setDescription("BAA");
-        passClient.createObject(policy1);
-        primaryFunderPolicyUriString = policy1.getId();
-
-        Policy policy2 = new Policy();
-        policy2.setTitle("Direct Policy 2");
-        policy2.setDescription("BAA");
-        passClient.createObject(policy2);
-        directFunderPolicyUriString = policy2.getId();
-    }
 
     /**
      * we put an initial award for a grant into PASS, then simulate a pull of all subsequent records
@@ -134,7 +120,7 @@ public class JhuPassUpdaterIT {
 
         // THEN
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[2]));
+        grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[0]));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
         PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
         assertEquals(1, resultGrant.getTotal());
@@ -198,6 +184,81 @@ public class JhuPassUpdaterIT {
         assertEquals(2, updatePassGrant.getCoPis().size());
         assertTrue(updatePassGrant.getCoPis().contains(user0));//Reckondwith
         assertTrue(updatePassGrant.getCoPis().contains(user2));//Gunn
+    }
+
+    @Test
+    public void processGrantIT_DoesNotUpdateWithNoChange() throws IOException, IllegalAccessException {
+        // GIVEN
+        Map<String, String> piRecord0 = makeRowMap(3, 3, "P");
+        Map<String, String> coPiRecord0 = makeRowMap(3, 3, "C");
+
+        List<Map<String, String>> resultSet = new ArrayList<>();
+        resultSet.add(piRecord0);
+        resultSet.add(coPiRecord0);
+
+        PassClient spyPassClient = spy(passClient);
+        JhuPassUpdater passUpdater = new JhuPassUpdater();
+        FieldUtils.writeField(passUpdater, "passClient", spyPassClient, true);
+
+        // WHEN
+        passUpdater.updatePass(resultSet, "grant");
+
+        // THEN
+        verify(spyPassClient, times(1)).createObject(any(Grant.class));
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[3]));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant passGrant = resultGrant.getObjects().get(0);
+
+        User user3 = getVerifiedUser(3);
+
+        assertEquals(grantAwardNumber[3], passGrant.getAwardNumber());
+        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertEquals(grantIdPrefix + grantLocalKey[3], passGrant.getLocalKey());
+        assertEquals(grantProjectName[3], passGrant.getProjectName());
+        assertEquals(createZonedDateTime(grantAwardDate[3]), passGrant.getAwardDate());
+        assertEquals(createZonedDateTime(grantStartDate[3]), passGrant.getStartDate());
+        assertEquals(createZonedDateTime(grantEndDate[3]), passGrant.getEndDate());
+        assertEquals(grantUpdateTimestamp[3], passUpdater.getLatestUpdate());//latest
+        assertEquals(user3, passGrant.getPi()); //Reckondwith
+        assertEquals(1, passGrant.getCoPis().size());
+        assertEquals(user3, passGrant.getCoPis().get(0));
+
+        //check statistics
+        assertEquals(1, passUpdater.getStatistics().getGrantsCreated());
+        assertEquals(1, passUpdater.getStatistics().getUsersCreated());
+        assertEquals(1, passUpdater.getStatistics().getPisAdded());
+        assertEquals(1, passUpdater.getStatistics().getCoPisAdded());
+
+        // WHEN
+        passUpdater.updatePass(resultSet, "grant");
+
+        // THEN
+        verify(spyPassClient, times(0)).updateObject(any());
+        PassClientResult<Grant> resultGrant2 = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant2.getTotal());
+        Grant passGrant2 = resultGrant2.getObjects().get(0);
+
+        User user3_2 = getVerifiedUser(3);
+
+        assertEquals(grantAwardNumber[3], passGrant2.getAwardNumber());
+        assertEquals(AwardStatus.ACTIVE, passGrant2.getAwardStatus());
+        assertEquals(grantIdPrefix + grantLocalKey[3], passGrant2.getLocalKey());
+        assertEquals(grantProjectName[3], passGrant2.getProjectName());
+        assertEquals(createZonedDateTime(grantAwardDate[3]), passGrant2.getAwardDate());
+        assertEquals(createZonedDateTime(grantStartDate[3]), passGrant2.getStartDate());
+        assertEquals(createZonedDateTime(grantEndDate[3]), passGrant2.getEndDate());
+        assertEquals(user3_2, passGrant2.getPi()); //Reckondwith
+        assertEquals(1, passGrant2.getCoPis().size());
+        assertEquals(user3_2, passGrant2.getCoPis().get(0));
+        assertEquals(grantUpdateTimestamp[3], passUpdater.getLatestUpdate());//latest
+
+        //check statistics
+        assertEquals(0, passUpdater.getStatistics().getGrantsCreated());
+        assertEquals(0, passUpdater.getStatistics().getGrantsUpdated());
+        assertEquals(0, passUpdater.getStatistics().getUsersCreated());
     }
 
     @Test
@@ -304,7 +365,7 @@ public class JhuPassUpdaterIT {
      * @param abbrRole  the role: Pi ("P") or co-pi (C" or "K")
      * @return row map for pull record
      */
-    private Map<String, String> makeRowMap(int iteration, int user, String abbrRole) {
+    private Map<String, String> makeRowMap(int iteration, int user, String abbrRole) throws IOException {
         Map<String, String> rowMap = new HashMap<>();
         rowMap.put(C_GRANT_AWARD_NUMBER, grantAwardNumber[iteration]);
         rowMap.put(C_GRANT_AWARD_STATUS, "Active");
@@ -329,10 +390,38 @@ public class JhuPassUpdaterIT {
         rowMap.put(C_UPDATE_TIMESTAMP, grantUpdateTimestamp[iteration]);
         rowMap.put(C_ABBREVIATED_ROLE, abbrRole);
 
-        rowMap.put(C_DIRECT_FUNDER_POLICY, directFunderPolicyUriString);
-        rowMap.put(C_PRIMARY_FUNDER_POLICY, primaryFunderPolicyUriString);
+        rowMap.put(C_DIRECT_FUNDER_POLICY, getDirectFunderPolicyId());
+        rowMap.put(C_PRIMARY_FUNDER_POLICY, getPrimaryFunderPolicyId());
 
         return rowMap;
+    }
+
+    private String getPrimaryFunderPolicyId() throws IOException {
+        PassClientSelector<Policy> policySelector = new PassClientSelector<>(Policy.class);
+        policySelector.setFilter(RSQL.equals("title", "Primary Funder Policy"));
+        PassClientResult<Policy> resultPolicy = passClient.selectObjects(policySelector);
+        if (resultPolicy.getObjects().isEmpty()) {
+            Policy policy1 = new Policy();
+            policy1.setTitle("Primary Funder Policy");
+            policy1.setDescription("BAA");
+            passClient.createObject(policy1);
+            return policy1.getId();
+        }
+        return resultPolicy.getObjects().get(0).getId();
+    }
+
+    private String getDirectFunderPolicyId() throws IOException {
+        PassClientSelector<Policy> policySelector = new PassClientSelector<>(Policy.class);
+        policySelector.setFilter(RSQL.equals("title", "Direct Funder Policy"));
+        PassClientResult<Policy> resultPolicy = passClient.selectObjects(policySelector);
+        if (resultPolicy.getObjects().isEmpty()) {
+            Policy policy1 = new Policy();
+            policy1.setTitle("Direct Funder Policy");
+            policy1.setDescription("BAA");
+            passClient.createObject(policy1);
+            return policy1.getId();
+        }
+        return resultPolicy.getObjects().get(0).getId();
     }
 
 }
