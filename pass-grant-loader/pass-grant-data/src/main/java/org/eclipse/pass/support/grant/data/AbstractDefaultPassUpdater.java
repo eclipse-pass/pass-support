@@ -38,8 +38,12 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.PassClient;
@@ -311,6 +315,24 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         } else {
             System.out.println("No records were processed in this update");
         }
+    }
+
+    /**
+     * Returns the Pass entity ID of passEntity. This method is null-safe.
+     * @param passEntity the passEntity
+     * @return the ID of passEntity or null if passEntity is null or the ID is null
+     */
+    protected String getPassEntityId(PassEntity passEntity) {
+        return Optional.ofNullable(passEntity).map(PassEntity::getId).orElse(null);
+    }
+
+    /**
+     * Returns a Set of Pass entity ID of passEntities.
+     * @param passEntities the list of passEntities
+     * @return the Set of passEntity IDs
+     */
+    protected Set<String> getPassEntityIds(List<? extends PassEntity> passEntities) {
+        return passEntities.stream().map(PassEntity::getId).collect(Collectors.toSet());
     }
 
     private void updateUsers(Collection<Map<String, String>> results) {
