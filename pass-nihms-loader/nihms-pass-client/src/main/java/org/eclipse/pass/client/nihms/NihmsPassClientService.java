@@ -16,8 +16,6 @@
 package org.eclipse.pass.client.nihms;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -184,18 +182,25 @@ public class NihmsPassClientService {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
         String normalizedAwardNumberFilter = ModelUtil.createAwardNumberQuery(awardNumber, AWARD_NUMBER_FLD);
         grantSelector.setFilter(normalizedAwardNumberFilter);
+        grantSelector.setSorting("-startDate");
         Stream<Grant> grantStream = passClient.streamObjects(grantSelector);
         grants = grantStream.toList();
 
-        if (grants.size() == 1) {
+        if (grants.size() > 0) {
+            return grants.get(0);
+        }
+
+        return null;
+
+        /*if (grants.size() == 1) {
             return grants.get(0);
         } else if (grants.size() > 0) {
             Grant mostRecentGrant = Collections.max(grants, Comparator.comparing(Grant::getStartDate));
             grantCache.put(awardNumber, mostRecentGrant.getId());
             return mostRecentGrant;
-        }
+        }*/
 
-        return null;
+        //return null;
     }
 
     /**

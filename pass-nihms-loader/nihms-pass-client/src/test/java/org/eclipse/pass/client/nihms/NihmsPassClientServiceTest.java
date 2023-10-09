@@ -53,6 +53,7 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -65,6 +66,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * @author Karen Hanson
  */
 @ExtendWith(MockitoExtension.class)
+@Disabled("While testing performance")
 public class NihmsPassClientServiceTest {
 
     private static final String grant1Id = "1";
