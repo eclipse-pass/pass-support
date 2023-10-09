@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -185,23 +184,8 @@ public class NihmsPassClientService {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
         String normalizedAwardNumberFilter = ModelUtil.createAwardNumberQuery(awardNumber, AWARD_NUMBER_FLD);
         grantSelector.setFilter(normalizedAwardNumberFilter);
-        //grantSelector.setSorting("-startDate");
         Stream<Grant> grantStream = passClient.streamObjects(grantSelector);
-
-        /*Optional<Grant> mostRecentGrant = grantStream.max(Comparator.comparing(Grant::getStartDate));
-
-        if (mostRecentGrant.isPresent()) {
-            grantCache.put(awardNumber, mostRecentGrant.get().getId());
-            return mostRecentGrant.get();
-        }*/
-
         grants = grantStream.toList();
-
-        /*if (grants.size() > 0) {
-            return grants.get(0);
-        }*/
-
-        //return null;
 
         if (grants.size() == 1) {
             return grants.get(0);
@@ -343,9 +327,7 @@ public class NihmsPassClientService {
         subSelector.setFilter(subFilter);
         subSelector.setInclude("publication", "repositories", "submitter", "grants");
         PassClientResult<Submission> subResult = passClient.selectObjects(subSelector);
-        List<Submission> submissions = subResult.getObjects();
-
-        return submissions;
+        return subResult.getObjects();
     }
 
     /**
@@ -641,7 +623,7 @@ public class NihmsPassClientService {
     }
 
     private static String userIdPubIdKey(String userId, String pubId) {
-        return userId.toString() + pubId.toString();
+        return userId.toString() + pubId;
     }
 
 }
