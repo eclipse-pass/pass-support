@@ -16,6 +16,7 @@
 package org.eclipse.pass.client.nihms;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -184,33 +185,33 @@ public class NihmsPassClientService {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<Grant>(Grant.class);
         String normalizedAwardNumberFilter = ModelUtil.createAwardNumberQuery(awardNumber, AWARD_NUMBER_FLD);
         grantSelector.setFilter(normalizedAwardNumberFilter);
-        grantSelector.setSorting("-startDate");
+        //grantSelector.setSorting("-startDate");
         Stream<Grant> grantStream = passClient.streamObjects(grantSelector);
 
-        Optional<Grant> mostRecentGrant = grantStream.max(Comparator.comparing(Grant::getStartDate));
+        /*Optional<Grant> mostRecentGrant = grantStream.max(Comparator.comparing(Grant::getStartDate));
 
         if (mostRecentGrant.isPresent()) {
             grantCache.put(awardNumber, mostRecentGrant.get().getId());
             return mostRecentGrant.get();
-        }
+        }*/
 
-        /*grants = grantStream.toList();
+        grants = grantStream.toList();
 
-        if (grants.size() > 0) {
+        /*if (grants.size() > 0) {
             return grants.get(0);
         }*/
 
-        return null;
+        //return null;
 
-        /*if (grants.size() == 1) {
+        if (grants.size() == 1) {
             return grants.get(0);
         } else if (grants.size() > 0) {
             Grant mostRecentGrant = Collections.max(grants, Comparator.comparing(Grant::getStartDate));
             grantCache.put(awardNumber, mostRecentGrant.getId());
             return mostRecentGrant;
-        }*/
+        }
 
-        //return null;
+        return null;
     }
 
     /**
