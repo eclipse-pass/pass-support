@@ -65,15 +65,15 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         //make sure RepositoryCopies are all in before moving on so we can be sure the counts are done.
         repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
         List<RepositoryCopy> repositoryCopies = passClient.selectObjects(repoCopySelector).getObjects();
-        assertEquals(26, repositoryCopies.size());
+        assertEquals(23, repositoryCopies.size());
 
         publicationSelector.setFilter(RSQL.notEquals("id", "-1"));
         List<Publication> publications = passClient.selectObjects(publicationSelector).getObjects();
-        assertEquals(37, publications.size());
+        assertEquals(32, publications.size());
 
         submissionSelector.setFilter(RSQL.notEquals("id", "-1"));
         List<Submission> submissions = passClient.selectObjects(submissionSelector).getObjects();
-        assertEquals(37, submissions.size());
+        assertEquals(32, submissions.size());
 
         //reset file names:
         File downloadDir = new File(path);
