@@ -94,6 +94,9 @@ jobs:
       # =============================================================================
       # Start the release
       # =============================================================================
+      - name: Run tests
+        run: mvn -B -U -V -ntp verify
+
       - name: Bump version to release
         run: mvn -B -U -V -ntp versions:update-parent -DparentVersion=$RELEASE
 
@@ -103,10 +106,12 @@ jobs:
           add: pom.xml **/pom.xml
           message: "Update parent version to $RELEASE"
 
+      # Maven Release Plugin is currently configured to hook into the install phase, so tests would normally be run
+      # Since we ran tests at the start of this process, skip tests here to save some time
       - name: Release main POM
         run: |
-          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE -DdevelopmentVersion=$NEXT
-          mvn -B -U -V -ntp release:perform -P release
+          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE -DdevelopmentVersion=$NEXT -DskipTests -Darguments=-DskipTests
+          mvn -B -U -V -ntp release:perform -P release -DskipTests -Darguments=-DskipTests
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -123,7 +128,7 @@ jobs:
           push: true
 
       - name: Build and publish new dev version
-        run: mvn -B -U -V -ntp deploy -P release
+        run: mvn -B -U -V -ntp deploy -P release -DskipTests
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
