@@ -136,6 +136,36 @@ public class NotificationServiceIT extends AbstractNotificationSpringIntegration
         assertEquals(expectedBody,  message.getContent().toString());
     }
 
+    @Test
+    void testNotify_Submitter() throws Exception {
+        // GIVEN
+        final String expectedBody = "Dear staffWithNoGrants@jhu.edu\r\n\r\nA submission titled \"Specific protein " +
+            "supplementation using soya, casein or whey differentially affects regional gut growth and luminal " +
+            "growth factor bioactivity in rats; implications for the treatment of gut injury and stimulating " +
+            "repair\" has been prepared on your behalf by demo-pass@mail.local.domain with comment \"How " +
+            "does this submission look?\"\r\n\r\n\r\nPlease review the submission at the following URL: " +
+            "http://example.org/user-token-test\r\n\r\nA test inline footer";
+
+        SubmissionEvent submissionEvent = stagePassDataSubmitter();
+
+        SubmissionEventMessage submissionEventMessage = new SubmissionEventMessage();
+        submissionEventMessage.setSubmissionEventId(submissionEvent.getId());
+        submissionEventMessage.setUserApprovalLink(URI.create("http://example.org/user-token-test"));
+
+        notificationService.notify(submissionEventMessage);
+
+        List<MimeMessage> receivedMessages = Arrays.asList(greenMail.getReceivedMessages());
+        // 3 = 1 To + 1 CC + 1 BCC
+        assertEquals(3, receivedMessages.size());
+
+        MimeMessage message = receivedMessages.get(0);
+        assertTrue(message.getSubject().contains("PASS Submission Approval: Specific protein"));
+        assertEquals(SENDER, message.getFrom()[0].toString());
+        assertEquals(CC, message.getRecipients(MimeMessage.RecipientType.CC)[0].toString());
+        assertEquals(RECIPIENT, message.getRecipients(MimeMessage.RecipientType.TO)[0].toString());
+        assertEquals(expectedBody,  message.getContent().toString());
+    }
+
     private SubmissionEvent stagePassData() throws IOException {
         // This User prepares the submission on behalf of the Submission.submitter
         // Confusingly, this User has the ability to submit to PASS.  The authorization-related role of
@@ -161,6 +191,64 @@ public class NotificationServiceIT extends AbstractNotificationSpringIntegration
         submission.setSource(Source.PASS);
         submission.setSubmitter(null);
         submission.setSubmitterEmail(URI.create("mailto:" + RECIPIENT));
+
+        passClient.createObject(submission);
+
+        // When this event is processed, the authorized submitter will recieve an email notification with a link that
+        // will invite them to use PASS, and link the Submission to their newly created User (created when they login
+        // to PASS for the first time)
+        SubmissionEvent event = new SubmissionEvent();
+        event.setSubmission(submission);
+        event.setPerformerRole(PerformerRole.PREPARER);
+        event.setPerformedBy(preparer);
+        String comment = "How does this submission look?";
+        event.setComment(comment);
+        event.setEventType(EventType.APPROVAL_REQUESTED_NEWUSER);
+        event.setPerformedDate(ZonedDateTime.now());
+
+        String submissionId = submission.getId();
+        Link link = new Link(URI.create(submissionId
+            .replace("http://localhost", "https://pass.local")), SUBMISSION_REVIEW_INVITE);
+        event.setLink(link.getHref());
+
+        passClient.createObject(event);
+
+        return event;
+    }
+
+    private SubmissionEvent stagePassDataSubmitter() throws IOException {
+        // This User prepares the submission on behalf of the Submission.submitter
+        // Confusingly, this User has the ability to submit to PASS.  The authorization-related role of
+        // User.Role.SUBMITTER should not be confused with the the logical role as a preparer of a submission.
+        User preparer = new User();
+        preparer.setEmail("emetsger@gmail.com");
+        preparer.setDisplayName("Submission Preparer");
+        preparer.setFirstName("Pre");
+        preparer.setLastName("Parer");
+        preparer.setRoles(List.of(UserRole.SUBMITTER));
+
+        passClient.createObject(preparer);
+
+        User submitter = new User();
+        submitter.setEmail(RECIPIENT);
+        submitter.setDisplayName("Submission Submitter");
+        submitter.setFirstName("Sub");
+        submitter.setLastName("Mitter");
+        submitter.setRoles(List.of(UserRole.SUBMITTER));
+
+        passClient.createObject(submitter);
+
+        // The Submission as prepared by the preparer.
+        // The preparer did not find the authorized submitter in PASS, so they filled in the email address of the
+        // authorized submitter. Therefore, the Submission.submitter field will be null (because that *must* be a URI
+        // to a User resource, and the User does not exist). The Submission.submitterEmail will be set to the email
+        // address of the authorized submitter
+        Submission submission = new Submission();
+        submission.setMetadata(resourceToString("/" + PathUtil.packageAsPath(this.getClass()) +
+            "/submission-metadata.json", StandardCharsets.UTF_8));
+        submission.setPreparers(List.of(preparer));
+        submission.setSource(Source.PASS);
+        submission.setSubmitter(submitter);
 
         passClient.createObject(submission);
 

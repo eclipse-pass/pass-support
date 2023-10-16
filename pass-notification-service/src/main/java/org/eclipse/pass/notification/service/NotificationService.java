@@ -15,6 +15,9 @@
  */
 package org.eclipse.pass.notification.service;
 
+import java.io.IOException;
+import java.util.Objects;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.pass.notification.dispatch.DispatchService;
@@ -47,28 +50,33 @@ public class NotificationService {
      */
     public void notify(SubmissionEventMessage submissionEventMessage) {
 
-        SubmissionEvent submissionEvent;
         try {
-            submissionEvent = passClient.getObject(SubmissionEvent.class, submissionEventMessage.getSubmissionEventId(),
-                "submission", "performedBy");
-        } catch (Exception e) {
-            log.error("Unable to retrieve SubmissionEvent '{}'", submissionEventMessage.getSubmissionEventId(), e);
-            return;
-        }
+            SubmissionEvent submissionEvent = passClient.getObject(SubmissionEvent.class,
+                submissionEventMessage.getSubmissionEventId(), "submission", "performedBy");
 
-        Submission submission = submissionEvent.getSubmission();
-        if (isSelfSubmission(submission)) {
-            log.debug("Dropping self-submission SubmissionEvent (Event URI: {}, Resource URI: {})",
+            populateSubmission(submissionEvent);
+            if (isSelfSubmission(submissionEvent.getSubmission())) {
+                log.debug("Dropping self-submission SubmissionEvent (Event URI: {}, Resource URI: {})",
                     submissionEvent.getId(),
-                    submission.getId());
-            return;
+                    submissionEvent.getSubmission().getId());
+                return;
+            }
+
+            // Compose Notification
+            Notification notification = composer.apply(submissionEvent, submissionEventMessage);
+
+            // Invoke Dispatch
+            dispatchService.dispatch(notification);
+        } catch (Exception e) {
+            log.error("Unable to process SubmissionEvent '{}'", submissionEventMessage.getSubmissionEventId(), e);
         }
+    }
 
-        // Compose Notification
-        Notification notification = composer.apply(submissionEvent, submissionEventMessage);
-
-        // Invoke Dispatch
-        dispatchService.dispatch(notification);
+    private void populateSubmission(SubmissionEvent submissionEvent) throws IOException {
+        Objects.requireNonNull(submissionEvent.getSubmission(), "Submission must not be null.");
+        Submission populatedSubmission = passClient.getObject(submissionEvent.getSubmission(),
+            "submitter", "preparers");
+        submissionEvent.setSubmission(populatedSubmission);
     }
 
     private boolean isSelfSubmission(Submission submission) {

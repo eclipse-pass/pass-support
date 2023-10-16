@@ -21,7 +21,6 @@ import static org.eclipse.pass.notification.service.LinksUtil.serialized;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.function.BiFunction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,11 +78,7 @@ public class Composer implements BiFunction<SubmissionEvent, SubmissionEventMess
      */
     @Override
     public Notification apply(SubmissionEvent event, SubmissionEventMessage submissionEventMessage) {
-        Objects.requireNonNull(event, "Event must not be null.");
-
         Submission submission = event.getSubmission();
-        Objects.requireNonNull(submission, "Submission must not be null.");
-
         if (!event.getSubmission().getId().equals(submission.getId())) {
             // todo: exception?
             log.warn("Composing a Notification for tuple [{},{}] but {} references a different Submission: {}.",
