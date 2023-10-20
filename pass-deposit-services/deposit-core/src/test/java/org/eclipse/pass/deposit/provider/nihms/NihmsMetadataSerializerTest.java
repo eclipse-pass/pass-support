@@ -42,6 +42,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
+import com.github.jknack.handlebars.internal.Files;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
@@ -160,7 +161,7 @@ public class NihmsMetadataSerializerTest {
         OutputStream os = new FileOutputStream(targetFile);
 
         os.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n".getBytes());
-        os.write("<!DOCTYPE nihms-submit SYSTEM \"bulksubmission.dtd\">\n".getBytes());
+        os.write("<!DOCTYPE manuscript-submit SYSTEM \"bulksubmission.dtd\">\n".getBytes());
         os.write(buffer);
         os.close();
 
@@ -170,6 +171,15 @@ public class NihmsMetadataSerializerTest {
         v.setSchemaSource(dtd);
         StreamSource s = new StreamSource(targetFile);
         ValidationResult r = v.validateInstance(s);
+
+        if (!r.isValid()) {
+            System.err.println(Files.read(targetFile, UTF_8));
+
+            r.getProblems().forEach(p -> {
+                System.err.println(p);
+            });
+        }
+
         assertTrue(r.isValid());
     }
 
@@ -186,7 +196,7 @@ public class NihmsMetadataSerializerTest {
         metadata.getArticleMetadata().setDoi(URI.create(path));
         sizedStream = underTest.serialize();
         is = sizedStream.getInputStream();
-        node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
+        node = builder.parse(is).getDocumentElement();
         doi = node.getAttributes().getNamedItem("doi").getTextContent();
         is.close();
         assertTrue(doi.contentEquals(path));
@@ -194,7 +204,7 @@ public class NihmsMetadataSerializerTest {
         metadata.getArticleMetadata().setDoi(URI.create("http://dx.doi.org/" + path));
         sizedStream = underTest.serialize();
         is = sizedStream.getInputStream();
-        node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
+        node = builder.parse(is).getDocumentElement();
         doi = node.getAttributes().getNamedItem("doi").getTextContent();
         is.close();
         assertTrue(doi.contentEquals(path));
@@ -208,9 +218,7 @@ public class NihmsMetadataSerializerTest {
         DepositMetadata metadata = new DepositMetadata();
         DepositMetadata.Journal journalMd = new DepositMetadata.Journal();
         String expectedIssn = "foo";
-        String expectedPubType = JournalPublicationType.EPUB.name()
-                                                            .toLowerCase(); // remember OPUB is mapped to EPUB when
-        // serializing
+        String expectedPubType = "electronic";
 
         DepositMetadata.IssnPubType issn = new DepositMetadata.IssnPubType(expectedIssn, JournalPublicationType.OPUB);
         journalMd.setIssnPubTypes(new HashMap<>() {
@@ -236,7 +244,7 @@ public class NihmsMetadataSerializerTest {
                              new RuntimeException(
                                  "Missing expected <issn> element for " + expectedIssn + " and " + expectedPubType));
 
-        assertEquals(expectedPubType, actualIssn.getAttributes().getNamedItem("pub-type").getNodeValue());
+        assertEquals(expectedPubType, actualIssn.getAttributes().getNamedItem("issn-type").getNodeValue());
     }
 
     /**

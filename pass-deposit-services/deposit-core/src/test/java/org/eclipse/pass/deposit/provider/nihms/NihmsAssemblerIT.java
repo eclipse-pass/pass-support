@@ -205,10 +205,10 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
         // root element is <nihms-submit>
         Element root = metaDom.getDocumentElement();
-        assertEquals("nihms-submit", root.getTagName());
+        assertEquals("manuscript-submit", root.getTagName());
 
-        // required <title> element is present with the manuscript title as the value
-        Element title = asList(root.getElementsByTagName("title")).get(0);
+        // required <manuscript-title> element is present with the manuscript title as the value
+        Element title = asList(root.getElementsByTagName("manuscript-title")).get(0);
         assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), title.getTextContent());
 
         // Insure that only one <person> element is present in the submission metadata
@@ -242,8 +242,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         });
 
         // Assert that the DOI is present in the metadata
-        Element ms = asList(root.getElementsByTagName("manuscript")).get(0);
-        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), ms.getAttribute("doi"));
+        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), root.getAttribute("doi"));
 
         // Assert that the ISSNs are present in the metadata as the <issn> element
         List<Element> issns = asList(root.getElementsByTagName("issn"));
@@ -255,10 +254,10 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         issns.forEach(issn -> assertTrue(issnPubTypes.containsKey(issn.getTextContent())));
         issns.forEach(issn -> {
             DepositMetadata.IssnPubType pubType = issnPubTypes.get(issn.getTextContent());
-            if (pubType.pubType == JournalPublicationType.OPUB) {
-                assertEquals(issn.getAttribute("pub-type"), JournalPublicationType.EPUB.name().toLowerCase());
+            if (pubType.pubType == JournalPublicationType.OPUB || pubType.pubType == JournalPublicationType.EPUB) {
+                assertEquals(issn.getAttribute("issn-type"), "electronic");
             } else {
-                assertEquals(issn.getAttribute("pub-type"), pubType.pubType.name().toLowerCase());
+                assertEquals(issn.getAttribute("issn-type"), "print");
             }
         });
 
