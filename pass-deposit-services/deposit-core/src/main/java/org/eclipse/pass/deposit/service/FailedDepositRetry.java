@@ -61,7 +61,8 @@ public class FailedDepositRetry {
     public void retryFailedDeposit(Deposit failedDeposit) {
         try {
             Deposit deposit = passClient.getObject(failedDeposit, "submission", "repository");
-            final Submission submission = deposit.getSubmission();
+            final Submission submission = passClient.getObject(deposit.getSubmission(),
+                "publication", "submitter");
             final Repository repository = deposit.getRepository();
 
             final Packager packager = packagerRegistry.get(repository.getRepositoryKey());

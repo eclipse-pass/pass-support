@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,9 +67,13 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
 
         Deposit actualDeposit = actualDeposits.getResult().iterator().next();
         Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
-        RepositoryCopy popRepoCopy = passClient.getObject(updatedDeposit.getRepositoryCopy(), "repository");
+        RepositoryCopy popRepoCopy = passClient.getObject(updatedDeposit.getRepositoryCopy(),
+            "repository", "publication");
         updatedDeposit.setRepositoryCopy(popRepoCopy);
         verify(passClient).updateObject(eq(updatedDeposit));
+        assertEquals(submission.getPublication().getId(), popRepoCopy.getPublication().getId());
+        assertEquals(1, submission.getRepositories().size());
+        assertEquals(submission.getRepositories().get(0).getId(), popRepoCopy.getRepository().getId());
     }
 
     private Submission initFailedSubmissionDeposit() throws Exception {
