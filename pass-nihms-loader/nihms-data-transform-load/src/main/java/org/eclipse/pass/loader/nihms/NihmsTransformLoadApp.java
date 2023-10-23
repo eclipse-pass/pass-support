@@ -42,7 +42,7 @@ public class NihmsTransformLoadApp {
      * These are the only system properties that can be loaded in from the properties file.
      * Existing values will not be overwritten, these will just be added if missing.
      */
-    private static final String[] SYSTEM_PROPERTIES = {"pass.core.user", "pass.core.password",
+    private static final String[] SYSTEM_PROPERTIES = {"pass.core.user", "pass.core.password", "nihmsetl.repository.id",
                                                        "pass.core.url", "nihmsetl.data.dir", "nihmsetl.pmcurl.template",
                                                        "nihmsetl.loader.cachepath"};
 
