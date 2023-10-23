@@ -64,6 +64,7 @@ public class FailedDepositRetryTest {
         Submission submission = new Submission();
         deposit1.setSubmission(submission);
         when(passClient.getObject(same(deposit1), any())).thenReturn(deposit1);
+        when(passClient.getObject(same(submission), any())).thenReturn(submission);
         when(packagerRegistry.get(any())).thenReturn(packager);
         DepositSubmission depositSubmission = new DepositSubmission();
         DepositFile depositFile1 = new DepositFile();
