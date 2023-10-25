@@ -27,10 +27,13 @@ public class ModelUtilTest {
     public void testNihAwardNumberCorrectFormatWithSpace() throws IOException {
         String awardNumber1 = "K99 NS062901";
         String awardNumber2 = "P50 AI074285";
+        String awardNumber3 = "P2C HD042854";
         String awardNumber1Expected = "K99NS062901";
         String awardNumber2Expected = "P50AI074285";
+        String awardNumber3Expected = "P2CHD042854";
         assertEquals(awardNumber1Expected, ModelUtil.normalizeAwardNumber(awardNumber1));
         assertEquals(awardNumber2Expected, ModelUtil.normalizeAwardNumber(awardNumber2));
+        assertEquals(awardNumber3Expected, ModelUtil.normalizeAwardNumber(awardNumber3));
     }
 
     @Test
