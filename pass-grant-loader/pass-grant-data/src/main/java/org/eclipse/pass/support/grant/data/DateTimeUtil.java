@@ -28,10 +28,10 @@ import java.time.format.ResolverStyle;
  */
 public class DateTimeUtil {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+    static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss[[.SSS][.SS][.S]]")
                 .withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter DATE_FORMATTER =
+    static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("MM/dd/uuuu")
                 .withResolverStyle(ResolverStyle.STRICT);
 

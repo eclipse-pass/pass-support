@@ -20,14 +20,12 @@ import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_ACTION_NOT
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_COULD_NOT_APPEND_UPDATE_TIMESTAMP;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_COULD_NOT_OPEN_CONFIGURATION_FILE;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_DATA_FILE_CANNOT_READ;
-import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_DIRECTORY_LOOKUP_ERROR;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_HOME_DIRECTORY_NOT_FOUND;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_HOME_DIRECTORY_NOT_READABLE_AND_WRITABLE;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_INVALID_COMMAND_LINE_DATE;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_INVALID_COMMAND_LINE_TIMESTAMP;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_INVALID_TIMESTAMP;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_MODE_NOT_VALID;
-import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_ORACLE_DRIVER_NOT_FOUND;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_REQUIRED_CONFIGURATION_FILE_MISSING;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_REQUIRED_DATA_FILE_MISSING;
 import static org.eclipse.pass.support.grant.cli.DataLoaderErrors.ERR_RESULT_SET_NULL;
@@ -238,24 +236,12 @@ abstract class BaseGrantLoaderApp {
             }
 
             GrantConnector connector = configureConnector(connectionProperties, policyProperties);
-            String queryString = connector.buildQueryString(startDate, awardEndDate, mode, grant);
-
-            //special case for when we process funders, but do not want to consult COEUS -
-            //just use local properties file to map funders to policies
-            if (mode.equals("funder") && local) {
-                queryString = null;
-            }
-
             try {
-                resultSet = connector.retrieveUpdates(queryString, mode);
-            } catch (ClassNotFoundException e) {
-                throw processException(ERR_ORACLE_DRIVER_NOT_FOUND, e);
+                resultSet = connector.retrieveUpdates(startDate, awardEndDate, mode, grant);
             } catch (SQLException e) {
                 throw processException(ERR_SQL_EXCEPTION, e);
             } catch (RuntimeException e) {
                 throw processException("Runtime Exception", e);
-            } catch (IOException e) {
-                throw processException(ERR_DIRECTORY_LOOKUP_ERROR, e);
             }
         } else { //just doing a PASS load, must have results set in the data file
             try (FileInputStream fis = new FileInputStream(dataFile);
