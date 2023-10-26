@@ -15,7 +15,6 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -26,28 +25,16 @@ import java.util.Map;
 public interface GrantConnector {
 
     /**
-     * If the grant data source is a database, we will need a query string
+     * This method retrieves the data from a data source. The format is a List of Maps - one List element for each
+     * grant or user record.
      *
      * @param startDate - the date of the earliest record we wish to get on this pull
      * @param awardEndDate - the end date of the award
      * @param mode      - indicates whether the data pull is for grants, or users
      * @param grant      - a grant number
-     * @return the query string
-     */
-    String buildQueryString(String startDate, String awardEndDate, String mode, String grant);
-
-    /**
-     * This method retrieves the data from a data source. The format is a List of Maps - one List element for each
-     * grant or user record.
-     *
-     * @param queryString - a query string, if required
-     * @param mode        - indicates whether the data pull is for grants, or users
-     * @return the query string
-     * @throws ClassNotFoundException if the driver is not found
      * @throws SQLException           if there is an SQL exception
-     * @throws IOException            if there is an IO exception
      */
-    List<Map<String, String>> retrieveUpdates(String queryString, String mode) throws
-        ClassNotFoundException, SQLException, IOException;
+    List<Map<String, String>> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant) throws
+        SQLException;
 
 }
