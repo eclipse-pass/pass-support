@@ -115,8 +115,8 @@ public class FtpTransport implements Transport {
      * @throws RuntimeException if the session cannot be successfully opened
      */
     FtpTransportSession open(FTPClient ftpClient, Map<String, String> hints) {
-        String serverName = hints.get(Transport.TRANSPORT_SERVER_FQDN);
-        String serverPort = hints.get(Transport.TRANSPORT_SERVER_PORT);
+        String serverName = hints.get(TRANSPORT_SERVER_FQDN);
+        String serverPort = hints.get(TRANSPORT_SERVER_PORT);
         String transferMode = hints.get(FtpTransportHints.TRANSFER_MODE);
         String baseDir = hints.get(FtpTransportHints.BASE_DIRECTORY);
 
