@@ -84,8 +84,18 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-net</groupId>
+      <artifactId>commons-net</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.swordapp</groupId>
+      <artifactId>sword2-client</artifactId>
     </dependency>
 
     <dependency>
