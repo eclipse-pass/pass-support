@@ -126,6 +126,7 @@ public interface Transport {
         http,
         https,
         ftp,
+        sftp,
         SWORDv2,
         filesystem
     }
