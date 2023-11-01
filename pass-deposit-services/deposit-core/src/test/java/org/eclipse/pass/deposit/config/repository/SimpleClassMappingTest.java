@@ -62,6 +62,17 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
                                                    "        \"default-directory\": \"/logs/upload/%s\"\n" +
                                                    "      }";
 
+    private static final String SFTP_BINDING_JSON = "" +
+        "{\n" +
+        "        \"protocol\": \"sftp\",\n" +
+        "        \"username\": \"sftpuser\",\n" +
+        "        \"password\": \"sftppass\",\n" +
+        "        \"server-fqdn\": \"${pmc.ftp.host}\",\n" +
+        "        \"server-port\": \"${pmc.ftp.port}\",\n" +
+        "        \"default-directory\": \"/logs/upload/%s\"\n" +
+        "      }";
+
+
     private static final String J10P_STATUS_MAPPING_JSON = "" +
                                                            "{\n" +
                                                            "      \"http://dspace.org/state/archived\": " +
@@ -137,6 +148,18 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
         SwordV2Binding swordBinding = repositoriesMapper.readValue(SWORD_BINDING_JSON, SwordV2Binding.class);
 
         assertRoundTrip(swordBinding, SwordV2Binding.class);
+    }
+
+    @Test
+    public void mapSftpBinding() throws IOException {
+        SftpBinding sftpBinding = repositoriesMapper.readValue(SFTP_BINDING_JSON, SftpBinding.class);
+
+        assertEquals("sftp", sftpBinding.getProtocol());
+        assertEquals("sftpuser", sftpBinding.getUsername());
+        assertEquals("sftppass", sftpBinding.getPassword());
+        assertEquals("localhost", sftpBinding.getServerFqdn());
+        assertEquals("21", sftpBinding.getServerPort());
+        assertEquals("/logs/upload/%s", sftpBinding.getDefaultDirectory());
     }
 
     @Test

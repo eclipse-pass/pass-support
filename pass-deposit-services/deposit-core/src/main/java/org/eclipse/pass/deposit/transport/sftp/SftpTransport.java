@@ -19,10 +19,12 @@ import java.util.Map;
 
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportSession;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
+@Component
 public class SftpTransport implements Transport {
 
     public static final String SFTP_BASE_DIRECTORY = "deposit.transport.protocol.sftp.basedir";

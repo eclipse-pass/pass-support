@@ -68,7 +68,7 @@ class SftpTransportSession implements TransportSession {
                 return writeFile(clientSession, packageStream, fileName);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error writing package to SFTP server", e);
         }
     }
 
