@@ -51,6 +51,14 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
                                                                "\n" +
                                                                "    }";
 
+    private static final String MINIMAL_SFTP_TRANSPORT_CONFIG = "" +
+        "{\n" +
+        "      \"protocol-binding\": {\n" +
+        "        \"protocol\": \"sftp\"\n" +
+        "      }\n" +
+        "\n" +
+        "    }";
+
     private static final String MULTIPLE_REALMS_TRANSPORT_CONFIG = "" +
                                                                    "{\n" +
                                                                    "\n" +
@@ -151,6 +159,19 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
         FtpBinding binding = (FtpBinding) config.getProtocolBinding();
 
         assertEquals(FtpBinding.PROTO, binding.getProtocol());
+    }
+
+    @Test
+    public void mapMinimalSftpTransportConfig() throws IOException {
+        TransportConfig config = repositoriesMapper.readValue(MINIMAL_SFTP_TRANSPORT_CONFIG, TransportConfig.class);
+
+        assertNull(config.getAuthRealms());
+        assertNotNull(config.getProtocolBinding());
+        assertTrue(config.getProtocolBinding() instanceof SftpBinding);
+
+        SftpBinding binding = (SftpBinding) config.getProtocolBinding();
+
+        assertEquals(SftpBinding.PROTO, binding.getProtocol());
     }
 
     @Test
