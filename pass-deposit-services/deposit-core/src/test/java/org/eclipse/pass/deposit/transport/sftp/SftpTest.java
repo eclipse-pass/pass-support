@@ -83,7 +83,7 @@ public class SftpTest {
             TRANSPORT_SERVER_PORT, String.valueOf(sshd.getPort()),
             TRANSPORT_USERNAME, "dummyUser",
             TRANSPORT_PASSWORD, "dummyPass",
-            SFTP_BASE_DIRECTORY, "upload/test/%s"
+            SFTP_BASE_DIRECTORY, "/upload/test/%s"
         );
         String testFileName = System.currentTimeMillis() + "package.tar.gz";
         NullInputStream content = new NullInputStream(ONE_MIB);
