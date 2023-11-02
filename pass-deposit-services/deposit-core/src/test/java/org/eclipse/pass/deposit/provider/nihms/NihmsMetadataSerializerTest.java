@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +103,7 @@ public class NihmsMetadataSerializerTest {
 
         // populate article metadata
         article.setDoi(URI.create("10.1234/smh0000001"));
+        article.setEmbargoLiftDate(ZonedDateTime.now().plusYears(100));
 
         //populate persons
         DepositMetadata.Person person1 = new DepositMetadata.Person();
@@ -114,8 +116,8 @@ public class NihmsMetadataSerializerTest {
 
         // Enter the first person twice, as both an author and a PI
         DepositMetadata.Person person1a = new DepositMetadata.Person(person1);
-        person1.setType(DepositMetadata.PERSON_TYPE.pi);
-        personList.add(person1);
+        person1a.setType(DepositMetadata.PERSON_TYPE.pi);
+        personList.add(person1a);
 
         DepositMetadata.Person person2 = new DepositMetadata.Person();
         person2.setType(DepositMetadata.PERSON_TYPE.submitter);

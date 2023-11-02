@@ -16,7 +16,7 @@
 package org.eclipse.pass.deposit.provider.nihms;
 
 import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.APPLICATION_GZIP;
-import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07;
+import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_NATIVE_2022_05;
 import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -78,7 +78,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
     protected Map<String, Object> getOptions() {
         return new HashMap<>() {
             {
-                put(Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
+                put(Spec.KEY, SPEC_NIHMS_NATIVE_2022_05);
                 put(Archive.KEY, Archive.OPTS.TAR);
                 put(Compression.KEY, Compression.OPTS.GZIP);
             }
@@ -101,7 +101,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         assertEquals(Compression.OPTS.GZIP, metadata.compression());
         assertEquals(Archive.OPTS.TAR, metadata.archive());
         assertTrue(metadata.archived());
-        assertEquals(SPEC_NIHMS_NATIVE_2017_07, metadata.spec());
+        assertEquals(SPEC_NIHMS_NATIVE_2022_05, metadata.spec());
         assertEquals(APPLICATION_GZIP, metadata.mimeType());
     }
 

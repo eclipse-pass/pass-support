@@ -16,7 +16,7 @@
 package org.eclipse.pass.deposit.provider.nihms;
 
 import static java.util.Collections.singletonList;
-import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07;
+import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_NATIVE_2022_05;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class NihmsThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
     protected Map<String, Object> packageOptions() {
         return new HashMap<>() {
             {
-                put(PackageOptions.Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
+                put(PackageOptions.Spec.KEY, SPEC_NIHMS_NATIVE_2022_05);
                 put(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.TAR);
                 put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.GZIP);
                 put(PackageOptions.Checksum.KEY, singletonList(PackageOptions.Checksum.OPTS.SHA256));
