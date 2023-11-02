@@ -18,12 +18,10 @@ package org.eclipse.pass.deposit.provider.nihms;
 
 import static org.eclipse.pass.deposit.assembler.AssemblerSupport.buildMetadata;
 
-import java.net.URI;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.ArchivingPackageStream;
@@ -45,7 +43,7 @@ public class NihmsAssembler extends AbstractAssembler {
      * Package specification URI identifying the NIHMS native packaging spec, as specified by their 07/2017
      * bulk publishing pdf.
      */
-    public static final String SPEC_NIHMS_NATIVE_2017_07 = "nihms-native-2017-07";
+    public static final String SPEC_NIHMS_NATIVE_2022_05 = "nihms-native-2022-05";
 
     /**
      * Mime type of zip files.
@@ -81,20 +79,11 @@ public class NihmsAssembler extends AbstractAssembler {
     }
 
     static void namePackage(DepositSubmission submission, MetadataBuilder mb) {
-        String submissionUuid = null;
-
-        try {
-            URI submissionUri = URI.create(submission.getId());
-            submissionUuid = submissionUri.getPath().substring(submissionUri.getPath().lastIndexOf("/") + 1);
-        } catch (Exception e) {
-            submissionUuid = UUID.randomUUID().toString();
-        }
-
         String packageFileName = String.format(PACKAGE_FILE_NAME,
-                                               SPEC_NIHMS_NATIVE_2017_07,
+                                               SPEC_NIHMS_NATIVE_2022_05,
                                                ZonedDateTime.now()
                                                             .format(DateTimeFormatter.ofPattern("uuuu-MM-dd_HH-MM-ss")),
-                                               submissionUuid);
+                                               submission.getId());
 
         StringBuilder ext = new StringBuilder(packageFileName);
         PackageStream.Metadata md = mb.build();
