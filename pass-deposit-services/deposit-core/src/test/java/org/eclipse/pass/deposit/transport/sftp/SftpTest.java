@@ -21,6 +21,8 @@ import static org.eclipse.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN
 import static org.eclipse.pass.deposit.transport.Transport.TRANSPORT_SERVER_PORT;
 import static org.eclipse.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
 import static org.eclipse.pass.deposit.transport.sftp.SftpTransport.SFTP_BASE_DIRECTORY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -42,6 +44,7 @@ import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.client.SftpClient;
 import org.apache.sshd.sftp.client.impl.DefaultSftpClientFactory;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
+import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
@@ -103,6 +106,35 @@ public class SftpTest {
         assertTrue(transportResponse.success());
         String dateDirName = OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE);
         verifyFileOnSftpServer(String.format("upload/test/%s/", dateDirName) + testFileName);
+    }
+
+    @Test
+    public void testCreateFile_Fail_MissingBaseDir() {
+        // GIVEN
+        Map<String, String> hints = Map.of(
+            TRANSPORT_SERVER_FQDN, "localhost",
+            TRANSPORT_SERVER_PORT, String.valueOf(sshd.getPort()),
+            TRANSPORT_USERNAME, "dummyUser",
+            TRANSPORT_PASSWORD, "dummyPass"
+        );
+        String testFileName = System.currentTimeMillis() + "package.tar.gz";
+        NullInputStream content = new NullInputStream(ONE_MIB);
+        PackageStream stream = mock(PackageStream.class);
+        PackageStream.Metadata streamMetadata = mock(PackageStream.Metadata.class);
+        when(stream.metadata()).thenReturn(streamMetadata);
+        when(streamMetadata.name()).thenReturn(testFileName);
+        when(stream.open()).thenReturn(content);
+
+        SftpTransport sftpTransport = new SftpTransport();
+        TransportSession transportSession = sftpTransport.open(hints);
+
+        // WHEN
+        DepositServiceRuntimeException ex = assertThrows(DepositServiceRuntimeException.class, () -> {
+            transportSession.send(stream, new HashMap<>());
+        });
+
+        // THEN
+        assertEquals("Sftp requires \"default-directory\" in protocol-binding", ex.getMessage());
     }
 
     private void verifyFileOnSftpServer(String path) {
