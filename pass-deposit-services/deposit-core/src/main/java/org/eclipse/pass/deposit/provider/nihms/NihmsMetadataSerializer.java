@@ -108,10 +108,29 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
             LocalDate now = LocalDate.now();
 
             if (lift.isAfter(now)) {
-                Period period = Period.between(LocalDate.now(), lift);
-                root.setAttribute("embargo-months", "" + period.getMonths());
+                long months = Period.between(LocalDate.now(), lift).toTotalMonths();
+
+                // The max embargo time is 12 months
+                if (months > 12) {
+                    months = 12;
+                }
+
+                root.setAttribute("embargo-months", "" + months);
             }
         }
+
+        if (article != null && article.getDoi() != null) {
+            // DOI may not include UTI's scheme or host, only path
+            String path = article.getDoi().getPath();
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+
+            root.setAttribute("doi", path);
+        }
+
+        // There is an optional agency attribute.
+        // Should only be used for non-NIH funders when grant information is also given
 
         if (journal != null) {
             Element journal_meta = doc.createElement("journal-meta");
@@ -119,12 +138,11 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
             add_text_element(doc, journal_meta, "nlm-ta", journal.getJournalId());
 
+            // If the IssnPubType is incomplete (either the pubType or issn is null or
+            // empty), we should omit it from the metadata, per NIH's requirements.
+            // See https://github.com/OA-PASS/metadata-schemas/pull/28 and
+            // https://github.com/OA-PASS/jhu-package-providers/issues/16
             journal.getIssnPubTypes().values().forEach(issnPubType -> {
-                // if the IssnPubType is incomplete (either the pubType or issn is null or
-                // empty), we should
-                // omit it from the metadata, per NIH's requirements
-                // See https://github.com/OA-PASS/metadata-schemas/pull/28 and
-                // https://github.com/OA-PASS/jhu-package-providers/issues/16
                 if (issnPubType.pubType == null || issnPubType.issn == null || issnPubType.issn.trim().isEmpty()) {
                     LOG.debug("Discarding incomplete ISSN: {}", issnPubType);
                     return;
@@ -139,27 +157,13 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
             });
 
             add_text_element(doc, journal_meta, "journal-title", journal.getJournalTitle());
-
-            // TODO No place for journal.getJournalType
         }
 
-        if (manuscript != null) {
+        if (manuscript != null && manuscript.title != null) {
             add_text_element(doc, root, "manuscript-title", manuscript.title);
         }
 
-        // TODO No place to put manuscript.getManuscriptUrl()
-        // TODO Add citation element?
-
-        if (article != null && article.getDoi() != null) {
-            // DOI may not include UTI's scheme or host, only path
-            // TODO Cannot find any documentation about this
-            String path = article.getDoi().getPath();
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-
-            root.setAttribute("doi", path);
-        }
+        // Could add a citation element if we had all the information
 
         List<DepositMetadata.Person> persons = metadata.getPersons();
 
@@ -205,5 +209,8 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                 }
             }
         }
+
+        // Could add grant information here if it was useful.
+        // Can only be used for a set list of funders
     }
 }
