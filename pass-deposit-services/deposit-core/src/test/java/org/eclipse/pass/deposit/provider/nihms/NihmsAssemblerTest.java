@@ -55,7 +55,7 @@ public class NihmsAssemblerTest {
         mdBuilder = mock(MetadataBuilder.class);
 
         String expectedSubmissionUuid = UUID.randomUUID().toString();
-        when(submission.getId()).thenReturn("http://example.org/" + expectedSubmissionUuid);
+        when(submission.getId()).thenReturn(expectedSubmissionUuid);
 
         when(mdBuilder.build()).thenReturn(metadata);
 
