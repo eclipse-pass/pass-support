@@ -68,7 +68,7 @@
     <logback-classic.version>1.4.12</logback-classic.version>
     <commons-net.version>3.9.0</commons-net.version>
     <commons-compress.version>1.21</commons-compress.version>
-    <commons-io.version>2.6</commons-io.version>
+    <commons-io.version>2.7</commons-io.version>
     <guava.version>23.5-jre</guava.version>
     <xmlunit.version>2.3.0</xmlunit.version>
     <xstream.version>1.4.20</xstream.version>
