@@ -33,17 +33,17 @@ public class ContentLengthObserver extends ResourceBuilderObserver {
     }
 
     @Override
-    void data(int pByte) throws IOException {
+    public void data(int pByte) throws IOException {
         length++;
     }
 
     @Override
-    void data(byte[] pBuffer, int pOffset, int pLength) throws IOException {
+    public void data(byte[] pBuffer, int pOffset, int pLength) throws IOException {
         length += pLength;
     }
 
     @Override
-    void finished() throws IOException {
+    public void finished() throws IOException {
         if (!isFinished()) {
             builder.sizeBytes(this.length);
         }

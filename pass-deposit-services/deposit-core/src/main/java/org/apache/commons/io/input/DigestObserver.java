@@ -65,17 +65,17 @@ public class DigestObserver extends ResourceBuilderObserver {
     }
 
     @Override
-    void data(int pByte) throws IOException {
+    public void data(int pByte) throws IOException {
         digest.update((byte) pByte);
     }
 
     @Override
-    void data(byte[] pBuffer, int pOffset, int pLength) throws IOException {
+    public void data(byte[] pBuffer, int pOffset, int pLength) throws IOException {
         digest.update(pBuffer, pOffset, pLength);
     }
 
     @Override
-    void finished() throws IOException {
+    public void finished() throws IOException {
         if (!isFinished()) {
             byte[] value = this.digest.digest();
             builder.checksum(new ChecksumImpl(algo, value, getEncoder().encodeToString(value), encodeHexString(value)));

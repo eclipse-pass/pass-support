@@ -43,7 +43,7 @@ public abstract class ResourceBuilderObserver extends ObservableInputStream.Obse
     }
 
     @Override
-    void finished() throws IOException {
+    public void finished() throws IOException {
         this.finished = true;
     }
 }
