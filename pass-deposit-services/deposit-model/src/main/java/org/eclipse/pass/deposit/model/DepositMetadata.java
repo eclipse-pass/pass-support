@@ -536,6 +536,39 @@ public class DepositMetadata {
         }
     }
 
+    public static class Grant {
+        //this is the grant awardNumber in PASS
+        String grantId;
+        String funder;
+        Person grantPi;
+
+        public String getGrantId() {
+            return grantId;
+        }
+
+        public void setGrantId(String grantId) {
+            this.grantId = grantId;
+        }
+
+        public String getFunder() {
+            return funder;
+        }
+
+        public void setFunder(String funder) {
+            this.funder = funder;
+        }
+
+        public Person getGrantPi() {
+            return grantPi;
+        }
+
+        public void setGrantPi(Person grantPi) {
+            this.grantPi = grantPi;
+        }
+    }
+
+
+
     public DepositMetadata() {
         this.manuscriptMetadata = new Manuscript();
         this.journalMetadata = new Journal();
