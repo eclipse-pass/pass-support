@@ -131,6 +131,7 @@ public class DepositSubmissionMapper {
             // Data from the User resources for the PI and CoPIs
             User piEntity = grantEntity.getPi();
             persons.add(createPerson(piEntity, DepositMetadata.PERSON_TYPE.pi));
+            grants.add(createGrant(piEntity, grantEntity));
 
             for (User copiEntity : grantEntity.getCoPis()) {
                 persons.add(createPerson(copiEntity, DepositMetadata.PERSON_TYPE.copi));
