@@ -119,6 +119,11 @@ public class DepositMetadata {
     private Article articleMetadata;
 
     /**
+     * Metadata about the grants that funded the publication
+     */
+    private List<Grant> grants;
+
+    /**
      * Manuscript-related metadata fields
      */
     public static class Manuscript {
@@ -606,6 +611,14 @@ public class DepositMetadata {
 
     public void setArticleMetadata(Article articleMetadata) {
         this.articleMetadata = articleMetadata;
+    }
+
+    public List<Grant> getGrantsMetadata() {
+        return grants;
+    }
+
+    public void setGrantsMetadata(List<Grant> grants) {
+        this.grants = grants;
     }
 
     @Override
