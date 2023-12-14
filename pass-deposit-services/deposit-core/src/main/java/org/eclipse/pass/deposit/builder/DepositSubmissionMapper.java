@@ -100,6 +100,8 @@ public class DepositSubmissionMapper {
         metadata.setJournalMetadata(journal);
         ArrayList<DepositMetadata.Person> persons = new ArrayList<>();
         metadata.setPersons(persons);
+        ArrayList<DepositMetadata.Grant> grants = new ArrayList<>();
+        metadata.setGrantsMetadata(grants);
 
         // Data from the Submission resource
         submission.setId(submissionEntity.getId());
@@ -186,6 +188,14 @@ public class DepositSubmissionMapper {
         person.setFullName(fullName);
         person.setType(DepositMetadata.PERSON_TYPE.author);
         return person;
+    }
+
+    private DepositMetadata.Grant createGrant(User userEntity, Grant grantEntity) {
+        DepositMetadata.Grant grant = new DepositMetadata.Grant();
+        grant.setGrantId(grantEntity.getAwardNumber());
+        grant.setGrantPi(createPerson(userEntity, DepositMetadata.PERSON_TYPE.pi));
+        grant.setFunder(grantEntity.getPrimaryFunder().getName());
+        return grant;
     }
 
     /**
