@@ -56,6 +56,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Creates a package, then extracts it.  Performs some basic tests on the extracted package.
@@ -244,6 +246,36 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         //Ensure that the grants in the metadata matches a Grant on the submission, Check the attributes of a grant on
         //submission against what is found in the metadata
         //TODO: add test here for the grants
+        List<Element> grantElements = asList(root.getElementsByTagName("grant"));
+        // Assert that there is only two grants present in the metadata. If more grants are needed to test,
+        // add to the setup
+        assertEquals(2, grantElements.size());
+
+        List<DepositMetadata.Grant> asGrants = grantElements.stream().map(element -> {
+            DepositMetadata.Grant asGrant = new DepositMetadata.Grant();
+            Person pi = new Person();
+
+            NodeList grantPis = element.getElementsByTagName("PI");
+            for (int i = 0; i < grantPis.getLength(); i++) {
+                Node grantPiNode = grantPis.item(i);
+                Element grantPiElement = (Element) grantPiNode;
+                pi.setFirstName(grantPiElement.getAttribute("fname"));
+                pi.setLastName(grantPiElement.getAttribute("lname"));
+                pi.setEmail(grantPiElement.getAttribute("email"));
+            }
+            asGrant.setGrantId(element.getAttribute("id"));
+            asGrant.setFunder(element.getAttribute("funder"));
+            asGrant.setGrantPi(pi);
+            return asGrant;
+        }).toList();
+
+        //TODO add assertions checking the serialized metadata is in the submission metadata
+        for (DepositMetadata.Grant grant : asGrants) {
+            //assert that the grant ID exists and is valid to the submission data
+            //assertTrue(submission.getMetadata().getGrantsMetadata().get());
+
+        }
+
 
         // Assert that the DOI is present in the metadata
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), root.getAttribute("doi"));
