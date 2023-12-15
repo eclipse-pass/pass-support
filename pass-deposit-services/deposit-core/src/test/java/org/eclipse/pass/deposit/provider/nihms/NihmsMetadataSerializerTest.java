@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -239,7 +240,12 @@ public class NihmsMetadataSerializerTest {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         SizedStream sizedStream;
         InputStream is;
-        List<DepositMetadata.Grant> grants = new ArrayList<>();
+
+        List<String> validAwardNumbers = new ArrayList<>(List.of("R0123456789", "R0123456000"));
+        List<String> validFunders = new ArrayList<>(List.of("nih"));
+        List<String> validPiFname = new ArrayList<>(List.of("Bessie", "Elsie"));
+        List<String> validPiLname = new ArrayList<>(List.of("Cow"));
+        List<String> validPiEmail = new ArrayList<>(List.of("person@farm.com"));
 
         sizedStream = underTest.serialize();
         is = sizedStream.getInputStream();
@@ -253,12 +259,36 @@ public class NihmsMetadataSerializerTest {
         transformer.transform(new DOMSource(document), new StreamResult(writer));
         String documentString = writer.toString();
 
-        for (int i = 0; i < grantNodes.getLength(); i++) {
-            Node grantNode = grantNodes.item(i);
+        Node grantNode = grantNodes.item(0);
+        NodeList grantNodeChildList = grantNode.getChildNodes();
 
-            //grant = node.getAttributes().getNamedItem("doi").getTextContent();
+        for (int i = 0; i < grantNodeChildList.getLength(); i++) {
+            Node grantChildNode = grantNodeChildList.item(i);
+
+            if (grantChildNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element grantElement = (Element) grantChildNode;
+
+                // Extracting grant attributes from the XML doc
+                String grantId = grantElement.getAttribute("id");
+                String funder = grantElement.getAttribute("funder");
+
+                assertTrue(validAwardNumbers.contains(grantId));
+                assertTrue(validFunders.contains(funder));
+
+                // Extracting PI information from the XML doc
+                NodeList piNodes = grantElement.getElementsByTagName("PI");
+                for (int k = 0; k < piNodes.getLength(); k++) {
+                    Element piElement = (Element) piNodes.item(k);
+                    String piFname = piElement.getAttribute("fname");
+                    String piLname = piElement.getAttribute("lname");
+                    String piEmail = piElement.getAttribute("email");
+
+                    assertTrue(validPiFname.contains(piFname));
+                    assertTrue(validPiLname.contains(piLname));
+                    assertTrue(validPiEmail.contains(piEmail));
+                }
+            }
         }
-
     }
 
     /**
