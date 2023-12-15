@@ -210,7 +210,40 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
             }
         }
 
-        // Could add grant information here if it was useful.
-        // Can only be used for a set list of funders
+        List<DepositMetadata.Grant> grantsList = metadata.getGrantsMetadata();
+
+        if (grantsList != null && !grantsList.isEmpty()) {
+            Element grantsElement = doc.createElement("grants");
+            root.appendChild(grantsElement);
+
+            for (DepositMetadata.Grant grant : grantsList) {
+                Element grantElement = doc.createElement("grant");
+                grantsElement.appendChild(grantElement);
+
+                if (grant.getGrantId() != null) {
+                    grantElement.setAttribute("id", grant.getGrantId());
+                }
+
+                if (grant.getFunder() != null) {
+                    grantElement.setAttribute("funder", grant.getFunder());
+                }
+
+                DepositMetadata.Person pi = grant.getGrantPi();
+                if (pi != null) {
+                    Element piElement = doc.createElement("PI");
+                    grantElement.appendChild(piElement);
+
+                    if (pi.getFirstName() != null) {
+                        piElement.setAttribute("fname", pi.getFirstName());
+                    }
+                    if (pi.getLastName() != null) {
+                        piElement.setAttribute("lname", pi.getLastName());
+                    }
+                    if (pi.getEmail() != null) {
+                        piElement.setAttribute("email", pi.getEmail());
+                    }
+                }
+            }
+        }
     }
 }

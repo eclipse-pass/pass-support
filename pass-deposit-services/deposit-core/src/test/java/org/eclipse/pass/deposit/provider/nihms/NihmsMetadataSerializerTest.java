@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -41,10 +42,15 @@ import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import com.github.jknack.handlebars.internal.Files;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.pass.deposit.assembler.MetadataBuilder;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
@@ -80,6 +86,7 @@ public class NihmsMetadataSerializerTest {
         DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
         DepositMetadata.Article article = new DepositMetadata.Article();
         List<DepositMetadata.Person> personList = new ArrayList<>();
+        List<DepositMetadata.Grant> grantList = new ArrayList<>();
 
         //populate journal metadata
         journal.setJournalId("FJ001");
@@ -143,10 +150,22 @@ public class NihmsMetadataSerializerTest {
         person4.setMiddleName("The");
         personList.add(person4);
 
+        DepositMetadata.Grant grant1 = new DepositMetadata.Grant();
+        grant1.setGrantId("R0123456789");
+        grant1.setFunder("nih");
+        grant1.setGrantPi(person1);
+        grantList.add(grant1);
+
+        DepositMetadata.Grant grant2 = new DepositMetadata.Grant();
+        grant2.setGrantId("R0123456000");
+        grant2.setFunder("nih");
+        grant2.setGrantPi(person2);
+        grantList.add(grant2);
+
         metadata.setJournalMetadata(journal);
         metadata.setManuscriptMetadata(manuscript);
         metadata.setPersons(personList);
-        metadata.setArticleMetadata(article);
+        metadata.setGrantsMetadata(grantList);
 
         underTest = new NihmsMetadataSerializer(metadata);
     }
@@ -210,6 +229,36 @@ public class NihmsMetadataSerializerTest {
         doi = node.getAttributes().getNamedItem("doi").getTextContent();
         is.close();
         assertTrue(doi.contentEquals(path));
+    }
+
+    /**
+     * Test that the number of grants and their associated information is valid when serialized
+    */
+    @Test
+    public void testSerializedMetaDataGrants() throws Exception {
+        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        SizedStream sizedStream;
+        InputStream is;
+        List<DepositMetadata.Grant> grants = new ArrayList<>();
+
+        sizedStream = underTest.serialize();
+        is = sizedStream.getInputStream();
+        Document document = builder.parse(is);
+        NodeList grantNodes = document.getElementsByTagName("grants");
+
+        // Convert Document to String
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(document), new StreamResult(writer));
+        String documentString = writer.toString();
+
+        for (int i = 0; i < grantNodes.getLength(); i++) {
+            Node grantNode = grantNodes.item(i);
+
+            //grant = node.getAttributes().getNamedItem("doi").getTextContent();
+        }
+
     }
 
     /**

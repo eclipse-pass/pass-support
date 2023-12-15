@@ -211,8 +211,8 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         Element title = asList(root.getElementsByTagName("manuscript-title")).get(0);
         assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), title.getTextContent());
 
-        // Insure that only one <person> element is present in the submission metadata
-        // and insure that the <person> is a PI or a Co-PI for the grant that funded the submission.
+        // Ensure that only one <person> element is present in the submission metadata
+        // and Ensure that the <person> is a PI or a Co-PI for the grant that funded the submission.
 
         List<Element> personElements = asList(root.getElementsByTagName("person"));
         // Assert that there is only one Person present in the metadata
@@ -228,7 +228,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
             return asPerson;
         }).toList();
 
-        // Insure that the Person in the metadata matches a Person on the Submission, and that the person is a
+        // Ensure that the Person in the metadata matches a Person on the Submission, and that the person is a
         // corresponding pi
         asPersons.stream().forEach(person -> {
             assertTrue(submission.getMetadata().getPersons().stream().anyMatch(candidate ->
@@ -240,6 +240,10 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
                             .equals(person.getName()) &&
                    candidate.getType() == person.getType()));
         });
+
+        //Ensure that the grants in the metadata matches a Grant on the submission, Check the attributes of a grant on
+        //submission against what is found in the metadata
+        //TODO: add test here for the grants
 
         // Assert that the DOI is present in the metadata
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), root.getAttribute("doi"));
