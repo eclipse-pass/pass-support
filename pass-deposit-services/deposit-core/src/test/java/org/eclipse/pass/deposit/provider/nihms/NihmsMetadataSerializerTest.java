@@ -252,13 +252,6 @@ public class NihmsMetadataSerializerTest {
         Document document = builder.parse(is);
         NodeList grantNodes = document.getElementsByTagName("grants");
 
-        // Convert Document to String
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(document), new StreamResult(writer));
-        String documentString = writer.toString();
-
         Node grantNode = grantNodes.item(0);
         NodeList grantNodeChildList = grantNode.getChildNodes();
 

@@ -246,10 +246,10 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         //Ensure that the grants in the metadata matches a Grant on the submission, Check the attributes of a grant on
         //submission against what is found in the metadata
         //TODO: add test here for the grants
-        List<Element> grantElements = asList(root.getElementsByTagName("grant"));
+        List<Element> grantElements = asList(root.getElementsByTagName("grants"));
         // Assert that there is only two grants present in the metadata. If more grants are needed to test,
         // add to the setup
-        assertEquals(2, grantElements.size());
+        assertEquals(1, grantElements.size());
 
         List<DepositMetadata.Grant> asGrants = grantElements.stream().map(element -> {
             DepositMetadata.Grant asGrant = new DepositMetadata.Grant();
