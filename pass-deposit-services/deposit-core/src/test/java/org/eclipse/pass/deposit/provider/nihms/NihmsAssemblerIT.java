@@ -251,19 +251,10 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
         //Ensure that the grants in the metadata matches a Grant on the submission, Check the attributes of a grant on
         //submission against what is found in the metadata
-        //TODO: add test here for the grants
         List<Element> grantElements = asList(root.getElementsByTagName("grant"));
 
-        // Convert root Document to String
-        //TODO remove
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(root), new StreamResult(writer));
-        String documentString = writer.toString();
-
         // Assert that there is only two grants present in the metadata. If more grants are needed to test,
-        // add to the setup
+        // add to sample1.json
         assertEquals(2, grantElements.size());
 
         List<DepositMetadata.Grant> asGrants = grantElements.stream().map(element -> {
@@ -284,7 +275,6 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
             return asGrant;
         }).toList();
 
-        //TODO add assertions checking the serialized metadata is in the submission metadata
         List<DepositMetadata.Grant> subGrantMetaData = submission.getMetadata().getGrantsMetadata();
         for (DepositMetadata.Grant subGrant : subGrantMetaData) {
             String subGrantId = subGrant.getGrantId();
@@ -296,9 +286,10 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
             //assert that the grant ID exists and is valid to the submission data
             assertEquals(subGrant.getGrantId(), metaDataGrant.get().getGrantId());
+            assertEquals(subGrant.getFunder(), metaDataGrant.get().getFunder());
             assertEquals(subGrant.getGrantPi().getFirstName(), metaDataGrant.get().getGrantPi().getFirstName());
             assertEquals(subGrant.getGrantPi().getLastName(), metaDataGrant.get().getGrantPi().getLastName());
-
+            assertEquals(subGrant.getGrantPi().getEmail(), metaDataGrant.get().getGrantPi().getEmail());
         }
 
         // Assert that the DOI is present in the metadata
@@ -320,7 +311,6 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
                 assertEquals(issn.getAttribute("issn-type"), "print");
             }
         });
-
     }
 
     /**
