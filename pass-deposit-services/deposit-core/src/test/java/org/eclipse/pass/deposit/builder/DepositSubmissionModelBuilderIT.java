@@ -49,10 +49,12 @@ public class DepositSubmissionModelBuilderIT extends AbstractDepositSubmissionIT
     private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
     private static final String EXPECTED_EMBARGO_END_DATE = "2018-06-30";
     private static final int EXPECTED_SUBMITER_COUNT = 1;
-    private static final int EXPECTED_PI_COUNT = 1;
-    private static final int EXPECTED_CO_PI_COUNT = 2;
+    private static final int EXPECTED_PI_COUNT = 2;
+    private static final int EXPECTED_CO_PI_COUNT = 4;
     private static final int EXPECTED_AUTHOR_COUNT = 6;
     private static final String EXPECTED_NLMTA = "Food Funct";
+    private static final String EXPECTED_GRANT1 = "R01EY026617";
+    private static final String EXPECTED_GRANT2 = "R01EY026618";
     private static final Map<String, DepositMetadata.IssnPubType> EXPECTED_ISSNS =
         new HashMap<>() {
             {
@@ -159,10 +161,15 @@ public class DepositSubmissionModelBuilderIT extends AbstractDepositSubmissionIT
                           .anyMatch(author ->
                                         author.getName().equals("Raymond J. Playford")));
 
+        //test the grants associated with the submission
+        List<DepositMetadata.Grant> grants = submission.getMetadata().getGrantsMetadata();
+
+        assertNotNull(grants.stream().filter(matchGrant -> matchGrant.getGrantId() == EXPECTED_GRANT1));
+        assertNotNull(grants.stream().filter(matchGrant -> matchGrant.getGrantId() == EXPECTED_GRANT2));
+
         // Read something out of the submission metadata
         assertTrue(submission.getSubmissionMeta().has("agreements"));
         JsonObject agreement = submission.getSubmissionMeta().getAsJsonObject("agreements");
         assertTrue(agreement.has("JScholarship"));
     }
-
 }
