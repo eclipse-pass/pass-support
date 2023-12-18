@@ -572,8 +572,6 @@ public class DepositMetadata {
         }
     }
 
-
-
     public DepositMetadata() {
         this.manuscriptMetadata = new Manuscript();
         this.journalMetadata = new Journal();
