@@ -27,16 +27,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -246,10 +252,19 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         //Ensure that the grants in the metadata matches a Grant on the submission, Check the attributes of a grant on
         //submission against what is found in the metadata
         //TODO: add test here for the grants
-        List<Element> grantElements = asList(root.getElementsByTagName("grants"));
+        List<Element> grantElements = asList(root.getElementsByTagName("grant"));
+
+        // Convert root Document to String
+        //TODO remove
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(root), new StreamResult(writer));
+        String documentString = writer.toString();
+
         // Assert that there is only two grants present in the metadata. If more grants are needed to test,
         // add to the setup
-        assertEquals(1, grantElements.size());
+        assertEquals(2, grantElements.size());
 
         List<DepositMetadata.Grant> asGrants = grantElements.stream().map(element -> {
             DepositMetadata.Grant asGrant = new DepositMetadata.Grant();
@@ -270,12 +285,21 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         }).toList();
 
         //TODO add assertions checking the serialized metadata is in the submission metadata
-        for (DepositMetadata.Grant grant : asGrants) {
+        List<DepositMetadata.Grant> subGrantMetaData = submission.getMetadata().getGrantsMetadata();
+        for (DepositMetadata.Grant subGrant : subGrantMetaData) {
+            String subGrantId = subGrant.getGrantId();
+
+            // Find the associated grant from asGrants that matches the ID
+            Optional<DepositMetadata.Grant> metaDataGrant = asGrants.stream()
+                    .filter(asGrant -> asGrant.getGrantId().equals(subGrantId))
+                    .findFirst();
+
             //assert that the grant ID exists and is valid to the submission data
-            //assertTrue(submission.getMetadata().getGrantsMetadata().get());
+            assertEquals(subGrant.getGrantId(), metaDataGrant.get().getGrantId());
+            assertEquals(subGrant.getGrantPi().getFirstName(), metaDataGrant.get().getGrantPi().getFirstName());
+            assertEquals(subGrant.getGrantPi().getLastName(), metaDataGrant.get().getGrantPi().getLastName());
 
         }
-
 
         // Assert that the DOI is present in the metadata
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), root.getAttribute("doi"));
