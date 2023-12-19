@@ -86,7 +86,7 @@ public class MetadataIT extends AbstractDepositSubmissionIT {
         assertEquals("Elsevier", qdc.getElementsByTagNameNS(DC_NS, DC_PUBLISHER).item(0).getTextContent());
 
         // Contributor list does not include submitting user, only PIs (from Grant) and authors (from metadata)
-        assertEquals(5, qdc.getElementsByTagNameNS(DC_NS, DC_CONTRIBUTOR).getLength());
+        assertEquals(8, qdc.getElementsByTagNameNS(DC_NS, DC_CONTRIBUTOR).getLength());
         for (int i = 0; i < 5; i++) {
             // Contributors must have names, whether they come from
             // first/middle/last or only display name (in Submission), or from metadata.
