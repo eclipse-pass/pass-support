@@ -82,18 +82,17 @@ public class NihmsMailReceiverConfiguration {
 
     @Bean
     public MailReceiver imapMailReceiver() {
-        // TODO may be imaps, need to confirm with Jeff
-        String storeUrl = String.format("imap://%s:%s@%s:%s/inbox",
+        String storeUrl = String.format("imaps://%s:%s@%s:%s/inbox",
             nihmsMailUsername, nihmsMailPassword, nihmsImapHost, nihmsImapPort);
         ImapMailReceiver imapMailReceiver = new ImapMailReceiver(storeUrl);
         imapMailReceiver.setShouldMarkMessagesAsRead(true);
         imapMailReceiver.setShouldDeleteMessages(false);
         imapMailReceiver.setMaxFetchSize(10);
         Properties javaMailProperties = new Properties();
-        // TODO may be imaps, need to confirm with Jeff
-//        javaMailProperties.put("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-//        javaMailProperties.put("mail.imap.socketFactory.fallback", false);
-        javaMailProperties.put("mail.store.protocol", "imap");
+        javaMailProperties.put("mail.imaps.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        javaMailProperties.put("mail.imaps.socketFactory.fallback", false);
+        javaMailProperties.put("mail.imaps.ssl.trust", nihmsImapHost);
+        javaMailProperties.put("mail.store.protocol", "imaps");
         javaMailProperties.put("mail.debug", true);
         imapMailReceiver.setJavaMailProperties(javaMailProperties);
         return imapMailReceiver;
