@@ -1,4 +1,4 @@
-name: "Publish: full release OR snapshot"
+name: Publish Release
 
 on:
   workflow_dispatch:
@@ -9,151 +9,12 @@ on:
       nextversion:
         description: 'Next dev version'
         required: true
-  push:
-    branches:
-      - 'main'
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      # Output project version from the POM to conditionally run dependent steps
-      project-version: ${{ steps.project_version.outputs.version }}
-    steps:
-      - name: Checkout latest code
-        uses: actions/checkout@v3
-
-      - name: Setup Java & Maven
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
-          cache: 'maven'
-      
-      - name: Get project version from POM
-        id: project_version
-        run: echo "VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`" >> $GITHUB_OUTPUT
-
-  # Run only if project POM has version ending in "-SNAPSHOT"
-  snapshot:
-    needs: setup
-    if: github.event_name == 'push' && endsWith(needs.setup.outputs.project-version, '-SNAPSHOT')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout latest code
-        uses: actions/checkout@v3
-
-      - name: Setup Java & Maven
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
-          cache: 'maven'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-          gpg-private-key: ${{ secrets.MAVEN_GPG_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
-
-      - name: Publish SNAPSHOT
-        run: mvn -B --no-transfer-progress clean deploy
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-
-  # Run for manual trigger (workflow dispatch), since you'll have release and next dev versions specified
-  # All commits will have a -SNAPSHOT project version anyway, since the releases will be handled here
   release:
-    needs: setup
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    env:
-      RELEASE: ${{ inputs.releaseversion }}
-      NEXT: ${{ inputs.nextversion }}
-    steps:
-      - name: Checkout latest code
-        uses: actions/checkout@v3
-
-      - name: Config git user
-        run: |
-          git config user.name ${{ github.actor }}
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-
-      - name: Setup Java & Maven
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
-          cache: 'maven'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-          gpg-private-key: ${{ secrets.MAVEN_GPG_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      # =============================================================================
-      # Start the release
-      # =============================================================================
-      - name: Run tests
-        run: mvn -B -U -V -ntp verify
-
-      - name: Bump version to release
-        run: mvn -B -U -V -ntp versions:update-parent -DparentVersion=$RELEASE
-
-      - name: Commit release version bump
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: pom.xml **/pom.xml
-          message: "Update parent version to $RELEASE"
-
-      # Maven Release Plugin is currently configured to hook into the install phase, so tests would normally be run
-      # Since we ran tests at the start of this process, skip tests here to save some time
-      - name: Release main POM
-        run: |
-          mvn -B -U -V -ntp release:prepare -DreleaseVersion=$RELEASE -Dtag=$RELEASE -DdevelopmentVersion=$NEXT -DskipTests -Darguments=-DskipTests
-          mvn -B -U -V -ntp release:perform -P release -DskipTests -Darguments=-DskipTests
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-
-      - name: Update parent POM to new dev version
-        run: mvn -B -U -V -ntp versions:update-parent -DallowSnapshots=true -DparentVersion=$NEXT
-
-      - name: Commit snapshot version bump
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: pom.xml **/pom.xml
-          message: "Update parent version to $NEXT"
-          push: true
-
-      - name: Build and publish new dev version
-        run: mvn -B -U -V -ntp deploy -P release -DskipTests
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-
-      - name: Push new release tag GH
-        run: git push origin --tags
-
-      # Handle Docker images
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Docker image to GHCR
-        run: |
-          docker push ghcr.io/eclipse-pass/deposit-services-core:$RELEASE
-          docker push ghcr.io/eclipse-pass/deposit-services-core:$NEXT
-          docker push ghcr.io/eclipse-pass/pass-notification-service:$RELEASE
-          docker push ghcr.io/eclipse-pass/pass-notification-service:$NEXT
-          docker push ghcr.io/eclipse-pass/jhu-grant-loader:$RELEASE
-          docker push ghcr.io/eclipse-pass/jhu-grant-loader:$NEXT
-          docker push ghcr.io/eclipse-pass/pass-journal-loader:$RELEASE
-          docker push ghcr.io/eclipse-pass/pass-journal-loader:$NEXT
-          docker push ghcr.io/eclipse-pass/pass-nihms-loader:$RELEASE
-          docker push ghcr.io/eclipse-pass/pass-nihms-loader:$NEXT
+    uses: eclipse-pass/main/.github/workflows/release.yml@main
+    secrets: inherit
+    with:
+      releaseversion: ${{ inputs.releaseversion }}
+      nextversion: ${{ inputs.nextversion}}
+      images: ghcr.io/eclipse-pass/deposit-services-core ghcr.io/eclipse-pass/pass-notification-service ghcr.io/eclipse-pass/jhu-grant-loader ghcr.io/eclipse-pass/pass-journal-loader ghcr.io/eclipse-pass/pass-nihms-loader
