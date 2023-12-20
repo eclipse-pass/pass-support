@@ -41,6 +41,20 @@
         "createIfMissing": "true",
         "overwrite": "true"
       }
+    },
+    "deposit-config": {
+      "funder-mapping": {
+        "nih": "",
+        "ahrq": "",
+        "aspr": "",
+        "cdc": "",
+        "epa": "",
+        "fda": "",
+        "hhmi": "",
+        "nasa": "",
+        "nist": "",
+        "va": ""
+      }
     }
   },
   "BagIt": {
