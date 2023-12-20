@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit.config.spring;
 
 import java.util.Properties;
 
+import jakarta.mail.URLName;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.deposit.service.NihmsReceiveMailService;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +52,7 @@ public class NihmsMailReceiverConfiguration {
     private String nihmsImapHost;
 
     @Value("${nihms.mail.port}")
-    private String nihmsImapPort;
+    private Integer nihmsImapPort;
 
     private final NihmsReceiveMailService nihmsReceiveMailService;
 
@@ -82,8 +83,8 @@ public class NihmsMailReceiverConfiguration {
 
     @Bean
     public MailReceiver imapMailReceiver() {
-        String storeUrl = String.format("imaps://%s:%s@%s:%s/inbox",
-            nihmsMailUsername, nihmsMailPassword, nihmsImapHost, nihmsImapPort);
+        String storeUrl = new URLName("imaps", nihmsImapHost, nihmsImapPort, "inbox",
+            nihmsMailUsername, nihmsMailPassword).toString();
         ImapMailReceiver imapMailReceiver = new ImapMailReceiver(storeUrl);
         imapMailReceiver.setShouldMarkMessagesAsRead(true);
         imapMailReceiver.setShouldDeleteMessages(false);
