@@ -27,6 +27,7 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.deposit.DepositApp;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,9 @@ import org.mockito.Captor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -62,25 +66,45 @@ public class NihmsReceiveMailServiceTest {
     @Captor ArgumentCaptor<MimeMessage> messageCaptor;
 
     @Test
-    void testReceiveMail() {
+    void testHandleReceivedMail() throws MessagingException, IOException {
         // GIVEN
-        final String subject = GreenMailUtil.random();
-        final String body = GreenMailUtil.random();
-        MimeMessage message = GreenMailUtil.createTextEmail("testnihms@localhost", "from@localhost",
-            subject, body, greenMail.getImaps().getServerSetup());
+        final String subject1 = GreenMailUtil.random();
+        final String body1 = GreenMailUtil.random();
+        MimeMessage message1 = GreenMailUtil.createTextEmail("testnihms@localhost", "from@localhost",
+            subject1, body1, greenMail.getImaps().getServerSetup());
         GreenMailUser user = greenMail.setUser("testnihms@localhost", "testnihmspassword");
 
         // WHEN
-        user.deliver(message);
+        user.deliver(message1);
 
         // THEN
-        await().atMost(30, SECONDS).untilAsserted(() -> {
-            assertEquals(1, greenMail.getReceivedMessages().length);
-            verify(nihmsReceiveMailService, times(1))
-                .handleReceivedMail(messageCaptor.capture());
-            MimeMessage mimeMessage = messageCaptor.getValue();
-            assertEquals(subject, mimeMessage.getSubject());
-            assertEquals(body, mimeMessage.getContent());
-        });
+        // wait for email poller to run, every 2 seconds
+        await().pollDelay(4, SECONDS).until(() -> true);
+        verify(nihmsReceiveMailService, times(1))
+            .handleReceivedMail(any());
+
+        // GIVEN
+        final String subject2 = GreenMailUtil.random();
+        final String body2 = GreenMailUtil.random();
+        MimeMessage message2 = GreenMailUtil.createTextEmail("testnihms@localhost", "from@localhost",
+            subject2, body2, greenMail.getImaps().getServerSetup());
+
+        // WHEN
+        user.deliver(message2);
+
+        // THEN
+        // wait for email poller to run, every 2 seconds
+        await().pollDelay(4, SECONDS).until(() -> true);
+        verify(nihmsReceiveMailService, times(2))
+            .handleReceivedMail(messageCaptor.capture());
+        List<MimeMessage> mimeMessages = messageCaptor.getAllValues();
+        assertEquals(2, mimeMessages.size());
+        MimeMessage mimeMessage1 = mimeMessages.get(0);
+        assertEquals(subject1, mimeMessage1.getSubject());
+        assertEquals(body1, mimeMessage1.getContent());
+        MimeMessage mimeMessage2 = mimeMessages.get(1);
+        assertEquals(subject2, mimeMessage2.getSubject());
+        assertEquals(body2, mimeMessage2.getContent());
+
     }
 }
