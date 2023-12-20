@@ -92,16 +92,26 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
     }
 
     private void write_metadata(Document doc) {
-        DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
-        DepositMetadata.Article article = metadata.getArticleMetadata();
-        DepositMetadata.Journal journal = metadata.getJournalMetadata();
-
         Element root = doc.createElement("manuscript-submit");
         doc.appendChild(root);
+
+        addManuscriptMetadata(doc, root);
+        addArticleMetadata(doc, root);
+        addManuscriptTitle(doc, root);
+        addContacts(doc, root);
+        addGrants(doc, root);
+    }
+
+    private void addManuscriptMetadata(Document doc, Element root) {
+        DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
 
         if (manuscript.getNihmsId() != null) {
             root.setAttribute("manuscript-id", manuscript.getNihmsId());
         }
+    }
+
+    private void addArticleMetadata(Document doc, Element root) {
+        DepositMetadata.Article article = metadata.getArticleMetadata();
 
         if (article != null && metadata.getArticleMetadata().getEmbargoLiftDate() != null) {
             LocalDate lift = article.getEmbargoLiftDate().toLocalDate();
@@ -128,6 +138,9 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
             root.setAttribute("doi", path);
         }
+    }
+    private void addJournalMetadata(Document doc, Element root) {
+        DepositMetadata.Journal journal = metadata.getJournalMetadata();
 
         // There is an optional agency attribute.
         // Should only be used for non-NIH funders when grant information is also given
@@ -159,12 +172,17 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
             add_text_element(doc, journal_meta, "journal-title", journal.getJournalTitle());
         }
 
+    }
+    private void addManuscriptTitle(Document doc, Element root) {
+        DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
+
         if (manuscript != null && manuscript.title != null) {
             add_text_element(doc, root, "manuscript-title", manuscript.title);
         }
 
-        // Could add a citation element if we had all the information
+    }
 
+    private void addContacts(Document doc, Element root) {
         List<DepositMetadata.Person> persons = metadata.getPersons();
 
         if (persons != null && persons.size() > 0) {
@@ -209,7 +227,9 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                 }
             }
         }
+    }
 
+    private void addGrants(Document doc, Element root) {
         List<DepositMetadata.Grant> grantsList = metadata.getGrantsMetadata();
 
         if (grantsList != null && !grantsList.isEmpty()) {
