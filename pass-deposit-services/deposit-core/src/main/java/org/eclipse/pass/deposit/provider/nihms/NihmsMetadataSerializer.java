@@ -242,10 +242,9 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
             for (DepositMetadata.Grant grant : grantsList) {
                 if (StringUtils.isNotBlank(grant.getFunder())) {
-                    grantsElement.setAttribute("funder", grant.getFunder());
-
                     Element grantElement = doc.createElement("grant");
                     grantsElement.appendChild(grantElement);
+                    grantElement.setAttribute("funder", grant.getFunder());
 
                     if (StringUtils.isNotBlank(grant.getGrantId())) {
                         grantElement.setAttribute("id", grant.getGrantId());
