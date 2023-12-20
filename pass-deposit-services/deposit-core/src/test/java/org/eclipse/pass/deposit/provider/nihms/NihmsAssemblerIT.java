@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -203,12 +204,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
     @Test
     public void testPackageMetadata() throws Exception {
-        Document metaDom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(metadata);
-        assertNotNull(metaDom);
-
-        // root element is <nihms-submit>
-        Element root = metaDom.getDocumentElement();
-        assertEquals("manuscript-submit", root.getTagName());
+        Element root = initDom();
 
         // required <manuscript-title> element is present with the manuscript title as the value
         Element title = asList(root.getElementsByTagName("manuscript-title")).get(0);
@@ -244,6 +240,31 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
                    candidate.getType() == person.getType()));
         });
 
+
+        // Assert that the DOI is present in the metadata
+        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), root.getAttribute("doi"));
+
+        // Assert that the ISSNs are present in the metadata as the <issn> element
+        List<Element> issns = asList(root.getElementsByTagName("issn"));
+        Map<String, DepositMetadata.IssnPubType> issnPubTypes =
+            submission.getMetadata().getJournalMetadata().getIssnPubTypes();
+        assertEquals(issnPubTypes.size(), issns.size());
+        assertTrue(issnPubTypes.size() > 0);
+
+        issns.forEach(issn -> assertTrue(issnPubTypes.containsKey(issn.getTextContent())));
+        issns.forEach(issn -> {
+            DepositMetadata.IssnPubType pubType = issnPubTypes.get(issn.getTextContent());
+            if (pubType.pubType == JournalPublicationType.OPUB || pubType.pubType == JournalPublicationType.EPUB) {
+                assertEquals(issn.getAttribute("issn-type"), "electronic");
+            } else {
+                assertEquals(issn.getAttribute("issn-type"), "print");
+            }
+        });
+    }
+
+    @Test
+    public void testPackageMetadataGrantFunder() throws Exception {
+        Element root = initDom();
         //Ensure that the grants in the metadata matches a Grant on the submission, Check the attributes of a grant on
         //submission against what is found in the metadata
         List<Element> grantElements = asList(root.getElementsByTagName("grant"));
@@ -286,26 +307,6 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
             assertEquals(subGrant.getGrantPi().getLastName(), metaDataGrant.get().getGrantPi().getLastName());
             assertEquals(subGrant.getGrantPi().getEmail(), metaDataGrant.get().getGrantPi().getEmail());
         }
-
-        // Assert that the DOI is present in the metadata
-        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), root.getAttribute("doi"));
-
-        // Assert that the ISSNs are present in the metadata as the <issn> element
-        List<Element> issns = asList(root.getElementsByTagName("issn"));
-        Map<String, DepositMetadata.IssnPubType> issnPubTypes =
-            submission.getMetadata().getJournalMetadata().getIssnPubTypes();
-        assertEquals(issnPubTypes.size(), issns.size());
-        assertTrue(issnPubTypes.size() > 0);
-
-        issns.forEach(issn -> assertTrue(issnPubTypes.containsKey(issn.getTextContent())));
-        issns.forEach(issn -> {
-            DepositMetadata.IssnPubType pubType = issnPubTypes.get(issn.getTextContent());
-            if (pubType.pubType == JournalPublicationType.OPUB || pubType.pubType == JournalPublicationType.EPUB) {
-                assertEquals(issn.getAttribute("issn-type"), "electronic");
-            } else {
-                assertEquals(issn.getAttribute("issn-type"), "print");
-            }
-        });
     }
 
     /**
@@ -324,6 +325,16 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
     private static boolean isNullOrEmpty(String s) {
         return s == null || s.trim().length() == 0;
+    }
+
+    private Element initDom() throws Exception {
+        Document metaDom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(metadata);
+        assertNotNull(metaDom);
+
+        // root element is <nihms-submit>
+        Element root = metaDom.getDocumentElement();
+        assertEquals("manuscript-submit", root.getTagName());
+        return root;
     }
 
     private static class ManifestLine {

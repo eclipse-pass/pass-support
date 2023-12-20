@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
@@ -95,22 +96,23 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
         Element root = doc.createElement("manuscript-submit");
         doc.appendChild(root);
 
-        addManuscriptMetadata(doc, root);
-        addArticleMetadata(doc, root);
+        addManuscriptMetadata(root);
+        addArticleMetadata(root);
+        addJournalMetadata(doc, root);
         addManuscriptTitle(doc, root);
         addContacts(doc, root);
         addGrants(doc, root);
     }
 
-    private void addManuscriptMetadata(Document doc, Element root) {
+    private void addManuscriptMetadata(Element root) {
         DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
 
-        if (manuscript.getNihmsId() != null) {
+        if (StringUtils.isNotBlank(manuscript.getNihmsId())) {
             root.setAttribute("manuscript-id", manuscript.getNihmsId());
         }
     }
 
-    private void addArticleMetadata(Document doc, Element root) {
+    private void addArticleMetadata(Element root) {
         DepositMetadata.Article article = metadata.getArticleMetadata();
 
         if (article != null && metadata.getArticleMetadata().getEmbargoLiftDate() != null) {
@@ -156,7 +158,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
             // See https://github.com/OA-PASS/metadata-schemas/pull/28 and
             // https://github.com/OA-PASS/jhu-package-providers/issues/16
             journal.getIssnPubTypes().values().forEach(issnPubType -> {
-                if (issnPubType.pubType == null || issnPubType.issn == null || issnPubType.issn.trim().isEmpty()) {
+                if (issnPubType.pubType == null || StringUtils.isBlank(issnPubType.issn)) {
                     LOG.debug("Discarding incomplete ISSN: {}", issnPubType);
                     return;
                 }
@@ -176,7 +178,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
     private void addManuscriptTitle(Document doc, Element root) {
         DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
 
-        if (manuscript != null && manuscript.title != null) {
+        if (manuscript != null && StringUtils.isNotBlank(manuscript.title)) {
             add_text_element(doc, root, "manuscript-title", manuscript.title);
         }
 
@@ -195,20 +197,20 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                     Element p = doc.createElement("person");
                     contacts.appendChild(p);
 
-                    if (person.getFirstName() != null) {
+                    if (StringUtils.isNotBlank(person.getFirstName())) {
                         p.setAttribute("fname", person.getFirstName());
                     } else {
-                        if (person.getFullName() != null) {
+                        if (StringUtils.isNotBlank(person.getFullName())) {
                             p.setAttribute("fname", person.getFullName().split("\\s")[0]);
                         }
                     }
-                    if (person.getMiddleName() != null) {
+                    if (StringUtils.isNotBlank(person.getMiddleName())) {
                         p.setAttribute("mname", person.getMiddleName());
                     }
-                    if (person.getLastName() != null) {
+                    if (StringUtils.isNotBlank(person.getLastName())) {
                         p.setAttribute("lname", person.getLastName());
                     } else {
-                        if (person.getFullName() != null) {
+                        if (StringUtils.isNotBlank(person.getFullName())) {
                             String[] split = person.getFullName().split("\\s");
                             if (split.length > 2) {
                                 // middle name is present
@@ -219,7 +221,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                             }
                         }
                     }
-                    if (person.getEmail() != null) {
+                    if (StringUtils.isNotBlank(person.getEmail())) {
                         p.setAttribute("email", person.getEmail());
                     }
 
@@ -233,34 +235,37 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
         List<DepositMetadata.Grant> grantsList = metadata.getGrantsMetadata();
 
         if (grantsList != null && !grantsList.isEmpty()) {
+            //TODO: add check, if funder is not in the list of accepted funders then do not create grant element
+            //TODO: at least 1 accepted funder for a grant is required to create parent element grants
             Element grantsElement = doc.createElement("grants");
             root.appendChild(grantsElement);
 
             for (DepositMetadata.Grant grant : grantsList) {
-                Element grantElement = doc.createElement("grant");
-                grantsElement.appendChild(grantElement);
+                if (StringUtils.isNotBlank(grant.getFunder())) {
+                    grantsElement.setAttribute("funder", grant.getFunder());
 
-                if (grant.getGrantId() != null) {
-                    grantElement.setAttribute("id", grant.getGrantId());
-                }
+                    Element grantElement = doc.createElement("grant");
+                    grantsElement.appendChild(grantElement);
 
-                if (grant.getFunder() != null) {
-                    grantElement.setAttribute("funder", grant.getFunder());
-                }
-
-                DepositMetadata.Person pi = grant.getGrantPi();
-                if (pi != null) {
-                    Element piElement = doc.createElement("PI");
-                    grantElement.appendChild(piElement);
-
-                    if (pi.getFirstName() != null) {
-                        piElement.setAttribute("fname", pi.getFirstName());
+                    if (StringUtils.isNotBlank(grant.getGrantId())) {
+                        grantElement.setAttribute("id", grant.getGrantId());
                     }
-                    if (pi.getLastName() != null) {
-                        piElement.setAttribute("lname", pi.getLastName());
-                    }
-                    if (pi.getEmail() != null) {
-                        piElement.setAttribute("email", pi.getEmail());
+
+
+                    DepositMetadata.Person pi = grant.getGrantPi();
+                    if (pi != null) {
+                        Element piElement = doc.createElement("PI");
+                        grantElement.appendChild(piElement);
+
+                        if (StringUtils.isNotBlank(pi.getFirstName())) {
+                            piElement.setAttribute("fname", pi.getFirstName());
+                        }
+                        if (StringUtils.isNotBlank(pi.getLastName())) {
+                            piElement.setAttribute("lname", pi.getLastName());
+                        }
+                        if (StringUtils.isNotBlank(pi.getEmail())) {
+                            piElement.setAttribute("email", pi.getEmail());
+                        }
                     }
                 }
             }
