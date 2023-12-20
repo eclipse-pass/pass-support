@@ -15,10 +15,10 @@
  */
 package org.eclipse.pass.deposit.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
