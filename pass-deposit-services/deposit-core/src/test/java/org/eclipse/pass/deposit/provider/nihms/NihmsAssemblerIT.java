@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -239,7 +238,6 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
                             .equals(person.getName()) &&
                    candidate.getType() == person.getType()));
         });
-
 
         // Assert that the DOI is present in the metadata
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), root.getAttribute("doi"));

@@ -141,6 +141,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
             root.setAttribute("doi", path);
         }
     }
+
     private void addJournalMetadata(Document doc, Element root) {
         DepositMetadata.Journal journal = metadata.getJournalMetadata();
 
@@ -175,6 +176,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
         }
 
     }
+
     private void addManuscriptTitle(Document doc, Element root) {
         DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
 
@@ -249,7 +251,6 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                     if (StringUtils.isNotBlank(grant.getGrantId())) {
                         grantElement.setAttribute("id", grant.getGrantId());
                     }
-
 
                     DepositMetadata.Person pi = grant.getGrantPi();
                     if (pi != null) {
