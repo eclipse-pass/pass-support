@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit.service;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.eclipse.pass.deposit.util.ResourceTestUtil.findByNameAsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -30,7 +31,9 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.deposit.DepositApp;
 import org.junit.jupiter.api.Test;
@@ -105,6 +108,24 @@ public class NihmsReceiveMailServiceTest {
         MimeMessage mimeMessage2 = mimeMessages.get(1);
         assertEquals(subject2, mimeMessage2.getSubject());
         assertEquals(body2, mimeMessage2.getContent());
+    }
 
+    @Test
+    void testHandleReceivedMail_MessageParsing() throws MessagingException {
+        // GIVEN
+        final String subject = "Bulk submission";
+        final String body = findByNameAsString("nihmsemail.html", this.getClass());
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("from@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        // TODO verify deposits are updated
     }
 }

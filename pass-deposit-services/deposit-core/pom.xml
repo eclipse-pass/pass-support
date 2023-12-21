@@ -65,6 +65,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>1.16.2</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-sqs-java-messaging-lib</artifactId>
       <version>${amazon.sqs.version}</version>
