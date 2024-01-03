@@ -418,9 +418,9 @@ public class DepositTask {
          */
         static Function<Deposit, TransportResponse> performDeposit(DepositWorkerContext dc) {
             return (deposit) -> {
-                Packager packager = null;
-                PackageStream packageStream = null;
-                Map<String, String> packagerConfig = null;
+                Packager packager;
+                PackageStream packageStream;
+                Map<String, String> packagerConfig;
 
                 try {
                     packager = dc.packager();
@@ -436,6 +436,7 @@ public class DepositTask {
                 try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
                     TransportResponse tr = transport.send(packageStream, packagerConfig);
                     deposit.setDepositStatus(DepositStatus.SUBMITTED);
+                    deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
                     return tr;
                 } catch (Exception e) {
                     throw new RuntimeException("Error closing transport session for deposit " +

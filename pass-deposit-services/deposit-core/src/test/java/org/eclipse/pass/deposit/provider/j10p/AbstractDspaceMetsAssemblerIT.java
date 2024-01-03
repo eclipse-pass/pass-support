@@ -23,6 +23,7 @@ import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_HREF;
 import static org.eclipse.pass.deposit.provider.j10p.XMLConstants.XLINK_NS;
 import static org.eclipse.pass.deposit.util.DepositTestUtil.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -89,6 +90,7 @@ public abstract class AbstractDspaceMetsAssemblerIT extends AbstractAssemblerIT 
         assertTrue(metadata.archived());
         assertEquals(SPEC_DSPACE_METS, metadata.spec());
         assertEquals(APPLICATION_ZIP.toString(), metadata.mimeType());
+        assertNull(metadata.packageDepositStatusRef());
     }
 
     protected static void verifyPackageStructure(Document metsDoc, File extractedPackageDir, List<DepositFile>

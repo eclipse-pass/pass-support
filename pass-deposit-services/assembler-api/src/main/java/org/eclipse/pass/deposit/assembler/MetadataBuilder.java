@@ -46,6 +46,15 @@ public interface MetadataBuilder {
     MetadataBuilder spec(String spec);
 
     /**
+     * Sets the {@link PackageStream.Metadata#packageDepositStatusRef()} of the {@code PackageStream}.
+     *
+     * @param packageDepositStatusRef the package specification
+     * @return this builder
+     * @see PackageStream.Metadata#packageDepositStatusRef()
+     */
+    MetadataBuilder packageDepositStatusRef(String packageDepositStatusRef);
+
+    /**
      * Sets the {@link PackageStream.Metadata#mimeType()} of the {@code PackageStream}, as returned by
      * {@link PackageStream#open()}
      *

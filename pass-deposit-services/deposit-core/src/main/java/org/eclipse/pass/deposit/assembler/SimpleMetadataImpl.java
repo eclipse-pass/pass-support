@@ -54,6 +54,8 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
 
     private JsonObject submissionMeta = null;
 
+    private String packageDepositStatusRef;
+
     public SimpleMetadataImpl() {
 
     }
@@ -75,6 +77,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     @Override
     public String spec() {
         return spec;
+    }
+
+    @Override
+    public String packageDepositStatusRef() {
+        return packageDepositStatusRef;
     }
 
     @Override
@@ -148,6 +155,10 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
 
     void setSpec(String spec) {
         this.spec = spec;
+    }
+
+    void setPackageDepositStatusRef(String packageDepositStatusRef) {
+        this.packageDepositStatusRef = packageDepositStatusRef;
     }
 
     String getMimeType() {
