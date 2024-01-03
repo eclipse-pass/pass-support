@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -60,6 +61,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = {
     "pass.deposit.nihms.email.enabled=true",
     "pass.deposit.nihms.email.delay=2000",
+    "pass.deposit.nihms.email.from=test-from@localhost",
     "pass.deposit.pmc.repo.key=pmc",
     "nihms.mail.host=localhost",
     "nihms.mail.port=3993",
@@ -84,7 +86,7 @@ public class NihmsReceiveMailServiceTest {
         // GIVEN
         final String subject1 = GreenMailUtil.random();
         final String body1 = GreenMailUtil.random();
-        MimeMessage message1 = GreenMailUtil.createTextEmail("testnihms@localhost", "from@localhost",
+        MimeMessage message1 = GreenMailUtil.createTextEmail("testnihms@localhost", "test-from@localhost",
             subject1, body1, greenMail.getImaps().getServerSetup());
         GreenMailUser user = greenMail.setUser("testnihms@localhost", "testnihmspassword");
 
@@ -100,7 +102,7 @@ public class NihmsReceiveMailServiceTest {
         // GIVEN
         final String subject2 = GreenMailUtil.random();
         final String body2 = GreenMailUtil.random();
-        MimeMessage message2 = GreenMailUtil.createTextEmail("testnihms@localhost", "from@localhost",
+        MimeMessage message2 = GreenMailUtil.createTextEmail("testnihms@localhost", "test-from@localhost",
             subject2, body2, greenMail.getImaps().getServerSetup());
 
         // WHEN
@@ -124,34 +126,15 @@ public class NihmsReceiveMailServiceTest {
     @Test
     void testHandleReceivedMail_MessageParsing() throws MessagingException, IOException {
         // GIVEN
-        final String subject = "Bulk submission";
+        final String subject = "Bulk submission (errors encountered)";
         final String body = findByNameAsString("nihmsemail.html", this.getClass());
         Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
         MimeMessage mimeMessage = new MimeMessage(smtpSession);
         mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
-        mimeMessage.setFrom("from@localhost");
+        mimeMessage.setFrom("test-from@localhost");
         mimeMessage.setSubject(subject);
         mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
-
-        Deposit deposit1 = new Deposit();
-        deposit1.setId("1");
-        Deposit deposit2 = new Deposit();
-        deposit2.setId("2");
-        Deposit deposit3 = new Deposit();
-        deposit3.setId("3");
-        when(passClient.streamObjects(any())).thenAnswer(input -> {
-            PassClientSelector<Deposit> selector = input.getArgument(0);
-            if (selector.getFilter().contains("submission.id=='229935'")) {
-                return Stream.of(deposit1);
-            }
-            if (selector.getFilter().contains("submission.id=='229941'")) {
-                return Stream.of(deposit2);
-            }
-            if (selector.getFilter().contains("submission.id=='229947'")) {
-                return Stream.of(deposit3);
-            }
-            throw new RuntimeException("Fail test, should not happen");
-        });
+        mockPassClientStreams();
 
         // WHEN
         nihmsReceiveMailService.handleReceivedMail(mimeMessage);
@@ -175,5 +158,84 @@ public class NihmsReceiveMailServiceTest {
         assertEquals(DepositStatus.ACCEPTED, updatedDeposit3.getDepositStatus());
         assertNull(updatedDeposit3.getStatusMessage());
         assertEquals("1502302", updatedDeposit3.getDepositStatusRef());
+    }
+
+    @Test
+    void testHandleReceivedMail_SkipNonNihmsEmail() throws MessagingException, IOException {
+        // GIVEN
+        final String subject = "Bulk submission";
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("someotherfrom@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent("testing content", "text/html; charset=\"utf-8\"");
+        mockPassClientStreams();
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        verifyNoInteractions(passClient);
+    }
+
+    @Test
+    void testHandleReceivedMail_SkipNonNihmsSubject() throws MessagingException, IOException {
+        // GIVEN
+        final String subject = "Nihms Update";
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("test-from@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent("testing content", "text/html; charset=\"utf-8\"");
+        mockPassClientStreams();
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        verifyNoInteractions(passClient);
+    }
+
+    @Test
+    void testHandleReceivedMail_SkipNonNihmsSubjectAndEmail() throws MessagingException, IOException {
+        // GIVEN
+        final String subject = "Nihms Update";
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("someotherfrom@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent("testing content", "text/html; charset=\"utf-8\"");
+        mockPassClientStreams();
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        verifyNoInteractions(passClient);
+    }
+
+    private void mockPassClientStreams() throws IOException {
+        Deposit deposit1 = new Deposit();
+        deposit1.setId("1");
+        Deposit deposit2 = new Deposit();
+        deposit2.setId("2");
+        Deposit deposit3 = new Deposit();
+        deposit3.setId("3");
+        when(passClient.streamObjects(any())).thenAnswer(input -> {
+            PassClientSelector<Deposit> selector = input.getArgument(0);
+            if (selector.getFilter().contains("submission.id=='229935'")) {
+                return Stream.of(deposit1);
+            }
+            if (selector.getFilter().contains("submission.id=='229941'")) {
+                return Stream.of(deposit2);
+            }
+            if (selector.getFilter().contains("submission.id=='229947'")) {
+                return Stream.of(deposit3);
+            }
+            throw new RuntimeException("Fail test, should not happen");
+        });
     }
 }
