@@ -16,11 +16,16 @@
 package org.eclipse.pass.deposit.service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import jakarta.mail.Address;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -43,11 +48,15 @@ public class NihmsReceiveMailService {
 
     private final PassClient passClient;
     private final String nihmsRepositoryKey;
+    private final Address nihmsFromEmail;
 
     public NihmsReceiveMailService(PassClient passClient,
-                                   @Value("${pass.deposit.pmc.repo.key}") String nihmsRepositoryKey) {
+                                   @Value("${pass.deposit.pmc.repo.key}") String nihmsRepositoryKey,
+                                   @Value("${pass.deposit.nihms.email.from}") String nihmsFromEmail)
+        throws AddressException {
         this.passClient = passClient;
         this.nihmsRepositoryKey = nihmsRepositoryKey;
+        this.nihmsFromEmail = new InternetAddress(nihmsFromEmail);
     }
 
     private final List<Pattern> depositFailurePatterns = List.of(
@@ -67,8 +76,9 @@ public class NihmsReceiveMailService {
 
     public void handleReceivedMail(MimeMessage receivedMessage) {
         try {
-            // TODO only update if email subject is for `Bulk Submission`
-//            String subject = receivedMessage.getSubject();
+            if (isEmailNotNihms(receivedMessage)) {
+                return;
+            }
             String content = receivedMessage.getContent().toString();
             Document document = Jsoup.parse(content);
             document.select(".message").forEach(element -> {
@@ -102,6 +112,11 @@ public class NihmsReceiveMailService {
         } catch (Exception e) {
             LOG.error("Error processing nihms email", e);
         }
+    }
+
+    private boolean isEmailNotNihms(MimeMessage mimeMessage) throws MessagingException {
+        boolean fromNihms = Arrays.asList(mimeMessage.getFrom()).contains(nihmsFromEmail);
+        return !fromNihms || !mimeMessage.getSubject().startsWith("Bulk submission");
     }
 
     private void updateDepositRejected(String submissionId, String message) throws IOException {
