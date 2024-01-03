@@ -157,7 +157,8 @@ public class NihmsReceiveMailServiceTest {
             .findFirst().get();
         assertEquals(DepositStatus.ACCEPTED, updatedDeposit3.getDepositStatus());
         assertNull(updatedDeposit3.getStatusMessage());
-        assertEquals("1502302", updatedDeposit3.getDepositStatusRef());
+        assertEquals(NihmsReceiveMailService.NIHMS_DEP_STATUS_REF_PREFIX + "1502302",
+            updatedDeposit3.getDepositStatusRef());
     }
 
     @Test

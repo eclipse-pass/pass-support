@@ -46,6 +46,8 @@ import org.springframework.stereotype.Service;
 public class NihmsReceiveMailService {
     private static final Logger LOG = LoggerFactory.getLogger(NihmsReceiveMailService.class);
 
+    static final String NIHMS_DEP_STATUS_REF_PREFIX = "nihms-id:";
+
     private final PassClient passClient;
 
     @Value("${pass.deposit.pmc.repo.key}")
@@ -131,7 +133,7 @@ public class NihmsReceiveMailService {
     private void updateDepositAccepted(String submissionId, String nihmsId) throws IOException {
         getDeposits(submissionId).forEach(deposit -> {
             deposit.setDepositStatus(DepositStatus.ACCEPTED);
-            deposit.setDepositStatusRef(nihmsId);
+            deposit.setDepositStatusRef(NIHMS_DEP_STATUS_REF_PREFIX + nihmsId);
             updateDeposit(deposit);
         });
     }
