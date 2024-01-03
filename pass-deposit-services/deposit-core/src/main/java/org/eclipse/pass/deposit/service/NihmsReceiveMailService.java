@@ -15,15 +15,23 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import jakarta.mail.internet.MimeMessage;
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,6 +40,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class NihmsReceiveMailService {
     private static final Logger LOG = LoggerFactory.getLogger(NihmsReceiveMailService.class);
+
+    private final PassClient passClient;
+    private final String nihmsRepositoryKey;
+
+    public NihmsReceiveMailService(PassClient passClient,
+                                   @Value("${pass.deposit.pmc.repo.key}") String nihmsRepositoryKey) {
+        this.passClient = passClient;
+        this.nihmsRepositoryKey = nihmsRepositoryKey;
+    }
 
     private final List<Pattern> depositFailurePatterns = List.of(
         Pattern.compile("package id=(.*) failed because.*", Pattern.CASE_INSENSITIVE),
@@ -44,8 +61,9 @@ public class NihmsReceiveMailService {
         Pattern.compile("package id=(.*) contains unrecognized.*", Pattern.CASE_INSENSITIVE)
     );
 
-    private final Pattern depositSuccessPattern = Pattern.compile("package id=(.*) submitted successfully.*",
-        Pattern.CASE_INSENSITIVE);
+    private final Pattern depositSuccessPattern =
+        Pattern.compile("package id=(.*) for Manuscript ID (.*) was submitted successfully.*",
+            Pattern.CASE_INSENSITIVE);
 
     public void handleReceivedMail(MimeMessage receivedMessage) {
         try {
@@ -55,23 +73,75 @@ public class NihmsReceiveMailService {
             Document document = Jsoup.parse(content);
             document.select(".message").forEach(element -> {
                 String elementText = element.text();
-                LOG.info("element message: " + elementText);
                 depositFailurePatterns.forEach(pattern -> {
                     Matcher matcher = pattern.matcher(elementText);
                     matcher.results().forEach(matchResult -> {
-                        LOG.info("Fail match result group 0: " + matchResult.group(0));
-                        LOG.info("Fail match result group 1: " + matchResult.group(1));
+                        String message =  matchResult.group(0);
+                        String packageId =  matchResult.group(1);
+                        String submissionId = parseSubmissionId(packageId);
+                        try {
+                            updateDepositRejected(submissionId, message);
+                        } catch (Exception e) {
+                            LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
+                        }
                     });
                 });
                 Matcher successMatcher = depositSuccessPattern.matcher(elementText);
                 successMatcher.results().forEach(matchResult -> {
-                    LOG.info("Success match result group 0: " + matchResult.group(0));
-                    LOG.info("Success match result group 1: " + matchResult.group(1));
+                    String packageId =  matchResult.group(1);
+                    String submissionId = parseSubmissionId(packageId);
+                    String nihmsId =  matchResult.group(2);
+                    try {
+                        updateDepositAccepted(submissionId, nihmsId);
+                    } catch (Exception e) {
+                        LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
+                    }
                 });
             });
 
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            LOG.error("Error processing nihms email", e);
         }
+    }
+
+    private void updateDepositRejected(String submissionId, String message) throws IOException {
+        getDeposits(submissionId).forEach(deposit -> {
+            deposit.setDepositStatus(DepositStatus.REJECTED);
+            deposit.setStatusMessage(message);
+            updateDeposit(deposit);
+        });
+    }
+
+    private void updateDepositAccepted(String submissionId, String nihmsId) throws IOException {
+        getDeposits(submissionId).forEach(deposit -> {
+            deposit.setDepositStatus(DepositStatus.ACCEPTED);
+            deposit.setDepositStatusRef(nihmsId);
+            updateDeposit(deposit);
+        });
+    }
+
+    private Stream<Deposit> getDeposits(String submissionId) throws IOException {
+        PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+        sel.setFilter(RSQL.and(
+            RSQL.equals("submission.id",  submissionId),
+            RSQL.equals("repository.repositoryKey", nihmsRepositoryKey)
+        ));
+        return passClient.streamObjects(sel);
+    }
+
+    private void updateDeposit(Deposit deposit) {
+        try {
+            passClient.updateObject(deposit);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String parseSubmissionId(String packageId) {
+        String[] parts = packageId.split("_");
+        if (parts.length < 4) {
+            throw new RuntimeException("Invalid packageId, no submissionId part: " + packageId);
+        }
+        return parts[3];
     }
 }

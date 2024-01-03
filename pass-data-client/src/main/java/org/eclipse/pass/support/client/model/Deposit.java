@@ -49,6 +49,11 @@ public class Deposit implements PassEntity, PassVersionedEntity {
     private String depositStatusRef;
 
     /**
+     * A status message pertaining to the deposit.
+     */
+    private String statusMessage;
+
+    /**
      * Status of deposit
      */
     private DepositStatus depositStatus;
@@ -153,6 +158,20 @@ public class Deposit implements PassEntity, PassVersionedEntity {
      */
     public void setDepositStatusRef(String depositStatusRef) {
         this.depositStatusRef = depositStatusRef;
+    }
+
+    /**
+     * @return the statusMessage
+     */
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    /**
+     * @param statusMessage the statusMessage to set
+     */
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
     }
 
     /**
