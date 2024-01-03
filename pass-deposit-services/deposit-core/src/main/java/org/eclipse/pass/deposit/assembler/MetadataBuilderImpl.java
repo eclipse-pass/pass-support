@@ -43,6 +43,13 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     }
 
     @Override
+    public MetadataBuilder packageDepositStatusRef(String packageDepositStatusRef) {
+        checkState();
+        metadata.setPackageDepositStatusRef(packageDepositStatusRef);
+        return this;
+    }
+
+    @Override
     public MetadataBuilder mimeType(String mimeType) {
         checkState();
         metadata.setMimeType(mimeType);

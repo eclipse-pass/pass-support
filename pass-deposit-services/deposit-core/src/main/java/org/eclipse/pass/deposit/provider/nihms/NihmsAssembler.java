@@ -45,6 +45,8 @@ public class NihmsAssembler extends AbstractAssembler {
      */
     public static final String SPEC_NIHMS_NATIVE_2022_05 = "nihms-native-2022-05";
 
+    static final String NIHMS_PKG_DEP_REF_PREFIX = "nihms-package:";
+
     /**
      * Mime type of zip files.
      */
@@ -84,6 +86,7 @@ public class NihmsAssembler extends AbstractAssembler {
                                                ZonedDateTime.now()
                                                             .format(DateTimeFormatter.ofPattern("uuuu-MM-dd_HH-MM-ss")),
                                                submission.getId());
+        mb.packageDepositStatusRef(NIHMS_PKG_DEP_REF_PREFIX + packageFileName);
 
         StringBuilder ext = new StringBuilder(packageFileName);
         PackageStream.Metadata md = mb.build();
@@ -113,7 +116,8 @@ public class NihmsAssembler extends AbstractAssembler {
             }
         }
 
-        mb.name(sanitizeFilename(ext.toString()));
+        String filename = sanitizeFilename(ext.toString());
+        mb.name(filename);
     }
 
 }

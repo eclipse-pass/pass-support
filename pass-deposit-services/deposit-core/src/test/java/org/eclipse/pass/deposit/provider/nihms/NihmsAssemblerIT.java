@@ -116,6 +116,9 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
         assertTrue(metadata.archived());
         assertEquals(SPEC_NIHMS_NATIVE_2022_05, metadata.spec());
         assertEquals(APPLICATION_GZIP, metadata.mimeType());
+        String expectedPkgDepStatusRef = (NihmsAssembler.NIHMS_PKG_DEP_REF_PREFIX + metadata.name())
+            .replace(".tar.gz", "");
+        assertEquals(expectedPkgDepStatusRef, metadata.packageDepositStatusRef());
     }
 
     /**

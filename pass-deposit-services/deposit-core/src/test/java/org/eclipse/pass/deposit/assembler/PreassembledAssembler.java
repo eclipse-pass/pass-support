@@ -210,6 +210,11 @@ public class PreassembledAssembler implements Assembler {
                     }
 
                     @Override
+                    public String packageDepositStatusRef() {
+                        return null;
+                    }
+
+                    @Override
                     public String mimeType() {
                         switch (compression()) {
                             case ZIP:

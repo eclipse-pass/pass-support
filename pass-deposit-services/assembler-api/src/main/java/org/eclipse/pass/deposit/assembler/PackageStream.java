@@ -90,6 +90,8 @@ public interface PackageStream {
          */
         String spec();
 
+        String packageDepositStatusRef();
+
         /**
          * The mime type of the package serialization returned by {@link #open()}.
          *
