@@ -47,15 +47,16 @@ public class NihmsReceiveMailService {
     private static final Logger LOG = LoggerFactory.getLogger(NihmsReceiveMailService.class);
 
     private final PassClient passClient;
-    private final String nihmsRepositoryKey;
+
+    @Value("${pass.deposit.pmc.repo.key}")
+    private String nihmsRepositoryKey;
+
     private final Address nihmsFromEmail;
 
     public NihmsReceiveMailService(PassClient passClient,
-                                   @Value("${pass.deposit.pmc.repo.key}") String nihmsRepositoryKey,
                                    @Value("${pass.deposit.nihms.email.from}") String nihmsFromEmail)
         throws AddressException {
         this.passClient = passClient;
-        this.nihmsRepositoryKey = nihmsRepositoryKey;
         this.nihmsFromEmail = new InternetAddress(nihmsFromEmail);
     }
 
