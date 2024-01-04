@@ -182,6 +182,7 @@ public class DepositTaskTest {
 
         Assembler assembler = mock(Assembler.class);
         PackageStream stream = mock(PackageStream.class);
+        PackageStream.Metadata metadata = mock(PackageStream.Metadata.class);
         Packager packager = mock(Packager.class);
         Transport transport = mock(Transport.class);
         TransportSession session = mock(TransportSession.class);
@@ -190,6 +191,7 @@ public class DepositTaskTest {
         when(packager.getAssembler()).thenReturn(assembler);
         when(packager.getConfiguration()).thenReturn(packagerConfig);
         when(assembler.assemble(any(), anyMap())).thenReturn(stream);
+        when(stream.metadata()).thenReturn(metadata);
         when(packager.getTransport()).thenReturn(transport);
         when(transport.open(anyMap())).thenReturn(session);
         when(session.send(eq(stream), any())).thenReturn(tr);
