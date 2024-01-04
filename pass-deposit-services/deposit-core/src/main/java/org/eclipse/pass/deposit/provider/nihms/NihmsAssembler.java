@@ -44,8 +44,7 @@ public class NihmsAssembler extends AbstractAssembler {
      * bulk publishing pdf.
      */
     public static final String SPEC_NIHMS_NATIVE_2022_05 = "nihms-native-2022-05";
-
-    static final String NIHMS_PKG_DEP_REF_PREFIX = "nihms-package:";
+    public static final String NIHMS_PKG_DEP_REF_PREFIX = "nihms-package:";
 
     /**
      * Mime type of zip files.
