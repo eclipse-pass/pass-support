@@ -27,6 +27,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import org.eclipse.pass.deposit.provider.nihms.NihmsAssembler;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -49,10 +50,6 @@ public class NihmsReceiveMailService {
     static final String NIHMS_DEP_STATUS_REF_PREFIX = "nihms-id:";
 
     private final PassClient passClient;
-
-    @Value("${pass.deposit.pmc.repo.key}")
-    private String nihmsRepositoryKey;
-
     private final Address nihmsFromEmail;
 
     public NihmsReceiveMailService(PassClient passClient,
@@ -93,7 +90,7 @@ public class NihmsReceiveMailService {
                         String packageId =  matchResult.group(1);
                         String submissionId = parseSubmissionId(packageId);
                         try {
-                            updateDepositRejected(submissionId, message);
+                            updateDepositRejected(submissionId, packageId, message);
                         } catch (Exception e) {
                             LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
                         }
@@ -105,7 +102,7 @@ public class NihmsReceiveMailService {
                     String submissionId = parseSubmissionId(packageId);
                     String nihmsId =  matchResult.group(2);
                     try {
-                        updateDepositAccepted(submissionId, nihmsId);
+                        updateDepositAccepted(submissionId, packageId, nihmsId);
                     } catch (Exception e) {
                         LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
                     }
@@ -122,27 +119,27 @@ public class NihmsReceiveMailService {
         return !fromNihms || !mimeMessage.getSubject().startsWith("Bulk submission");
     }
 
-    private void updateDepositRejected(String submissionId, String message) throws IOException {
-        getDeposits(submissionId).forEach(deposit -> {
+    private void updateDepositRejected(String submissionId, String packageId, String message) throws IOException {
+        getDeposits(submissionId, packageId).forEach(deposit -> {
             deposit.setDepositStatus(DepositStatus.REJECTED);
             deposit.setStatusMessage(message);
             updateDeposit(deposit);
         });
     }
 
-    private void updateDepositAccepted(String submissionId, String nihmsId) throws IOException {
-        getDeposits(submissionId).forEach(deposit -> {
+    private void updateDepositAccepted(String submissionId, String packageId, String nihmsId) throws IOException {
+        getDeposits(submissionId, packageId).forEach(deposit -> {
             deposit.setDepositStatus(DepositStatus.ACCEPTED);
             deposit.setDepositStatusRef(NIHMS_DEP_STATUS_REF_PREFIX + nihmsId);
             updateDeposit(deposit);
         });
     }
 
-    private Stream<Deposit> getDeposits(String submissionId) throws IOException {
+    private Stream<Deposit> getDeposits(String submissionId, String packageKey) throws IOException {
         PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
         sel.setFilter(RSQL.and(
             RSQL.equals("submission.id",  submissionId),
-            RSQL.equals("repository.repositoryKey", nihmsRepositoryKey)
+            RSQL.equals("depositStatusRef", NihmsAssembler.NIHMS_PKG_DEP_REF_PREFIX + packageKey)
         ));
         return passClient.streamObjects(sel);
     }
