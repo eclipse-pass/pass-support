@@ -16,6 +16,7 @@
 package org.eclipse.pass.deposit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -35,10 +36,14 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@TestPropertySource(properties = {
+    "pass.deposit.repository.configuration=classpath:/full-test-repositories.json"
+})
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessorIT.class);
@@ -84,7 +89,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                         return false;
                     }
 
-                    RepositoryCopy repoCopy = null;
+                    RepositoryCopy repoCopy;
                     try {
                         repoCopy = passClient.getObject(RepositoryCopy.class,
                             deposit.getRepositoryCopy().getId());
@@ -117,6 +122,18 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         List<String> expectedRepoKey = List.of("PubMed Central", "JScholarship", "BagIt");
         assertTrue(repoKeys.size() == expectedRepoKey.size() && repoKeys.containsAll(expectedRepoKey)
             && expectedRepoKey.containsAll(repoKeys));
+        Deposit pmcDeposit = resultDeposits.stream()
+            .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("PubMed Central"))
+            .findFirst().get();
+        assertTrue(pmcDeposit.getDepositStatusRef().startsWith("nihms-package:nihms-native-2022-05_"));
+        Deposit j10pDeposit = resultDeposits.stream()
+            .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("JScholarship"))
+            .findFirst().get();
+        assertNull(j10pDeposit.getDepositStatusRef());
+        Deposit bagItDeposit = resultDeposits.stream()
+            .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("BagIt"))
+            .findFirst().get();
+        assertNull(bagItDeposit.getDepositStatusRef());
 
         // WHEN
         submissionStatusUpdater.doUpdate();

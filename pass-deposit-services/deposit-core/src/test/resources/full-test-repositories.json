@@ -1,0 +1,101 @@
+{
+  "JScholarship": {
+    "assembler": {
+      "specification": "simple",
+      "beanName": "simpleAssembler",
+      "options": {
+        "archive": "ZIP",
+        "compression": "NONE",
+        "algorithms": [
+          "sha512",
+          "md5"
+        ]
+      }
+    },
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "filesystem",
+        "baseDir": "target/packages",
+        "createIfMissing": "true",
+        "overwrite": "true"
+      }
+    }
+  },
+  "PubMed Central": {
+    "deposit-config": {
+      "processing": {
+      },
+      "mapping": {
+        "INFO": "accepted",
+        "ERROR": "rejected",
+        "WARN": "rejected",
+        "default-mapping": "submitted"
+      }
+    },
+    "assembler": {
+      "specification": "nihms-native-2017-07",
+      "beanName": "nihmsAssembler",
+      "options": {
+        "archive": "TAR",
+        "compression": "GZIP",
+        "algorithms": [
+          "sha512",
+          "md5"
+        ]
+      }
+    },
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "filesystem",
+        "baseDir": "target/packages",
+        "createIfMissing": "true",
+        "overwrite": "true"
+      }
+    }
+  },
+  "BagIt": {
+    "assembler": {
+      "specification": "simple",
+      "beanName": "simpleAssembler",
+      "options": {
+        "archive": "ZIP",
+        "compression": "NONE",
+        "algorithms": [
+          "sha512",
+          "md5"
+        ],
+        "baginfo-template-resource": "/bag-info.hbm"
+      }
+    },
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "filesystem",
+        "baseDir": "target/packages",
+        "createIfMissing": "true",
+        "overwrite": "true"
+      }
+    }
+  },
+  "dash": {
+    "assembler": {
+      "specification": "simple",
+      "beanName": "simpleAssembler",
+      "options": {
+        "archive": "ZIP",
+        "compression": "NONE",
+        "algorithms": [
+          "sha512",
+          "md5"
+        ]
+      }
+    },
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "filesystem",
+        "baseDir": "target/packages",
+        "createIfMissing": "true",
+        "overwrite": "true"
+      }
+    }
+  }
+}
