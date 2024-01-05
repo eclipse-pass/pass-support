@@ -94,9 +94,10 @@ public class NihmsReceiveMailServiceTest {
 
         // THEN
         // wait for email poller to run, every 2 seconds
-        await().pollDelay(4, SECONDS).until(() -> true);
-        verify(nihmsReceiveMailService, times(1))
-            .handleReceivedMail(any());
+        await().atMost(4, SECONDS).untilAsserted(() ->
+            verify(nihmsReceiveMailService, times(1)).handleReceivedMail(any())
+        );
+
 
         // GIVEN
         final String subject2 = GreenMailUtil.random();
@@ -109,17 +110,18 @@ public class NihmsReceiveMailServiceTest {
 
         // THEN
         // wait for email poller to run, every 2 seconds
-        await().pollDelay(4, SECONDS).until(() -> true);
-        verify(nihmsReceiveMailService, times(2))
-            .handleReceivedMail(messageCaptor.capture());
-        List<MimeMessage> mimeMessages = messageCaptor.getAllValues();
-        assertEquals(2, mimeMessages.size());
-        MimeMessage mimeMessage1 = mimeMessages.get(0);
-        assertEquals(subject1, mimeMessage1.getSubject());
-        assertEquals(body1, mimeMessage1.getContent());
-        MimeMessage mimeMessage2 = mimeMessages.get(1);
-        assertEquals(subject2, mimeMessage2.getSubject());
-        assertEquals(body2, mimeMessage2.getContent());
+        await().atMost(4, SECONDS).untilAsserted(() -> {
+            verify(nihmsReceiveMailService, times(2))
+                .handleReceivedMail(messageCaptor.capture());
+            List<MimeMessage> mimeMessages = messageCaptor.getAllValues();
+            assertEquals(2, mimeMessages.size());
+            MimeMessage mimeMessage1 = mimeMessages.get(0);
+            assertEquals(subject1, mimeMessage1.getSubject());
+            assertEquals(body1, mimeMessage1.getContent());
+            MimeMessage mimeMessage2 = mimeMessages.get(1);
+            assertEquals(subject2, mimeMessage2.getSubject());
+            assertEquals(body2, mimeMessage2.getContent());
+        });
     }
 
     @Test
