@@ -162,6 +162,46 @@ public class NihmsReceiveMailServiceTest {
     }
 
     @Test
+    void testHandleReceivedMail_UnknownMessagePattern() throws MessagingException, IOException {
+        // GIVEN
+        final String subject = "Bulk submission (errors encountered)";
+        final String body = findByNameAsString("nihmsemail-unknown-message.html", this.getClass());
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("test-from@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+        mockPassClientStreams();
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        verifyNoInteractions(passClient);
+    }
+
+    @Test
+    void testHandleReceivedMail_NoMessage() throws MessagingException, IOException {
+        // GIVEN
+        final String subject = "Bulk submission (errors encountered)";
+        final String body = findByNameAsString("nihmsemail-no-messages.html", this.getClass());
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("test-from@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+        mockPassClientStreams();
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        verifyNoInteractions(passClient);
+    }
+
+    @Test
     void testHandleReceivedMail_SkipNonNihmsEmail() throws MessagingException, IOException {
         // GIVEN
         final String subject = "Bulk submission";
