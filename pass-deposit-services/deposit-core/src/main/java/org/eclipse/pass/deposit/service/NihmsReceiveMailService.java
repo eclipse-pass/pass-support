@@ -18,6 +18,7 @@ package org.eclipse.pass.deposit.service;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -35,6 +36,7 @@ import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,37 +83,51 @@ public class NihmsReceiveMailService {
             }
             String content = receivedMessage.getContent().toString();
             Document document = Jsoup.parse(content);
-            document.select(".message").forEach(element -> {
-                String elementText = element.text();
-                depositFailurePatterns.forEach(pattern -> {
-                    Matcher matcher = pattern.matcher(elementText);
-                    matcher.results().forEach(matchResult -> {
-                        String message =  matchResult.group(0);
-                        String packageId =  matchResult.group(1);
-                        String submissionId = parseSubmissionId(packageId);
-                        try {
-                            updateDepositRejected(submissionId, packageId, message);
-                        } catch (Exception e) {
-                            LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
-                        }
-                    });
-                });
-                Matcher successMatcher = depositSuccessPattern.matcher(elementText);
-                successMatcher.results().forEach(matchResult -> {
+            Elements messageElements = document.select(".message");
+            if (messageElements.isEmpty()) {
+                LOG.error("No messages found in nihms email: " + content);
+                return;
+            }
+            processMessages(messageElements);
+        } catch (Exception e) {
+            LOG.error("Error processing nihms email", e);
+        }
+    }
+
+    private void processMessages(Elements messageElements) {
+        messageElements.forEach(element -> {
+            String elementText = element.text();
+            AtomicBoolean matchFound = new AtomicBoolean(false);
+            depositFailurePatterns.forEach(pattern -> {
+                Matcher matcher = pattern.matcher(elementText);
+                matcher.results().forEach(matchResult -> {
+                    matchFound.set(true);
+                    String message =  matchResult.group(0);
                     String packageId =  matchResult.group(1);
                     String submissionId = parseSubmissionId(packageId);
-                    String nihmsId =  matchResult.group(2);
                     try {
-                        updateDepositAccepted(submissionId, packageId, nihmsId);
+                        updateDepositRejected(submissionId, packageId, message);
                     } catch (Exception e) {
                         LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
                     }
                 });
             });
-
-        } catch (Exception e) {
-            LOG.error("Error processing nihms email", e);
-        }
+            Matcher successMatcher = depositSuccessPattern.matcher(elementText);
+            successMatcher.results().forEach(matchResult -> {
+                matchFound.set(true);
+                String packageId =  matchResult.group(1);
+                String submissionId = parseSubmissionId(packageId);
+                String nihmsId =  matchResult.group(2);
+                try {
+                    updateDepositAccepted(submissionId, packageId, nihmsId);
+                } catch (Exception e) {
+                    LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
+                }
+            });
+            if (!matchFound.get()) {
+                LOG.error("No match found in nihms email message: " + elementText);
+            }
+        });
     }
 
     private boolean isEmailNotNihms(MimeMessage mimeMessage) throws MessagingException {
