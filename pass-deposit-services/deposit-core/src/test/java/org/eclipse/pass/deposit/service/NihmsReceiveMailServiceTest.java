@@ -81,7 +81,7 @@ public class NihmsReceiveMailServiceTest {
     @Captor ArgumentCaptor<Deposit> depositCaptor;
 
     @Test
-    void testHandleReceivedMail() throws MessagingException, IOException {
+    void testHandleReceivedMail() {
         // GIVEN
         final String subject1 = GreenMailUtil.random();
         final String body1 = GreenMailUtil.random();
