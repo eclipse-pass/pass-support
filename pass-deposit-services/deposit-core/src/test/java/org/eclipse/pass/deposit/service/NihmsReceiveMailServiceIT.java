@@ -89,17 +89,18 @@ public class NihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
 
         // THEN
         // wait for email poller to run, every 2 seconds plus few seconds for processing
-        await().pollDelay(5, SECONDS).until(() -> true);
-        verify(nihmsReceiveMailService, times(1))
-            .handleReceivedMail(any());
-        PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
-        sel.setFilter(RSQL.equals("submission.id",  testSubmission.getId()));
-        List<Deposit> actualDeposits = passClient.selectObjects(sel).getObjects();
-        assertEquals(1, actualDeposits.size());
-        Deposit pmcDeposit = actualDeposits.get(0);
-        assertEquals(DepositStatus.ACCEPTED, pmcDeposit.getDepositStatus());
-        assertEquals(NIHMS_DEP_STATUS_REF_PREFIX + "test-nihms-id", pmcDeposit.getDepositStatusRef());
-        assertNull(pmcDeposit.getStatusMessage());
+        await().atMost(4, SECONDS).untilAsserted(() -> {
+            verify(nihmsReceiveMailService, times(1))
+                .handleReceivedMail(any());
+            PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+            sel.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+            List<Deposit> actualDeposits = passClient.selectObjects(sel).getObjects();
+            assertEquals(1, actualDeposits.size());
+            Deposit pmcDeposit = actualDeposits.get(0);
+            assertEquals(DepositStatus.ACCEPTED, pmcDeposit.getDepositStatus());
+            assertEquals(NIHMS_DEP_STATUS_REF_PREFIX + "test-nihms-id", pmcDeposit.getDepositStatusRef());
+            assertNull(pmcDeposit.getStatusMessage());
+        });
     }
 
     private Submission initSubmissionDeposit() throws Exception {
