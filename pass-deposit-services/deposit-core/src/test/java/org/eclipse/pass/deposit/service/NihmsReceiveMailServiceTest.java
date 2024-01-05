@@ -98,7 +98,6 @@ public class NihmsReceiveMailServiceTest {
             verify(nihmsReceiveMailService, times(1)).handleReceivedMail(any())
         );
 
-
         // GIVEN
         final String subject2 = GreenMailUtil.random();
         final String body2 = GreenMailUtil.random();
