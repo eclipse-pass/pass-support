@@ -545,6 +545,7 @@ public class DepositMetadata {
         //this is the grant awardNumber in PASS
         String grantId;
         String funder;
+        String funderLocalKey;
         Person grantPi;
 
         public String getGrantId() {
@@ -561,6 +562,14 @@ public class DepositMetadata {
 
         public void setFunder(String funder) {
             this.funder = funder;
+        }
+
+        public String getFunderLocalKey() {
+            return funderLocalKey;
+        }
+
+        public void setFunderLocalKey(String funderLocalKey) {
+            this.funderLocalKey = funderLocalKey;
         }
 
         public Person getGrantPi() {

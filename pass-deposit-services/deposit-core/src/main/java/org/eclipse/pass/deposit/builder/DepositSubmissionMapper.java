@@ -32,6 +32,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
+import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
 import org.eclipse.pass.deposit.model.DepositManifest;
@@ -196,6 +197,7 @@ public class DepositSubmissionMapper {
         grant.setGrantId(grantEntity.getAwardNumber());
         grant.setGrantPi(createPerson(userEntity, DepositMetadata.PERSON_TYPE.pi));
         grant.setFunder(grantEntity.getPrimaryFunder().getName());
+        grant.setFunderLocalKey(grantEntity.getLocalKey());
         return grant;
     }
 
