@@ -41,11 +41,12 @@ public class MedlineReaderTest {
 
             final List<Journal> records = toTest.readJournals(in, UTF_8).collect(Collectors.toList());
 
-            assertEquals(3, records.size());
+            assertEquals(4, records.size());
 
             assertEquals(records.get(0).getIssns(), Collections.singletonList("Print:0000-0001"));
             assertEquals(records.get(1).getIssns(), Collections.singletonList("Online:0000-0002"));
             assertEquals(records.get(2).getIssns(), Arrays.asList("Print:0000-0003", "Online:0000-0004"));
+            assertEquals(records.get(3).getIssns(), Collections.EMPTY_LIST);
         }
     }
 
@@ -57,15 +58,17 @@ public class MedlineReaderTest {
 
             final List<Journal> records = toTest.readJournals(in, UTF_8).collect(Collectors.toList());
 
-            assertEquals(3, records.size());
+            assertEquals(4, records.size());
 
             assertEquals("First Journal", records.get(0).getJournalName());
             assertEquals("Second Journal", records.get(1).getJournalName());
             assertEquals("Third Journal", records.get(2).getJournalName());
+            assertEquals("Fourth Journal", records.get(3).getJournalName());
 
             assertEquals("1jr", records.get(0).getNlmta());
             assertEquals("2jr", records.get(1).getNlmta());
             assertEquals("3jr", records.get(2).getNlmta());
+            assertEquals("4jr", records.get(3).getNlmta());
         }
     }
 
