@@ -82,7 +82,8 @@ public class MedlineReader implements JournalReader {
                     } else if (line.startsWith(ISSN_FIELD)) {
                         final String issn = extract(line);
                         final String type = extractType(line);
-                        if (issn.length() > 0) {
+
+                        if (issn.length() > 0 && type != null) {
                             j.getIssns().add(String.join(":", type, issn));
                         }
                     } else if (line.startsWith(ABBR_FIELD)) {
@@ -104,7 +105,14 @@ public class MedlineReader implements JournalReader {
     }
 
     private String extractType(String line) {
-        return line.substring(line.indexOf("(") + 1, line.indexOf(")")).trim();
+        int open = line.indexOf("(");
+        int close = line.indexOf(")");
+
+        if (open == -1 || close == -1) {
+            return null;
+        }
+
+        return line.substring(open + 1, close).trim();
     }
 
     @Override

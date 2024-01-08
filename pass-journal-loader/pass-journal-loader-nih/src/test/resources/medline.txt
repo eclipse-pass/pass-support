@@ -23,3 +23,10 @@ ISSN (Online): 0000-0004
 IsoAbbr: 3jr
 NlmId: abc1232
 --------------------------------------------------------
+JrId: 4
+JournalTitle: Fourth Journal
+MedAbbr: 4jr
+ISSN: 0000-0005
+IsoAbbr: 3jr
+NlmId: abc1233
+--------------------------------------------------------
