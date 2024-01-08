@@ -147,6 +147,7 @@ public class NihmsReceiveMailService {
         getDeposits(submissionId, packageId).forEach(deposit -> {
             deposit.setDepositStatus(DepositStatus.ACCEPTED);
             deposit.setDepositStatusRef(NIHMS_DEP_STATUS_REF_PREFIX + nihmsId);
+            deposit.setStatusMessage(null);
             updateDeposit(deposit);
         });
     }
