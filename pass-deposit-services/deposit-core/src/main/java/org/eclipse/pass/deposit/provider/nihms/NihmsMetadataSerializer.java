@@ -20,7 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -49,9 +51,14 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
     private static final Logger LOG = LoggerFactory.getLogger(NihmsMetadataSerializer.class);
 
     private DepositMetadata metadata;
+    private Map<String, String> funderMapping = new HashMap<>();
 
     public NihmsMetadataSerializer(DepositMetadata metadata) {
         this.metadata = metadata;
+    }
+    public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, String> funderMapping) {
+        this.metadata = metadata;
+        this.funderMapping = funderMapping;
     }
 
     @Override

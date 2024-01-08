@@ -146,15 +146,25 @@ public class NihmsMetadataSerializerTest {
 
         DepositMetadata.Grant grant1 = new DepositMetadata.Grant();
         grant1.setGrantId("R0123456789");
-        grant1.setFunder("nih");
+        grant1.setFunder("FOGARTY INTERNATIONAL CENTER");
+        grant1.setFunderLocalKey("johnshopkins.edu:funder:300484");
         grant1.setGrantPi(person1);
         grantList.add(grant1);
 
         DepositMetadata.Grant grant2 = new DepositMetadata.Grant();
         grant2.setGrantId("R0123456000");
-        grant2.setFunder("nih");
+        grant2.setFunder("CENTERS FOR DISEASE CONTROL");
+        grant2.setFunderLocalKey("johnshopkins.edu:funder:300293");
         grant2.setGrantPi(person2);
         grantList.add(grant2);
+
+        DepositMetadata.Grant grant3 = new DepositMetadata.Grant();
+        grant2.setGrantId("R0123456897");
+        grant2.setFunder("MYRIAD GENETICS INC");
+        grant2.setFunderLocalKey("johnshopkins.edu:funder:301885");
+        grant2.setGrantPi(person2);
+        grantList.add(grant2);
+
 
         metadata.setJournalMetadata(journal);
         metadata.setManuscriptMetadata(manuscript);
