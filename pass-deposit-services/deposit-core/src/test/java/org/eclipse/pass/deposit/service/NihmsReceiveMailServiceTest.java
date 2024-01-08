@@ -261,10 +261,16 @@ public class NihmsReceiveMailServiceTest {
     private void mockPassClientStreams() throws IOException {
         Deposit deposit1 = new Deposit();
         deposit1.setId("1");
+        deposit1.setDepositStatus(DepositStatus.SUBMITTED);
+        deposit1.setStatusMessage("init-submitted");
         Deposit deposit2 = new Deposit();
         deposit2.setId("2");
+        deposit2.setDepositStatus(DepositStatus.SUBMITTED);
+        deposit2.setStatusMessage("init-submitted");
         Deposit deposit3 = new Deposit();
         deposit3.setId("3");
+        deposit3.setDepositStatus(DepositStatus.SUBMITTED);
+        deposit3.setStatusMessage("init-submitted");
         when(passClient.streamObjects(any())).thenAnswer(input -> {
             PassClientSelector<Deposit> selector = input.getArgument(0);
             if (selector.getFilter().contains("submission.id=='229935'")) {
