@@ -134,10 +134,6 @@ public class Packager {
         return repositoryConfig.getTransportConfig().getProtocolBinding().asPropertiesMap();
     }
 
-    public RepositoryDepositConfig getRepositoryConfig() {
-        return repositoryConfig.getRepositoryDepositConfig();
-    }
-
     /**
      * The {@link DepositStatusProcessor}, may be {@code null}.
      *
