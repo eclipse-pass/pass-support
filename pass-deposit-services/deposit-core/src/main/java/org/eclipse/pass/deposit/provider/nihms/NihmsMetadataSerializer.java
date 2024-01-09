@@ -198,7 +198,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
     private void addContacts(Document doc, Element root) {
         List<DepositMetadata.Person> persons = metadata.getPersons();
 
-        if (persons != null && persons.size() > 0) {
+        if (persons != null && !persons.isEmpty()) {
             Element contacts = doc.createElement("contacts");
             root.appendChild(contacts);
 
@@ -247,37 +247,40 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
         if (grantsList != null && !grantsList.isEmpty()) {
             List<String> funderKeys = grantsList.stream()
-                    .map(DepositMetadata.Grant::getFunderLocalKey) // Map each Grant to its funderKey
-                    .collect(Collectors.toList());
+                    .map(DepositMetadata.Grant::getFunderLocalKey)
+                    .toList();
 
+            //Only create the top level grant element if at least one of the keys is associated with nihms
             if(funderLocalKeyExists(funderKeys)) {
 
                 Element grantsElement = doc.createElement("grants");
                 root.appendChild(grantsElement);
 
                 for (DepositMetadata.Grant grant : grantsList) {
-                    if (StringUtils.isNotBlank(grant.getFunder())) {
-                        Element grantElement = doc.createElement("grant");
-                        grantsElement.appendChild(grantElement);
-                        grantElement.setAttribute("funder", grant.getFunder());
+                    if(funderMapping.containsKey(grant.getFunderLocalKey())) {
+                        if (StringUtils.isNotBlank(grant.getFunder())) {
+                            Element grantElement = doc.createElement("grant");
+                            grantsElement.appendChild(grantElement);
+                            grantElement.setAttribute("funder", funderMapping.get(grant.getFunderLocalKey()));
 
-                        if (StringUtils.isNotBlank(grant.getGrantId())) {
-                            grantElement.setAttribute("id", grant.getGrantId());
-                        }
-
-                        DepositMetadata.Person pi = grant.getGrantPi();
-                        if (pi != null) {
-                            Element piElement = doc.createElement("PI");
-                            grantElement.appendChild(piElement);
-
-                            if (StringUtils.isNotBlank(pi.getFirstName())) {
-                                piElement.setAttribute("fname", pi.getFirstName());
+                            if (StringUtils.isNotBlank(grant.getGrantId())) {
+                                grantElement.setAttribute("id", grant.getGrantId());
                             }
-                            if (StringUtils.isNotBlank(pi.getLastName())) {
-                                piElement.setAttribute("lname", pi.getLastName());
-                            }
-                            if (StringUtils.isNotBlank(pi.getEmail())) {
-                                piElement.setAttribute("email", pi.getEmail());
+
+                            DepositMetadata.Person pi = grant.getGrantPi();
+                            if (pi != null) {
+                                Element piElement = doc.createElement("PI");
+                                grantElement.appendChild(piElement);
+
+                                if (StringUtils.isNotBlank(pi.getFirstName())) {
+                                    piElement.setAttribute("fname", pi.getFirstName());
+                                }
+                                if (StringUtils.isNotBlank(pi.getLastName())) {
+                                    piElement.setAttribute("lname", pi.getLastName());
+                                }
+                                if (StringUtils.isNotBlank(pi.getEmail())) {
+                                    piElement.setAttribute("email", pi.getEmail());
+                                }
                             }
                         }
                     }
