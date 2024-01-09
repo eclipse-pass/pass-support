@@ -424,8 +424,15 @@ public class DepositTask {
 
                 try {
                     packager = dc.packager();
+
+
                     packageStream = packager.getAssembler().assemble(
                         dc.depositSubmission(), packager.getAssemblerOptions());
+                    //TODO add options for the packager.getRepoConfig
+                    /*
+                    packageStream = packager.getAssembler().assemble(
+                        dc.depositSubmission(), packager.getAssemblerOptions(), packager.getRepositoryOptions());
+                     */
                     packagerConfig = packager.getConfiguration();
                 } catch (Exception e) {
                     throw new RuntimeException("Error resolving a Packager or Packager configuration for " +
