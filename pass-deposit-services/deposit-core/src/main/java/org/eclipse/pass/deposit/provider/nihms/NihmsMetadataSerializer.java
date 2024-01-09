@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -52,13 +53,14 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
     private DepositMetadata metadata;
     private Map<String, String> funderMapping = new HashMap<>();
+    private static final String FUNDER_MAPPING_KEY = "funder-mapping";
 
     public NihmsMetadataSerializer(DepositMetadata metadata) {
         this.metadata = metadata;
     }
-    public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, String> funderMapping) {
+    public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, Object> packageOptions) {
         this.metadata = metadata;
-        this.funderMapping = funderMapping;
+        this.funderMapping = (Map<String, String>) packageOptions.get(FUNDER_MAPPING_KEY);
     }
 
     @Override
@@ -244,38 +246,57 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
         List<DepositMetadata.Grant> grantsList = metadata.getGrantsMetadata();
 
         if (grantsList != null && !grantsList.isEmpty()) {
-            //TODO: add check, if funder is not in the list of accepted funders then do not create grant element
-            //TODO: at least 1 accepted funder for a grant is required to create parent element grants
-            Element grantsElement = doc.createElement("grants");
-            root.appendChild(grantsElement);
+            List<String> funderKeys = grantsList.stream()
+                    .map(DepositMetadata.Grant::getFunderLocalKey) // Map each Grant to its funderKey
+                    .collect(Collectors.toList());
 
-            for (DepositMetadata.Grant grant : grantsList) {
-                if (StringUtils.isNotBlank(grant.getFunder())) {
-                    Element grantElement = doc.createElement("grant");
-                    grantsElement.appendChild(grantElement);
-                    grantElement.setAttribute("funder", grant.getFunder());
+            if(funderLocalKeyExists(funderKeys)) {
 
-                    if (StringUtils.isNotBlank(grant.getGrantId())) {
-                        grantElement.setAttribute("id", grant.getGrantId());
-                    }
+                Element grantsElement = doc.createElement("grants");
+                root.appendChild(grantsElement);
 
-                    DepositMetadata.Person pi = grant.getGrantPi();
-                    if (pi != null) {
-                        Element piElement = doc.createElement("PI");
-                        grantElement.appendChild(piElement);
+                for (DepositMetadata.Grant grant : grantsList) {
+                    if (StringUtils.isNotBlank(grant.getFunder())) {
+                        Element grantElement = doc.createElement("grant");
+                        grantsElement.appendChild(grantElement);
+                        grantElement.setAttribute("funder", grant.getFunder());
 
-                        if (StringUtils.isNotBlank(pi.getFirstName())) {
-                            piElement.setAttribute("fname", pi.getFirstName());
+                        if (StringUtils.isNotBlank(grant.getGrantId())) {
+                            grantElement.setAttribute("id", grant.getGrantId());
                         }
-                        if (StringUtils.isNotBlank(pi.getLastName())) {
-                            piElement.setAttribute("lname", pi.getLastName());
-                        }
-                        if (StringUtils.isNotBlank(pi.getEmail())) {
-                            piElement.setAttribute("email", pi.getEmail());
+
+                        DepositMetadata.Person pi = grant.getGrantPi();
+                        if (pi != null) {
+                            Element piElement = doc.createElement("PI");
+                            grantElement.appendChild(piElement);
+
+                            if (StringUtils.isNotBlank(pi.getFirstName())) {
+                                piElement.setAttribute("fname", pi.getFirstName());
+                            }
+                            if (StringUtils.isNotBlank(pi.getLastName())) {
+                                piElement.setAttribute("lname", pi.getLastName());
+                            }
+                            if (StringUtils.isNotBlank(pi.getEmail())) {
+                                piElement.setAttribute("email", pi.getEmail());
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Used to determine if one of the grants localKeys exists in the list of accepted nihms funders
+     *
+     * @return True if at least one nihms funderKey exists in the metadata grant list
+     */
+    private boolean funderLocalKeyExists(List<String> metaDataGrantFunderKeys){
+        for (String key : metaDataGrantFunderKeys){
+            if (funderMapping.containsKey(key)){
+                return true;
+            }
+        }
+        return false;
     }
 }
