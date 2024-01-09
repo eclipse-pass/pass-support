@@ -74,7 +74,7 @@ public class NihmsPackageProvider implements PackageProvider {
     public void start(DepositSubmission submission, List<DepositFileResource> custodialResources,
                       Map<String, Object> packageOptions) {
         manifestSerializer = new NihmsManifestSerializer(submission.getManifest());
-        metadataSerializer = new NihmsMetadataSerializer(submission.getMetadata());
+        metadataSerializer = new NihmsMetadataSerializer(submission.getMetadata(), packageOptions);
     }
 
     /**
