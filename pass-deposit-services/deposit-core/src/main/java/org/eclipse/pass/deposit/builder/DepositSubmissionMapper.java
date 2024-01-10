@@ -197,7 +197,7 @@ public class DepositSubmissionMapper {
         grant.setGrantId(grantEntity.getAwardNumber());
         grant.setGrantPi(createPerson(userEntity, DepositMetadata.PERSON_TYPE.pi));
         grant.setFunder(grantEntity.getPrimaryFunder().getName());
-        grant.setFunderLocalKey(grantEntity.getLocalKey());
+        grant.setFunderLocalKey(grantEntity.getPrimaryFunder().getLocalKey());
         return grant;
     }
 
