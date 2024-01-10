@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -65,7 +66,7 @@ public class NihmsPackageVerifier implements PackageVerifier {
         String expectedManifest = IOUtils.toString(
             new NihmsManifestSerializer(submission.getManifest()).serialize().getInputStream(), UTF_8);
         String expectedBulkMeta = IOUtils.toString(
-            new NihmsMetadataSerializer(submission.getMetadata()).serialize().getInputStream(), UTF_8);
+            new NihmsMetadataSerializer(submission.getMetadata(), map).serialize().getInputStream(), UTF_8);
 
         assertEquals(expectedManifest, IOUtils.toString(new FileInputStream(manifest), UTF_8));
         assertEquals(expectedBulkMeta, IOUtils.toString(new FileInputStream(bulk_meta), UTF_8));

@@ -20,6 +20,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 import static java.util.stream.StreamSupport.stream;
+import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.SPEC_NIHMS_NATIVE_2022_05;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,6 +36,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -45,6 +47,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import com.github.jknack.handlebars.internal.Files;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
@@ -71,6 +74,7 @@ public class NihmsMetadataSerializerTest {
     private Path tempDir;
 
     private static NihmsMetadataSerializer underTest;
+    private static HashMap<String, Object> packageOptions;
     private static final DepositMetadata metadata = new DepositMetadata();
 
     @BeforeEach
@@ -170,7 +174,13 @@ public class NihmsMetadataSerializerTest {
         metadata.setPersons(personList);
         metadata.setGrantsMetadata(grantList);
 
-        underTest = new NihmsMetadataSerializer(metadata);
+        Map<String, String> funderMapping =
+                Map.of("johnshopkins.edu:funder:300293", "cdc",
+                        "johnshopkins.edu:funder:300484", "nih");
+        packageOptions = new HashMap<>();
+        packageOptions.put(PackageOptions.FunderMapping.KEY, funderMapping);
+
+        underTest = new NihmsMetadataSerializer(metadata, packageOptions);
     }
 
     @Test
@@ -305,7 +315,7 @@ public class NihmsMetadataSerializerTest {
 
         metadata.setJournalMetadata(journalMd);
 
-        underTest = new NihmsMetadataSerializer(metadata);
+        underTest = new NihmsMetadataSerializer(metadata, packageOptions);
 
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Node doc = builder.parse(underTest.serialize().getInputStream());
@@ -340,7 +350,7 @@ public class NihmsMetadataSerializerTest {
 
         metadata.setJournalMetadata(journalMd);
 
-        underTest = new NihmsMetadataSerializer(metadata);
+        underTest = new NihmsMetadataSerializer(metadata, packageOptions);
 
         assertFalse(IOUtils.toString(underTest.serialize().getInputStream(), UTF_8).contains("issn"));
     }
@@ -362,7 +372,7 @@ public class NihmsMetadataSerializerTest {
 
         metadata.setJournalMetadata(journalMd);
 
-        underTest = new NihmsMetadataSerializer(metadata);
+        underTest = new NihmsMetadataSerializer(metadata, packageOptions);
 
         assertFalse(IOUtils.toString(underTest.serialize().getInputStream(), UTF_8).contains("issn"));
     }
