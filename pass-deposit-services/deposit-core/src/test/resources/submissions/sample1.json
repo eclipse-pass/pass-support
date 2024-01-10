@@ -175,8 +175,8 @@
     "awardDate": "2017-08-01T00:00:00.000Z",
     "startDate": "2017-09-01T00:00:00.000Z",
     "endDate": "2020-06-01T00:00:00.000Z",
-    "primaryFunder": "11",
-    "directFunder": "12",
+    "primaryFunder": "12",
+    "directFunder": "11",
     "pi": "2",
     "coPis": [
       "3",

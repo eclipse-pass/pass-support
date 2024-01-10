@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,6 +39,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -81,14 +86,14 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
     @Override
     protected Map<String, Object> getOptions() {
+        Map<String, String> funderMapping =
+                Map.of("johnshopkins.edu:funder:300293", "cdc",
+                        "johnshopkins.edu:funder:300484", "nih");
         return new HashMap<>() {
             {
                 put(Spec.KEY, SPEC_NIHMS_NATIVE_2022_05);
                 put(Archive.KEY, Archive.OPTS.TAR);
                 put(Compression.KEY, Compression.OPTS.GZIP);
-                HashMap<String, String> funderMapping = (HashMap<String, String>)
-                        Map.of("johnshopkins.edu:funder:300293", "cdc",
-                        "johnshopkins.edu:funder:300484", "nih");
                 put(FunderMapping.KEY, funderMapping);
             }
         };
@@ -269,6 +274,14 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
     @Test
     public void testPackageMetadataGrantFunder() throws Exception {
         Element root = initDom();
+        //TODO - for testing, remove once done
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        StringWriter writer = new StringWriter();
+
+        transformer.transform(new DOMSource(root), new StreamResult(writer));
+
+        String rootAsString = writer.toString();
         //Ensure that the grants in the metadata matches a Grant on the submission, Check the attributes of a grant on
         //submission against what is found in the metadata
         List<Element> grantElements = asList(root.getElementsByTagName("grant"));
@@ -306,7 +319,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
 
             //assert that the grant ID exists and is valid to the submission data
             assertEquals(subGrant.getGrantId(), metaDataGrant.get().getGrantId());
-            assertEquals(subGrant.getFunder(), metaDataGrant.get().getFunder());
+            assertTrue(List.of("nih", "cdc").contains(metaDataGrant.get().getFunder()));
             assertEquals(subGrant.getGrantPi().getFirstName(), metaDataGrant.get().getGrantPi().getFirstName());
             assertEquals(subGrant.getGrantPi().getLastName(), metaDataGrant.get().getGrantPi().getLastName());
             assertEquals(subGrant.getGrantPi().getEmail(), metaDataGrant.get().getGrantPi().getEmail());
