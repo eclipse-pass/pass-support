@@ -44,9 +44,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
+import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
+import org.eclipse.pass.deposit.assembler.PackageOptions.FunderMapping;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositFileType;
@@ -84,6 +86,10 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
                 put(Spec.KEY, SPEC_NIHMS_NATIVE_2022_05);
                 put(Archive.KEY, Archive.OPTS.TAR);
                 put(Compression.KEY, Compression.OPTS.GZIP);
+                HashMap<String, String> funderMapping = (HashMap<String, String>)
+                        Map.of("johnshopkins.edu:funder:300293", "cdc",
+                        "johnshopkins.edu:funder:300484", "nih");
+                put(FunderMapping.KEY, funderMapping);
             }
         };
     }
