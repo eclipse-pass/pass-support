@@ -55,10 +55,6 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
     private DepositMetadata metadata;
     private Map<String, String> funderMapping = new HashMap<>();
 
-    public NihmsMetadataSerializer(DepositMetadata metadata) {
-        this.metadata = metadata;
-    }
-
     public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, Object> packageOptions) {
         this.metadata = metadata;
         Object funderMappingObj = packageOptions.get(PackageOptions.FunderMapping.KEY);
