@@ -39,12 +39,16 @@ public class NihmsThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
 
     @Override
     protected Map<String, Object> packageOptions() {
+        Map<String, String> funderMapping =
+                Map.of("johnshopkins.edu:funder:300293", "cdc",
+                        "johnshopkins.edu:funder:300484", "nih");
         return new HashMap<>() {
             {
                 put(PackageOptions.Spec.KEY, SPEC_NIHMS_NATIVE_2022_05);
                 put(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.TAR);
                 put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.GZIP);
                 put(PackageOptions.Checksum.KEY, singletonList(PackageOptions.Checksum.OPTS.SHA256));
+                put(PackageOptions.FunderMapping.KEY, funderMapping);
             }
         };
     }
