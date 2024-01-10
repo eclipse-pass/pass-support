@@ -34,6 +34,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
@@ -53,14 +54,21 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
     private DepositMetadata metadata;
     private Map<String, String> funderMapping = new HashMap<>();
-    private static final String FUNDER_MAPPING_KEY = "funder-mapping";
 
     public NihmsMetadataSerializer(DepositMetadata metadata) {
         this.metadata = metadata;
     }
     public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, Object> packageOptions) {
         this.metadata = metadata;
-        this.funderMapping = (Map<String, String>) packageOptions.get(FUNDER_MAPPING_KEY);
+        Object funderMappingObj = packageOptions.get(PackageOptions.FunderMapping.KEY);
+        if (funderMappingObj instanceof Map<?, ?>) {
+            this.funderMapping = ((Map<?, ?>) funderMappingObj).entrySet().stream()
+                    .collect(Collectors.toMap(
+                            e -> (String) e.getKey(),
+                            e -> (String) e.getValue()));
+        } else {
+            throw new ClassCastException("FunderMapping is not a Map<String, String>");
+        }
     }
 
     @Override
@@ -261,6 +269,8 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                         if (StringUtils.isNotBlank(grant.getFunder())) {
                             Element grantElement = doc.createElement("grant");
                             grantsElement.appendChild(grantElement);
+
+                            //use the nihms abbreviations for funders, the accepted list is in the nihms DTD
                             grantElement.setAttribute("funder", funderMapping.get(grant.getFunderLocalKey()));
 
                             if (StringUtils.isNotBlank(grant.getGrantId())) {
