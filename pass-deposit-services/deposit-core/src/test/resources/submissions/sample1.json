@@ -136,7 +136,7 @@
   {
     "name": "National Eye Institute",
     "url": "http://example.com/eyeguys",
-    "localKey": "aabbcc",
+    "localKey": "johnshopkins.edu:funder:300484",
     "policy": "10",
     "id": "11",
     "@type": "Funder"
@@ -144,7 +144,7 @@
   {
     "name": "International Eye Institute",
     "url": "http://example.com/othereyeguys",
-    "localKey": "ddeeff",
+    "localKey": "johnshopkins.edu:funder:300293",
     "policy": "10",
     "id": "12",
     "@type": "Funder"
