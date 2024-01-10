@@ -58,6 +58,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
     public NihmsMetadataSerializer(DepositMetadata metadata) {
         this.metadata = metadata;
     }
+
     public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, Object> packageOptions) {
         this.metadata = metadata;
         Object funderMappingObj = packageOptions.get(PackageOptions.FunderMapping.KEY);
@@ -259,7 +260,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                     .toList();
 
             //Only create the top level grant element if at least one of the keys is associated with nihms
-            if(funderLocalKeyExists(funderKeys)) {
+            if (funderLocalKeyExists(funderKeys)) {
 
                 Element grantsElement = doc.createElement("grants");
                 root.appendChild(grantsElement);
@@ -304,9 +305,9 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
      *
      * @return True if at least one nihms funderKey exists in the metadata grant list
      */
-    private boolean funderLocalKeyExists(List<String> metaDataGrantFunderKeys){
-        for (String key : metaDataGrantFunderKeys){
-            if (funderMapping.containsKey(key)){
+    private boolean funderLocalKeyExists(List<String> metaDataGrantFunderKeys) {
+        for (String key : metaDataGrantFunderKeys) {
+            if (funderMapping.containsKey(key)) {
                 return true;
             }
         }

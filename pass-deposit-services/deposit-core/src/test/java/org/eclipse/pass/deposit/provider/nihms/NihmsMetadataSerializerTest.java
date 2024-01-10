@@ -165,7 +165,6 @@ public class NihmsMetadataSerializerTest {
         grant2.setGrantPi(person2);
         grantList.add(grant2);
 
-
         metadata.setJournalMetadata(journal);
         metadata.setManuscriptMetadata(manuscript);
         metadata.setPersons(personList);

@@ -25,7 +25,6 @@ import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.config.repository.AssemblerOptions;
 import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
-import org.eclipse.pass.deposit.config.repository.RepositoryDepositConfig;
 import org.eclipse.pass.deposit.service.DepositTask;
 import org.eclipse.pass.deposit.status.DepositStatusProcessor;
 import org.eclipse.pass.deposit.transport.Transport;
