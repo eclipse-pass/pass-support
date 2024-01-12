@@ -15,9 +15,6 @@
  */
 package org.eclipse.pass.deposit.config.repository;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -30,9 +27,6 @@ public class RepositoryDepositConfig {
 
     @JsonProperty("mapping")
     private StatusMapping statusMapping;
-
-    @JsonProperty("funder-mapping")
-    private Map<String, String> funderMapping = new HashMap<>();
 
     public DepositProcessing getDepositProcessing() {
         return depositProcessing;
@@ -48,14 +42,6 @@ public class RepositoryDepositConfig {
 
     public void setStatusMapping(StatusMapping statusMapping) {
         this.statusMapping = statusMapping;
-    }
-
-    public Map<String, String> getFunderMapping() {
-        return funderMapping;
-    }
-
-    public void setFunderMapping(Map<String, String> funderMapping) {
-        this.funderMapping = funderMapping;
     }
 
     @Override
@@ -86,6 +72,6 @@ public class RepositoryDepositConfig {
     @Override
     public String toString() {
         return "RepositoryDepositConfig{" + "depositProcessing=" + depositProcessing +
-               ", statusMapping=" + statusMapping + " funderMapping=" + funderMapping + "}";
+               ", statusMapping=" + statusMapping + "}";
     }
 }

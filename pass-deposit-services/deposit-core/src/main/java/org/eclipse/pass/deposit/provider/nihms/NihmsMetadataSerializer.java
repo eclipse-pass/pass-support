@@ -20,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -53,7 +52,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
     private static final Logger LOG = LoggerFactory.getLogger(NihmsMetadataSerializer.class);
 
     private DepositMetadata metadata;
-    private Map<String, String> funderMapping = new HashMap<>();
+    private Map<String, String> funderMapping;
 
     public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, Object> packageOptions) {
         this.metadata = metadata;
@@ -256,7 +255,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                     .toList();
 
             //Only create the top level grant element if at least one of the keys is associated with nihms
-            if (funderLocalKeyExists(funderKeys)) {
+            if (funderKeys.stream().anyMatch(funderMapping::containsKey)) {
 
                 Element grantsElement = doc.createElement("grants");
                 root.appendChild(grantsElement);
@@ -267,12 +266,12 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                             Element grantElement = doc.createElement("grant");
                             grantsElement.appendChild(grantElement);
 
-                            //use the nihms abbreviations for funders, the accepted list is in the nihms DTD
-                            grantElement.setAttribute("funder", funderMapping.get(grant.getFunderLocalKey()));
-
                             if (StringUtils.isNotBlank(grant.getGrantId())) {
                                 grantElement.setAttribute("id", grant.getGrantId());
                             }
+
+                            //use the nihms abbreviations for funders, the accepted list is in the nihms DTD
+                            grantElement.setAttribute("funder", funderMapping.get(grant.getFunderLocalKey()));
 
                             DepositMetadata.Person pi = grant.getGrantPi();
                             if (pi != null) {
@@ -294,19 +293,5 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
                 }
             }
         }
-    }
-
-    /**
-     * Used to determine if one of the grants localKeys exists in the list of accepted nihms funders
-     *
-     * @return True if at least one nihms funderKey exists in the metadata grant list
-     */
-    private boolean funderLocalKeyExists(List<String> metaDataGrantFunderKeys) {
-        for (String key : metaDataGrantFunderKeys) {
-            if (funderMapping.containsKey(key)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
