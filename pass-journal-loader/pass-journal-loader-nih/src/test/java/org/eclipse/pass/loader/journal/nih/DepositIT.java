@@ -63,7 +63,7 @@ public class DepositIT {
         Main.main(new String[] {});
 
         // We expect three journals, but no PMC A journals
-        assertEquals(3, listJournals().size());
+        assertEquals(4, listJournals().size());
         assertEquals(0, typeA(listJournals()).size());
 
         System.setProperty("medline", "");
@@ -71,7 +71,7 @@ public class DepositIT {
         Main.main(new String[] {});
 
         // We still expect three journals in the repository, but now two are PMC A
-        assertEquals(3, listJournals().size());
+        assertEquals(4, listJournals().size());
         assertEquals(2, typeA(listJournals()).size());
 
         System.setProperty("medline", "");
@@ -79,7 +79,7 @@ public class DepositIT {
         Main.main(new String[] {});
 
         // The last dataset removed a type A journal, so now we expect only one
-        assertEquals(3, listJournals().size());
+        assertEquals(4, listJournals().size());
         assertEquals(1, typeA(listJournals()).size());
     }
 
