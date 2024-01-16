@@ -42,6 +42,11 @@ import org.springframework.core.io.Resource;
  */
 public class NihmsPackageProvider implements PackageProvider {
 
+    /**
+     * Package options key that contains the funder mapping to nihms funder code
+     */
+    static final String FUNDER_MAPPING = "funder-mapping";
+
     static final String REMEDIATED_FILE_PREFIX = "SUBMISSION-";
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageProvider.class);

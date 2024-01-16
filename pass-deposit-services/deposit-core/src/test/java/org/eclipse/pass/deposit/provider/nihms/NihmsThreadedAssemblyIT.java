@@ -48,7 +48,7 @@ public class NihmsThreadedAssemblyIT extends AbstractThreadedAssemblyIT {
                 put(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.TAR);
                 put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.GZIP);
                 put(PackageOptions.Checksum.KEY, singletonList(PackageOptions.Checksum.OPTS.SHA256));
-                put(PackageOptions.FunderMapping.KEY, funderMapping);
+                put(NihmsPackageProvider.FUNDER_MAPPING, funderMapping);
             }
         };
     }
