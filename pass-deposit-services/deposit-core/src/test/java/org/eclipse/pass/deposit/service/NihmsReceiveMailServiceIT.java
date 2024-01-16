@@ -33,6 +33,8 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import jakarta.mail.Message;
+import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.eclipse.pass.deposit.DepositApp;
@@ -77,15 +79,20 @@ public class NihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
     void testHandleReceivedMail() throws Exception {
         // GIVEN
         Submission testSubmission = initSubmissionDeposit();
-        final String subject1 = "Bulk submission";
-        final String body1 = findByNameAsString("nihmsemail-success.html", this.getClass())
+        final String subject = "Bulk submission";
+        final String body = findByNameAsString("nihmsemail-success.html", this.getClass())
             .replace("{test-submission-id}", testSubmission.getId());
-        MimeMessage message1 = GreenMailUtil.createTextEmail("testnihms@localhost", "test-from@localhost",
-            subject1, body1, greenMail.getImaps().getServerSetup());
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("test-from@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
         GreenMailUser user = greenMail.setUser("testnihms@localhost", "testnihmspassword");
 
         // WHEN
-        user.deliver(message1);
+        user.deliver(mimeMessage);
 
         // THEN
         // wait for email poller to run, every 2 seconds plus few seconds for processing

@@ -35,10 +35,14 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import jakarta.mail.BodyPart;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
 import jakarta.mail.Session;
+import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -134,12 +138,68 @@ public class NihmsReceiveMailServiceTest {
         mimeMessage.setFrom("test-from@localhost");
         mimeMessage.setSubject(subject);
         mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
         mockPassClientStreams();
 
         // WHEN
         nihmsReceiveMailService.handleReceivedMail(mimeMessage);
 
         // THEN
+        verifyDepositUpdates();
+    }
+
+    @Test
+    void testHandleReceivedMail_MessageParsing_Multipart() throws MessagingException, IOException {
+        // GIVEN
+        final String subject = "Fwd: Bulk submission (errors encountered)";
+        final String body = findByNameAsString("nihmsemail.html", this.getClass());
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("test-from@localhost");
+        mimeMessage.setSubject(subject);
+
+        BodyPart textBodyPart = new MimeBodyPart();
+        textBodyPart.setContent("Test text content", "text/plain");
+        BodyPart htmlBodyPart = new MimeBodyPart();
+        htmlBodyPart.setContent(body, "text/html; charset=\"utf-8\"");
+        Multipart multipart = new MimeMultipart();
+        multipart.addBodyPart(textBodyPart);
+        multipart.addBodyPart(htmlBodyPart);
+
+        mimeMessage.setContent(multipart);
+        mimeMessage.saveChanges();
+        mockPassClientStreams();
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        verifyDepositUpdates();
+    }
+
+    @Test
+    void testHandleReceivedMail_MessageParsing_HtmlNoClass() throws MessagingException, IOException {
+        // GIVEN
+        final String subject = "Bulk submission (errors encountered)";
+        final String body = findByNameAsString("nihmsemail-noclass.html", this.getClass());
+        Session smtpSession = GreenMailUtil.getSession(greenMail.getImaps().getServerSetup());
+        MimeMessage mimeMessage = new MimeMessage(smtpSession);
+        mimeMessage.setRecipients(Message.RecipientType.TO, "testnihms@localhost");
+        mimeMessage.setFrom("test-from@localhost");
+        mimeMessage.setSubject(subject);
+        mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
+        mockPassClientStreams();
+
+        // WHEN
+        nihmsReceiveMailService.handleReceivedMail(mimeMessage);
+
+        // THEN
+        verifyDepositUpdates();
+    }
+
+    private void verifyDepositUpdates() throws IOException {
         verify(passClient, times(3)).updateObject(depositCaptor.capture());
         Deposit updatedDeposit1 = depositCaptor.getAllValues().stream().filter(deposit -> deposit.getId().equals("1"))
             .findFirst().get();
@@ -172,6 +232,7 @@ public class NihmsReceiveMailServiceTest {
         mimeMessage.setFrom("test-from@localhost");
         mimeMessage.setSubject(subject);
         mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
         mockPassClientStreams();
 
         // WHEN
@@ -192,6 +253,7 @@ public class NihmsReceiveMailServiceTest {
         mimeMessage.setFrom("test-from@localhost");
         mimeMessage.setSubject(subject);
         mimeMessage.setContent(body, "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
         mockPassClientStreams();
 
         // WHEN
@@ -211,6 +273,7 @@ public class NihmsReceiveMailServiceTest {
         mimeMessage.setFrom("someotherfrom@localhost");
         mimeMessage.setSubject(subject);
         mimeMessage.setContent("testing content", "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
         mockPassClientStreams();
 
         // WHEN
@@ -230,6 +293,7 @@ public class NihmsReceiveMailServiceTest {
         mimeMessage.setFrom("test-from@localhost");
         mimeMessage.setSubject(subject);
         mimeMessage.setContent("testing content", "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
         mockPassClientStreams();
 
         // WHEN
@@ -249,6 +313,7 @@ public class NihmsReceiveMailServiceTest {
         mimeMessage.setFrom("someotherfrom@localhost");
         mimeMessage.setSubject(subject);
         mimeMessage.setContent("testing content", "text/html; charset=\"utf-8\"");
+        mimeMessage.saveChanges();
         mockPassClientStreams();
 
         // WHEN
