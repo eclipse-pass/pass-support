@@ -46,7 +46,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import com.github.jknack.handlebars.internal.Files;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
@@ -177,7 +176,7 @@ public class NihmsMetadataSerializerTest {
                 Map.of("johnshopkins.edu:funder:300293", "cdc",
                         "johnshopkins.edu:funder:300484", "nih");
         packageOptions = new HashMap<>();
-        packageOptions.put(PackageOptions.FunderMapping.KEY, funderMapping);
+        packageOptions.put(NihmsPackageProvider.FUNDER_MAPPING, funderMapping);
 
         underTest = new NihmsMetadataSerializer(metadata, packageOptions);
     }

@@ -33,7 +33,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.SizedStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.JournalPublicationType;
@@ -56,7 +55,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
     public NihmsMetadataSerializer(DepositMetadata metadata, Map<String, Object> packageOptions) {
         this.metadata = metadata;
-        Object funderMappingObj = packageOptions.get(PackageOptions.FunderMapping.KEY);
+        Object funderMappingObj = packageOptions.get(NihmsPackageProvider.FUNDER_MAPPING);
         if (funderMappingObj instanceof Map<?, ?>) {
             this.funderMapping = ((Map<?, ?>) funderMappingObj).entrySet().stream()
                     .collect(Collectors.toMap(

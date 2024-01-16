@@ -51,7 +51,6 @@ import org.eclipse.pass.deposit.assembler.AbstractAssembler;
 import org.eclipse.pass.deposit.assembler.AbstractAssemblerIT;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
-import org.eclipse.pass.deposit.assembler.PackageOptions.FunderMapping;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Spec;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositFile;
@@ -93,7 +92,7 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
                 put(Spec.KEY, SPEC_NIHMS_NATIVE_2022_05);
                 put(Archive.KEY, Archive.OPTS.TAR);
                 put(Compression.KEY, Compression.OPTS.GZIP);
-                put(FunderMapping.KEY, funderMapping);
+                put(NihmsPackageProvider.FUNDER_MAPPING, funderMapping);
             }
         };
     }

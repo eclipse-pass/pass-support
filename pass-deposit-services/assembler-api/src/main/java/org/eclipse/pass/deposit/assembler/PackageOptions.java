@@ -98,11 +98,4 @@ public interface PackageOptions {
 
     }
 
-    /**
-     * Funder Mapping for Nihms Packages
-     */
-    interface FunderMapping {
-        String KEY = "FUNDER-MAPPING";
-    }
-
 }
