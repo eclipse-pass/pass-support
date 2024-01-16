@@ -88,13 +88,13 @@ public class NihmsMailReceiverConfiguration {
         ImapMailReceiver imapMailReceiver = new ImapMailReceiver(storeUrl);
         imapMailReceiver.setShouldMarkMessagesAsRead(true);
         imapMailReceiver.setShouldDeleteMessages(false);
+        imapMailReceiver.setSimpleContent(true);
         imapMailReceiver.setMaxFetchSize(10);
         Properties javaMailProperties = new Properties();
-        javaMailProperties.put("mail.imaps.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        javaMailProperties.put("mail.imaps.socketFactory.fallback", false);
-        javaMailProperties.put("mail.imaps.ssl.trust", nihmsImapHost);
-        javaMailProperties.put("mail.store.protocol", "imaps");
-        javaMailProperties.put("mail.debug", true);
+        javaMailProperties.setProperty("mail.imaps.ssl.enable", "true");
+        javaMailProperties.setProperty("mail.imaps.ssl.trust", nihmsImapHost);
+        javaMailProperties.setProperty("mail.imaps.starttls.enable", "true");
+        javaMailProperties.setProperty("mail.imaps.auth.plain.disable", "true");
         imapMailReceiver.setJavaMailProperties(javaMailProperties);
         return imapMailReceiver;
     }

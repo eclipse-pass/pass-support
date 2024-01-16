@@ -15,9 +15,12 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static org.eclipse.pass.deposit.service.MailUtil.getHtmlText;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,9 +84,12 @@ public class NihmsReceiveMailService {
             if (isEmailNotNihms(receivedMessage)) {
                 return;
             }
-            String content = receivedMessage.getContent().toString();
-            Document document = Jsoup.parse(content);
-            Elements messageElements = document.select(".message");
+            String content = getHtmlText(receivedMessage);
+            if (Objects.isNull(content)) {
+                LOG.error("No HTML content found in nihms email: " + receivedMessage.getSubject());
+                return;
+            }
+            Elements messageElements = getMessageElements(content);
             if (messageElements.isEmpty()) {
                 LOG.error("No messages found in nihms email: " + content);
                 return;
@@ -92,6 +98,12 @@ public class NihmsReceiveMailService {
         } catch (Exception e) {
             LOG.error("Error processing nihms email", e);
         }
+    }
+
+    private Elements getMessageElements(String content) {
+        Document document = Jsoup.parse(content);
+        Elements messageElements = document.select(".message");
+        return messageElements.isEmpty() ? document.select("td:nth-child(2)") : messageElements;
     }
 
     private void processMessages(Elements messageElements) {
@@ -132,7 +144,7 @@ public class NihmsReceiveMailService {
 
     private boolean isEmailNotNihms(MimeMessage mimeMessage) throws MessagingException {
         boolean fromNihms = Arrays.asList(mimeMessage.getFrom()).contains(nihmsFromEmail);
-        return !fromNihms || !mimeMessage.getSubject().startsWith("Bulk submission");
+        return !fromNihms || !mimeMessage.getSubject().contains("Bulk submission");
     }
 
     private void updateDepositRejected(String submissionId, String packageId, String message) throws IOException {
