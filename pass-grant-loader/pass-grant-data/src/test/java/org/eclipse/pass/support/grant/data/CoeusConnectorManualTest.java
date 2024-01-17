@@ -68,7 +68,7 @@ public class CoeusConnectorManualTest {
     @Disabled
     @Test
     public void testGrantQuery() throws SQLException {
-        List<Map<String, String>> results =
+        List<GrantIngestRecord> results =
             connector.retrieveUpdates("2023-10-20 00:00:00", "01/01/2011", "grant", null);
         assertNotNull(results);
     }
@@ -76,7 +76,7 @@ public class CoeusConnectorManualTest {
     @Disabled
     @Test
     public void testUserQuery() throws SQLException {
-        List<Map<String, String>> results =
+        List<GrantIngestRecord> results =
             connector.retrieveUpdates("2023-10-20 00:00:00", null, "user", null);
         assertNotNull(results);
     }
@@ -84,7 +84,7 @@ public class CoeusConnectorManualTest {
     @Disabled
     @Test
     public void testFunderQuery() throws SQLException {
-        List<Map<String, String>> results =
+        List<GrantIngestRecord> results =
             connector.retrieveUpdates(null, null, "funder", null);
         assertNotNull(results);
     }

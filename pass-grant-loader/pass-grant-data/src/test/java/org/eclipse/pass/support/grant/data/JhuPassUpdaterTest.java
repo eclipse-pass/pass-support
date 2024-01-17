@@ -63,7 +63,7 @@ public class JhuPassUpdaterTest {
     @Test
     public void testUpdatePassGrant_Success_NewGrant() throws IOException, IllegalAccessException {
 
-        List<Map<String, String>> resultSet = buildTestInputResultSet();
+        List<GrantIngestRecord> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
         PassClientResult<PassEntity> mockGrantResult = new PassClientResult<>(Collections.emptyList(), 0);
         doReturn(mockGrantResult)
@@ -124,8 +124,8 @@ public class JhuPassUpdaterTest {
         assertEquals(0, grantMap.size()); // no update to grant since pass returns duplicate
     }
 
-    private List<Map<String, String>> buildTestInputResultSet() {
-        List<Map<String, String>> resultSet = new ArrayList<>();
+    private List<GrantIngestRecord> buildTestInputResultSet() {
+        List<GrantIngestRecord> resultSet = new ArrayList<>();
 
         String awardNumber = "12345678";
         String awardStatus = "Active";
@@ -165,6 +165,33 @@ public class JhuPassUpdaterTest {
 
         rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, "2018-01-01 00:00:00.0");
         rowMap.put(CoeusFieldNames.C_ABBREVIATED_ROLE, "P");
+
+        GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+        grantIngestRecord.setAwardNumber(awardNumber);
+        grantIngestRecord.setAwardStatus("Active");
+        grantIngestRecord.setGrantNumber(grantLocalKey[iteration]);
+        grantIngestRecord.setGrantTitle(grantProjectName[iteration]);
+        grantIngestRecord.setAwardDate(grantAwardDate[iteration]);
+        grantIngestRecord.setAwardStart(grantStartDate[iteration]);
+        grantIngestRecord.setAwardEnd(grantEndDate[iteration]);
+
+        grantIngestRecord.setDirectFunderCode("20000000");
+        grantIngestRecord.setDirectFunderName("Enormous State University");
+        grantIngestRecord.setPrimaryFunderCode("20000001");
+        grantIngestRecord.setPrimaryFunderName("J L Gotrocks Foundation");
+
+        grantIngestRecord.setPiFirstName(userFirstName[user]);
+        grantIngestRecord.setPiMiddleName(userMiddleName[user]);
+        grantIngestRecord.setPiLastName(userLastName[user]);
+        grantIngestRecord.setPiEmail(userEmail[user]);
+        grantIngestRecord.setPiInstitutionalId(userInstitutionalId[user]);
+        grantIngestRecord.setPiEmployeeId(userEmployeeId[user]);
+
+        grantIngestRecord.setUpdateTimeStamp(grantUpdateTimestamp[iteration]);
+        grantIngestRecord.setPiRole(abbrRole);
+
+        grantIngestRecord.setDirectFunderPolicyId(getDirectFunderPolicyId());
+        grantIngestRecord.setPrimaryFunderPolicyId(getPrimaryFunderPolicyId());
 
         resultSet.add(rowMap);
 

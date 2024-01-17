@@ -15,27 +15,6 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_ABBREVIATED_ROLE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_POLICY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_AWARD_DATE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_AWARD_NUMBER;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_AWARD_STATUS;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_END_DATE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_LOCAL_KEY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_PROJECT_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_START_DATE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_POLICY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_UPDATE_TIMESTAMP;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMAIL;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMPLOYEE_ID;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_FIRST_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_INSTITUTIONAL_ID;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_LAST_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_MIDDLE_NAME;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
 import static org.eclipse.pass.support.grant.data.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
 import static org.eclipse.pass.support.grant.data.JhuPassUpdater.JHED_LOCATOR_ID;
@@ -103,10 +82,10 @@ public class JhuPassInitUpdaterIT {
     @Order(1)
     public void processInitGrantIT() throws IOException {
         // GIVEN
-        List<Map<String, String>> resultSet = new ArrayList<>();
+        List<GrantIngestRecord> resultSet = new ArrayList<>();
 
         //put in last iteration as existing record - PI is Einstein
-        Map<String, String> piRecord2 = makeRowMap(2, 1, "P");
+        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
         resultSet.add(piRecord2);
 
         JhuPassInitUpdater passUpdater = new JhuPassInitUpdater();
@@ -140,11 +119,11 @@ public class JhuPassInitUpdaterIT {
         //now simulate a complete pull from the Beginning of Time and adjust the stored grant
         //we add a new co-pi Jones in the "1" iteration, and change the pi to Einstein in the "2" iteration
         //we drop co-pi jones in the last iteration
-        Map<String, String> piRecord0 = makeRowMap(0, 0, "P");
-        Map<String, String> coPiRecord0 = makeRowMap(0, 1, "C");
-        Map<String, String> piRecord1 = makeRowMap(1, 0, "P");
-        Map<String, String> coPiRecord1 = makeRowMap(1, 1, "C");
-        Map<String, String> newCoPiRecord1 = makeRowMap(1, 2, "C");
+        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
+        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
+        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P");
+        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
+        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
 
         //in the initial pull, we will find all of the records (check?)
         resultSet.clear();
@@ -182,15 +161,15 @@ public class JhuPassInitUpdaterIT {
     @Order(2)
     public void processInitGrantIT_DoesNotUpdateWithNoChange() throws IOException, IllegalAccessException {
         // GIVEN
-        Map<String, String> piRecord0 = makeRowMap(0, 0, "P");
-        Map<String, String> coPiRecord0 = makeRowMap(0, 1, "C");
-        Map<String, String> piRecord1 = makeRowMap(1, 0, "P");
-        Map<String, String> coPiRecord1 = makeRowMap(1, 1, "C");
-        Map<String, String> newCoPiRecord1 = makeRowMap(1, 2, "C");
-        Map<String, String> piRecord2 = makeRowMap(2, 1, "P");
+        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
+        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
+        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P");
+        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
+        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
+        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
 
         //in the initial pull, we will find all of the records (check?)
-        List<Map<String, String>> resultSet = new ArrayList<>();
+        List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
         resultSet.add(piRecord1);
@@ -251,35 +230,35 @@ public class JhuPassInitUpdaterIT {
      * @param abbrRole  the role: Pi ("P") or co-pi (C" or "K")
      * @return the row map for the record
      */
-    private Map<String, String> makeRowMap(int iteration, int user, String abbrRole) throws IOException {
-        Map<String, String> rowMap = new HashMap<>();
-        rowMap.put(C_GRANT_AWARD_NUMBER, grantAwardNumber[iteration]);
-        rowMap.put(C_GRANT_AWARD_STATUS, "Active");
-        rowMap.put(C_GRANT_LOCAL_KEY, grantLocalKey[iteration]);
-        rowMap.put(C_GRANT_PROJECT_NAME, grantProjectName[iteration]);
-        rowMap.put(C_GRANT_AWARD_DATE, grantAwardDate[iteration]);
-        rowMap.put(C_GRANT_START_DATE, grantStartDate[iteration]);
-        rowMap.put(C_GRANT_END_DATE, grantEndDate[iteration]);
+    private GrantIngestRecord makeGrantIngestRecord(int iteration, int user, String abbrRole) throws IOException {
+        GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+        grantIngestRecord.setAwardNumber(grantAwardNumber[iteration]);
+        grantIngestRecord.setAwardStatus("Active");
+        grantIngestRecord.setGrantNumber(grantLocalKey[iteration]);
+        grantIngestRecord.setGrantTitle(grantProjectName[iteration]);
+        grantIngestRecord.setAwardDate(grantAwardDate[iteration]);
+        grantIngestRecord.setAwardStart(grantStartDate[iteration]);
+        grantIngestRecord.setAwardEnd(grantEndDate[iteration]);
 
-        rowMap.put(C_DIRECT_FUNDER_LOCAL_KEY, "30000000");
-        rowMap.put(C_DIRECT_FUNDER_NAME, "Enormous State University");
-        rowMap.put(C_PRIMARY_FUNDER_LOCAL_KEY, "30000001");
-        rowMap.put(C_PRIMARY_FUNDER_NAME, "J L Gotrocks Foundation");
+        grantIngestRecord.setDirectFunderCode("30000000");
+        grantIngestRecord.setDirectFunderName("Enormous State University");
+        grantIngestRecord.setPrimaryFunderCode("30000001");
+        grantIngestRecord.setPrimaryFunderName("J L Gotrocks Foundation");
 
-        rowMap.put(C_USER_FIRST_NAME, userFirstName[user]);
-        rowMap.put(C_USER_MIDDLE_NAME, userMiddleName[user]);
-        rowMap.put(C_USER_LAST_NAME, userLastName[user]);
-        rowMap.put(C_USER_EMAIL, userEmail[user]);
-        rowMap.put(C_USER_INSTITUTIONAL_ID, userInstitutionalId[user]);
-        rowMap.put(C_USER_EMPLOYEE_ID, userEmployeeId[user]);
+        grantIngestRecord.setPiFirstName(userFirstName[user]);
+        grantIngestRecord.setPiMiddleName(userMiddleName[user]);
+        grantIngestRecord.setPiLastName(userLastName[user]);
+        grantIngestRecord.setPiEmail(userEmail[user]);
+        grantIngestRecord.setPiInstitutionalId(userInstitutionalId[user]);
+        grantIngestRecord.setPiEmployeeId(userEmployeeId[user]);
 
-        rowMap.put(C_UPDATE_TIMESTAMP, grantUpdateTimestamp[iteration]);
-        rowMap.put(C_ABBREVIATED_ROLE, abbrRole);
+        grantIngestRecord.setUpdateTimeStamp(grantUpdateTimestamp[iteration]);
+        grantIngestRecord.setPiRole(abbrRole);
 
-        rowMap.put(C_DIRECT_FUNDER_POLICY, getDirectFunderPolicyId());
-        rowMap.put(C_PRIMARY_FUNDER_POLICY, getPrimaryFunderPolicyId());
+        grantIngestRecord.setDirectFunderPolicyId(getDirectFunderPolicyId());
+        grantIngestRecord.setPrimaryFunderPolicyId(getPrimaryFunderPolicyId());
 
-        return rowMap;
+        return grantIngestRecord;
     }
 
     private String getPrimaryFunderPolicyId() throws IOException {

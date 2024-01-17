@@ -15,15 +15,7 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMAIL;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMPLOYEE_ID;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_FIRST_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_INSTITUTIONAL_ID;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_LAST_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_MIDDLE_NAME;
-
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -106,27 +98,19 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     }
 
     @Override
-    public String getEmployeeLocatorId(User user) throws GrantDataException {
-        return user.getLocatorIds().stream()
-            .filter(locatorId -> locatorId.startsWith(EMPLOYEE_LOCATOR_ID))
-            .findFirst()
-            .orElseThrow(() -> new GrantDataException("Unable to find employee id locator id"));
-    }
-
-    @Override
-    public User buildUser(Map<String, String> rowMap) {
+    public User buildUser(GrantIngestRecord grantIngestRecord) {
         User user = new User();
-        user.setFirstName(rowMap.get(C_USER_FIRST_NAME));
-        if (rowMap.containsKey(C_USER_MIDDLE_NAME)) {
-            user.setMiddleName(rowMap.get(C_USER_MIDDLE_NAME));
+        user.setFirstName(grantIngestRecord.getPiFirstName());
+        if (Objects.nonNull(grantIngestRecord.getPiMiddleName())) {
+            user.setMiddleName(grantIngestRecord.getPiMiddleName());
         }
-        user.setLastName(rowMap.get(C_USER_LAST_NAME));
-        user.setDisplayName(rowMap.get(C_USER_FIRST_NAME) + " " + rowMap.get(C_USER_LAST_NAME));
-        user.setEmail(rowMap.get(C_USER_EMAIL));
-        String employeeId = rowMap.get(C_USER_EMPLOYEE_ID);
+        user.setLastName(grantIngestRecord.getPiLastName());
+        user.setDisplayName(grantIngestRecord.getPiFirstName() + " " + grantIngestRecord.getPiLastName());
+        user.setEmail(grantIngestRecord.getPiEmail());
+        String employeeId = grantIngestRecord.getPiEmployeeId();
         String jhedId = null;
-        if (rowMap.get(C_USER_INSTITUTIONAL_ID) != null) {
-            jhedId = rowMap.get(C_USER_INSTITUTIONAL_ID).toLowerCase();
+        if (grantIngestRecord.getPiInstitutionalId() != null) {
+            jhedId = grantIngestRecord.getPiInstitutionalId().toLowerCase();
         }
         //Build the List of locatorIds - put the most reliable ids first
         if (employeeId != null) {

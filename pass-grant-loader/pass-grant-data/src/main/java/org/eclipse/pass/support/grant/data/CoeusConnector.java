@@ -47,27 +47,62 @@ public class CoeusConnector implements GrantConnector {
     private static final String COEUS_USER = "coeus.user";
     private static final String COEUS_PASS = "coeus.pass";
 
+    static final String C_GRANT_AWARD_NUMBER = "AWARD_ID";
+    static final String C_GRANT_AWARD_STATUS = "AWARD_STATUS";
+    static final String C_GRANT_LOCAL_KEY = "GRANT_NUMBER";
+    static final String C_GRANT_PROJECT_NAME = "TITLE";
+    static final String C_GRANT_AWARD_DATE = "AWARD_DATE";
+    static final String C_GRANT_START_DATE = "AWARD_START";
+    static final String C_GRANT_END_DATE = "AWARD_END";
+
+    static final String C_DIRECT_FUNDER_LOCAL_KEY = "SPOSNOR_CODE";// misspelling in COEUS view - if this gets
+    // corrected
+    //it will collide with C_PRIMARY_SPONSOR_CODE below - this field will then have to be aliased in order to
+    //access it in the ResultSet
+    static final String C_DIRECT_FUNDER_NAME = "SPONSOR";
+    static final String C_PRIMARY_FUNDER_LOCAL_KEY = "SPONSOR_CODE";
+    static final String C_PRIMARY_FUNDER_NAME = "SPONSOR_NAME";
+
+    static final String C_USER_FIRST_NAME = "FIRST_NAME";
+    static final String C_USER_MIDDLE_NAME = "MIDDLE_NAME";
+    static final String C_USER_LAST_NAME = "LAST_NAME";
+    static final String C_USER_EMAIL = "EMAIL_ADDRESS";
+    static final String C_USER_INSTITUTIONAL_ID = "JHED_ID";
+    static final String C_USER_EMPLOYEE_ID = "EMPLOYEE_ID";
+    //static final String C_USER_AFFILIATION = "";
+    //static final String C_USER_ORCID_ID = "";
+
+    //these fields are accessed for processing, but are not mapped to PASS objects
+    static final String C_UPDATE_TIMESTAMP = "UPDATE_TIMESTAMP";
+    static final String C_ABBREVIATED_ROLE = "ABBREVIATED_ROLE";
+
+    //this is not a COEUS field, but is a place in our row map to put a hopkins id if it exists
+    static final String C_USER_HOPKINS_ID = "HOPKINS_ID";
+    //also not a field name, but something provided in a properties file
+    static final String C_PRIMARY_FUNDER_POLICY = "PRIMARY_FUNDER_POLICY";
+    static final String C_DIRECT_FUNDER_POLICY = "DIRECT_FUNDER_POLICY";
+
     private static final String SELECT_GRANT_SQL =
         "SELECT " +
-        "A." + CoeusFieldNames.C_GRANT_AWARD_NUMBER + ", " +
-        "A." + CoeusFieldNames.C_GRANT_AWARD_STATUS + ", " +
-        "A." + CoeusFieldNames.C_GRANT_LOCAL_KEY + ", " +
-        "A." + CoeusFieldNames.C_GRANT_PROJECT_NAME + ", " +
-        "A." + CoeusFieldNames.C_GRANT_AWARD_DATE + ", " +
-        "A." + CoeusFieldNames.C_GRANT_START_DATE + ", " +
-        "A." + CoeusFieldNames.C_GRANT_END_DATE + ", " +
-        "A." + CoeusFieldNames.C_DIRECT_FUNDER_NAME + ", " +
-        "A." + CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY + ", " + //"SPOSNOR_CODE"
-        "A." + CoeusFieldNames.C_UPDATE_TIMESTAMP + ", " +
-        "B." + CoeusFieldNames.C_ABBREVIATED_ROLE + ", " +
-        "B." + CoeusFieldNames.C_USER_EMPLOYEE_ID + ", " +
-        "C." + CoeusFieldNames.C_USER_FIRST_NAME + ", " +
-        "C." + CoeusFieldNames.C_USER_MIDDLE_NAME + ", " +
-        "C." + CoeusFieldNames.C_USER_LAST_NAME + ", " +
-        "C." + CoeusFieldNames.C_USER_EMAIL + ", " +
-        "C." + CoeusFieldNames.C_USER_INSTITUTIONAL_ID + ", " +
-        "D." + CoeusFieldNames.C_PRIMARY_FUNDER_NAME + ", " +
-        "D." + CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY + " " +
+        "A." + C_GRANT_AWARD_NUMBER + ", " +
+        "A." + C_GRANT_AWARD_STATUS + ", " +
+        "A." + C_GRANT_LOCAL_KEY + ", " +
+        "A." + C_GRANT_PROJECT_NAME + ", " +
+        "A." + C_GRANT_AWARD_DATE + ", " +
+        "A." + C_GRANT_START_DATE + ", " +
+        "A." + C_GRANT_END_DATE + ", " +
+        "A." + C_DIRECT_FUNDER_NAME + ", " +
+        "A." + C_DIRECT_FUNDER_LOCAL_KEY + ", " + //"SPOSNOR_CODE"
+        "A." + C_UPDATE_TIMESTAMP + ", " +
+        "B." + C_ABBREVIATED_ROLE + ", " +
+        "B." + C_USER_EMPLOYEE_ID + ", " +
+        "C." + C_USER_FIRST_NAME + ", " +
+        "C." + C_USER_MIDDLE_NAME + ", " +
+        "C." + C_USER_LAST_NAME + ", " +
+        "C." + C_USER_EMAIL + ", " +
+        "C." + C_USER_INSTITUTIONAL_ID + ", " +
+        "D." + C_PRIMARY_FUNDER_NAME + ", " +
+        "D." + C_PRIMARY_FUNDER_LOCAL_KEY + " " +
         "FROM " +
         "COEUS.JHU_FACULTY_FORCE_PROP A " +
         "INNER JOIN COEUS.JHU_FACULTY_FORCE_PRSN B ON A.INST_PROPOSAL = B.INST_PROPOSAL " +
@@ -81,20 +116,20 @@ public class CoeusConnector implements GrantConnector {
 
     private static final String SELECT_USER_SQL =
         "SELECT " +
-            CoeusFieldNames.C_USER_FIRST_NAME + ", " +
-            CoeusFieldNames.C_USER_MIDDLE_NAME + ", " +
-            CoeusFieldNames.C_USER_LAST_NAME + ", " +
-            CoeusFieldNames.C_USER_EMAIL + ", " +
-            CoeusFieldNames.C_USER_INSTITUTIONAL_ID + ", " +
-            CoeusFieldNames.C_USER_EMPLOYEE_ID + ", " +
-            CoeusFieldNames.C_UPDATE_TIMESTAMP + " " +
+            C_USER_FIRST_NAME + ", " +
+            C_USER_MIDDLE_NAME + ", " +
+            C_USER_LAST_NAME + ", " +
+            C_USER_EMAIL + ", " +
+            C_USER_INSTITUTIONAL_ID + ", " +
+            C_USER_EMPLOYEE_ID + ", " +
+            C_UPDATE_TIMESTAMP + " " +
             "FROM COEUS.JHU_FACULTY_FORCE_PRSN_DETAIL " +
             "WHERE UPDATE_TIMESTAMP > ?";
 
     private static final String SELECT_FUNDER_SQL =
         "SELECT " +
-            CoeusFieldNames.C_PRIMARY_FUNDER_NAME + ", " +
-            CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY + " " +
+            C_PRIMARY_FUNDER_NAME + ", " +
+            C_PRIMARY_FUNDER_LOCAL_KEY + " " +
             "FROM COEUS.SWIFT_SPONSOR " +
             "WHERE SPONSOR_CODE IN (%s)";
 
@@ -128,7 +163,7 @@ public class CoeusConnector implements GrantConnector {
 
     }
 
-    public List<Map<String, String>> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant)
+    public List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant)
         throws SQLException {
         if (mode.equals("user")) {
             return retrieveUserUpdates(startDate);
@@ -139,11 +174,11 @@ public class CoeusConnector implements GrantConnector {
         }
     }
 
-    private List<Map<String, String>> retrieveGrantUpdates(String startDate, String awardEndDate, String grant)
+    private List<GrantIngestRecord> retrieveGrantUpdates(String startDate, String awardEndDate, String grant)
         throws SQLException {
 
         String sql = buildGrantQueryString(grant);
-        List<Map<String, String>> mapList = new ArrayList<>();
+        List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
 
         try (
             Connection con = DriverManager.getConnection(coeusUrl, coeusUser, coeusPassword);
@@ -157,53 +192,50 @@ public class CoeusConnector implements GrantConnector {
             }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Map<String, String> rowMap = new HashMap<>();
-                    rowMap.put(CoeusFieldNames.C_GRANT_AWARD_NUMBER,
-                        ModelUtil.normalizeAwardNumber(rs.getString(CoeusFieldNames.C_GRANT_AWARD_NUMBER)));
-                    rowMap.put(CoeusFieldNames.C_GRANT_AWARD_STATUS,
-                        rs.getString(CoeusFieldNames.C_GRANT_AWARD_STATUS));
-                    rowMap.put(CoeusFieldNames.C_GRANT_LOCAL_KEY, rs.getString(CoeusFieldNames.C_GRANT_LOCAL_KEY));
-                    rowMap.put(CoeusFieldNames.C_GRANT_PROJECT_NAME,
-                        rs.getString(CoeusFieldNames.C_GRANT_PROJECT_NAME));
-                    rowMap.put(CoeusFieldNames.C_GRANT_AWARD_DATE, rs.getString(CoeusFieldNames.C_GRANT_AWARD_DATE));
-                    rowMap.put(CoeusFieldNames.C_GRANT_START_DATE, rs.getString(CoeusFieldNames.C_GRANT_START_DATE));
-                    rowMap.put(CoeusFieldNames.C_GRANT_END_DATE, rs.getString(CoeusFieldNames.C_GRANT_END_DATE));
-                    rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_NAME,
-                        rs.getString(CoeusFieldNames.C_DIRECT_FUNDER_NAME));
-                    rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_NAME,
-                        rs.getString(CoeusFieldNames.C_PRIMARY_FUNDER_NAME));
-                    rowMap.put(CoeusFieldNames.C_USER_FIRST_NAME, rs.getString(CoeusFieldNames.C_USER_FIRST_NAME));
-                    rowMap.put(CoeusFieldNames.C_USER_MIDDLE_NAME, rs.getString(CoeusFieldNames.C_USER_MIDDLE_NAME));
-                    rowMap.put(CoeusFieldNames.C_USER_LAST_NAME, rs.getString(CoeusFieldNames.C_USER_LAST_NAME));
-                    rowMap.put(CoeusFieldNames.C_USER_EMAIL, rs.getString(CoeusFieldNames.C_USER_EMAIL));
-                    rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, rs.getString(CoeusFieldNames.C_USER_EMPLOYEE_ID));
-                    rowMap.put(CoeusFieldNames.C_USER_INSTITUTIONAL_ID,
-                        rs.getString(CoeusFieldNames.C_USER_INSTITUTIONAL_ID));
-                    rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, rs.getString(CoeusFieldNames.C_UPDATE_TIMESTAMP));
-                    rowMap.put(CoeusFieldNames.C_ABBREVIATED_ROLE, rs.getString(CoeusFieldNames.C_ABBREVIATED_ROLE));
-                    String primaryFunderLocalKey = rs.getString(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY);
-                    rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY, primaryFunderLocalKey);
+                    GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+                    grantIngestRecord.setAwardNumber(
+                        ModelUtil.normalizeAwardNumber(rs.getString(C_GRANT_AWARD_NUMBER)));
+                    grantIngestRecord.setAwardStatus(rs.getString(C_GRANT_AWARD_STATUS));
+                    grantIngestRecord.setGrantNumber(rs.getString(C_GRANT_LOCAL_KEY));
+                    grantIngestRecord.setGrantTitle(rs.getString(C_GRANT_PROJECT_NAME));
+                    grantIngestRecord.setAwardDate(rs.getString(C_GRANT_AWARD_DATE));
+                    grantIngestRecord.setAwardStart(rs.getString(C_GRANT_START_DATE));
+                    grantIngestRecord.setAwardEnd(rs.getString(C_GRANT_END_DATE));
+                    grantIngestRecord.setDirectFunderName(rs.getString(C_DIRECT_FUNDER_NAME));
+                    grantIngestRecord.setPrimaryFunderName(rs.getString(C_PRIMARY_FUNDER_NAME));
+                    grantIngestRecord.setPiFirstName(rs.getString(C_USER_FIRST_NAME));
+                    grantIngestRecord.setPiMiddleName(rs.getString(C_USER_MIDDLE_NAME));
+                    grantIngestRecord.setPiLastName(rs.getString(C_USER_LAST_NAME));
+                    grantIngestRecord.setPiEmail(rs.getString(C_USER_EMAIL));
+                    grantIngestRecord.setPiEmployeeId(rs.getString(C_USER_EMPLOYEE_ID));
+                    grantIngestRecord.setPiInstitutionalId(rs.getString(C_USER_INSTITUTIONAL_ID));
+                    grantIngestRecord.setUpdateTimeStamp(rs.getString(C_UPDATE_TIMESTAMP));
+                    grantIngestRecord.setPiRole(rs.getString(C_ABBREVIATED_ROLE));
+                    String primaryFunderLocalKey = rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY);
+                    grantIngestRecord.setPrimaryFunderCode(primaryFunderLocalKey);
                     if (primaryFunderLocalKey != null &&
                         funderPolicyProperties.stringPropertyNames().contains(primaryFunderLocalKey)) {
-                        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_POLICY,
+                        grantIngestRecord.setPrimaryFunderPolicyId(
                             funderPolicyProperties.getProperty(primaryFunderLocalKey));
                     }
-                    String directFunderLocalKey = rs.getString(CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY);
-                    rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY, directFunderLocalKey);
+                    String directFunderLocalKey = rs.getString(C_DIRECT_FUNDER_LOCAL_KEY);
+                    grantIngestRecord.setDirectFunderCode(directFunderLocalKey);
                     if (directFunderLocalKey != null &&
                         funderPolicyProperties.stringPropertyNames().contains(directFunderLocalKey)) {
-                        rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_POLICY,
+                        grantIngestRecord.setDirectFunderPolicyId(
                             funderPolicyProperties.getProperty(directFunderLocalKey));
                     }
-                    LOG.debug("Record processed: {}", rowMap);
-                    if (!mapList.contains(rowMap)) {
-                        mapList.add(rowMap);
-                    }
+                    LOG.debug("Record processed: {}", grantIngestRecord);
+                    // TODO is this needed?  So what if there is a duplicate, logic would work it out i think
+                    grantIngestRecords.add(grantIngestRecord);
+//                    if (!mapList.contains(rowMap)) {
+//                        mapList.add(rowMap);
+//                    }
                 }
             }
         }
-        LOG.info("Retrieved result set from COEUS: {} records processed", mapList.size());
-        return mapList;
+        LOG.info("Retrieved result set from COEUS: {} records processed", grantIngestRecords.size());
+        return grantIngestRecords;
     }
 
     private String buildGrantQueryString(String grant) {
@@ -212,8 +244,8 @@ public class CoeusConnector implements GrantConnector {
             : SELECT_GRANT_SQL + "AND A.GRANT_NUMBER = ?";
     }
 
-    private List<Map<String, String>> retrieveFunderUpdates() throws SQLException {
-        List<Map<String, String>> mapList = new ArrayList<>();
+    private List<GrantIngestRecord> retrieveFunderUpdates() throws SQLException {
+        List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
         String funderSql = String.format(SELECT_FUNDER_SQL,
             funderPolicyProperties.stringPropertyNames().stream()
                 .map(v -> "?")
@@ -228,23 +260,21 @@ public class CoeusConnector implements GrantConnector {
             }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) { //these are the field names in the swift sponsor view
-                    Map<String, String> rowMap = new HashMap<>();
-                    rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY,
-                        rs.getString(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY));
-                    rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_NAME,
-                        rs.getString(CoeusFieldNames.C_PRIMARY_FUNDER_NAME));
-                    rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_POLICY,
-                        funderPolicyProperties.getProperty(
-                            rs.getString(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY)));
-                    mapList.add(rowMap);
+                    GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+                    grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
+                    grantIngestRecord.setPrimaryFunderName(rs.getString(C_PRIMARY_FUNDER_NAME));
+                    grantIngestRecord.setPrimaryFunderPolicyId(
+                        funderPolicyProperties.getProperty(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY)));
+                    // TODO is this needed?  So what if there is a duplicate, logic would work it out i think
+                    grantIngestRecords.add(grantIngestRecord);
                 }
             }
         }
-        return mapList;
+        return grantIngestRecords;
     }
 
-    private List<Map<String, String>> retrieveUserUpdates(String startDate) throws SQLException {
-        List<Map<String, String>> mapList = new ArrayList<>();
+    private List<GrantIngestRecord> retrieveUserUpdates(String startDate) throws SQLException {
+        List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
         try (
             Connection con = DriverManager.getConnection(coeusUrl, coeusUser, coeusPassword);
             PreparedStatement ps = con.prepareStatement(SELECT_USER_SQL);
@@ -253,24 +283,21 @@ public class CoeusConnector implements GrantConnector {
             ps.setTimestamp(1, Timestamp.valueOf(startLd));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Map<String, String> rowMap = new HashMap<>();
-                    rowMap.put(CoeusFieldNames.C_USER_FIRST_NAME, rs.getString(CoeusFieldNames.C_USER_FIRST_NAME));
-                    rowMap.put(CoeusFieldNames.C_USER_MIDDLE_NAME, rs.getString(CoeusFieldNames.C_USER_MIDDLE_NAME));
-                    rowMap.put(CoeusFieldNames.C_USER_LAST_NAME, rs.getString(CoeusFieldNames.C_USER_LAST_NAME));
-                    rowMap.put(CoeusFieldNames.C_USER_EMAIL, rs.getString(CoeusFieldNames.C_USER_EMAIL));
-                    rowMap.put(CoeusFieldNames.C_USER_INSTITUTIONAL_ID,
-                        rs.getString(CoeusFieldNames.C_USER_INSTITUTIONAL_ID));
-                    rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, rs.getString(CoeusFieldNames.C_USER_EMPLOYEE_ID));
-                    rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, rs.getString(CoeusFieldNames.C_UPDATE_TIMESTAMP));
-                    LOG.debug("Record processed: {}", rowMap);
-                    if (!mapList.contains(rowMap)) {
-                        mapList.add(rowMap);
-                    }
+                    GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+                    grantIngestRecord.setPiFirstName(rs.getString(C_USER_FIRST_NAME));
+                    grantIngestRecord.setPiMiddleName(rs.getString(C_USER_MIDDLE_NAME));
+                    grantIngestRecord.setPiLastName(rs.getString(C_USER_LAST_NAME));
+                    grantIngestRecord.setPiEmail(rs.getString(C_USER_EMAIL));
+                    grantIngestRecord.setPiInstitutionalId(rs.getString(C_USER_INSTITUTIONAL_ID));
+                    grantIngestRecord.setPiEmployeeId(rs.getString(C_USER_EMPLOYEE_ID));
+                    grantIngestRecord.setUpdateTimeStamp(rs.getString(C_UPDATE_TIMESTAMP));
+                    LOG.debug("Record processed: {}", grantIngestRecord);
+                    grantIngestRecords.add(grantIngestRecord);
                 }
             }
         }
-        LOG.info("Retrieved Users result set from COEUS: {} records processed", mapList.size());
-        return mapList;
+        LOG.info("Retrieved Users result set from COEUS: {} records processed", grantIngestRecords.size());
+        return grantIngestRecords;
     }
 
 }

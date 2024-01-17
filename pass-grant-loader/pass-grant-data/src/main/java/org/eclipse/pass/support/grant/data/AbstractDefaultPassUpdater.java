@@ -16,22 +16,6 @@
 package org.eclipse.pass.support.grant.data;
 
 import static java.lang.String.format;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_ABBREVIATED_ROLE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_DIRECT_FUNDER_POLICY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_AWARD_DATE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_AWARD_NUMBER;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_AWARD_STATUS;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_END_DATE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_LOCAL_KEY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_PROJECT_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_GRANT_START_DATE;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_NAME;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_PRIMARY_FUNDER_POLICY;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_UPDATE_TIMESTAMP;
-import static org.eclipse.pass.support.grant.data.CoeusFieldNames.C_USER_EMPLOYEE_ID;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
 
 import java.io.IOException;
@@ -93,7 +77,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         this.passClient = PassClient.newInstance();
     }
 
-    public void updatePass(Collection<Map<String, String>> results, String mode) {
+    public void updatePass(Collection<GrantIngestRecord> results, String mode) {
         this.mode = mode;
         userMap.clear();
         funderMap.clear();
@@ -149,7 +133,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
      * Because we need to make sure we catch any updates to fields referenced by URIs, we construct
      * these and update these as well
      */
-    private void updateGrants(Collection<Map<String, String>> results) {
+    private void updateGrants(Collection<GrantIngestRecord> results) {
 
         //a grant will have several rows in the ResultSet if there are co-pis. so we put the grant on this
         //Map and add to it as additional rows add information.
@@ -158,42 +142,42 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         LOG.warn("Processing result set with {} rows", results.size());
         boolean modeChecked = false;
 
-        for (Map<String, String> rowMap : results) {
+        for (GrantIngestRecord grantIngestRecord : results) {
 
             if (!modeChecked) {
-                if (!rowMap.containsKey(C_GRANT_LOCAL_KEY)) { //we always have this for grants
+                if (Objects.isNull(grantIngestRecord.getGrantNumber())) { //we always have this for grants
                     throw new RuntimeException("Mode of grant was supplied, but data does not seem to match.");
                 } else {
                     modeChecked = true;
                 }
             }
 
-            String grantLocalKey = rowMap.get(C_GRANT_LOCAL_KEY);
+            String grantLocalKey = grantIngestRecord.getGrantNumber();
 
             try {
                 //get funder local keys. if a primary funder is not specified, we set it to the direct funder
-                String directFunderLocalKey = rowMap.get(C_DIRECT_FUNDER_LOCAL_KEY);
-                String primaryFunderLocalKey = rowMap.get(C_PRIMARY_FUNDER_LOCAL_KEY);
+                String directFunderLocalKey = grantIngestRecord.getDirectFunderCode();
+                String primaryFunderLocalKey = grantIngestRecord.getPrimaryFunderCode();
                 primaryFunderLocalKey = (primaryFunderLocalKey == null ? directFunderLocalKey : primaryFunderLocalKey);
 
                 //we will need funder PASS URIs - retrieve or create them,
                 //updating the info on them if necessary
                 if (!funderMap.containsKey(directFunderLocalKey)) {
-                    Funder directFunder = buildDirectFunder(rowMap);
+                    Funder directFunder = buildDirectFunder(grantIngestRecord);
                     Funder updatedFunder = updateFunderInPass(directFunder);
                     funderMap.put(directFunderLocalKey, updatedFunder);
                 }
 
                 if (!funderMap.containsKey(primaryFunderLocalKey)) {
-                    Funder primaryFunder = buildPrimaryFunder(rowMap);
+                    Funder primaryFunder = buildPrimaryFunder(grantIngestRecord);
                     Funder updatedFunder = updateFunderInPass(primaryFunder);
                     funderMap.put(primaryFunderLocalKey, updatedFunder);
                 }
 
                 //same for any users
-                String employeeId = rowMap.get(C_USER_EMPLOYEE_ID);
+                String employeeId = grantIngestRecord.getPiEmployeeId();
                 if (!userMap.containsKey(employeeId)) {
-                    User rowUser = buildUser(rowMap);
+                    User rowUser = buildUser(grantIngestRecord);
                     User updateUser = updateUserInPass(rowUser);
                     userMap.put(employeeId, updateUser);
                 }
@@ -212,7 +196,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
                 grant = grantRowMap.get(grantLocalKey);
 
-                String abbreviatedRole = rowMap.get(C_ABBREVIATED_ROLE);
+                String abbreviatedRole = grantIngestRecord.getPiRole();
                 //anybody who was ever a co-pi in an iteration will be in this list
                 if (abbreviatedRole.equals("C") || abbreviatedRole.equals("K")) {
                     User user = userMap.get(employeeId);
@@ -223,9 +207,9 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 }
 
                 //now do things which may depend on the date - award date is the only one that changes
-                ZonedDateTime awardDate = createZonedDateTime(rowMap.getOrDefault(C_GRANT_AWARD_DATE, null));
-                ZonedDateTime startDate = createZonedDateTime(rowMap.getOrDefault(C_GRANT_START_DATE, null));
-                ZonedDateTime endDate = createZonedDateTime(rowMap.getOrDefault(C_GRANT_END_DATE, null));
+                ZonedDateTime awardDate = createZonedDateTime(grantIngestRecord.getAwardDate());
+                ZonedDateTime startDate = createZonedDateTime(grantIngestRecord.getAwardStart());
+                ZonedDateTime endDate = createZonedDateTime(grantIngestRecord.getAwardEnd());
 
                 //set values that should match earliest iteration of the grant. we wet these on the system record
                 //in case they are needed to update a stored grant record.
@@ -235,8 +219,8 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 if ((awardDate != null && (grant.getAwardDate() == null || awardDate.isBefore(grant.getAwardDate()))) ||
                     awardDate == null && (startDate != null && (grant.getStartDate() == null || startDate.isBefore(
                         grant.getStartDate())))) {
-                    grant.setProjectName(rowMap.get(C_GRANT_PROJECT_NAME));
-                    grant.setAwardNumber(rowMap.get(C_GRANT_AWARD_NUMBER));
+                    grant.setProjectName(grantIngestRecord.getGrantTitle());
+                    grant.setAwardNumber(grantIngestRecord.getAwardNumber());
                     grant.setDirectFunder(funderMap.get(directFunderLocalKey));
                     grant.setPrimaryFunder(funderMap.get(primaryFunderLocalKey));
                     grant.setStartDate(startDate);
@@ -252,7 +236,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                         && (endDate != null && (grant.getEndDate() == null || !endDate.isBefore(grant.getEndDate())))) {
                     grant.setEndDate(endDate);
                     //status should be the latest one
-                    String status = rowMap.getOrDefault(C_GRANT_AWARD_STATUS, null);
+                    String status = grantIngestRecord.getAwardStatus();
                     try {
                         String lowercaseStatus = StringUtils.lowerCase(status);
                         AwardStatus awardStatus = AwardStatus.of(lowercaseStatus);
@@ -285,10 +269,10 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 //we are done with this record, let's save the state of this Grant
                 grantRowMap.put(grantLocalKey, grant);
                 //see if this is the latest grant updated
-                if (rowMap.containsKey(C_UPDATE_TIMESTAMP)) {
-                    String grantUpdateString = rowMap.get(C_UPDATE_TIMESTAMP);
+                if (Objects.nonNull(grantIngestRecord.getUpdateTimeStamp())) {
+                    String grantUpdateString = grantIngestRecord.getUpdateTimeStamp();
                     latestUpdateString =
-                            latestUpdateString.length() == 0
+                        latestUpdateString.isEmpty()
                                     ? grantUpdateString
                                     : DateTimeUtil.returnLaterUpdate(grantUpdateString, latestUpdateString);
                 }
@@ -309,7 +293,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         }
 
         //success - we capture some information to report
-        if (grantResultMap.size() > 0) {
+        if (!grantResultMap.isEmpty()) {
             statistics.setLatestUpdateString(latestUpdateString);
             statistics.setReport(results.size(), grantResultMap.size());
         } else {
@@ -335,30 +319,30 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         return passEntities.stream().map(PassEntity::getId).collect(Collectors.toSet());
     }
 
-    private void updateUsers(Collection<Map<String, String>> results) {
+    private void updateUsers(Collection<GrantIngestRecord> results) {
 
         boolean modeChecked = false;
 
         LOG.info("Processing result set with {} rows", results.size());
         int userProcessedCounter = 0;
-        for (Map<String, String> rowMap : results) {
+        for (GrantIngestRecord grantIngestRecord : results) {
 
             if (!modeChecked) {
-                if (!rowMap.containsKey(C_USER_EMPLOYEE_ID)) { //we always have this for users
+                if (Objects.isNull(grantIngestRecord.getPiEmployeeId())) { //we always have this for users
                     throw new RuntimeException("Mode of user was supplied, but data does not seem to match.");
                 } else {
                     modeChecked = true;
                 }
             }
 
-            User rowUser = buildUser(rowMap);
+            User rowUser = buildUser(grantIngestRecord);
             try {
                 updateUserInPass(rowUser);
                 userProcessedCounter++;
-                if (rowMap.containsKey(C_UPDATE_TIMESTAMP)) {
-                    String userUpdateString = rowMap.get(C_UPDATE_TIMESTAMP);
+                if (Objects.nonNull(grantIngestRecord.getUpdateTimeStamp())) {
+                    String userUpdateString = grantIngestRecord.getUpdateTimeStamp();
                     latestUpdateString =
-                            latestUpdateString.length() == 0
+                        latestUpdateString.isEmpty()
                                     ? userUpdateString
                                     : DateTimeUtil.returnLaterUpdate(userUpdateString, latestUpdateString);
                 }
@@ -367,7 +351,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             }
         }
 
-        if (results.size() > 0) {
+        if (!results.isEmpty()) {
             statistics.setLatestUpdateString(latestUpdateString);
             statistics.setReport(results.size(), userProcessedCounter);
         } else {
@@ -379,24 +363,25 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
     /**
      * This method is called for the "funder" mode - the column names will have the values for primary funders
      *
-     * @param results the data row map containing funder information
+     * @param results the data records containing funder information
      */
-    private void updateFunders(Collection<Map<String, String>> results) {
+    private void updateFunders(Collection<GrantIngestRecord> results) {
 
         boolean modeChecked = false;
         LOG.info("Processing result set with {} rows", results.size());
         int funderProcessedCounter = 0;
-        for (Map<String, String> rowMap : results) {
+        for (GrantIngestRecord grantIngestRecord : results) {
 
             if (!modeChecked) {
-                if (!rowMap.containsKey(C_PRIMARY_FUNDER_LOCAL_KEY) && !rowMap.containsKey(C_PRIMARY_FUNDER_NAME)) {
+                if (Objects.isNull(grantIngestRecord.getPrimaryFunderCode())
+                    && Objects.isNull(grantIngestRecord.getPrimaryFunderName())) {
                     throw new RuntimeException("Mode of funder was supplied, but data does not seem to match.");
                 } else {
                     modeChecked = true;
                 }
             }
 
-            Funder rowFunder = buildPrimaryFunder(rowMap);
+            Funder rowFunder = buildPrimaryFunder(grantIngestRecord);
             try {
                 updateFunderInPass(rowFunder);
                 funderProcessedCounter++;
@@ -411,14 +396,14 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
      * this method gets called on a grant mode process if the primary funder is different from direct, and also
      * any time the updater is called in funder mode
      *
-     * @param rowMap the funder data map
+     * @param grantIngestRecord the funder data record
      * @return the funder
      */
-    Funder buildPrimaryFunder(Map<String, String> rowMap) {
+    Funder buildPrimaryFunder(GrantIngestRecord grantIngestRecord) {
         Funder funder = new Funder();
-        funder.setName(rowMap.getOrDefault(C_PRIMARY_FUNDER_NAME, null));
-        funder.setLocalKey(rowMap.get(C_PRIMARY_FUNDER_LOCAL_KEY));
-        String policyId = rowMap.get(C_PRIMARY_FUNDER_POLICY);
+        funder.setName(grantIngestRecord.getPrimaryFunderName());
+        funder.setLocalKey(grantIngestRecord.getPrimaryFunderCode());
+        String policyId = grantIngestRecord.getPrimaryFunderPolicyId();
         if (StringUtils.isNotEmpty(policyId)) {
             funder.setPolicy(new Policy(policyId));
             LOG.debug("Processing Funder with localKey {} and policy {}", funder.getLocalKey(), policyId);
@@ -428,13 +413,13 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         return funder;
     }
 
-    private Funder buildDirectFunder(Map<String, String> rowMap) {
+    private Funder buildDirectFunder(GrantIngestRecord grantIngestRecord) {
         Funder funder = new Funder();
-        if (rowMap.containsKey(C_DIRECT_FUNDER_NAME)) {
-            funder.setName(rowMap.get(C_DIRECT_FUNDER_NAME));
+        if (Objects.nonNull(grantIngestRecord.getDirectFunderName())) {
+            funder.setName(grantIngestRecord.getDirectFunderName());
         }
-        funder.setLocalKey(rowMap.get(C_DIRECT_FUNDER_LOCAL_KEY));
-        String policyId = rowMap.get(C_DIRECT_FUNDER_POLICY);
+        funder.setLocalKey(grantIngestRecord.getDirectFunderCode());
+        String policyId = grantIngestRecord.getDirectFunderPolicyId();
         if (StringUtils.isNotEmpty(policyId)) {
             funder.setPolicy(new Policy(policyId));
             LOG.debug("Processing Funder with localKey {} and policy {}", funder.getLocalKey(), policyId);

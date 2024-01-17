@@ -1,0 +1,23 @@
+package org.eclipse.pass.support.grant.data;
+
+public enum GrantIngestCsvHeaders {
+    GRANT_NUMBER,
+    GRANT_TITLE,
+    AWARD_NUMBER,
+    AWARD_STATUS,
+    AWARD_DATE,
+    AWARD_START,
+    AWARD_END,
+    PRIMARY_FUNDER_NAME,
+    PRIMARY_FUNDER_CODE,
+    DIRECT_FUNDER_NAME,
+    DIRECT_FUNDER_CODE,
+    PI_FIRST_NAME,
+    PI_MIDDLE_NAME,
+    PI_LAST_NAME,
+    PI_EMAIL,
+    PI_INSTITUTIONAL_ID,
+    PI_EMPLOYEE_ID,
+    PI_ROLE,
+    UPDATE_TIMESTAMP
+}
