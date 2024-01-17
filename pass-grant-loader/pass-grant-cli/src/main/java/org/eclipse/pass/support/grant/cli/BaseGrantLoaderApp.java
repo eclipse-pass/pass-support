@@ -41,17 +41,16 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.pass.support.grant.data.GrantConnector;
+import org.eclipse.pass.support.grant.data.GrantDataCsvFileUtils;
+import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -208,7 +207,7 @@ abstract class BaseGrantLoaderApp {
             throw processException(ERR_COULD_NOT_OPEN_CONFIGURATION_FILE, e);
         }
 
-        List<Map<String, String>> resultSet = null;
+        List<GrantIngestRecord> resultSet;
 
         //now do things;
         if (!action.equals("load")) { //action includes a pull - need to build a result set
@@ -244,12 +243,10 @@ abstract class BaseGrantLoaderApp {
                 throw processException("Runtime Exception", e);
             }
         } else { //just doing a PASS load, must have results set in the data file
-            try (FileInputStream fis = new FileInputStream(dataFile);
-                 ObjectInputStream in = new ObjectInputStream(fis)
-            ) {
-                resultSet = Collections.unmodifiableList((List<Map<String, String>>) in.readObject());
-            } catch (IOException | ClassNotFoundException ex) {
-                ex.printStackTrace();
+            try {
+                resultSet = GrantDataCsvFileUtils.loadGrantIngestCsv(dataFile);
+            } catch (IOException ex) {
+                throw processException("Error loading CSV data file", ex);
             }
         }
 
@@ -286,6 +283,7 @@ abstract class BaseGrantLoaderApp {
                 emailService.sendEmailMessage("Grant Loader Data Pull SUCCESS", message);
             }
         } else { //don't need to update, just write the result set out to the data file
+            // TODO write out csv
             try (FileOutputStream fos = new FileOutputStream(dataFile);
                  ObjectOutputStream out = new ObjectOutputStream(fos)
             ) {

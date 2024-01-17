@@ -32,7 +32,7 @@ public interface PassUpdater {
      * @param results the source grant data
      * @param mode the mode of update
      */
-    void updatePass(Collection<Map<String, String>> results, String mode);
+    void updatePass(Collection<GrantIngestRecord> results, String mode);
 
     /**
      * This method takes a Grantfrom the data source, calculates whether it needs to be updated, and if so, returns
@@ -69,18 +69,10 @@ public interface PassUpdater {
 
     /**
      * Build a User for the institution based on the result set Map.
-     * @param rowMap a result set map
+     * @param grantIngestRecord a grant ingest record
      * @return a User
      */
-    User buildUser(Map<String, String> rowMap);
-
-    /**
-     * Returns the employee locator ID of the user.
-     * @param user the user
-     * @return the employee id
-     * @throws GrantDataException of the employee ID is not found
-     */
-    String getEmployeeLocatorId(User user) throws GrantDataException;
+    User buildUser(GrantIngestRecord grantIngestRecord);
 
     /**
      * Returns the latest update timestamp string.

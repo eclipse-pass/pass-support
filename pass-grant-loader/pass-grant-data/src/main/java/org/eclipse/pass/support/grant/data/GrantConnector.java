@@ -17,7 +17,6 @@ package org.eclipse.pass.support.grant.data;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This interface defines methods for connecting to a grant datasource for us with PASS
@@ -25,8 +24,8 @@ import java.util.Map;
 public interface GrantConnector {
 
     /**
-     * This method retrieves the data from a data source. The format is a List of Maps - one List element for each
-     * grant or user record.
+     * This method retrieves the data from a data source. The format is a List of GrantIngestRecord -
+     * one List element for each grant or user record.
      *
      * @param startDate - the date of the earliest record we wish to get on this pull
      * @param awardEndDate - the end date of the award
@@ -34,7 +33,7 @@ public interface GrantConnector {
      * @param grant      - a grant number
      * @throws SQLException           if there is an SQL exception
      */
-    List<Map<String, String>> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant) throws
+    List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant) throws
         SQLException;
 
 }
