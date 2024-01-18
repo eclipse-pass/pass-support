@@ -23,7 +23,6 @@ import static org.mockito.Mockito.doReturn;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +103,7 @@ public class JhuPassUpdaterTest {
     @Test
     public void testUpdatePassGrant_Success_SkipDuplicateGrantInPass() throws IOException, IllegalAccessException {
 
-        List<Map<String, String>> resultSet = buildTestInputResultSet();
+        List<GrantIngestRecord> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
         Grant grant1 = new Grant("8675309");
         Grant grant2 = new Grant("8675309");
@@ -141,89 +140,59 @@ public class JhuPassUpdaterTest {
         String primaryFunderPolicy = "policy1";
         String directFunderPolicy = "policy2";
 
-        Map<String, String> rowMap = new HashMap<>();
-        rowMap.put(CoeusFieldNames.C_GRANT_AWARD_NUMBER, awardNumber);
-        rowMap.put(CoeusFieldNames.C_GRANT_AWARD_STATUS, awardStatus);
-        rowMap.put(CoeusFieldNames.C_GRANT_LOCAL_KEY, localKey);
-        rowMap.put(CoeusFieldNames.C_GRANT_PROJECT_NAME, projectName);
-        rowMap.put(CoeusFieldNames.C_GRANT_AWARD_DATE, awardDate);
-        rowMap.put(CoeusFieldNames.C_GRANT_START_DATE, startDate);
-        rowMap.put(CoeusFieldNames.C_GRANT_END_DATE, endDate);
-
-        rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY, directFunderId);
-        rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_NAME, directFunderName);
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY, primaryFunderId);
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_NAME, primaryFunderName);
-
-        rowMap.put(CoeusFieldNames.C_USER_FIRST_NAME, "Amanda");
-        rowMap.put(CoeusFieldNames.C_USER_MIDDLE_NAME, "Beatrice");
-        rowMap.put(CoeusFieldNames.C_USER_LAST_NAME, "Reckondwith");
-        rowMap.put(CoeusFieldNames.C_USER_EMAIL, "areckon3@jhu.edu");
-        rowMap.put(CoeusFieldNames.C_USER_INSTITUTIONAL_ID, "ARECKON3");
-        rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, "0000333");
-        rowMap.put(CoeusFieldNames.C_USER_HOPKINS_ID, "B2B2B2");
-
-        rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, "2018-01-01 00:00:00.0");
-        rowMap.put(CoeusFieldNames.C_ABBREVIATED_ROLE, "P");
-
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setAwardNumber(awardNumber);
-        grantIngestRecord.setAwardStatus("Active");
-        grantIngestRecord.setGrantNumber(grantLocalKey[iteration]);
-        grantIngestRecord.setGrantTitle(grantProjectName[iteration]);
-        grantIngestRecord.setAwardDate(grantAwardDate[iteration]);
-        grantIngestRecord.setAwardStart(grantStartDate[iteration]);
-        grantIngestRecord.setAwardEnd(grantEndDate[iteration]);
+        grantIngestRecord.setAwardStatus(awardStatus);
+        grantIngestRecord.setGrantNumber(localKey);
+        grantIngestRecord.setGrantTitle(projectName);
+        grantIngestRecord.setAwardDate(awardDate);
+        grantIngestRecord.setAwardStart(startDate);
+        grantIngestRecord.setAwardEnd(endDate);
 
-        grantIngestRecord.setDirectFunderCode("20000000");
-        grantIngestRecord.setDirectFunderName("Enormous State University");
-        grantIngestRecord.setPrimaryFunderCode("20000001");
-        grantIngestRecord.setPrimaryFunderName("J L Gotrocks Foundation");
+        grantIngestRecord.setDirectFunderCode(directFunderId);
+        grantIngestRecord.setDirectFunderName(directFunderName);
+        grantIngestRecord.setPrimaryFunderCode(primaryFunderId);
+        grantIngestRecord.setPrimaryFunderName(primaryFunderName);
 
-        grantIngestRecord.setPiFirstName(userFirstName[user]);
-        grantIngestRecord.setPiMiddleName(userMiddleName[user]);
-        grantIngestRecord.setPiLastName(userLastName[user]);
-        grantIngestRecord.setPiEmail(userEmail[user]);
-        grantIngestRecord.setPiInstitutionalId(userInstitutionalId[user]);
-        grantIngestRecord.setPiEmployeeId(userEmployeeId[user]);
+        grantIngestRecord.setPiFirstName("Amanda");
+        grantIngestRecord.setPiMiddleName("Beatrice");
+        grantIngestRecord.setPiLastName("Reckondwith");
+        grantIngestRecord.setPiEmail("areckon3@jhu.edu");
+        grantIngestRecord.setPiInstitutionalId("ARECKON3");
+        grantIngestRecord.setPiEmployeeId("0000333");
 
-        grantIngestRecord.setUpdateTimeStamp(grantUpdateTimestamp[iteration]);
-        grantIngestRecord.setPiRole(abbrRole);
+        grantIngestRecord.setUpdateTimeStamp("2018-01-01 00:00:00.0");
+        grantIngestRecord.setPiRole("P");
 
-        grantIngestRecord.setDirectFunderPolicyId(getDirectFunderPolicyId());
-        grantIngestRecord.setPrimaryFunderPolicyId(getPrimaryFunderPolicyId());
+        resultSet.add(grantIngestRecord);
 
-        resultSet.add(rowMap);
+        GrantIngestRecord grantIngestRecord2 = new GrantIngestRecord();
+        grantIngestRecord2.setAwardNumber(awardNumber);
+        grantIngestRecord2.setAwardStatus(awardStatus);
+        grantIngestRecord2.setGrantNumber(localKey);
+        grantIngestRecord2.setGrantTitle(projectName);
+        grantIngestRecord2.setAwardDate(awardDate);
+        grantIngestRecord2.setAwardStart(startDate);
+        grantIngestRecord2.setAwardEnd(endDate);
 
-        rowMap = new HashMap<>();
-        rowMap.put(CoeusFieldNames.C_GRANT_AWARD_NUMBER, awardNumber);
-        rowMap.put(CoeusFieldNames.C_GRANT_AWARD_STATUS, awardStatus);
-        rowMap.put(CoeusFieldNames.C_GRANT_LOCAL_KEY, localKey);
-        rowMap.put(CoeusFieldNames.C_GRANT_PROJECT_NAME, projectName);
-        rowMap.put(CoeusFieldNames.C_GRANT_AWARD_DATE, awardDate);
-        rowMap.put(CoeusFieldNames.C_GRANT_START_DATE, startDate);
-        rowMap.put(CoeusFieldNames.C_GRANT_END_DATE, endDate);
+        grantIngestRecord2.setDirectFunderCode(directFunderId);
+        grantIngestRecord2.setDirectFunderName(directFunderName);
+        grantIngestRecord2.setPrimaryFunderCode(primaryFunderId);
+        grantIngestRecord2.setPrimaryFunderName(primaryFunderName);
 
-        rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_LOCAL_KEY, directFunderId);
-        rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_NAME, directFunderName);
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY, primaryFunderId);
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_NAME, primaryFunderName);
+        grantIngestRecord2.setPiFirstName("Marsha");
+        grantIngestRecord2.setPiMiddleName(null);
+        grantIngestRecord2.setPiLastName("Lartz");
+        grantIngestRecord2.setPiEmail("alartz3@jhu.edu");
+        grantIngestRecord2.setPiInstitutionalId("MLARTZ5");
+        grantIngestRecord2.setPiEmployeeId("0000222");
 
-        rowMap.put(CoeusFieldNames.C_USER_FIRST_NAME, "Marsha");
-        rowMap.put(CoeusFieldNames.C_USER_MIDDLE_NAME, null);
-        rowMap.put(CoeusFieldNames.C_USER_LAST_NAME, "Lartz");
-        rowMap.put(CoeusFieldNames.C_USER_EMAIL, "alartz3@jhu.edu");
-        rowMap.put(CoeusFieldNames.C_USER_INSTITUTIONAL_ID, "MLARTZ5");
-        rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, "0000222");
-        rowMap.put(CoeusFieldNames.C_USER_HOPKINS_ID, "A1A1A1");
+        grantIngestRecord2.setUpdateTimeStamp("2018-01-01 00:00:00.0");
+        grantIngestRecord2.setPiRole("C");
+        grantIngestRecord2.setDirectFunderPolicyId(directFunderPolicy);
+        grantIngestRecord2.setPrimaryFunderPolicyId(primaryFunderPolicy);
 
-        rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, "2018-01-01 00:00:00.0");
-        rowMap.put(CoeusFieldNames.C_ABBREVIATED_ROLE, "C");
-
-        rowMap.put(CoeusFieldNames.C_DIRECT_FUNDER_POLICY, primaryFunderPolicy);
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_POLICY, directFunderPolicy);
-
-        resultSet.add(rowMap);
+        resultSet.add(grantIngestRecord2);
         return resultSet;
     }
 
@@ -266,18 +235,17 @@ public class JhuPassUpdaterTest {
 
     @Test
     public void testUserBuilding() {
-
-        Map<String, String> rowMap = new HashMap<>();
-        rowMap.put(CoeusFieldNames.C_USER_FIRST_NAME, "Marsha");
-        rowMap.put(CoeusFieldNames.C_USER_MIDDLE_NAME, null);
-        rowMap.put(CoeusFieldNames.C_USER_LAST_NAME, "Lartz");
-        rowMap.put(CoeusFieldNames.C_USER_EMAIL, "mlartz3@jhu.edu");
-        rowMap.put(CoeusFieldNames.C_USER_INSTITUTIONAL_ID, "MLARTZ5");
-        rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, "0000222");
-        rowMap.put(CoeusFieldNames.C_UPDATE_TIMESTAMP, "2018-01-01 0:00:00.0");
+        GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+        grantIngestRecord.setPiFirstName("Marsha");
+        grantIngestRecord.setPiMiddleName(null);
+        grantIngestRecord.setPiLastName("Lartz");
+        grantIngestRecord.setPiEmail("mlartz3@jhu.edu");
+        grantIngestRecord.setPiInstitutionalId("MLARTZ5");
+        grantIngestRecord.setPiEmployeeId("0000222");
+        grantIngestRecord.setUpdateTimeStamp("2018-01-01 0:00:00.0");
 
         JhuPassUpdater passUpdater = new JhuPassUpdater();
-        User newUser = passUpdater.buildUser(rowMap);
+        User newUser = passUpdater.buildUser(grantIngestRecord);
 
         //unusual fields
         assertEquals("Marsha Lartz", newUser.getDisplayName());
@@ -288,13 +256,13 @@ public class JhuPassUpdaterTest {
 
     @Test
     public void testPrimaryFunderBuilding() {
-        Map<String, String> rowMap = new HashMap<>();
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_NAME, "Funder Name");
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_LOCAL_KEY, "8675309");
-        rowMap.put(CoeusFieldNames.C_PRIMARY_FUNDER_POLICY, "policy1");
+        GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+        grantIngestRecord.setPrimaryFunderName( "Funder Name");
+        grantIngestRecord.setPrimaryFunderCode("8675309");
+        grantIngestRecord.setPrimaryFunderPolicyId("policy1");
 
         JhuPassUpdater passUpdater = new JhuPassUpdater();
-        Funder newFunder = passUpdater.buildPrimaryFunder(rowMap);
+        Funder newFunder = passUpdater.buildPrimaryFunder(grantIngestRecord);
 
         assertEquals("Funder Name", newFunder.getName());
         assertEquals("8675309", newFunder.getLocalKey());
@@ -305,10 +273,10 @@ public class JhuPassUpdaterTest {
     @Test
     public void testUpdatePassUser_Fail_ModeCheck() {
         assertThrows(RuntimeException.class, () -> {
-            List<Map<String, String>> grantResultSet = new ArrayList<>();
-            Map<String, String> rowMap = new HashMap<>();
-            rowMap.put(CoeusFieldNames.C_GRANT_LOCAL_KEY, CoeusFieldNames.C_GRANT_LOCAL_KEY);
-            grantResultSet.add(rowMap);
+            List<GrantIngestRecord> grantResultSet = new ArrayList<>();
+            GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+            grantIngestRecord.setGrantNumber("fake-grant-number");
+            grantResultSet.add(grantIngestRecord);
 
             JhuPassUpdater passUpdater = new JhuPassUpdater();
 
@@ -319,10 +287,10 @@ public class JhuPassUpdaterTest {
     @Test
     public void testUpdatePassGrant_Fail_ModeCheck() {
         assertThrows(RuntimeException.class, () -> {
-            List<Map<String, String>> userResultSet = new ArrayList<>();
-            Map<String, String> rowMap = new HashMap<>();
-            rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, CoeusFieldNames.C_USER_EMPLOYEE_ID);
-            userResultSet.add(rowMap);
+            List<GrantIngestRecord> userResultSet = new ArrayList<>();
+            GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+            grantIngestRecord.setPiEmployeeId("fake-employee-id");
+            userResultSet.add(grantIngestRecord);
 
             JhuPassUpdater passUpdater = new JhuPassUpdater();
 
@@ -333,10 +301,10 @@ public class JhuPassUpdaterTest {
     @Test
     public void testUpdatePassFunder_Fail_ModeCheck() {
         assertThrows(RuntimeException.class, () -> {
-            List<Map<String, String>> userResultSet = new ArrayList<>();
-            Map<String, String> rowMap = new HashMap<>();
-            rowMap.put(CoeusFieldNames.C_USER_EMPLOYEE_ID, CoeusFieldNames.C_USER_EMPLOYEE_ID);
-            userResultSet.add(rowMap);
+            List<GrantIngestRecord> userResultSet = new ArrayList<>();
+            GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
+            grantIngestRecord.setPiEmployeeId("fake-employee-id");
+            userResultSet.add(grantIngestRecord);
 
             JhuPassUpdater passUpdater = new JhuPassUpdater();
 
