@@ -19,13 +19,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Grant;
-import org.junit.jupiter.api.Disabled;
+import org.eclipse.pass.support.client.model.Policy;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -35,23 +40,65 @@ public class JhuGrantLoaderLoadFileIT {
 
     private final PassClient passClient = PassClient.newInstance();
 
-    @Disabled
+    @AfterEach
+    void cleanUp() throws IOException {
+        Files.deleteIfExists(Path.of("src/test/resources/grant_update_timestamps"));
+    }
+
     @Test
-    public void testLoadCvsFile() throws IOException {
+    public void testLoadCvsFile() throws IOException, PassCliException {
+        Policy policy = new Policy();
+        policy.setTitle("test policy");
+        passClient.createObject(policy);
+
         System.setProperty(
                 "COEUS_HOME",
                 "src/test/resources"
         );
-        String[] args = {"-a", "load", "src/test/resources/test-load.csv"};
-        JhuGrantLoaderCLI.main(args);
+        JhuGrantLoaderApp app = new JhuGrantLoaderApp("", "01/01/2011", false,
+            "grant", "load", "src/test/resources/test-load.csv", false, null);
+        app.run();
 
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:123456"));
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:138058"));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
-        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
-        assertEquals(1, resultGrant.getTotal());
-        Grant passGrant = resultGrant.getObjects().get(0);
-        assertNotNull(passGrant);
+        PassClientResult<Grant> resultGrant1 = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant1.getTotal());
+        Grant passGrant1 = resultGrant1.getObjects().get(0);
+        assertNotNull(passGrant1.getId());
+        assertEquals("johnshopkins.edu:grant:138058", passGrant1.getLocalKey());
+        assertEquals("625628", passGrant1.getAwardNumber());
+        assertEquals("NPTX2: Preserving memory circuits in normative aging and Alzheimer's disease",
+            passGrant1.getProjectName());
+        assertEquals(AwardStatus.ACTIVE, passGrant1.getAwardStatus());
+        assertEquals("2021-09-29T00:00Z", passGrant1.getAwardDate().toString());
+        assertEquals("2021-05-01T09:00Z", passGrant1.getStartDate().toString());
+        assertEquals("2026-04-30T14:00Z", passGrant1.getEndDate().toString());
+        assertEquals("johnshopkins.edu:funder:300869", passGrant1.getPrimaryFunder().getLocalKey());
+        assertEquals("NATIONAL INSTITUTE ON AGING", passGrant1.getPrimaryFunder().getName());
+        assertEquals("1", passGrant1.getPrimaryFunder().getPolicy().getId());
+        assertEquals("johnshopkins.edu:funder:301313", passGrant1.getPrimaryFunder().getLocalKey());
+        assertEquals("UNIV OF ARIZONA", passGrant1.getPrimaryFunder().getName());
+        assertEquals("1", passGrant1.getPrimaryFunder().getPolicy().getId());
+        assertEquals("UserOneFn", passGrant1.getPi().getFirstName());
+        assertEquals("UserOneMn", passGrant1.getPi().getMiddleName());
+        assertEquals("UserOneLn", passGrant1.getPi().getLastName());
+        assertEquals("userone@jhu.edu", passGrant1.getPi().getEmail());
+        assertEquals(List.of("johnshopkins.edu:employeeid:123456", "johnshopkins.edu:eppn:userone"),
+            passGrant1.getPi().getLocatorIds());
+        assertEquals("UserThreeFn", passGrant1.getCoPis().get(0).getFirstName());
+        assertEquals("UserThreeMn", passGrant1.getCoPis().get(0).getMiddleName());
+        assertEquals("UserThreeLn", passGrant1.getCoPis().get(0).getLastName());
+        assertEquals("userthree@jhu.edu", passGrant1.getCoPis().get(0).getEmail());
+        assertEquals(List.of("johnshopkins.edu:employeeid:789123"),
+            passGrant1.getPi().getLocatorIds());
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:130823"));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant2 = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant2.getTotal());
+        Grant passGrant2 = resultGrant2.getObjects().get(0);
+        assertNotNull(passGrant2);
     }
 
 }

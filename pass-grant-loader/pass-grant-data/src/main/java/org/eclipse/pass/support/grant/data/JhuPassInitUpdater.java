@@ -15,6 +15,8 @@
  */
 package org.eclipse.pass.support.grant.data;
 
+import java.util.Properties;
+
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 
@@ -28,7 +30,8 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
     /**
      * Default constructor.
      */
-    public JhuPassInitUpdater() {
+    public JhuPassInitUpdater(Properties policyProperties) {
+        super(policyProperties);
         differenceLogger = new DifferenceLogger();
     }
 

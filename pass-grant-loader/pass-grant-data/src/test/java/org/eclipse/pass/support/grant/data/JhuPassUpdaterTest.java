@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.eclipse.pass.support.client.PassClient;
@@ -72,7 +73,8 @@ public class JhuPassUpdaterTest {
                                 passClientSelector.getFilter().equals(
                                         "localKey=='johnshopkins.edu:grant:8675309'")));
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater();
+        Properties policyProperties = TestUtil.loaderPolicyProperties();
+        JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
         FieldUtils.writeField(passUpdater, "passClient", passClientMock, true);
         passUpdater.updatePass(resultSet, "grant");
 
@@ -115,7 +117,8 @@ public class JhuPassUpdaterTest {
                                 passClientSelector.getFilter().equals(
                                         "localKey=='johnshopkins.edu:grant:8675309'")));
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater();
+        Properties policyProperties = TestUtil.loaderPolicyProperties();
+        JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
         FieldUtils.writeField(passUpdater, "passClient", passClientMock, true);
         passUpdater.updatePass(resultSet, "grant");
 
@@ -234,7 +237,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUserBuilding() {
+    public void testUserBuilding() throws IOException {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setPiFirstName("Marsha");
         grantIngestRecord.setPiMiddleName(null);
@@ -244,7 +247,8 @@ public class JhuPassUpdaterTest {
         grantIngestRecord.setPiEmployeeId("0000222");
         grantIngestRecord.setUpdateTimeStamp("2018-01-01 0:00:00.0");
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater();
+        Properties policyProperties = TestUtil.loaderPolicyProperties();
+        JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
         User newUser = passUpdater.buildUser(grantIngestRecord);
 
         //unusual fields
@@ -255,13 +259,15 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testPrimaryFunderBuilding() {
+    public void testPrimaryFunderBuilding() throws IOException {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setPrimaryFunderName( "Funder Name");
         grantIngestRecord.setPrimaryFunderCode("8675309");
         grantIngestRecord.setPrimaryFunderPolicyId("policy1");
 
-        JhuPassUpdater passUpdater = new JhuPassUpdater();
+        Properties policyProperties = TestUtil.loaderPolicyProperties();
+        policyProperties.put("8675309", "policy1");
+        JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
         Funder newFunder = passUpdater.buildPrimaryFunder(grantIngestRecord);
 
         assertEquals("Funder Name", newFunder.getName());
@@ -278,7 +284,8 @@ public class JhuPassUpdaterTest {
             grantIngestRecord.setGrantNumber("fake-grant-number");
             grantResultSet.add(grantIngestRecord);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater();
+            Properties policyProperties = TestUtil.loaderPolicyProperties();
+            JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
 
             passUpdater.updatePass(grantResultSet, "user");
         });
@@ -292,7 +299,8 @@ public class JhuPassUpdaterTest {
             grantIngestRecord.setPiEmployeeId("fake-employee-id");
             userResultSet.add(grantIngestRecord);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater();
+            Properties policyProperties = TestUtil.loaderPolicyProperties();
+            JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
 
             passUpdater.updatePass(userResultSet, "grant");
         });
@@ -306,7 +314,8 @@ public class JhuPassUpdaterTest {
             grantIngestRecord.setPiEmployeeId("fake-employee-id");
             userResultSet.add(grantIngestRecord);
 
-            JhuPassUpdater passUpdater = new JhuPassUpdater();
+            Properties policyProperties = TestUtil.loaderPolicyProperties();
+            JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
 
             passUpdater.updatePass(userResultSet, "funder");
         });

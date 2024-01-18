@@ -32,7 +32,7 @@ public class DateTimeUtil {
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss[[.SSS][.SS][.S]]")
                 .withResolverStyle(ResolverStyle.STRICT);
     static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("MM/dd/uuuu")
+            DateTimeFormatter.ofPattern("M/d/uuuu")
                 .withResolverStyle(ResolverStyle.STRICT);
 
     private DateTimeUtil () {

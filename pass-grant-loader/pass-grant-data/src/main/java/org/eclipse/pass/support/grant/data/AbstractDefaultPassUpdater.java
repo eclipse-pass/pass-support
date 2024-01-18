@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,10 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
     private String mode;
 
-    AbstractDefaultPassUpdater() {
+    private Properties funderPolicyProperties;
+
+    AbstractDefaultPassUpdater(Properties funderPolicyProperties) {
+        this.funderPolicyProperties = funderPolicyProperties;
         this.passClient = PassClient.newInstance();
     }
 
@@ -403,13 +407,8 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         Funder funder = new Funder();
         funder.setName(grantIngestRecord.getPrimaryFunderName());
         funder.setLocalKey(grantIngestRecord.getPrimaryFunderCode());
-        String policyId = grantIngestRecord.getPrimaryFunderPolicyId();
-        if (StringUtils.isNotEmpty(policyId)) {
-            funder.setPolicy(new Policy(policyId));
-            LOG.debug("Processing Funder with localKey {} and policy {}", funder.getLocalKey(), policyId);
-        }
+        setFunderPolicyIfNeeded(funder, grantIngestRecord.getPrimaryFunderCode());
         LOG.debug("Built Funder with localKey {}", funder.getLocalKey());
-
         return funder;
     }
 
@@ -419,14 +418,19 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             funder.setName(grantIngestRecord.getDirectFunderName());
         }
         funder.setLocalKey(grantIngestRecord.getDirectFunderCode());
-        String policyId = grantIngestRecord.getDirectFunderPolicyId();
-        if (StringUtils.isNotEmpty(policyId)) {
-            funder.setPolicy(new Policy(policyId));
-            LOG.debug("Processing Funder with localKey {} and policy {}", funder.getLocalKey(), policyId);
-        }
+        setFunderPolicyIfNeeded(funder, grantIngestRecord.getDirectFunderCode());
         LOG.debug("Built Funder with localKey {}", funder.getLocalKey());
-
         return funder;
+    }
+
+    private void setFunderPolicyIfNeeded(Funder funder, String funderCode) {
+        if (Objects.nonNull(funderCode)) {
+            String policyId = funderPolicyProperties.getProperty(funderCode);
+            if (Objects.nonNull(policyId)) {
+                funder.setPolicy(new Policy(policyId));
+                LOG.debug("Processing Funder with localKey {} and policy {}", funder.getLocalKey(), policyId);
+            }
+        }
     }
 
     /**

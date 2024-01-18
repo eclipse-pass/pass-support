@@ -17,6 +17,7 @@ package org.eclipse.pass.support.grant.data;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 
 import org.eclipse.pass.support.client.model.Funder;
@@ -45,7 +46,8 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     /**
      * Constructor.
      */
-    public JhuPassUpdater() {
+    public JhuPassUpdater(Properties policyProperties) {
+        super(policyProperties);
         setDomain(DOMAIN);
     }
 

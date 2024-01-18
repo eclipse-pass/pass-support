@@ -234,9 +234,10 @@ abstract class BaseGrantLoaderApp {
                 }
             }
 
-            GrantConnector connector = configureConnector(connectionProperties, policyProperties);
+            GrantConnector connector = configureConnector(connectionProperties);
             try {
-                resultSet = connector.retrieveUpdates(startDate, awardEndDate, mode, grant);
+                resultSet = connector.retrieveUpdates(startDate, awardEndDate, mode, grant,
+                    policyProperties.stringPropertyNames());
             } catch (SQLException e) {
                 throw processException(ERR_SQL_EXCEPTION, e);
             } catch (RuntimeException e) {
@@ -256,7 +257,7 @@ abstract class BaseGrantLoaderApp {
 
         //update PASS if required
         if (!action.equals("pull")) {
-            PassUpdater passUpdater = configureUpdater();
+            PassUpdater passUpdater = configureUpdater(policyProperties);
             try {
                 passUpdater.updatePass(resultSet, mode);
             } catch (RuntimeException e) {
@@ -428,8 +429,8 @@ abstract class BaseGrantLoaderApp {
      */
     abstract boolean checkMode(String s);
 
-    abstract GrantConnector configureConnector(Properties connectionProperties, Properties policyProperties);
+    abstract GrantConnector configureConnector(Properties connectionProperties);
 
-    abstract PassUpdater configureUpdater();
+    abstract PassUpdater configureUpdater(Properties policyProperties);
 
 }
