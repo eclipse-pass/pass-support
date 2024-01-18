@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.data;
+package org.eclipse.pass.support.grant.data.jhu;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

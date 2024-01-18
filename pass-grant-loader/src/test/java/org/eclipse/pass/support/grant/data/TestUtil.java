@@ -10,7 +10,7 @@ public class TestUtil {
 
     private TestUtil () {}
 
-    static Properties loaderPolicyProperties() throws IOException {
+    public static Properties loaderPolicyProperties() throws IOException {
         File policyPropertiesFile = new File(
             TestUtil.class.getClassLoader().getResource("policy.properties").getFile());
         Properties policyProperties = new Properties();

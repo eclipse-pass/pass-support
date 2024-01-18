@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.data;
+package org.eclipse.pass.support.grant.data.jhu;
 
 import java.util.Properties;
 
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
+import org.eclipse.pass.support.grant.data.DifferenceLogger;
 
 /**
  * The Init Grant Pass Updater for data sourced from Jhu Coeus.

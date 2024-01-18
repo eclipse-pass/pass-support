@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.data;
+package org.eclipse.pass.support.grant.data.jhu;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,6 +30,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.ModelUtil;
+import org.eclipse.pass.support.grant.data.DateTimeUtil;
+import org.eclipse.pass.support.grant.data.GrantConnector;
+import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
