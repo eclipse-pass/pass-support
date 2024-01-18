@@ -24,14 +24,7 @@
     <version>1.3.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.eclipse.pass</groupId>
   <artifactId>pass-grant-loader</artifactId>
-  <packaging>pom</packaging>
-
-  <modules>
-    <module>pass-grant-cli</module>
-    <module>pass-grant-data</module>
-  </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -46,13 +39,8 @@
     <ojdbc10.version>19.18.0.0</ojdbc10.version>
     <openpojo.version>0.8.13</openpojo.version>
     <unitils.version>3.4.6</unitils.version>
-    <pass.core.port>8080</pass.core.port>
-    <pass.core.url>http://localhost:8080</pass.core.url>
-    <pass.core.user>backend</pass.core.user>
-    <pass.core.password>backend</pass.core.password>
   </properties>
 
-  <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.eclipse.pass</groupId>
@@ -175,21 +163,17 @@
         <scope>test</scope>
       </dependency>
     </dependencies>
-  </dependencyManagement>
 
   <build>
-    <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>${build-helper-maven-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>${maven-dependency-plugin.version}</version>
         </plugin>
 
         <plugin>
@@ -198,7 +182,55 @@
           <version>${maven-surefire-plugin.version}</version>
         </plugin>
 
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-failsafe-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.0.0</version>
+          <executions>
+            <execution>
+              <id>jhu-grant-loader</id>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <shadedArtifactAttached>true</shadedArtifactAttached>
+                <finalName>jhu-grant-loader-exec</finalName>
+                <shadedClassifierName>jhu</shadedClassifierName>
+                <transformers>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <mainClass>org.eclipse.pass.support.grant.cli.JhuGrantLoaderCLI</mainClass>
+                  </transformer>
+                </transformers>
+                <filters>
+                  <filter>
+                    <artifact>*:*</artifact>
+                    <excludes>
+                      <exclude>META-INF/*.SF</exclude>
+                      <exclude>META-INF/*.DSA</exclude>
+                      <exclude>META-INF/*.RSA</exclude>
+                    </excludes>
+                  </filter>
+                </filters>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
       </plugins>
-    </pluginManagement>
   </build>
 </project>
