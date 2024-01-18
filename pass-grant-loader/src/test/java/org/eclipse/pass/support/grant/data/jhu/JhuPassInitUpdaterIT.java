@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.data;
+package org.eclipse.pass.support.grant.data.jhu;
 
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
-import static org.eclipse.pass.support.grant.data.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
-import static org.eclipse.pass.support.grant.data.JhuPassUpdater.JHED_LOCATOR_ID;
+import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
+import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater.JHED_LOCATOR_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,6 +36,8 @@ import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
+import org.eclipse.pass.support.grant.data.GrantIngestRecord;
+import org.eclipse.pass.support.grant.data.TestUtil;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;

@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @author jrm@jhu.edu
  */
 
-abstract class AbstractDefaultPassUpdater implements PassUpdater {
+public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractDefaultPassUpdater.class);
 
     private static final String GRANT_ID_TYPE = "grant";
@@ -76,7 +76,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
     private Properties funderPolicyProperties;
 
-    AbstractDefaultPassUpdater(Properties funderPolicyProperties) {
+    public AbstractDefaultPassUpdater(Properties funderPolicyProperties) {
         this.funderPolicyProperties = funderPolicyProperties;
         this.passClient = PassClient.newInstance();
     }
@@ -96,7 +96,7 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
         }
     }
 
-    void setDomain(String domain) {
+    public void setDomain(String domain) {
         this.domain = domain;
     }
 
@@ -306,6 +306,22 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
     }
 
     /**
+     * this method gets called on a grant mode process if the primary funder is different from direct, and also
+     * any time the updater is called in funder mode
+     *
+     * @param grantIngestRecord the funder data record
+     * @return the funder
+     */
+    public Funder buildPrimaryFunder(GrantIngestRecord grantIngestRecord) {
+        Funder funder = new Funder();
+        funder.setName(grantIngestRecord.getPrimaryFunderName());
+        funder.setLocalKey(grantIngestRecord.getPrimaryFunderCode());
+        setFunderPolicyIfNeeded(funder, grantIngestRecord.getPrimaryFunderCode());
+        LOG.debug("Built Funder with localKey {}", funder.getLocalKey());
+        return funder;
+    }
+
+    /**
      * Returns the Pass entity ID of passEntity. This method is null-safe.
      * @param passEntity the passEntity
      * @return the ID of passEntity or null if passEntity is null or the ID is null
@@ -394,22 +410,6 @@ abstract class AbstractDefaultPassUpdater implements PassUpdater {
             }
         }
         statistics.setReport(results.size(), funderProcessedCounter);
-    }
-
-    /**
-     * this method gets called on a grant mode process if the primary funder is different from direct, and also
-     * any time the updater is called in funder mode
-     *
-     * @param grantIngestRecord the funder data record
-     * @return the funder
-     */
-    Funder buildPrimaryFunder(GrantIngestRecord grantIngestRecord) {
-        Funder funder = new Funder();
-        funder.setName(grantIngestRecord.getPrimaryFunderName());
-        funder.setLocalKey(grantIngestRecord.getPrimaryFunderCode());
-        setFunderPolicyIfNeeded(funder, grantIngestRecord.getPrimaryFunderCode());
-        LOG.debug("Built Funder with localKey {}", funder.getLocalKey());
-        return funder;
     }
 
     private Funder buildDirectFunder(GrantIngestRecord grantIngestRecord) {

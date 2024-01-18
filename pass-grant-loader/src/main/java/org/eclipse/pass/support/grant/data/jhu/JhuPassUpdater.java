@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.data;
+package org.eclipse.pass.support.grant.data.jhu;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -25,6 +25,8 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.client.model.UserRole;
+import org.eclipse.pass.support.grant.data.AbstractDefaultPassUpdater;
+import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

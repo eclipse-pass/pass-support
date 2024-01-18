@@ -17,11 +17,11 @@ package org.eclipse.pass.support.grant.cli;
 
 import java.util.Properties;
 
-import org.eclipse.pass.support.grant.data.CoeusConnector;
 import org.eclipse.pass.support.grant.data.GrantConnector;
-import org.eclipse.pass.support.grant.data.JhuPassInitUpdater;
-import org.eclipse.pass.support.grant.data.JhuPassUpdater;
 import org.eclipse.pass.support.grant.data.PassUpdater;
+import org.eclipse.pass.support.grant.data.jhu.CoeusConnector;
+import org.eclipse.pass.support.grant.data.jhu.JhuPassInitUpdater;
+import org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

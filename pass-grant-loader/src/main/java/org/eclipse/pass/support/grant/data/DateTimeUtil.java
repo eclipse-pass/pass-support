@@ -28,7 +28,7 @@ import java.time.format.ResolverStyle;
  */
 public class DateTimeUtil {
 
-    static final DateTimeFormatter DATE_TIME_FORMATTER =
+    public static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss[[.SSS][.SS][.S]]")
                 .withResolverStyle(ResolverStyle.STRICT);
     static final DateTimeFormatter DATE_FORMATTER =
@@ -97,7 +97,7 @@ public class DateTimeUtil {
      * @param latestUpdateString  the new timestamp to be compared against the current latest timestamp
      * @return the later of the two parameters
      */
-    static String returnLaterUpdate(String currentUpdateString, String latestUpdateString) {
+    public static String returnLaterUpdate(String currentUpdateString, String latestUpdateString) {
         ZonedDateTime currentUpdateTime = createZonedDateTime(currentUpdateString);
         ZonedDateTime latestUpdateTime = createZonedDateTime(latestUpdateString);
         return currentUpdateTime != null && currentUpdateTime.isAfter(latestUpdateTime)

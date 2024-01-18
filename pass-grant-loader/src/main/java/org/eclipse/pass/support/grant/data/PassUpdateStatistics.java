@@ -17,10 +17,13 @@ package org.eclipse.pass.support.grant.data;
 
 import static java.lang.String.format;
 
+import lombok.Getter;
+
 /**
  * A utility class to collect and disseminate statistics related to an update
  */
-class PassUpdateStatistics {
+@Getter
+public class PassUpdateStatistics {
 
     private int grantsUpdated = 0;
     private int fundersUpdated = 0;
@@ -93,72 +96,36 @@ class PassUpdateStatistics {
         report = "";
     }
 
-    int getGrantsUpdated() {
-        return grantsUpdated;
-    }
-
     void addGrantsUpdated() {
         grantsUpdated++;
-    }
-
-    int getFundersUpdated() {
-        return fundersUpdated;
     }
 
     void addFundersUpdated() {
         fundersUpdated++;
     }
 
-    int getUsersUpdated() {
-        return usersUpdated;
-    }
-
     void addUsersUpdated() {
         usersUpdated++;
-    }
-
-    int getGrantsCreated() {
-        return grantsCreated;
     }
 
     void addGrantsCreated() {
         grantsCreated++;
     }
 
-    int getFundersCreated() {
-        return fundersCreated;
-    }
-
     void addFundersCreated() {
         fundersCreated++;
-    }
-
-    int getUsersCreated() {
-        return usersCreated;
     }
 
     void addUsersCreated() {
         usersCreated++;
     }
 
-    int getPisAdded() {
-        return pisAdded;
-    }
-
     void addPi() {
         pisAdded++;
     }
 
-    int getCoPisAdded() {
-        return coPisAdded;
-    }
-
     void addCoPi() {
         coPisAdded++;
-    }
-
-    String getLatestUpdateString() {
-        return latestUpdateString;
     }
 
     void setLatestUpdateString(String latestUpdateString) {
