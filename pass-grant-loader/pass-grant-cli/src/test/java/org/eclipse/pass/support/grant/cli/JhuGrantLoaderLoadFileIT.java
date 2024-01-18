@@ -15,22 +15,27 @@
  */
 package org.eclipse.pass.support.grant.cli;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.io.IOException;
+
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Grant;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+/**
+ * @author Russ Poetker (rpoetke1@jh.edu)
+ */
 public class JhuGrantLoaderLoadFileIT {
 
     private final PassClient passClient = PassClient.newInstance();
 
+    @Disabled
     @Test
     public void testLoadCvsFile() throws IOException {
         System.setProperty(

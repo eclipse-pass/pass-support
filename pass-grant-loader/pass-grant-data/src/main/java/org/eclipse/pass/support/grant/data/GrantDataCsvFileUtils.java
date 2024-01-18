@@ -15,9 +15,6 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -25,6 +22,12 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+
+/**
+ * @author Russ Poetker (rpoetke1@jh.edu)
+ */
 public final class GrantDataCsvFileUtils {
     private GrantDataCsvFileUtils() {}
 
