@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
@@ -110,16 +111,13 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         user.setDisplayName(grantIngestRecord.getPiFirstName() + " " + grantIngestRecord.getPiLastName());
         user.setEmail(grantIngestRecord.getPiEmail());
         String employeeId = grantIngestRecord.getPiEmployeeId();
-        String jhedId = null;
-        if (grantIngestRecord.getPiInstitutionalId() != null) {
-            jhedId = grantIngestRecord.getPiInstitutionalId().toLowerCase();
+        if (StringUtils.isNotBlank(grantIngestRecord.getPiInstitutionalId())) {
+            String jhedId = grantIngestRecord.getPiInstitutionalId().toLowerCase();
+            user.getLocatorIds().add(JHED_LOCATOR_ID + jhedId);
         }
         //Build the List of locatorIds - put the most reliable ids first
-        if (employeeId != null) {
+        if (StringUtils.isNotBlank(employeeId)) {
             user.getLocatorIds().add(EMPLOYEE_LOCATOR_ID + employeeId);
-        }
-        if (jhedId != null) {
-            user.getLocatorIds().add(JHED_LOCATOR_ID + jhedId);
         }
         user.getRoles().add(UserRole.SUBMITTER);
         LOG.debug("Built user with employee ID {}", employeeId);
