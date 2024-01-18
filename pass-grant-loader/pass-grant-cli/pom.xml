@@ -26,13 +26,6 @@
 
   <artifactId>pass-grant-cli</artifactId>
 
-  <properties>
-    <pass.core.port>8080</pass.core.port>
-    <pass.core.url>http://localhost:8080</pass.core.url>
-    <pass.core.user>backend</pass.core.user>
-    <pass.core.password>backend</pass.core.password>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>args4j</groupId>
@@ -84,12 +77,10 @@
 
   <build>
     <plugins>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
+        <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -121,27 +112,6 @@
                 </filter>
               </filters>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>build-after-its</id>
-            <phase>post-integration-test</phase>
-            <configuration>
-              <images>
-                <image>
-                  <name>ghcr.io/eclipse-pass/jhu-grant-loader:%v</name>
-                </image>
-              </images>
-            </configuration>
-            <goals>
-              <goal>build</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

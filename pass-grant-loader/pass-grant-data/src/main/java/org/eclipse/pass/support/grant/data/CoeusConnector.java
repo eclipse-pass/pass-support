@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -67,18 +68,10 @@ public class CoeusConnector implements GrantConnector {
     static final String C_USER_EMAIL = "EMAIL_ADDRESS";
     static final String C_USER_INSTITUTIONAL_ID = "JHED_ID";
     static final String C_USER_EMPLOYEE_ID = "EMPLOYEE_ID";
-    //static final String C_USER_AFFILIATION = "";
-    //static final String C_USER_ORCID_ID = "";
 
     //these fields are accessed for processing, but are not mapped to PASS objects
     static final String C_UPDATE_TIMESTAMP = "UPDATE_TIMESTAMP";
     static final String C_ABBREVIATED_ROLE = "ABBREVIATED_ROLE";
-
-    //this is not a COEUS field, but is a place in our row map to put a hopkins id if it exists
-    static final String C_USER_HOPKINS_ID = "HOPKINS_ID";
-    //also not a field name, but something provided in a properties file
-    static final String C_PRIMARY_FUNDER_POLICY = "PRIMARY_FUNDER_POLICY";
-    static final String C_DIRECT_FUNDER_POLICY = "DIRECT_FUNDER_POLICY";
 
     private static final String SELECT_GRANT_SQL =
         "SELECT " +
@@ -131,19 +124,15 @@ public class CoeusConnector implements GrantConnector {
             "FROM COEUS.SWIFT_SPONSOR " +
             "WHERE SPONSOR_CODE IN (%s)";
 
-
     private String coeusUrl;
     private String coeusUser;
     private String coeusPassword;
 
-    private final Properties funderPolicyProperties;
-
     /**
      * Class constructor.
      * @param connectionProperties the connection props
-     * @param funderPolicyProperties the funder policy props
      */
-    public CoeusConnector(Properties connectionProperties, Properties funderPolicyProperties) {
+    public CoeusConnector(Properties connectionProperties) {
         if (connectionProperties != null) {
 
             if (connectionProperties.getProperty(COEUS_URL) != null) {
@@ -156,17 +145,15 @@ public class CoeusConnector implements GrantConnector {
                 this.coeusPassword = connectionProperties.getProperty(COEUS_PASS);
             }
         }
-
-        this.funderPolicyProperties = funderPolicyProperties;
-
     }
 
-    public List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant)
+    public List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant,
+                                                   Set<String> funderIds)
         throws SQLException {
         if (mode.equals("user")) {
             return retrieveUserUpdates(startDate);
         } else if (mode.equals("funder")) {
-            return retrieveFunderUpdates();
+            return retrieveFunderUpdates(funderIds);
         } else {
             return retrieveGrantUpdates(startDate, awardEndDate, grant);
         }
@@ -209,20 +196,8 @@ public class CoeusConnector implements GrantConnector {
                     grantIngestRecord.setPiInstitutionalId(rs.getString(C_USER_INSTITUTIONAL_ID));
                     grantIngestRecord.setUpdateTimeStamp(rs.getString(C_UPDATE_TIMESTAMP));
                     grantIngestRecord.setPiRole(rs.getString(C_ABBREVIATED_ROLE));
-                    String primaryFunderLocalKey = rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY);
-                    grantIngestRecord.setPrimaryFunderCode(primaryFunderLocalKey);
-                    if (primaryFunderLocalKey != null &&
-                        funderPolicyProperties.stringPropertyNames().contains(primaryFunderLocalKey)) {
-                        grantIngestRecord.setPrimaryFunderPolicyId(
-                            funderPolicyProperties.getProperty(primaryFunderLocalKey));
-                    }
-                    String directFunderLocalKey = rs.getString(C_DIRECT_FUNDER_LOCAL_KEY);
-                    grantIngestRecord.setDirectFunderCode(directFunderLocalKey);
-                    if (directFunderLocalKey != null &&
-                        funderPolicyProperties.stringPropertyNames().contains(directFunderLocalKey)) {
-                        grantIngestRecord.setDirectFunderPolicyId(
-                            funderPolicyProperties.getProperty(directFunderLocalKey));
-                    }
+                    grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
+                    grantIngestRecord.setDirectFunderCode(rs.getString(C_DIRECT_FUNDER_LOCAL_KEY));
                     LOG.debug("Record processed: {}", grantIngestRecord);
                     // TODO is this needed?  So what if there is a duplicate, logic would work it out i think
                     grantIngestRecords.add(grantIngestRecord);
@@ -242,18 +217,16 @@ public class CoeusConnector implements GrantConnector {
             : SELECT_GRANT_SQL + "AND A.GRANT_NUMBER = ?";
     }
 
-    private List<GrantIngestRecord> retrieveFunderUpdates() throws SQLException {
+    private List<GrantIngestRecord> retrieveFunderUpdates(Set<String> funderIds) throws SQLException {
         List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
         String funderSql = String.format(SELECT_FUNDER_SQL,
-            funderPolicyProperties.stringPropertyNames().stream()
-                .map(v -> "?")
-                .collect(Collectors.joining(", ")));
+            funderIds.stream().map(v -> "?").collect(Collectors.joining(", ")));
         try (
             Connection con = DriverManager.getConnection(coeusUrl, coeusUser, coeusPassword);
             PreparedStatement ps = con.prepareStatement(funderSql);
         ) {
             int index = 1;
-            for ( String funderKey : funderPolicyProperties.stringPropertyNames() ) {
+            for ( String funderKey : funderIds ) {
                 ps.setString(index++, funderKey);
             }
             try (ResultSet rs = ps.executeQuery()) {
@@ -261,8 +234,6 @@ public class CoeusConnector implements GrantConnector {
                     GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
                     grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
                     grantIngestRecord.setPrimaryFunderName(rs.getString(C_PRIMARY_FUNDER_NAME));
-                    grantIngestRecord.setPrimaryFunderPolicyId(
-                        funderPolicyProperties.getProperty(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY)));
                     // TODO is this needed?  So what if there is a duplicate, logic would work it out i think
                     grantIngestRecords.add(grantIngestRecord);
                 }

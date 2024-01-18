@@ -44,17 +44,17 @@ class JhuGrantLoaderApp extends BaseGrantLoaderApp {
     }
 
     @Override
-    GrantConnector configureConnector(Properties connectionProperties, Properties policyProperties) {
-        return new CoeusConnector(connectionProperties, policyProperties);
+    GrantConnector configureConnector(Properties connectionProperties) {
+        return new CoeusConnector(connectionProperties);
     }
 
     @Override
-    PassUpdater configureUpdater() {
+    PassUpdater configureUpdater(Properties policyProperties) {
         if (init) {
             LOG.warn("**Grant Loader running in init mode**");
-            return new JhuPassInitUpdater();
+            return new JhuPassInitUpdater(policyProperties);
         }
-        return new JhuPassUpdater();
+        return new JhuPassUpdater(policyProperties);
     }
 
 }

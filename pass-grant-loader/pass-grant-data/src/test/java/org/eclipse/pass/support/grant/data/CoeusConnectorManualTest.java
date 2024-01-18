@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -42,33 +43,23 @@ public class CoeusConnectorManualTest {
 
     private CoeusConnector connector;
 
-    private final File policyPropertiesFile = new File(
-        getClass().getClassLoader().getResource("policy.properties").getFile());
-
     private final File connectionPropertiesFile = new File(
         getClass().getClassLoader().getResource("connection.properties").getFile());
 
-    private final Properties policyProperties = new Properties();
-
     @BeforeEach
     public void setup() throws Exception {
-
-        try (InputStream resourceStream = new FileInputStream(policyPropertiesFile)) {
-            policyProperties.load(resourceStream);
-        }
         Properties connectionProperties = new Properties();
         try (InputStream resourceStream = new FileInputStream(connectionPropertiesFile)) {
             connectionProperties.load(resourceStream);
         }
-        connector = new CoeusConnector(
-            connectionProperties, policyProperties);
+        connector = new CoeusConnector(connectionProperties);
     }
 
     @Disabled
     @Test
     public void testGrantQuery() throws SQLException {
         List<GrantIngestRecord> results =
-            connector.retrieveUpdates("2023-10-20 00:00:00", "01/01/2011", "grant", null);
+            connector.retrieveUpdates("2023-10-20 00:00:00", "01/01/2011", "grant", null, null);
         assertNotNull(results);
     }
 
@@ -76,7 +67,7 @@ public class CoeusConnectorManualTest {
     @Test
     public void testUserQuery() throws SQLException {
         List<GrantIngestRecord> results =
-            connector.retrieveUpdates("2023-10-20 00:00:00", null, "user", null);
+            connector.retrieveUpdates("2023-10-20 00:00:00", null, "user", null, null);
         assertNotNull(results);
     }
 
@@ -84,7 +75,7 @@ public class CoeusConnectorManualTest {
     @Test
     public void testFunderQuery() throws SQLException {
         List<GrantIngestRecord> results =
-            connector.retrieveUpdates(null, null, "funder", null);
+            connector.retrieveUpdates(null, null, "funder", null, Set.of());
         assertNotNull(results);
     }
 

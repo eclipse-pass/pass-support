@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.eclipse.pass.support.client.PassClient;
@@ -86,7 +87,8 @@ public class JhuPassInitUpdaterIT {
         GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
         resultSet.add(piRecord2);
 
-        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater();
+        Properties policyProperties = TestUtil.loaderPolicyProperties();
+        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater(policyProperties);
         passUpdater.updatePass(resultSet, "grant");
 
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
@@ -176,7 +178,8 @@ public class JhuPassInitUpdaterIT {
         resultSet.add(piRecord2);
 
         PassClient spyPassClient = spy(passClient);
-        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater();
+        Properties policyProperties = TestUtil.loaderPolicyProperties();
+        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater(policyProperties);
         FieldUtils.writeField(passUpdater, "passClient", spyPassClient, true);
 
         // WHEN
