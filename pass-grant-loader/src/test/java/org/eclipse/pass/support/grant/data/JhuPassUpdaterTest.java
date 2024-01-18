@@ -274,7 +274,6 @@ public class JhuPassUpdaterTest {
         assertEquals("Funder Name", newFunder.getName());
         assertEquals("8675309", newFunder.getLocalKey());
         assertEquals("policy1", newFunder.getPolicy().getId());
-
     }
 
     @Test

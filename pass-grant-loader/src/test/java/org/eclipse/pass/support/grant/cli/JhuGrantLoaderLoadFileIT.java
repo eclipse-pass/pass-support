@@ -88,7 +88,7 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("UserOneMn", passGrant1.getPi().getMiddleName());
         assertEquals("UserOneLn", passGrant1.getPi().getLastName());
         assertEquals("userone@jhu.edu", passGrant1.getPi().getEmail());
-        assertEquals(List.of("johnshopkins.edu:eppn:userone", "johnshopkins.edu:employeeid:123456"),
+        assertEquals(List.of("johnshopkins.edu:employeeid:123456", "johnshopkins.edu:eppn:userone"),
             passGrant1.getPi().getLocatorIds());
 
         assertEquals(1, passGrant1.getCoPis().size());
