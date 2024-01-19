@@ -30,6 +30,7 @@ import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
+import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,7 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
 
     @Test
     public void testLoadCvsFile() throws IOException, PassCliException {
+        // GIVEN
         Policy policy = new Policy();
         policy.setTitle("test policy");
         passClient.createObject(policy);
@@ -56,55 +58,108 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         );
         JhuGrantLoaderApp app = new JhuGrantLoaderApp("", "01/01/2011", false,
             "grant", "load", "src/test/resources/test-load.csv", false, null);
+        
+        // WHEN
         app.run();
-
+        
+        // THEN
+        verifyGrantOne();
+        verifyGrantTwo();
+    }
+    
+    private void verifyGrantOne() throws IOException {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:138058"));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
-        PassClientResult<Grant> resultGrant1 = passClient.selectObjects(grantSelector);
-        assertEquals(1, resultGrant1.getTotal());
-        Grant passGrant1 = resultGrant1.getObjects().get(0);
-        assertNotNull(passGrant1.getId());
-        assertEquals("johnshopkins.edu:grant:138058", passGrant1.getLocalKey());
-        assertEquals("625628", passGrant1.getAwardNumber());
+        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant passGrant = resultGrant.getObjects().get(0);
+        assertNotNull(passGrant.getId());
+        assertEquals("johnshopkins.edu:grant:138058", passGrant.getLocalKey());
+        assertEquals("625628", passGrant.getAwardNumber());
         assertEquals("NPTX2: Preserving memory circuits in normative aging and Alzheimer's disease",
-            passGrant1.getProjectName());
-        assertEquals(AwardStatus.ACTIVE, passGrant1.getAwardStatus());
-        assertEquals("2021-09-29T00:00Z", passGrant1.getAwardDate().toString());
-        assertEquals("2021-05-01T09:00Z", passGrant1.getStartDate().toString());
-        assertEquals("2026-04-30T14:00Z", passGrant1.getEndDate().toString());
+            passGrant.getProjectName());
+        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertEquals("2021-09-29T00:00Z", passGrant.getAwardDate().toString());
+        assertEquals("2021-05-01T09:00Z", passGrant.getStartDate().toString());
+        assertEquals("2026-04-30T14:00Z", passGrant.getEndDate().toString());
 
-        Funder primaryFunder = passClient.getObject(passGrant1.getPrimaryFunder(), "policy");
+        Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
         assertEquals("johnshopkins.edu:funder:300869", primaryFunder.getLocalKey());
         assertEquals("NATIONAL INSTITUTE ON AGING", primaryFunder.getName());
         assertEquals("1", primaryFunder.getPolicy().getId());
 
-        Funder directFunder = passClient.getObject(passGrant1.getDirectFunder(), "policy");
+        Funder directFunder = passClient.getObject(passGrant.getDirectFunder(), "policy");
         assertEquals("johnshopkins.edu:funder:301313", directFunder.getLocalKey());
         assertEquals("UNIV OF ARIZONA",directFunder.getName());
         assertEquals("1", directFunder.getPolicy().getId());
 
-        assertEquals("UserOneFn", passGrant1.getPi().getFirstName());
-        assertEquals("UserOneMn", passGrant1.getPi().getMiddleName());
-        assertEquals("UserOneLn", passGrant1.getPi().getLastName());
-        assertEquals("userone@jhu.edu", passGrant1.getPi().getEmail());
+        assertEquals("UserOneFn", passGrant.getPi().getFirstName());
+        assertEquals("UserOneMn", passGrant.getPi().getMiddleName());
+        assertEquals("UserOneLn", passGrant.getPi().getLastName());
+        assertEquals("userone@jhu.edu", passGrant.getPi().getEmail());
         assertEquals(List.of("johnshopkins.edu:employeeid:123456", "johnshopkins.edu:eppn:userone"),
-            passGrant1.getPi().getLocatorIds());
+            passGrant.getPi().getLocatorIds());
 
-        assertEquals(1, passGrant1.getCoPis().size());
-        assertEquals("UserThreeFn", passGrant1.getCoPis().get(0).getFirstName());
-        assertEquals("", passGrant1.getCoPis().get(0).getMiddleName());
-        assertEquals("UserThreeLn", passGrant1.getCoPis().get(0).getLastName());
-        assertEquals("userthree@jhu.edu", passGrant1.getCoPis().get(0).getEmail());
+        assertEquals(1, passGrant.getCoPis().size());
+        assertEquals("UserThreeFn", passGrant.getCoPis().get(0).getFirstName());
+        assertEquals("", passGrant.getCoPis().get(0).getMiddleName());
+        assertEquals("UserThreeLn", passGrant.getCoPis().get(0).getLastName());
+        assertEquals("userthree@jhu.edu", passGrant.getCoPis().get(0).getEmail());
         assertEquals(List.of("johnshopkins.edu:employeeid:789123"),
-            passGrant1.getCoPis().get(0).getLocatorIds());
+            passGrant.getCoPis().get(0).getLocatorIds());
+    }
 
+    private void verifyGrantTwo() throws IOException {
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:130823"));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
-        PassClientResult<Grant> resultGrant2 = passClient.selectObjects(grantSelector);
-        assertEquals(1, resultGrant2.getTotal());
-        Grant passGrant2 = resultGrant2.getObjects().get(0);
-        assertNotNull(passGrant2);
+        PassClientResult<Grant> resultGrant1 = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant1.getTotal());
+        Grant passGrant = resultGrant1.getObjects().get(0);
+        assertNotNull(passGrant.getId());
+        assertEquals("johnshopkins.edu:grant:130823", passGrant.getLocalKey());
+        assertEquals("107-33664-1000055108", passGrant.getAwardNumber());
+        assertEquals("The Subclinical Vascular Contributions to Alzheimer's Disease: " +
+                "The Multi-Ethnic Study of Atherosclerosis (MESA) ", passGrant.getProjectName());
+        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertEquals("2018-12-14T00:00Z", passGrant.getAwardDate().toString());
+        assertEquals("2018-08-15T10:00Z", passGrant.getStartDate().toString());
+        assertEquals("2025-05-31T00:00Z", passGrant.getEndDate().toString());
+
+        Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:300865", primaryFunder.getLocalKey());
+        assertEquals("NATIONAL INSTITUTES OF HEALTH", primaryFunder.getName());
+        assertEquals("1", primaryFunder.getPolicy().getId());
+
+        Funder directFunder = passClient.getObject(passGrant.getDirectFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:304106", directFunder.getLocalKey());
+        assertEquals("WAKE FOREST UNIV",directFunder.getName());
+        assertEquals("1", directFunder.getPolicy().getId());
+
+        assertEquals("UserTwoFn", passGrant.getPi().getFirstName());
+        assertEquals("UserTwoMn", passGrant.getPi().getMiddleName());
+        assertEquals("UserTwoLn", passGrant.getPi().getLastName());
+        assertEquals("usertwo@jhu.edu", passGrant.getPi().getEmail());
+        assertEquals(List.of("johnshopkins.edu:eppn:usertwo"), passGrant.getPi().getLocatorIds());
+
+        assertEquals(2, passGrant.getCoPis().size());
+        User copi1 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userone@jhu.edu"))
+            .findFirst().get();
+        assertEquals("UserOneFn", copi1.getFirstName());
+        assertEquals("UserOneMn", copi1.getMiddleName());
+        assertEquals("UserOneLn", copi1.getLastName());
+        assertEquals("userone@jhu.edu", copi1.getEmail());
+        assertEquals(List.of("johnshopkins.edu:employeeid:123456", "johnshopkins.edu:eppn:userone"),
+            copi1.getLocatorIds());
+
+        User copi2 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userthree@jhu.edu"))
+            .findFirst().get();
+        assertEquals("UserThreeFn", copi2.getFirstName());
+        assertEquals("", copi2.getMiddleName());
+        assertEquals("UserThreeLn", copi2.getLastName());
+        assertEquals("userthree@jhu.edu", copi2.getEmail());
+        assertEquals(List.of("johnshopkins.edu:employeeid:789123"), copi2.getLocatorIds());
     }
 
 }
