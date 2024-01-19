@@ -34,8 +34,6 @@
     <commons-codec.version>1.14</commons-codec.version>
     <commons.csv.version>1.10.0</commons.csv.version>
     <poi.version>4.1.2</poi.version>
-    <greenmail.version>1.5.13</greenmail.version>
-    <javax.mail.version>1.6.2</javax.mail.version>
     <ojdbc10.version>19.18.0.0</ojdbc10.version>
     <openpojo.version>0.8.13</openpojo.version>
     <unitils.version>3.4.6</unitils.version>
@@ -63,11 +61,6 @@
         <version>${poi.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.icegreen</groupId>
-        <artifactId>greenmail</artifactId>
-        <version>${greenmail.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.oracle.database.jdbc</groupId>
         <artifactId>ojdbc10</artifactId>
         <version>${ojdbc10.version}</version>
@@ -76,11 +69,6 @@
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
         <version>${commons-codec.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>javax.mail</artifactId>
-        <version>${javax.mail.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>

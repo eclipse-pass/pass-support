@@ -54,8 +54,8 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         passClient.createObject(policy);
 
         System.setProperty("COEUS_HOME", "src/test/resources");
-        JhuGrantLoaderApp app = new JhuGrantLoaderApp("", "01/01/2011", false,
-            "grant", "load", "src/test/resources/test-load.csv", false, null);
+        JhuGrantLoaderApp app = new JhuGrantLoaderApp("", "01/01/2011", "grant",
+            "load", "src/test/resources/test-load.csv", false, null);
 
         // WHEN
         app.run();

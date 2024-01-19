@@ -37,7 +37,7 @@ public class JhuGrantLoaderCLI extends AbstractGrantLoaderCLI {
 
     @Override
     protected AbstractBaseGrantLoaderApp getGrantLoaderApp(String dataFileName) {
-        return new JhuGrantLoaderApp(startDate, awardEndDate, email, mode, action, dataFileName,
+        return new JhuGrantLoaderApp(startDate, awardEndDate, mode, action, dataFileName,
             init, grant);
     }
 }
