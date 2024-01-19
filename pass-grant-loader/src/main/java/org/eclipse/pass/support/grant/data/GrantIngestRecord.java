@@ -35,10 +35,8 @@ public class GrantIngestRecord {
     private String awardEnd;
     private String primaryFunderName;
     private String primaryFunderCode;
-    private String primaryFunderPolicyId;
     private String directFunderName;
     private String directFunderCode;
-    private String directFunderPolicyId;
     private String piFirstName;
     private String piMiddleName;
     private String piLastName;

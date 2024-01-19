@@ -33,7 +33,6 @@ import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Grant;
-import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
 import org.eclipse.pass.support.grant.TestUtil;
@@ -255,38 +254,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         grantIngestRecord.setUpdateTimeStamp(grantUpdateTimestamp[iteration]);
         grantIngestRecord.setPiRole(abbrRole);
 
-        grantIngestRecord.setDirectFunderPolicyId(getDirectFunderPolicyId());
-        grantIngestRecord.setPrimaryFunderPolicyId(getPrimaryFunderPolicyId());
-
         return grantIngestRecord;
-    }
-
-    private String getPrimaryFunderPolicyId() throws IOException {
-        PassClientSelector<Policy> policySelector = new PassClientSelector<>(Policy.class);
-        policySelector.setFilter(RSQL.equals("title", "Init Primary Funder Policy"));
-        PassClientResult<Policy> resultPolicy = passClient.selectObjects(policySelector);
-        if (resultPolicy.getObjects().isEmpty()) {
-            Policy policy1 = new Policy();
-            policy1.setTitle("Init Primary Funder Policy");
-            policy1.setDescription("BAA");
-            passClient.createObject(policy1);
-            return policy1.getId();
-        }
-        return resultPolicy.getObjects().get(0).getId();
-    }
-
-    private String getDirectFunderPolicyId() throws IOException {
-        PassClientSelector<Policy> policySelector = new PassClientSelector<>(Policy.class);
-        policySelector.setFilter(RSQL.equals("title", "Init Direct Funder Policy"));
-        PassClientResult<Policy> resultPolicy = passClient.selectObjects(policySelector);
-        if (resultPolicy.getObjects().isEmpty()) {
-            Policy policy1 = new Policy();
-            policy1.setTitle("Init Direct Funder Policy");
-            policy1.setDescription("BAA");
-            passClient.createObject(policy1);
-            return policy1.getId();
-        }
-        return resultPolicy.getObjects().get(0).getId();
     }
 
 }

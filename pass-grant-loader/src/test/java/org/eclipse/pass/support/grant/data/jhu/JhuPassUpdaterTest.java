@@ -144,8 +144,6 @@ public class JhuPassUpdaterTest {
         String directFunderName = "JHU Department of Synergy";
         String primaryFunderId = "8675309";
         String primaryFunderName = "J. L. Gotrocks Foundation";
-        String primaryFunderPolicy = "policy1";
-        String directFunderPolicy = "policy2";
 
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setAwardNumber(awardNumber);
@@ -196,8 +194,6 @@ public class JhuPassUpdaterTest {
 
         grantIngestRecord2.setUpdateTimeStamp("2018-01-01 00:00:00.0");
         grantIngestRecord2.setPiRole("C");
-        grantIngestRecord2.setDirectFunderPolicyId(directFunderPolicy);
-        grantIngestRecord2.setPrimaryFunderPolicyId(primaryFunderPolicy);
 
         resultSet.add(grantIngestRecord2);
         return resultSet;
@@ -267,7 +263,6 @@ public class JhuPassUpdaterTest {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setPrimaryFunderName( "Funder Name");
         grantIngestRecord.setPrimaryFunderCode("8675309");
-        grantIngestRecord.setPrimaryFunderPolicyId("policy1");
 
         Properties policyProperties = TestUtil.loaderPolicyProperties();
         policyProperties.put("8675309", "policy1");
