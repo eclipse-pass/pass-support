@@ -202,11 +202,9 @@ public class CoeusConnector implements GrantConnector {
                     grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
                     grantIngestRecord.setDirectFunderCode(rs.getString(C_DIRECT_FUNDER_LOCAL_KEY));
                     LOG.debug("Record processed: {}", grantIngestRecord);
-                    // TODO is this needed?  So what if there is a duplicate, logic would work it out i think
-                    grantIngestRecords.add(grantIngestRecord);
-//                    if (!mapList.contains(rowMap)) {
-//                        mapList.add(rowMap);
-//                    }
+                    if (!grantIngestRecords.contains(grantIngestRecord)) {
+                        grantIngestRecords.add(grantIngestRecord);
+                    }
                 }
             }
         }
@@ -237,7 +235,6 @@ public class CoeusConnector implements GrantConnector {
                     GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
                     grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
                     grantIngestRecord.setPrimaryFunderName(rs.getString(C_PRIMARY_FUNDER_NAME));
-                    // TODO is this needed?  So what if there is a duplicate, logic would work it out i think
                     grantIngestRecords.add(grantIngestRecord);
                 }
             }
@@ -264,7 +261,9 @@ public class CoeusConnector implements GrantConnector {
                     grantIngestRecord.setPiEmployeeId(rs.getString(C_USER_EMPLOYEE_ID));
                     grantIngestRecord.setUpdateTimeStamp(rs.getString(C_UPDATE_TIMESTAMP));
                     LOG.debug("Record processed: {}", grantIngestRecord);
-                    grantIngestRecords.add(grantIngestRecord);
+                    if (!grantIngestRecords.contains(grantIngestRecord)) {
+                        grantIngestRecords.add(grantIngestRecord);
+                    }
                 }
             }
         }
