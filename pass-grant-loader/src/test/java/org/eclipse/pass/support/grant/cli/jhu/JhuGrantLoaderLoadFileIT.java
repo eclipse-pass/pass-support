@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli;
+package org.eclipse.pass.support.grant.cli.jhu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,6 +32,7 @@ import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
+import org.eclipse.pass.support.grant.cli.PassCliException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -52,21 +53,18 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         policy.setTitle("test policy");
         passClient.createObject(policy);
 
-        System.setProperty(
-                "COEUS_HOME",
-                "src/test/resources"
-        );
+        System.setProperty("COEUS_HOME", "src/test/resources");
         JhuGrantLoaderApp app = new JhuGrantLoaderApp("", "01/01/2011", false,
             "grant", "load", "src/test/resources/test-load.csv", false, null);
-        
+
         // WHEN
         app.run();
-        
+
         // THEN
         verifyGrantOne();
         verifyGrantTwo();
     }
-    
+
     private void verifyGrantOne() throws IOException {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:138058"));

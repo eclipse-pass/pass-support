@@ -67,8 +67,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author jrm@jhu.edu
  */
-abstract class BaseGrantLoaderApp {
-    private static final Logger LOG = LoggerFactory.getLogger(BaseGrantLoaderApp.class);
+public abstract class AbstractBaseGrantLoaderApp {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractBaseGrantLoaderApp.class);
     private EmailService emailService;
 
     private final File appHome;
@@ -99,8 +99,8 @@ abstract class BaseGrantLoaderApp {
      * @param dataFileName - a String representing the path to an output file for a pull, or input for a load
      * @param grant - a single grant number to be run
      */
-    BaseGrantLoaderApp(String startDate, String awardEndDate, boolean email, String mode, String action,
-                       String dataFileName, String grant) {
+    public AbstractBaseGrantLoaderApp(String startDate, String awardEndDate, boolean email, String mode, String action,
+                                      String dataFileName, String grant) {
         this.appHome = new File(System.getProperty("COEUS_HOME"));
         this.startDate = startDate;
         this.awardEndDate = awardEndDate;
@@ -123,7 +123,7 @@ abstract class BaseGrantLoaderApp {
      *
      * @throws PassCliException if there was any error occurring during the grant loading or updating processes
      */
-    void run() throws PassCliException {
+    public void run() throws PassCliException {
         String connectionPropertiesFileName = "connection.properties";
         File connectionPropertiesFile = new File(appHome, connectionPropertiesFileName);
         String mailPropertiesFileName = "mail.properties";
@@ -417,7 +417,7 @@ abstract class BaseGrantLoaderApp {
      *
      * @param timestamp boolean indicating whether we are supporting timestamps for updates
      */
-    void setTimestamp(boolean timestamp) {
+    protected void setTimestamp(boolean timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -427,10 +427,10 @@ abstract class BaseGrantLoaderApp {
      * @param s the string for the mode
      * @return whether we support this mode
      */
-    abstract boolean checkMode(String s);
+    protected abstract boolean checkMode(String s);
 
-    abstract GrantConnector configureConnector(Properties connectionProperties);
+    protected abstract GrantConnector configureConnector(Properties connectionProperties);
 
-    abstract PassUpdater configureUpdater(Properties policyProperties);
+    protected abstract PassUpdater configureUpdater(Properties policyProperties);
 
 }

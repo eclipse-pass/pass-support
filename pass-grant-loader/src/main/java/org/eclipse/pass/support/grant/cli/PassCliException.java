@@ -16,11 +16,11 @@
 package org.eclipse.pass.support.grant.cli;
 
 /**
- * An Exception class to manage the various Exceptions thrown to the {@code CoeusGrantLoaderApp}, which then forwards
+ * An Exception class to manage the various Exceptions thrown to the GrantLoaderApp, which then forwards
  * this single exception
  * type tp the CLI
  */
-class PassCliException extends Exception {
+public class PassCliException extends Exception {
     PassCliException(String message) {
         super(message);
     }

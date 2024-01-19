@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli;
+package org.eclipse.pass.support.grant.cli.jhu;
 
 import java.util.Properties;
 
+import org.eclipse.pass.support.grant.cli.AbstractBaseGrantLoaderApp;
 import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.eclipse.pass.support.grant.data.jhu.CoeusConnector;
@@ -25,7 +26,7 @@ import org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class JhuGrantLoaderApp extends BaseGrantLoaderApp {
+public class JhuGrantLoaderApp extends AbstractBaseGrantLoaderApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(JhuGrantLoaderApp.class);
 
@@ -39,17 +40,17 @@ class JhuGrantLoaderApp extends BaseGrantLoaderApp {
     }
 
     @Override
-    boolean checkMode(String s) {
+    protected boolean checkMode(String s) {
         return (s.equals("user") || s.equals("grant") || s.equals("funder"));
     }
 
     @Override
-    GrantConnector configureConnector(Properties connectionProperties) {
+    protected GrantConnector configureConnector(Properties connectionProperties) {
         return new CoeusConnector(connectionProperties);
     }
 
     @Override
-    PassUpdater configureUpdater(Properties policyProperties) {
+    protected PassUpdater configureUpdater(Properties policyProperties) {
         if (init) {
             LOG.warn("**Grant Loader running in init mode**");
             return new JhuPassInitUpdater(policyProperties);
