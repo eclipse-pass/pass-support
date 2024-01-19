@@ -51,7 +51,7 @@ public class JhuGrantLoaderPullFileTest {
     @Test
     public void testPullCvsFile() throws PassCliException, SQLException, IOException {
         // GIVEN
-        System.setProperty("COEUS_HOME", "src/test/resources");
+        System.setProperty("APP_HOME", "src/test/resources");
         Files.createFile(Path.of("src/test/resources/test-pull.csv"));
         JhuGrantLoaderApp app = new JhuGrantLoaderApp("2011-01-01 00:00:00", "01/01/2011", "grant",
             "pull", "src/test/resources/test-pull.csv", false, null);

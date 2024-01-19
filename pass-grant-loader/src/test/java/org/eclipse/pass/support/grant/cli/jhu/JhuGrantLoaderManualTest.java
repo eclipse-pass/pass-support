@@ -22,7 +22,7 @@ public class JhuGrantLoaderManualTest {
 
     /**
      * This is a manual test that can run locally to test pulling the COEUS data into a file.
-     * You need to set the system prop COEUS_HOME to the path of the test/resouces dir.
+     * You need to set the system prop APP_HOME to the path of the test/resouces dir.
      * You also need the connection.properties file in test/resources which contains connection props
      * for COEUS and the Directory Service.
      * Be careful with the startDateTime to no pull too much data.  Know what the impact is on pulling
@@ -32,7 +32,7 @@ public class JhuGrantLoaderManualTest {
     @Test
     public void testPullCoeusFile() {
         System.setProperty(
-                "COEUS_HOME",
+                "APP_HOME",
                 "full_path_to/pass-support/pass-grant-loader/pass-grant-cli/src/test/resources"
         );
         String[] args = {"-a", "pull", "-s", "2023-04-01 00:00:00.000", "-z", "04/01/2023",
