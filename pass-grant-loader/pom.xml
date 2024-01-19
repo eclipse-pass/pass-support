@@ -164,6 +164,27 @@
         </plugin>
 
         <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>build-after-its</id>
+              <phase>post-integration-test</phase>
+              <configuration>
+                <images>
+                  <image>
+                    <name>ghcr.io/eclipse-pass/jhu-grant-loader:%v</name>
+                  </image>
+                </images>
+              </configuration>
+              <goals>
+                <goal>build</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
           <version>3.0.0</version>
