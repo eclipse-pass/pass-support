@@ -96,7 +96,7 @@ public abstract class AbstractBaseGrantLoaderApp {
      */
     public AbstractBaseGrantLoaderApp(String startDate, String awardEndDate, String mode, String action,
                                       String dataFileName, String grant) {
-        this.appHome = new File(System.getProperty("COEUS_HOME"));
+        this.appHome = new File(System.getProperty("APP_HOME"));
         this.startDate = startDate;
         this.awardEndDate = awardEndDate;
         if (mode.equals("localFunder")) {
