@@ -434,10 +434,10 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     }
 
     /**
-     * Take a new Funder object populated as fully as possible from the COEUS pull, and use this
+     * Take a new Funder object populated as fully as possible from the Grant source system pull, and use this
      * new information to update an object for the same Funder in Pass (if it exists)
      *
-     * @param systemFunder the new Funder object populated from COEUS
+     * @param systemFunder the new Funder object populated from Grant source system
      * @return the localKey for the resource representing the updated Funder in Pass
      */
     private Funder updateFunderInPass(Funder systemFunder) throws IOException, GrantDataException {
@@ -469,10 +469,10 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     }
 
     /**
-     * Take a new User object populated as fully as possible from the COEUS pull, and use this
+     * Take a new User object populated as fully as possible from the Grant source system pull, and use this
      * new information to update an object for the same User in Pass (if it exists)
      *
-     * @param systemUser the new User object populated from COEUS
+     * @param systemUser the new User object populated from Grant source system
      * @return the URI for the resource representing the updated User in Pass
      */
     private User updateUserInPass(User systemUser) throws IOException {
@@ -513,10 +513,10 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     }
 
     /**
-     * Take a new Grant object populated as fully as possible from the COEUS pull, and use this
+     * Take a new Grant object populated as fully as possible from the Grant source system pull, and use this
      * new information to update an object for the same Grant in Pass (if it exists)
      *
-     * @param systemGrant the new Grant object populated from COEUS
+     * @param systemGrant the new Grant object populated from Grant source system
      * @return the PASS identifier for the Grant object
      */
     private Grant updateGrantInPass(Grant systemGrant) throws IOException, GrantDataException {
