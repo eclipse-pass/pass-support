@@ -1,4 +1,4 @@
-package org.eclipse.pass.support.grant.data;
+package org.eclipse.pass.support.grant.data.file;
 
 public enum GrantIngestCsvHeaders {
     GRANT_NUMBER,

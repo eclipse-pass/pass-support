@@ -49,9 +49,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.eclipse.pass.support.grant.data.GrantConnector;
-import org.eclipse.pass.support.grant.data.GrantDataCsvFileUtils;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.eclipse.pass.support.grant.data.PassUpdater;
+import org.eclipse.pass.support.grant.data.file.GrantDataCsvFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -366,11 +366,9 @@ public abstract class AbstractBaseGrantLoaderApp {
         if (e != null) {
             clie = new PassCliException(message, e);
             LOG.error(message, e);
-            e.printStackTrace();
         } else {
             clie = new PassCliException(message);
             LOG.error(message);
-            System.err.println(message);
         }
         return clie;
     }
