@@ -32,9 +32,9 @@ public class JhuGrantLoaderApp extends AbstractBaseGrantLoaderApp {
 
     private final boolean init;
 
-    JhuGrantLoaderApp(String startDate, String awardEndDate, boolean email, String mode, String action,
+    JhuGrantLoaderApp(String startDate, String awardEndDate, String mode, String action,
                       String dataFileName, boolean init, String grant) {
-        super(startDate, awardEndDate, email, mode, action, dataFileName, grant);
+        super(startDate, awardEndDate, mode, action, dataFileName, grant);
         super.setTimestamp(true);
         this.init = init;
     }

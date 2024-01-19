@@ -63,19 +63,17 @@ import org.slf4j.LoggerFactory;
  * via the java pass client.
  * <p>
  * A large percentage of the code here is handling exceptional paths, as this is intended to be run in an automated
- * fashion, so care must be taken to log errors, report them to STDOUT, and also send email notifications.
+ * fashion, so care must be taken to log errors, report them to STDOUT.
  *
  * @author jrm@jhu.edu
  */
 public abstract class AbstractBaseGrantLoaderApp {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBaseGrantLoaderApp.class);
-    private EmailService emailService;
 
     private final File appHome;
     private String startDate;
     private final String awardEndDate;
     private File updateTimestampsFile;
-    private final boolean email;
     private final String mode;
     private final String action;
     private final String dataFileName;
@@ -90,8 +88,6 @@ public abstract class AbstractBaseGrantLoaderApp {
      *
      * @param startDate    - the latest successful update timestamp, occurring as the last line of the update
      *                     timestamps file
-     * @param email        - a boolean which indicates whether or not to send email notification of the result of the
-     *                    current run
      * @param mode         - a String indicating whether we are updating grants, or existing users in PASS
      * @param action       - a String indicating an optional restriction to just pulling data from the data source,
      *                     and saving a serialized
@@ -99,12 +95,11 @@ public abstract class AbstractBaseGrantLoaderApp {
      * @param dataFileName - a String representing the path to an output file for a pull, or input for a load
      * @param grant - a single grant number to be run
      */
-    public AbstractBaseGrantLoaderApp(String startDate, String awardEndDate, boolean email, String mode, String action,
+    public AbstractBaseGrantLoaderApp(String startDate, String awardEndDate, String mode, String action,
                                       String dataFileName, String grant) {
         this.appHome = new File(System.getProperty("COEUS_HOME"));
         this.startDate = startDate;
         this.awardEndDate = awardEndDate;
-        this.email = email;
         if (mode.equals("localFunder")) {
             this.mode = "funder";
             local = true;
@@ -126,15 +121,12 @@ public abstract class AbstractBaseGrantLoaderApp {
     public void run() throws PassCliException {
         String connectionPropertiesFileName = "connection.properties";
         File connectionPropertiesFile = new File(appHome, connectionPropertiesFileName);
-        String mailPropertiesFileName = "mail.properties";
-        File mailPropertiesFile = new File(appHome, mailPropertiesFileName);
         String policyPropertiesFileName = "policy.properties";
         File policyPropertiesFile = new File(appHome, policyPropertiesFileName);
         File dataFile = new File(dataFileName);
 
         updateTimestampsFile = new File(appHome, updateTimestampsFileName);
         Properties connectionProperties;
-        Properties mailProperties;
         Properties policyProperties;
 
         //check that we have a good value for mode
@@ -169,19 +161,6 @@ public abstract class AbstractBaseGrantLoaderApp {
                 throw processException(format(ERR_DATA_FILE_CANNOT_READ, dataFileName), null);
             } else if (action.equals("pull") && !dataFile.canWrite()) {
                 throw processException(format(ERR_DATA_FILE_CANNOT_READ, dataFileName), null);
-            }
-        }
-
-        //create mail properties and instantiate email service if we are using the service
-        if (email) {
-            if (!mailPropertiesFile.exists()) {
-                throw processException(format(ERR_REQUIRED_CONFIGURATION_FILE_MISSING, mailPropertiesFileName), null);
-            }
-            try {
-                mailProperties = loadProperties(mailPropertiesFile);
-                emailService = new EmailService(mailProperties);
-            } catch (RuntimeException e) {
-                throw processException(ERR_COULD_NOT_OPEN_CONFIGURATION_FILE, e);
             }
         }
 
@@ -276,13 +255,10 @@ public abstract class AbstractBaseGrantLoaderApp {
                     }
                 }
             }
-            //now everything succeeded - log this result and send email if enabled
+            //now everything succeeded - log this result
             String message = passUpdater.getReport();
             LOG.info(message);
             System.out.println(message);
-            if (email) {
-                emailService.sendEmailMessage("Grant Loader Data Pull SUCCESS", message);
-            }
         } else { //don't need to update, just write the result set out to the data file
             // TODO write out csv
             try (FileOutputStream fos = new FileOutputStream(dataFile);
@@ -307,9 +283,6 @@ public abstract class AbstractBaseGrantLoaderApp {
             String message = sb.toString();
             LOG.info(message);
             System.out.println(message);
-            if (email) {
-                emailService.sendEmailMessage("Grant Data Loader SUCCESS", message);
-            }
         }
     }
 
@@ -382,9 +355,7 @@ public abstract class AbstractBaseGrantLoaderApp {
     }
 
     /**
-     * This method logs the supplied message and exception, reports the {@code Exception} to STDOUT, and
-     * optionally causes an email regarding this {@code Exception} to be sent to the address configured
-     * in the mail properties file
+     * This method logs the supplied message and exception, reports the {@code Exception} to STDOUT
      *
      * @param message - the error message
      * @param e       - the Exception
@@ -392,22 +363,14 @@ public abstract class AbstractBaseGrantLoaderApp {
      */
     private PassCliException processException(String message, Exception e) {
         PassCliException clie;
-
-        String errorSubject = "Data Loader ERROR";
         if (e != null) {
             clie = new PassCliException(message, e);
             LOG.error(message, e);
             e.printStackTrace();
-            if (email) {
-                emailService.sendEmailMessage(errorSubject, clie.getMessage());
-            }
         } else {
             clie = new PassCliException(message);
             LOG.error(message);
             System.err.println(message);
-            if (email) {
-                emailService.sendEmailMessage(errorSubject, message);
-            }
         }
         return clie;
     }

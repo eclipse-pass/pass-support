@@ -42,10 +42,6 @@ public abstract class AbstractGrantLoaderCLI {
     @Option(name = "-v", aliases = {"-version", "--version"}, usage = "print version information")
     protected boolean version = false;
 
-    @Option(name = "-e", aliases = {"-email", "--email"},
-            usage = "flag to use the internal email server for notification")
-    protected static boolean email = false;
-
     @Option(name = "-m", aliases = {"-mode", "--mode"},
             usage = "option to set the query mode to \"grant\" (default) or \"user\"")
     protected static String mode = "grant";

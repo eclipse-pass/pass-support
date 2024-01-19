@@ -73,7 +73,7 @@ Using java system properties to launch the jhu grant loader:
 The following may be provided as system properties on the command line `-Dprop-value`.
 
 `COEUS_HOME`
-The full path to where the connections.properties, policy.properties, and mail.properties are located
+The full path to where the connections.properties and policy.properties are located
 
 `pass.core.url`
 The base url for the pass-core REST API such as `http://localhost:8080`
