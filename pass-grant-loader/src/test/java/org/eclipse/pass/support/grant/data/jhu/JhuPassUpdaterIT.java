@@ -32,7 +32,9 @@ import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
+import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
 import org.eclipse.pass.support.grant.TestUtil;
@@ -56,6 +58,10 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     @Test
     public void processGrantIT() throws IOException {
         // GIVEN
+        Policy policy = new Policy();
+        policy.setTitle("test policy");
+        passClient.createObject(policy);
+
         //put in initial iteration as a correct existing record - PI is Reckondwith, Co-pi is Class
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(0, 0, "P");
         GrantIngestRecord coPiRecord0 = TestUtil.makeGrantIngestRecord(0, 1, "C");
@@ -65,6 +71,8 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         resultSet.add(coPiRecord0);
 
         Properties policyProperties = TestUtil.loaderPolicyProperties();
+        policyProperties.put("20000000", policy.getId());
+        policyProperties.put("20000001", policy.getId());
         JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
 
         // WHEN
@@ -88,6 +96,17 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(createZonedDateTime(TestUtil.grantAwardDate[0]), passGrant.getAwardDate());
         assertEquals(createZonedDateTime(TestUtil.grantStartDate[0]), passGrant.getStartDate());
         assertEquals(createZonedDateTime(TestUtil.grantEndDate[0]), passGrant.getEndDate());
+
+        Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:20000001", primaryFunder.getLocalKey());
+        assertEquals("J L Gotrocks Foundation", primaryFunder.getName());
+        assertEquals(policy.getId(), primaryFunder.getPolicy().getId());
+
+        Funder directFunder = passClient.getObject(passGrant.getDirectFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:20000000", directFunder.getLocalKey());
+        assertEquals("Enormous State University",directFunder.getName());
+        assertEquals(policy.getId(), directFunder.getPolicy().getId());
+
         assertEquals(TestUtil.grantUpdateTimestamp[0], passUpdater.getLatestUpdate());//latest
         assertEquals(user0, passGrant.getPi()); //Reckondwith
         assertEquals(1, passGrant.getCoPis().size());
