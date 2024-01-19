@@ -384,8 +384,18 @@ public abstract class AbstractBaseGrantLoaderApp {
      */
     protected abstract boolean checkMode(String s);
 
+    /**
+     * Returns GrantConnector responsible for retrieving updates from Grant Source System.
+     * @param connectionProperties the conn props
+     * @return the GrantConnector
+     */
     protected abstract GrantConnector configureConnector(Properties connectionProperties);
 
+    /**
+     * Configure and return the PassUpdater responsible for updating PASS with grant updates.
+     * @param policyProperties the policy props
+     * @return the PassUpdater
+     */
     protected abstract PassUpdater configureUpdater(Properties policyProperties);
 
 }
