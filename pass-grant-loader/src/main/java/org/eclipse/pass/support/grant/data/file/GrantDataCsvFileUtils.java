@@ -15,14 +15,19 @@
  */
 package org.eclipse.pass.support.grant.data.file;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 
@@ -32,9 +37,9 @@ import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 public final class GrantDataCsvFileUtils {
     private GrantDataCsvFileUtils() {}
 
-    public static List<GrantIngestRecord> loadGrantIngestCsv(File grantIngestCsvFile) throws IOException {
+    public static List<GrantIngestRecord> readGrantIngestCsv(File grantIngestCsvFile) throws IOException {
         try (Reader in = new FileReader(grantIngestCsvFile)) {
-            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+            CSVFormat csvFormat = CSVFormat.RFC4180.builder()
                 .setHeader(GrantIngestCsvHeaders.class)
                 .setSkipHeaderRecord(true)
                 .build();
@@ -44,6 +49,39 @@ public final class GrantDataCsvFileUtils {
                 grantIngestRecords.add(GrantIngestRecord.parse(record));
             }
             return grantIngestRecords;
+        }
+    }
+
+    public static void writeGrantIngestCsv(List<GrantIngestRecord> grantIngestRecords, Path csvFilePath)
+        throws IOException {
+        CSVFormat format = CSVFormat.RFC4180.builder().setHeader(GrantIngestCsvHeaders.class).build();
+        try (
+            BufferedWriter writer = Files.newBufferedWriter( csvFilePath , StandardCharsets.UTF_8 );
+            CSVPrinter printer = new CSVPrinter( writer , format );
+        ) {
+            for (GrantIngestRecord record : grantIngestRecords) {
+                printer.printRecord(
+                    record.getGrantNumber(),
+                    record.getGrantTitle(),
+                    record.getAwardNumber(),
+                    record.getAwardStatus(),
+                    record.getAwardDate(),
+                    record.getAwardStart(),
+                    record.getAwardEnd(),
+                    record.getPrimaryFunderName(),
+                    record.getPrimaryFunderCode(),
+                    record.getDirectFunderName(),
+                    record.getDirectFunderCode(),
+                    record.getPiFirstName(),
+                    record.getPiMiddleName(),
+                    record.getPiLastName(),
+                    record.getPiEmail(),
+                    record.getPiInstitutionalId(),
+                    record.getPiEmployeeId(),
+                    record.getPiRole(),
+                    record.getUpdateTimeStamp()
+                );
+            }
         }
     }
 }

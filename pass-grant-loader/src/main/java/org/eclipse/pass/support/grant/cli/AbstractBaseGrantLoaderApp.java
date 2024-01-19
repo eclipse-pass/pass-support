@@ -224,7 +224,7 @@ public abstract class AbstractBaseGrantLoaderApp {
             }
         } else { //just doing a PASS load, must have results set in the data file
             try {
-                resultSet = GrantDataCsvFileUtils.loadGrantIngestCsv(dataFile);
+                resultSet = GrantDataCsvFileUtils.readGrantIngestCsv(dataFile);
             } catch (IOException ex) {
                 throw processException("Error loading CSV data file", ex);
             }
@@ -258,15 +258,11 @@ public abstract class AbstractBaseGrantLoaderApp {
             //now everything succeeded - log this result
             String message = passUpdater.getReport();
             LOG.info(message);
-            System.out.println(message);
         } else { //don't need to update, just write the result set out to the data file
-            // TODO write out csv
-            try (FileOutputStream fos = new FileOutputStream(dataFile);
-                 ObjectOutputStream out = new ObjectOutputStream(fos)
-            ) {
-                out.writeObject(resultSet);
-            } catch (IOException e) {
-                e.printStackTrace();
+            try {
+                GrantDataCsvFileUtils.writeGrantIngestCsv(resultSet, dataFile.toPath());
+            } catch (IOException ex) {
+                throw processException("Error writing CSV data file", ex);
             }
             //do some notification
             int size = resultSet.size();
@@ -282,7 +278,6 @@ public abstract class AbstractBaseGrantLoaderApp {
             sb.append("\n");
             String message = sb.toString();
             LOG.info(message);
-            System.out.println(message);
         }
     }
 
