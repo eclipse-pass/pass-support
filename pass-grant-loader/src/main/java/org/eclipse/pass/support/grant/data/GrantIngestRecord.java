@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.support.grant.data;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.csv.CSVRecord;
@@ -25,6 +26,7 @@ import org.eclipse.pass.support.grant.data.file.GrantIngestCsvHeaders;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 public class GrantIngestRecord {
     private String grantNumber;
     private String grantTitle;
