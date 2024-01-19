@@ -30,6 +30,7 @@ public class JhuPassInitUpdater extends JhuPassUpdater {
 
     /**
      * Default constructor.
+     * @param policyProperties the policy props
      */
     public JhuPassInitUpdater(Properties policyProperties) {
         super(policyProperties);

@@ -46,6 +46,11 @@ public class GrantIngestRecord {
     private String piRole;
     private String updateTimeStamp;
 
+    /**
+     * Parses and returns GrantIngestRecord from the data in CSVRecord.
+     * @param csvRecord the csv record containing data
+     * @return the GrantIngestRecord instance
+     */
     public static GrantIngestRecord parse(CSVRecord csvRecord) {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setGrantNumber(csvRecord.get(GrantIngestCsvHeaders.GRANT_NUMBER));

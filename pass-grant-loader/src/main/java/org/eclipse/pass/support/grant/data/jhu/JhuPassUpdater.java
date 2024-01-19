@@ -48,6 +48,7 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
 
     /**
      * Constructor.
+     * @param policyProperties the policy props
      */
     public JhuPassUpdater(Properties policyProperties) {
         super(policyProperties);

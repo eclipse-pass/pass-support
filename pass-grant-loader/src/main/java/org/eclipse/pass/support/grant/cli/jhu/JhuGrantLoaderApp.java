@@ -26,6 +26,9 @@ import org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The JHU Grant Loader App with JHU specific configuration needed for Grant Loader execution.
+ */
 public class JhuGrantLoaderApp extends AbstractBaseGrantLoaderApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(JhuGrantLoaderApp.class);

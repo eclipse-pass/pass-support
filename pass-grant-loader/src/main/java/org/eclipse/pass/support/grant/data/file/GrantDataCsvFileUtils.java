@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Johns Hopkins University
+ * Copyright 2024 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,12 @@ import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 public final class GrantDataCsvFileUtils {
     private GrantDataCsvFileUtils() {}
 
+    /**
+     * Reads CSV file containing grant data.
+     * @param grantIngestCsvFile the CSV File
+     * @return a list of GrantIngestRecord, each record containing one row of CSV data
+     * @throws IOException
+     */
     public static List<GrantIngestRecord> readGrantIngestCsv(File grantIngestCsvFile) throws IOException {
         try (Reader in = new FileReader(grantIngestCsvFile)) {
             CSVFormat csvFormat = CSVFormat.RFC4180.builder()
@@ -52,6 +58,12 @@ public final class GrantDataCsvFileUtils {
         }
     }
 
+    /**
+     * Writes CSV file containing grant data.
+     * @param grantIngestRecords a list of GrantIngestRecord, each record containing one row of CSV data
+     * @param csvFilePath the Path to the output CSV file
+     * @throws IOException
+     */
     public static void writeGrantIngestCsv(List<GrantIngestRecord> grantIngestRecords, Path csvFilePath)
         throws IOException {
         CSVFormat format = CSVFormat.RFC4180.builder().setHeader(GrantIngestCsvHeaders.class).build();

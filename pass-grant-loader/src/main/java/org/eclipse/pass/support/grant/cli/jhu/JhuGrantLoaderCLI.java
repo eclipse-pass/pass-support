@@ -19,7 +19,7 @@ import org.eclipse.pass.support.grant.cli.AbstractBaseGrantLoaderApp;
 import org.eclipse.pass.support.grant.cli.AbstractGrantLoaderCLI;
 
 /**
- * This Class manages the command line interaction for the loading and updating processes
+ * This is the JHU Main class to run the grant loader.
  *
  * @author jrm@jhu.edu
  */
