@@ -301,7 +301,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
             statistics.setLatestUpdateString(latestUpdateString);
             statistics.setReport(results.size(), grantResultMap.size());
         } else {
-            System.out.println("No records were processed in this update");
+            LOG.warn("No records were processed in this update");
         }
     }
 
@@ -375,7 +375,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
             statistics.setLatestUpdateString(latestUpdateString);
             statistics.setReport(results.size(), userProcessedCounter);
         } else {
-            System.out.println("No records were processed in this update");
+            LOG.warn("No records were processed in this update");
         }
 
     }
