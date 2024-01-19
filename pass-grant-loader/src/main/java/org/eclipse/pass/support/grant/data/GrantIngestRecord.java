@@ -18,6 +18,7 @@ package org.eclipse.pass.support.grant.data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.csv.CSVRecord;
+import org.eclipse.pass.support.grant.data.file.GrantIngestCsvHeaders;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)

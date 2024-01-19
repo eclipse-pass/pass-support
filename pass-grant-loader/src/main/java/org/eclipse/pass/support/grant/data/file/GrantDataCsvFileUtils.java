@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.data;
+package org.eclipse.pass.support.grant.data.file;
 
 import java.io.File;
 import java.io.FileReader;
@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
