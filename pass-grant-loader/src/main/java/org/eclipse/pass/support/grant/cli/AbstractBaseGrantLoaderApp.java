@@ -256,7 +256,7 @@ public abstract class AbstractBaseGrantLoaderApp {
             }
             //now everything succeeded - log this result
             String message = passUpdater.getReport();
-            LOG.info(message);
+            LOG.warn(message);
         } else { //don't need to update, just write the result set out to the data file
             try {
                 GrantDataCsvFileUtils.writeGrantIngestCsv(resultSet, dataFile.toPath());
@@ -276,7 +276,7 @@ public abstract class AbstractBaseGrantLoaderApp {
             sb.append(dataFileName);
             sb.append("\n");
             String message = sb.toString();
-            LOG.info(message);
+            LOG.warn(message);
         }
     }
 
