@@ -58,9 +58,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     @Test
     public void processGrantIT() throws IOException {
         // GIVEN
-        Policy policy = new Policy();
-        policy.setTitle("test policy");
-        passClient.createObject(policy);
+        Policy policy = getTestPolicy();
 
         //put in initial iteration as a correct existing record - PI is Reckondwith, Co-pi is Class
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(0, 0, "P");
@@ -160,6 +158,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     @Test
     public void processGrantIT_DoesNotUpdateWithNoChange() throws IOException, IllegalAccessException {
         // GIVEN
+        Policy policy = getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(3, 3, "P");
         GrantIngestRecord coPiRecord0 = TestUtil.makeGrantIngestRecord(3, 3, "C");
 
@@ -169,6 +168,8 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
 
         PassClient spyPassClient = Mockito.spy(passClient);
         Properties policyProperties = TestUtil.loaderPolicyProperties();
+        policyProperties.put("20000000", policy.getId());
+        policyProperties.put("20000001", policy.getId());
         JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
         FieldUtils.writeField(passUpdater, "passClient", spyPassClient, true);
 
@@ -236,12 +237,15 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     @Test
     public void processGrantIT_UpdateUserLocatorsJhed() throws IOException {
         // GIVEN
+        Policy policy = getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(4, 4, "P");
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
 
         Properties policyProperties = TestUtil.loaderPolicyProperties();
+        policyProperties.put("20000000", policy.getId());
+        policyProperties.put("20000001", policy.getId());
         JhuPassUpdater passUpdater = new JhuPassUpdater(policyProperties);
 
         // WHEN
@@ -331,5 +335,18 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(EMPLOYEE_LOCATOR_ID + TestUtil.userEmployeeId[userIndex], user.getLocatorIds().get(0));
         assertEquals(JHED_LOCATOR_ID + TestUtil.userInstitutionalId[userIndex], user.getLocatorIds().get(1));
         return user;
+    }
+
+    private Policy getTestPolicy() throws IOException {
+        PassClientSelector<Policy> policySelector = new PassClientSelector<>(Policy.class);
+        policySelector.setFilter(RSQL.equals("title", "test policy jhu pass updater IT" ));
+        PassClientResult<Policy> result = passClient.selectObjects(policySelector);
+        if (result.getObjects().isEmpty()) {
+            Policy policy = new Policy();
+            policy.setTitle("test policy jhu pass updater IT");
+            passClient.createObject(policy);
+            return policy;
+        }
+        return result.getObjects().get(0);
     }
 }
