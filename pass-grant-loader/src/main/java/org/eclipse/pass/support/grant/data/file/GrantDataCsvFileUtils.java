@@ -48,6 +48,8 @@ public final class GrantDataCsvFileUtils {
             CSVFormat csvFormat = CSVFormat.RFC4180.builder()
                 .setHeader(GrantIngestCsvHeaders.class)
                 .setSkipHeaderRecord(true)
+                .setIgnoreSurroundingSpaces(true)
+                .setNullString("")
                 .build();
             Iterable<CSVRecord> records = csvFormat.parse(in);
             List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
