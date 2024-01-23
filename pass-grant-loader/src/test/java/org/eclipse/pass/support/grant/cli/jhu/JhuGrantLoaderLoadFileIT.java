@@ -17,6 +17,7 @@ package org.eclipse.pass.support.grant.cli.jhu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,8 +84,8 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("2026-04-30T14:00Z", passGrant.getEndDate().toString());
 
         Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
-        assertEquals("johnshopkins.edu:funder:300869", primaryFunder.getLocalKey());
-        assertEquals("NATIONAL INSTITUTE ON AGING", primaryFunder.getName());
+        assertEquals("johnshopkins.edu:funder:301313", primaryFunder.getLocalKey());
+        assertEquals("UNIV OF ARIZONA", primaryFunder.getName());
         assertEquals("1", primaryFunder.getPolicy().getId());
 
         Funder directFunder = passClient.getObject(passGrant.getDirectFunder(), "policy");
@@ -101,7 +102,7 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
 
         assertEquals(1, passGrant.getCoPis().size());
         assertEquals("UserThreeFn", passGrant.getCoPis().get(0).getFirstName());
-        assertEquals("", passGrant.getCoPis().get(0).getMiddleName());
+        assertNull(passGrant.getCoPis().get(0).getMiddleName());
         assertEquals("UserThreeLn", passGrant.getCoPis().get(0).getLastName());
         assertEquals("userthree@jhu.edu", passGrant.getCoPis().get(0).getEmail());
         assertEquals(List.of("johnshopkins.edu:employeeid:789123"),
@@ -119,7 +120,7 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("johnshopkins.edu:grant:130823", passGrant.getLocalKey());
         assertEquals("107-33664-1000055108", passGrant.getAwardNumber());
         assertEquals("The Subclinical Vascular Contributions to Alzheimer's Disease: " +
-                "The Multi-Ethnic Study of Atherosclerosis (MESA) ", passGrant.getProjectName());
+                "The Multi-Ethnic Study of Atherosclerosis (MESA)", passGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
         assertEquals("2018-12-14T00:00Z", passGrant.getAwardDate().toString());
         assertEquals("2018-08-15T10:00Z", passGrant.getStartDate().toString());
@@ -154,7 +155,7 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         User copi2 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userthree@jhu.edu"))
             .findFirst().get();
         assertEquals("UserThreeFn", copi2.getFirstName());
-        assertEquals("", copi2.getMiddleName());
+        assertNull(copi2.getMiddleName());
         assertEquals("UserThreeLn", copi2.getLastName());
         assertEquals("userthree@jhu.edu", copi2.getEmail());
         assertEquals(List.of("johnshopkins.edu:employeeid:789123"), copi2.getLocatorIds());
