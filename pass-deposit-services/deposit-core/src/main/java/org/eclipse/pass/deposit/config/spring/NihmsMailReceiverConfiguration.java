@@ -20,6 +20,8 @@ import java.util.Properties;
 import jakarta.mail.URLName;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.deposit.service.NihmsReceiveMailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +43,8 @@ import org.springframework.messaging.Message;
 @EnableIntegration
 @ConditionalOnProperty(name = "pass.deposit.nihms.email.enabled", havingValue = "true")
 public class NihmsMailReceiverConfiguration {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DepositConfig.class);
 
     @Value("${nihms.mail.username}")
     private String nihmsMailUsername;
@@ -83,6 +87,7 @@ public class NihmsMailReceiverConfiguration {
 
     @Bean
     public MailReceiver imapMailReceiver() {
+        LOG.warn("Nihms Email Service is enabled, configuration is being executed");
         String storeUrl = new URLName("imaps", nihmsImapHost, nihmsImapPort, "inbox",
             nihmsMailUsername, nihmsMailPassword).toString();
         ImapMailReceiver imapMailReceiver = new ImapMailReceiver(storeUrl);
