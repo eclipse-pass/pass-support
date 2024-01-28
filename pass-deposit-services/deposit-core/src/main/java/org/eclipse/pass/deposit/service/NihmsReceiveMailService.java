@@ -35,6 +35,7 @@ import org.eclipse.pass.deposit.provider.nihms.NihmsAssembler;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.jsoup.Jsoup;
@@ -150,6 +151,7 @@ public class NihmsReceiveMailService {
     private void updateDepositRejected(String submissionId, String packageId, String message) throws IOException {
         getDeposits(submissionId, packageId).forEach(deposit -> {
             deposit.setDepositStatus(DepositStatus.REJECTED);
+            deposit.getRepositoryCopy().setCopyStatus(CopyStatus.REJECTED);
             deposit.setStatusMessage(message);
             updateDeposit(deposit);
         });
@@ -158,6 +160,7 @@ public class NihmsReceiveMailService {
     private void updateDepositAccepted(String submissionId, String packageId, String nihmsId) throws IOException {
         getDeposits(submissionId, packageId).forEach(deposit -> {
             deposit.setDepositStatus(DepositStatus.ACCEPTED);
+            deposit.getRepositoryCopy().setCopyStatus(CopyStatus.ACCEPTED);
             deposit.setDepositStatusRef(NIHMS_DEP_STATUS_REF_PREFIX + nihmsId);
             deposit.setStatusMessage(null);
             updateDeposit(deposit);
@@ -175,6 +178,7 @@ public class NihmsReceiveMailService {
 
     private void updateDeposit(Deposit deposit) {
         try {
+            passClient.updateObject(deposit.getRepositoryCopy());
             passClient.updateObject(deposit);
         } catch (IOException e) {
             throw new RuntimeException(e);

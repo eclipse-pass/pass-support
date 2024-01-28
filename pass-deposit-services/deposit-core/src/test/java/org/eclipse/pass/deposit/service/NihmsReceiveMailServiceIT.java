@@ -42,8 +42,10 @@ import org.eclipse.pass.deposit.provider.nihms.NihmsAssembler;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -101,10 +103,12 @@ public class NihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
                 .handleReceivedMail(any());
             PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
             sel.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+            sel.setInclude("repositoryCopy");
             List<Deposit> actualDeposits = passClient.selectObjects(sel).getObjects();
             assertEquals(1, actualDeposits.size());
             Deposit pmcDeposit = actualDeposits.get(0);
             assertEquals(DepositStatus.ACCEPTED, pmcDeposit.getDepositStatus());
+            assertEquals(CopyStatus.ACCEPTED, pmcDeposit.getRepositoryCopy().getCopyStatus());
             assertEquals(NIHMS_DEP_STATUS_REF_PREFIX + "test-nihms-id", pmcDeposit.getDepositStatusRef());
             assertNull(pmcDeposit.getStatusMessage());
         });
@@ -117,10 +121,16 @@ public class NihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
         passClient.updateObject(submission);
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
+        RepositoryCopy repositoryCopy = new RepositoryCopy();
+        repositoryCopy.setCopyStatus(CopyStatus.IN_PROGRESS);
+        repositoryCopy.setRepository(actualSubmission.getRepositories().get(0));
+        passClient.createObject(repositoryCopy);
+        final RepositoryCopy actualRepoCopy = passClient.getObject(RepositoryCopy.class, repositoryCopy.getId());
         Deposit pmcDeposit = new Deposit();
         pmcDeposit.setSubmission(actualSubmission);
         // There is only the pmc repo on this submission
         pmcDeposit.setRepository(actualSubmission.getRepositories().get(0));
+        pmcDeposit.setRepositoryCopy(actualRepoCopy);
         pmcDeposit.setDepositStatus(DepositStatus.SUBMITTED);
         pmcDeposit.setDepositStatusRef(NihmsAssembler.NIHMS_PKG_DEP_REF_PREFIX +
             "nihms-native-2017-07_2023-10-23_13-10-30_" + actualSubmission.getId());
