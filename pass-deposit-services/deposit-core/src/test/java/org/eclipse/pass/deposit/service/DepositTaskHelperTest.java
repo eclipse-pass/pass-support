@@ -43,7 +43,6 @@ import org.eclipse.pass.deposit.config.repository.RepositoryDepositConfig;
 import org.eclipse.pass.deposit.service.DepositTaskHelper.DepositStatusCriFunc;
 import org.eclipse.pass.deposit.status.DepositStatusProcessor;
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
@@ -226,55 +225,19 @@ public class DepositTaskHelperTest {
         verifyNoMoreInteractions(deposit);
     }
 
-    /**
-     * If the deposit status is ACCEPTED, then the returned repository copy must have a copy status of COMPLETE, or the
-     * post condition fails.
-     * If the deposit status is REJECTED, then the returned repository copy must have a copy status of REJECTED, or the
-     * post condition fails.
-     * Otherwise, the post condition succeeds if the repository copy is non-null.
-     */
     @Test
-    public void depositCriFuncPostconditionSuccessAccepted() {
+    public void depositCriFuncPostconditionSuccess() {
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
-        when(deposit.getDepositStatus()).thenReturn(DepositStatus.ACCEPTED);
-        when(repoCopy.getCopyStatus()).thenReturn(CopyStatus.COMPLETE);
+        when(deposit.getRepositoryCopy()).thenReturn(repoCopy);
 
-        assertTrue(DepositStatusCriFunc.postcondition().test(deposit, repoCopy));
-
-        verify(repoCopy).getCopyStatus();
+        assertTrue(DepositStatusCriFunc.postcondition().test(deposit, deposit));
     }
 
-    /**
-     * If the deposit status is ACCEPTED, then the returned repository copy must have a copy status of COMPLETE, or the
-     * post condition fails. If the deposit status is REJECTED, then the returned repository copy must have a copy
-     * status of REJECTED, or the post condition fails. Otherwise, the post condition succeeds if the repository copy is
-     * non-null.
-     */
     @Test
-    public void depositCriFuncPostconditionSuccessRejected() {
-        RepositoryCopy repoCopy = mock(RepositoryCopy.class);
-        when(deposit.getDepositStatus()).thenReturn(DepositStatus.REJECTED);
-        when(repoCopy.getCopyStatus()).thenReturn(CopyStatus.REJECTED);
+    public void depositCriFuncPostconditionFailure() {
+        when(deposit.getRepositoryCopy()).thenReturn(null);
 
-        assertTrue(DepositStatusCriFunc.postcondition().test(deposit, repoCopy));
-
-        verify(repoCopy).getCopyStatus();
-    }
-
-    /**
-     * If the deposit status is ACCEPTED, then the returned repository copy must have a copy status of COMPLETE, or the
-     * post condition fails. If the deposit status is REJECTED, then the returned repository copy must have a copy
-     * status of REJECTED, or the post condition fails. Otherwise, the post condition succeeds if the repository copy is
-     * non-null.
-     */
-    @Test
-    public void depositCriFuncPostconditionSuccessIntermediate() {
-        RepositoryCopy repoCopy = mock(RepositoryCopy.class);
-        when(deposit.getDepositStatus()).thenReturn(DepositStatus.SUBMITTED);
-
-        assertTrue(DepositStatusCriFunc.postcondition().test(deposit, repoCopy));
-
-        verifyNoInteractions(repoCopy);
+        assertFalse(DepositStatusCriFunc.postcondition().test(deposit, deposit));
     }
 
     /**
@@ -285,34 +248,21 @@ public class DepositTaskHelperTest {
      */
     @Test
     public void depositCriFuncPostconditionFailNullRepoCopy() {
-        assertFalse(DepositStatusCriFunc.postcondition().test(deposit, null));
+        Deposit testResult = new Deposit();
+        assertFalse(DepositStatusCriFunc.postcondition().test(deposit, testResult));
         verifyNoInteractions(deposit);
     }
 
-    /**
-     * When the Deposit is processed as ACCEPTED, the copy status should be set to COMPLETE, and the returned
-     * repository copy not null
-     * @throws IOException
-     */
     @Test
     public void depositCriFuncCriticalSuccessAccepted() throws IOException {
-        CopyStatus expectedCopyStatus = CopyStatus.COMPLETE;
-        DepositStatus statusProcessorResult = DepositStatus.ACCEPTED;
-
-        testDepositCriFuncCriticalForStatus(expectedCopyStatus, statusProcessorResult,deposit, passClient);
+        Deposit testDeposit = new Deposit();
+        testDepositCriFuncCriticalForStatus(DepositStatus.ACCEPTED, testDeposit, passClient);
     }
 
-    /**
-     * When the Deposit is processed as REJECTED, the copy status should be set to REJECTED, and the returned
-     * repository copy not null
-     * @throws IOException
-     */
     @Test
     public void depositCriFuncCriticalSuccessRejected() throws IOException {
-        CopyStatus expectedCopyStatus = CopyStatus.REJECTED;
-        DepositStatus statusProcessorResult = DepositStatus.REJECTED;
-
-        testDepositCriFuncCriticalForStatus(expectedCopyStatus, statusProcessorResult, deposit, passClient);
+        Deposit testDeposit = new Deposit();
+        testDepositCriFuncCriticalForStatus(DepositStatus.REJECTED, testDeposit, passClient);
     }
 
     /**
@@ -338,10 +288,9 @@ public class DepositTaskHelperTest {
 
         when(statusProcessor.process(eq(deposit), any())).thenReturn(statusProcessorResult);
 
-        assertSame(repoCopy, DepositStatusCriFunc.critical(repos, passClient).apply(deposit));
+        assertSame(deposit, DepositStatusCriFunc.critical(repos, passClient).apply(deposit));
 
         verify(passClient).getObject(repo);
-        verify(passClient).getObject(repoCopy);
         verifyNoMoreInteractions(passClient);
         verify(statusProcessor).process(eq(deposit), any());
         verifyNoInteractions(repoCopy);
@@ -487,8 +436,7 @@ public class DepositTaskHelperTest {
         return repos;
     }
 
-    private static void testDepositCriFuncCriticalForStatus(CopyStatus expectedCopyStatus,
-                                                            DepositStatus statusProcessorResult,
+    private static void testDepositCriFuncCriticalForStatus(DepositStatus statusProcessorResult,
                                                             Deposit deposit,
                                                             PassClient passClient) throws IOException {
         String repoKey = randomId();
@@ -497,19 +445,17 @@ public class DepositTaskHelperTest {
         Repositories repos = newRepositoriesWithConfigFor(repoKey, statusProcessor);
         RepositoryCopy repoCopy = new RepositoryCopy(); // concrete to capture state changes performed by critical
 
-        when(deposit.getRepository()).thenReturn(repo);
-        when(deposit.getRepositoryCopy()).thenReturn(repoCopy);
+        deposit.setRepository(repo);
+        deposit.setRepositoryCopy(repoCopy);
 
         when(passClient.getObject(repo)).thenReturn(repo);
         when(passClient.getObject(repoCopy)).thenReturn(repoCopy);
 
         when(statusProcessor.process(eq(deposit), any())).thenReturn(statusProcessorResult);
 
-        RepositoryCopy result = DepositStatusCriFunc.critical(repos, passClient).apply(deposit);
+        Deposit result = DepositStatusCriFunc.critical(repos, passClient).apply(deposit);
 
-        assertEquals(expectedCopyStatus, result.getCopyStatus());
-
-        verify(passClient).updateObject(repoCopy);
+        assertEquals(statusProcessorResult, result.getDepositStatus());
         verify(statusProcessor).process(eq(deposit), any());
     }
 }

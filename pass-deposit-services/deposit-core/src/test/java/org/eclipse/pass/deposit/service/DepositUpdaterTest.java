@@ -18,10 +18,12 @@ package org.eclipse.pass.deposit.service;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.eclipse.pass.deposit.config.repository.Repositories;
@@ -32,6 +34,7 @@ import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -48,13 +51,27 @@ public class DepositUpdaterTest {
         final Repositories repositories = mock(Repositories.class);
         final DepositUpdater depositUpdater = new DepositUpdater(passClient, depositTaskHelper, failedDepositRetry,
             repositories);
+        ReflectionTestUtils.setField(depositUpdater, "repoKeysWithDepositProcessors", List.of("repo-1"));
+        Repository repository = new Repository();
+        repository.setRepositoryKey("repo-1");
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
         deposit1.setDepositStatus(DepositStatus.SUBMITTED);
+        deposit1.setRepository(repository);
         Deposit deposit2 = new Deposit();
         deposit2.setDepositStatus(DepositStatus.SUBMITTED);
         deposit2.setId("dp-2");
-        when(passClient.streamObjects(any())).thenReturn(Stream.of(deposit1, deposit2));
+        deposit2.setRepository(repository);
+        when(passClient.streamObjects(any())).thenAnswer(input -> {
+            PassClientSelector<Deposit> selector = input.getArgument(0);
+            if (selector.getFilter().contains("depositStatus=='failed'")) {
+                return Stream.of();
+            }
+            if (selector.getFilter().contains("depositStatus=='submitted'")) {
+                return Stream.of(deposit1, deposit2);
+            }
+            throw new RuntimeException("Fail test, should not happen");
+        });
 
         // WHEN
         depositUpdater.doUpdate();
@@ -64,8 +81,10 @@ public class DepositUpdaterTest {
         verify(depositTaskHelper).processDepositStatus("dp-2");
 
         ArgumentCaptor<PassClientSelector<Deposit>> argument = ArgumentCaptor.forClass(PassClientSelector.class);
-        verify(passClient).streamObjects(argument.capture());
-        assertTrue(argument.getValue().getFilter().startsWith(
-            "(depositStatus=in=('submitted','failed');submission.submittedDate>="));
+        verify(passClient, times(2)).streamObjects(argument.capture());
+        assertTrue(argument.getAllValues().get(0).getFilter().startsWith(
+            "(depositStatus=='failed';submission.submittedDate>="));
+        assertTrue(argument.getAllValues().get(1).getFilter().startsWith(
+            "(depositStatus=='submitted';submission.submittedDate>="));
     }
 }

@@ -89,6 +89,9 @@ public class DepositUpdater {
     }
 
     private void updateSubmittedDeposits(ZonedDateTime submissionFromDate) throws IOException {
+        if (repoKeysWithDepositProcessors.isEmpty()) {
+            return;
+        }
         PassClientSelector<Deposit> submittedDepositsSelector = new PassClientSelector<>(Deposit.class);
         submittedDepositsSelector.setFilter(
             RSQL.and(
@@ -114,7 +117,8 @@ public class DepositUpdater {
             .filter(repositoryConfig ->
                 Objects.nonNull(repositoryConfig.getRepositoryDepositConfig())
                     && Objects.nonNull(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing())
-                    && Objects.nonNull(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing().getProcessor())
+                    && Objects.nonNull(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing()
+                        .getProcessor())
             ).map(RepositoryConfig::getRepositoryKey)
             .toList();
     }
