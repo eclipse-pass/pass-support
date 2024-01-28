@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.eclipse.deposit.util.loggers.Loggers.WORKERS_LOGGER;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
@@ -145,13 +146,14 @@ public class DepositTaskHelper {
         }
     }
 
-    public void processDepositStatus(String depositId) {
+    void processDepositStatus(String depositId) {
 
-        CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositId, Deposit.class,
-                                                                         DepositStatusCriFunc.precondition(),
-                                                                         DepositStatusCriFunc.postcondition(),
-                                                                         DepositStatusCriFunc.critical(repositories,
-                                                                                                       passClient));
+        CriticalResult<Deposit, Deposit> cr = cri.performCritical(
+            depositId, Deposit.class,
+            DepositStatusCriFunc.precondition(),
+            DepositStatusCriFunc.postcondition(),
+            DepositStatusCriFunc.critical(repositories, passClient)
+        );
 
         if (!cr.success()) {
             if (cr.throwable().isPresent()) {
@@ -177,7 +179,32 @@ public class DepositTaskHelper {
             return;
         }
 
+        cr.result().ifPresent(this::updateDepositRepositoryCopyStatus);
         LOG.info("Successfully processed Deposit {}", depositId);
+    }
+
+    RepositoryCopy updateDepositRepositoryCopyStatus(Deposit deposit) {
+        try {
+            RepositoryCopy repoCopy = passClient.getObject(deposit.getRepositoryCopy());
+            switch (deposit.getDepositStatus()) {
+                case ACCEPTED -> {
+                    LOG.debug("Deposit {} was accepted.", deposit.getId());
+                    repoCopy.setCopyStatus(CopyStatus.COMPLETE);
+                    passClient.updateObject(repoCopy);
+                }
+                case REJECTED -> {
+                    LOG.debug("Deposit {} was rejected.", deposit.getId());
+                    repoCopy.setCopyStatus(CopyStatus.REJECTED);
+                    passClient.updateObject(repoCopy);
+                }
+                default -> {
+                }
+            }
+            return repoCopy;
+        } catch (Exception e) {
+            String msg = String.format(ERR_UPDATE_REPOCOPY, deposit.getRepositoryCopy(), deposit.getId());
+            throw new DepositServiceRuntimeException(msg, e, deposit);
+        }
     }
 
     static Optional<RepositoryConfig> lookupConfig(Repository passRepository, Repositories repositories) {
@@ -227,37 +254,11 @@ public class DepositTaskHelper {
             };
         }
 
-        /**
-         * Postcondition: if the critical section sets a Deposit.DepositStatus, it must be congruent with
-         * RepositoryCopy.copyStatus, otherwise the Deposit must have a non-null RepositoryCopy:
-         * <dl>
-         *     <dt>Deposit.DepositStatus = ACCEPTED</dt>
-         *     <dd>RepositoryCopy.CopyStatus = COMPLETE</dd>
-         *     <dt>Deposit.DepositStatus = REJECTED</dt>
-         *     <dd>RepositoryCopy.CopyStatus = REJECTED</dd>
-         * </dl>
-         *
-         * @return
-         */
-        static BiPredicate<Deposit, RepositoryCopy> postcondition() {
-            return (deposit, repoCopy) -> {
-                if (repoCopy == null) {
-                    return false;
-                }
-
-                if (deposit.getDepositStatus() == DepositStatus.ACCEPTED) {
-                    return CopyStatus.COMPLETE == repoCopy.getCopyStatus();
-                }
-
-                if (deposit.getDepositStatus() == DepositStatus.REJECTED) {
-                    return CopyStatus.REJECTED == repoCopy.getCopyStatus();
-                }
-
-                return true;
-            };
+        static BiPredicate<Deposit, Deposit> postcondition() {
+            return (deposit, updatedDeposit) -> Objects.nonNull(updatedDeposit.getRepositoryCopy());
         }
 
-        static Function<Deposit, RepositoryCopy> critical(Repositories repositories, PassClient passClient) {
+        static Function<Deposit, Deposit> critical(Repositories repositories, PassClient passClient) {
             return (deposit) -> {
                 AtomicReference<DepositStatus> status = new AtomicReference<>();
                 try {
@@ -285,30 +286,8 @@ public class DepositTaskHelper {
                     throw new DepositServiceRuntimeException(msg, deposit);
                 }
 
-                try {
-                    RepositoryCopy repoCopy = passClient.getObject(deposit.getRepositoryCopy());
-
-                    switch (status.get()) {
-                        case ACCEPTED -> {
-                            LOG.debug("Deposit {} was accepted.", deposit.getId());
-                            deposit.setDepositStatus(DepositStatus.ACCEPTED);
-                            repoCopy.setCopyStatus(CopyStatus.COMPLETE);
-                            passClient.updateObject(repoCopy);
-                        }
-                        case REJECTED -> {
-                            LOG.debug("Deposit {} was rejected.", deposit.getId());
-                            deposit.setDepositStatus(DepositStatus.REJECTED);
-                            repoCopy.setCopyStatus(CopyStatus.REJECTED);
-                            passClient.updateObject(repoCopy);
-                        }
-                        default -> {
-                        }
-                    }
-                    return repoCopy;
-                } catch (Exception e) {
-                    String msg = String.format(ERR_UPDATE_REPOCOPY, deposit.getRepositoryCopy(), deposit.getId());
-                    throw new DepositServiceRuntimeException(msg, e, deposit);
-                }
+                deposit.setDepositStatus(status.get());
+                return deposit;
             };
         }
     }

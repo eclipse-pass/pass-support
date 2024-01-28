@@ -108,7 +108,7 @@ public class NihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
             assertEquals(1, actualDeposits.size());
             Deposit pmcDeposit = actualDeposits.get(0);
             assertEquals(DepositStatus.ACCEPTED, pmcDeposit.getDepositStatus());
-            assertEquals(CopyStatus.ACCEPTED, pmcDeposit.getRepositoryCopy().getCopyStatus());
+            assertEquals(CopyStatus.COMPLETE, pmcDeposit.getRepositoryCopy().getCopyStatus());
             assertEquals(NIHMS_DEP_STATUS_REF_PREFIX + "test-nihms-id", pmcDeposit.getDepositStatusRef());
             assertNull(pmcDeposit.getStatusMessage());
         });

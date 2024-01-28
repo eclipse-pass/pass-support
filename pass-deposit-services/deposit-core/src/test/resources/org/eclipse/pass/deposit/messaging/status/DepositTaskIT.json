@@ -2,7 +2,7 @@
   "Pmc": {
     "deposit-config": {
       "processing": {
-        "beanName": "org.eclipse.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
+        "beanName": "org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor"
       },
       "mapping": {
         "http://dspace.org/state/archived": "accepted",

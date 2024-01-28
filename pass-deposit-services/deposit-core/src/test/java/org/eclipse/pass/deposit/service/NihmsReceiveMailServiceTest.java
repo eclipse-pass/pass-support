@@ -49,6 +49,7 @@ import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -84,7 +85,7 @@ public class NihmsReceiveMailServiceTest {
     @MockBean private PassClient passClient;
     @SpyBean private NihmsReceiveMailService nihmsReceiveMailService;
     @Captor ArgumentCaptor<MimeMessage> messageCaptor;
-    @Captor ArgumentCaptor<Deposit> depositCaptor;
+    @Captor ArgumentCaptor<PassEntity> passEntityCaptor;
 
     @Test
     void testHandleReceivedMail() {
@@ -202,28 +203,53 @@ public class NihmsReceiveMailServiceTest {
     }
 
     private void verifyDepositUpdates() throws IOException {
-        verify(passClient, times(3)).updateObject(depositCaptor.capture());
-        Deposit updatedDeposit1 = depositCaptor.getAllValues().stream().filter(deposit -> deposit.getId().equals("1"))
+        verify(passClient, times(6)).updateObject(passEntityCaptor.capture());
+        List<Deposit> updatedDeposits = passEntityCaptor.getAllValues().stream()
+            .filter(passEntity -> passEntity instanceof Deposit)
+            .map(passEntity -> (Deposit) passEntity)
+            .toList();
+        assertEquals(3, updatedDeposits.size());
+        List<RepositoryCopy> updatedRepoCopies = passEntityCaptor.getAllValues().stream()
+            .filter(passEntity -> passEntity instanceof RepositoryCopy)
+            .map(passEntity -> (RepositoryCopy) passEntity)
+            .toList();
+        assertEquals(3, updatedRepoCopies.size());
+        Deposit updatedDeposit1 = updatedDeposits.stream()
+            .filter(deposit -> deposit.getId().equals("1"))
             .findFirst().get();
         assertEquals(DepositStatus.REJECTED, updatedDeposit1.getDepositStatus());
         assertEquals(CopyStatus.REJECTED, updatedDeposit1.getRepositoryCopy().getCopyStatus());
         assertEquals("Package ID=nihms-native-2017-07_2023-10-23_13-10-12_229935 failed because all " +
             "manuscripts from this journal should be submitted directly to PMC.", updatedDeposit1.getStatusMessage());
         assertNull(updatedDeposit1.getDepositStatusRef());
-        Deposit updatedDeposit2 = depositCaptor.getAllValues().stream().filter(deposit -> deposit.getId().equals("2"))
+        RepositoryCopy updatedRepoCopy1 = updatedRepoCopies.stream()
+            .filter(repositoryCopy -> repositoryCopy.getId().equals("rc-1"))
+            .findFirst().get();
+        assertEquals(CopyStatus.REJECTED, updatedRepoCopy1.getCopyStatus());
+        Deposit updatedDeposit2 = updatedDeposits.stream()
+            .filter(deposit -> deposit.getId().equals("2"))
             .findFirst().get();
         assertEquals(DepositStatus.REJECTED, updatedDeposit2.getDepositStatus());
         assertEquals(CopyStatus.REJECTED, updatedDeposit2.getRepositoryCopy().getCopyStatus());
         assertEquals("Package ID=nihms-native-2017-07_2023-10-23_13-10-38_229941 failed because all " +
             "manuscripts from this journal should be submitted directly to PMC.", updatedDeposit2.getStatusMessage());
         assertNull(updatedDeposit2.getDepositStatusRef());
-        Deposit updatedDeposit3 = depositCaptor.getAllValues().stream().filter(deposit -> deposit.getId().equals("3"))
+        RepositoryCopy updatedRepoCopy2 = updatedRepoCopies.stream()
+            .filter(repositoryCopy -> repositoryCopy.getId().equals("rc-2"))
+            .findFirst().get();
+        assertEquals(CopyStatus.REJECTED, updatedRepoCopy2.getCopyStatus());
+        Deposit updatedDeposit3 = updatedDeposits.stream()
+            .filter(deposit -> deposit.getId().equals("3"))
             .findFirst().get();
         assertEquals(DepositStatus.ACCEPTED, updatedDeposit3.getDepositStatus());
-        assertEquals(CopyStatus.ACCEPTED, updatedDeposit3.getRepositoryCopy().getCopyStatus());
+        assertEquals(CopyStatus.COMPLETE, updatedDeposit3.getRepositoryCopy().getCopyStatus());
         assertNull(updatedDeposit3.getStatusMessage());
         assertEquals(NihmsReceiveMailService.NIHMS_DEP_STATUS_REF_PREFIX + "1502302",
             updatedDeposit3.getDepositStatusRef());
+        RepositoryCopy updatedRepoCopy3 = updatedRepoCopies.stream()
+            .filter(repositoryCopy -> repositoryCopy.getId().equals("rc-3"))
+            .findFirst().get();
+        assertEquals(CopyStatus.COMPLETE, updatedRepoCopy3.getCopyStatus());
     }
 
     @Test
@@ -333,17 +359,23 @@ public class NihmsReceiveMailServiceTest {
         deposit1.setId("1");
         deposit1.setDepositStatus(DepositStatus.SUBMITTED);
         deposit1.setStatusMessage("init-submitted");
-        deposit1.setRepositoryCopy(new RepositoryCopy());
+        RepositoryCopy repoCopy1 = new RepositoryCopy("rc-1");
+        repoCopy1.setCopyStatus(CopyStatus.IN_PROGRESS);
+        deposit1.setRepositoryCopy(repoCopy1);
         Deposit deposit2 = new Deposit();
         deposit2.setId("2");
         deposit2.setDepositStatus(DepositStatus.SUBMITTED);
         deposit2.setStatusMessage("init-submitted");
-        deposit2.setRepositoryCopy(new RepositoryCopy());
+        RepositoryCopy repoCopy2 = new RepositoryCopy("rc-2");
+        repoCopy2.setCopyStatus(CopyStatus.IN_PROGRESS);
+        deposit2.setRepositoryCopy(repoCopy2);
         Deposit deposit3 = new Deposit();
         deposit3.setId("3");
         deposit3.setDepositStatus(DepositStatus.SUBMITTED);
         deposit3.setStatusMessage("init-submitted");
-        deposit3.setRepositoryCopy(new RepositoryCopy());
+        RepositoryCopy repoCopy3 = new RepositoryCopy("rc-3");
+        repoCopy3.setCopyStatus(CopyStatus.IN_PROGRESS);
+        deposit3.setRepositoryCopy(repoCopy3);
         when(passClient.streamObjects(any())).thenAnswer(input -> {
             PassClientSelector<Deposit> selector = input.getArgument(0);
             if (selector.getFilter().contains("submission.id=='229935'")) {
@@ -354,6 +386,19 @@ public class NihmsReceiveMailServiceTest {
             }
             if (selector.getFilter().contains("submission.id=='229947'")) {
                 return Stream.of(deposit3);
+            }
+            throw new RuntimeException("Fail test, should not happen");
+        });
+        when(passClient.getObject(any())).thenAnswer(input -> {
+            RepositoryCopy repoCopyArg = input.getArgument(0);
+            if (repoCopyArg.getId().equals("rc-1")) {
+                return repoCopy1;
+            }
+            if (repoCopyArg.getId().equals("rc-2")) {
+                return repoCopy2;
+            }
+            if (repoCopyArg.getId().equals("rc-3")) {
+                return repoCopy3;
             }
             throw new RuntimeException("Fail test, should not happen");
         });
