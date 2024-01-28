@@ -46,8 +46,10 @@ import jakarta.mail.internet.MimeMultipart;
 import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
@@ -204,18 +206,21 @@ public class NihmsReceiveMailServiceTest {
         Deposit updatedDeposit1 = depositCaptor.getAllValues().stream().filter(deposit -> deposit.getId().equals("1"))
             .findFirst().get();
         assertEquals(DepositStatus.REJECTED, updatedDeposit1.getDepositStatus());
+        assertEquals(CopyStatus.REJECTED, updatedDeposit1.getRepositoryCopy().getCopyStatus());
         assertEquals("Package ID=nihms-native-2017-07_2023-10-23_13-10-12_229935 failed because all " +
             "manuscripts from this journal should be submitted directly to PMC.", updatedDeposit1.getStatusMessage());
         assertNull(updatedDeposit1.getDepositStatusRef());
         Deposit updatedDeposit2 = depositCaptor.getAllValues().stream().filter(deposit -> deposit.getId().equals("2"))
             .findFirst().get();
         assertEquals(DepositStatus.REJECTED, updatedDeposit2.getDepositStatus());
+        assertEquals(CopyStatus.REJECTED, updatedDeposit2.getRepositoryCopy().getCopyStatus());
         assertEquals("Package ID=nihms-native-2017-07_2023-10-23_13-10-38_229941 failed because all " +
             "manuscripts from this journal should be submitted directly to PMC.", updatedDeposit2.getStatusMessage());
         assertNull(updatedDeposit2.getDepositStatusRef());
         Deposit updatedDeposit3 = depositCaptor.getAllValues().stream().filter(deposit -> deposit.getId().equals("3"))
             .findFirst().get();
         assertEquals(DepositStatus.ACCEPTED, updatedDeposit3.getDepositStatus());
+        assertEquals(CopyStatus.ACCEPTED, updatedDeposit3.getRepositoryCopy().getCopyStatus());
         assertNull(updatedDeposit3.getStatusMessage());
         assertEquals(NihmsReceiveMailService.NIHMS_DEP_STATUS_REF_PREFIX + "1502302",
             updatedDeposit3.getDepositStatusRef());
@@ -328,14 +333,17 @@ public class NihmsReceiveMailServiceTest {
         deposit1.setId("1");
         deposit1.setDepositStatus(DepositStatus.SUBMITTED);
         deposit1.setStatusMessage("init-submitted");
+        deposit1.setRepositoryCopy(new RepositoryCopy());
         Deposit deposit2 = new Deposit();
         deposit2.setId("2");
         deposit2.setDepositStatus(DepositStatus.SUBMITTED);
         deposit2.setStatusMessage("init-submitted");
+        deposit2.setRepositoryCopy(new RepositoryCopy());
         Deposit deposit3 = new Deposit();
         deposit3.setId("3");
         deposit3.setDepositStatus(DepositStatus.SUBMITTED);
         deposit3.setStatusMessage("init-submitted");
+        deposit3.setRepositoryCopy(new RepositoryCopy());
         when(passClient.streamObjects(any())).thenAnswer(input -> {
             PassClientSelector<Deposit> selector = input.getArgument(0);
             if (selector.getFilter().contains("submission.id=='229935'")) {
