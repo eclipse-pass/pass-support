@@ -1,5 +1,10 @@
 {
   "JScholarship": {
+    "deposit-config": {
+      "processing": {
+        "beanName": "org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor"
+      }
+    },
     "assembler": {
       "specification": "simple",
       "beanName": "simpleAssembler",
@@ -22,16 +27,6 @@
     }
   },
   "PubMed Central": {
-    "deposit-config": {
-      "processing": {
-      },
-      "mapping": {
-        "INFO": "accepted",
-        "ERROR": "rejected",
-        "WARN": "rejected",
-        "default-mapping": "submitted"
-      }
-    },
     "assembler": {
       "specification": "nihms-native-2017-07",
       "beanName": "nihmsAssembler",

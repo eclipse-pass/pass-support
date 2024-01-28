@@ -24,10 +24,12 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import org.eclipse.pass.deposit.config.repository.Repositories;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Repository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -43,7 +45,9 @@ public class DepositUpdaterTest {
         final PassClient passClient = mock(PassClient.class);
         final DepositTaskHelper depositTaskHelper = mock(DepositTaskHelper.class);
         final FailedDepositRetry failedDepositRetry = mock(FailedDepositRetry.class);
-        final DepositUpdater depositUpdater = new DepositUpdater(passClient, depositTaskHelper, failedDepositRetry);
+        final Repositories repositories = mock(Repositories.class);
+        final DepositUpdater depositUpdater = new DepositUpdater(passClient, depositTaskHelper, failedDepositRetry,
+            repositories);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
         deposit1.setDepositStatus(DepositStatus.SUBMITTED);
