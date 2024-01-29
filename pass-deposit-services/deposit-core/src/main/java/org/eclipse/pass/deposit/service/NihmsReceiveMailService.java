@@ -56,15 +56,22 @@ public class NihmsReceiveMailService {
 
     private final PassClient passClient;
     private final DepositTaskHelper depositTaskHelper;
-    private final Address nihmsFromEmail;
+    private final List<Address> nihmsFromEmail;
 
     public NihmsReceiveMailService(PassClient passClient,
                                    DepositTaskHelper depositTaskHelper,
-                                   @Value("${pass.deposit.nihms.email.from}") String nihmsFromEmail)
-        throws AddressException {
+                                   @Value("${pass.deposit.nihms.email.from}") String nihmsFromEmail) {
         this.passClient = passClient;
         this.depositTaskHelper = depositTaskHelper;
-        this.nihmsFromEmail = new InternetAddress(nihmsFromEmail);
+        this.nihmsFromEmail = Arrays.stream(nihmsFromEmail.split(","))
+            .map(emailAddress -> {
+                try {
+                    return (Address) new InternetAddress(emailAddress);
+                } catch (AddressException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .toList();
     }
 
     private final List<Pattern> depositFailurePatterns = List.of(
@@ -146,7 +153,7 @@ public class NihmsReceiveMailService {
     }
 
     private boolean isEmailNotNihms(MimeMessage mimeMessage) throws MessagingException {
-        boolean fromNihms = Arrays.asList(mimeMessage.getFrom()).contains(nihmsFromEmail);
+        boolean fromNihms = Arrays.stream(mimeMessage.getFrom()).anyMatch(nihmsFromEmail::contains);
         return !fromNihms || !mimeMessage.getSubject().contains("Bulk submission");
     }
 
