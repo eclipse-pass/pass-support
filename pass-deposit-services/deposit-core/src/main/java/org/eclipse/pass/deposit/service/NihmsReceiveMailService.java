@@ -91,10 +91,13 @@ public class NihmsReceiveMailService {
 
     public void handleReceivedMail(MimeMessage receivedMessage) {
         try {
+            LOG.warn("Email received: " + receivedMessage.getSubject());
             if (isEmailNotNihms(receivedMessage)) {
                 return;
             }
+            LOG.warn("Email is from Nihms");
             String content = getHtmlText(receivedMessage);
+            LOG.warn("Nihms Email content:" + content);
             if (Objects.isNull(content)) {
                 LOG.error("No HTML content found in nihms email: " + receivedMessage.getSubject());
                 return;
