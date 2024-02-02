@@ -10,8 +10,17 @@
   <artifactId>pass-data-client</artifactId>
   <version>1.4.0-SNAPSHOT</version>
 
-  <!-- Properties for ITs -->
   <properties>
+    <!-- Properties for dependency versions -->
+    <okhttp.version>4.12.0</okhttp.version>
+    <moshi.version>4.12.0</moshi.version>
+    <jsonapi-adapters.version>1.1.0</jsonapi-adapters.version>
+    <slf4j.version>2.0.11</slf4j.version>
+    <logback.version>1.4.14</logback.version>
+    <commons-lang3.version>3.14.0</commons-lang3.version>
+    <junit.jupiter.version>5.10.1</junit.jupiter.version>
+    <mockito.version>5.10.0</mockito.version>
+    <!-- Properties for ITs -->
     <pass.core.port>8080</pass.core.port>
     <pass.core.url>http://localhost:8080</pass.core.url>
     <pass.core.user>backend</pass.core.user>
@@ -32,9 +41,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.squareup</groupId>
-      <artifactId>javapoet</artifactId>
-      <version>${javapoet.version}</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
 
     <dependency>
@@ -46,28 +55,14 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.12.0</version>
+      <version>${commons-lang3.version}</version>
     </dependency>
 
     <!-- Test dependencies -->
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
+      <artifactId>junit-jupiter</artifactId>
       <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
@@ -155,6 +150,59 @@
             <pass.core.password>${pass.core.password}</pass.core.password> 
           </systemPropertyVariables>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <dependencyConvergence>
+                  <excludes>
+                    <exclude>com.squareup.okio:okio:*</exclude>
+                    <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:*</exclude>
+                  </excludes>
+                </dependencyConvergence>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>analyze</id>
+            <goals>
+              <goal>analyze-only</goal>
+            </goals>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+              <ignoredUsedUndeclaredDependencies>
+                <!-- These both come from okhttp, so version is tied to that direct dependency -->
+                <ignoredUsedUndeclaredDependency>com.squareup.moshi:moshi</ignoredUsedUndeclaredDependency>
+                <ignoredUsedUndeclaredDependency>com.squareup.okio:okio-jvm</ignoredUsedUndeclaredDependency>
+                <!-- These both come from junit-jupiter, so version is tied to that direct dependency -->
+                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api</ignoredUsedUndeclaredDependency>
+                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-params</ignoredUsedUndeclaredDependency>
+              </ignoredUsedUndeclaredDependencies>
+              <ignoredUnusedDeclaredDependencies>
+                <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
+                <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic</ignoredUnusedDeclaredDependency>
+                <!-- junit-jupiter is a module containing the junit api jars used directly -->
+                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
+              </ignoredUnusedDeclaredDependencies>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

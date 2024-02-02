@@ -27,11 +27,18 @@
   <artifactId>pass-grant-loader</artifactId>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <args4j.version>2.33</args4j.version>
-    <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <commons.csv.version>1.10.0</commons.csv.version>
+    <commons-lang.version>3.14.0</commons-lang.version>
     <ojdbc10.version>19.18.0.0</ojdbc10.version>
+    <lombok.version>1.18.30</lombok.version>
+    <slf4j.version>2.0.11</slf4j.version>
+    <logback.version>1.4.14</logback.version>
+    <junit.jupiter.version>5.10.1</junit.jupiter.version>
+    <mockito.version>5.10.0</mockito.version>
+    <mockito-inline.version>5.2.0</mockito-inline.version>
+    <testcontainers.version>1.19.4</testcontainers.version>
+    <maven-model.version>3.9.6</maven-model.version>
   </properties>
 
     <dependencies>
@@ -49,6 +56,11 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-csv</artifactId>
         <version>${commons.csv.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang.version}</version>
       </dependency>
       <dependency>
         <groupId>com.oracle.database.jdbc</groupId>
@@ -73,18 +85,12 @@
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
-        <version>1.18.28</version>
+        <version>${lombok.version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.jupiter.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
+        <artifactId>junit-jupiter</artifactId>
         <version>${junit.jupiter.version}</version>
         <scope>test</scope>
       </dependency>
@@ -103,30 +109,19 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-inline</artifactId>
-        <version>${mockito.version}</version>
+        <version>${mockito-inline.version}</version>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils</artifactId>
-        <version>${commons-beanutils.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>junit-jupiter</artifactId>
-        <version>1.18.3</version>
+        <version>${testcontainers.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
-        <version>3.9.3</version>
+        <version>${maven-model.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -146,13 +141,11 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven-surefire-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${maven-failsafe-plugin.version}</version>
           <executions>
             <execution>
               <goals>
@@ -214,6 +207,64 @@
                     </excludes>
                   </filter>
                 </filters>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>enforce</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <dependencyConvergence>
+                    <excludes>
+                      <exclude>com.squareup.okio:okio:*</exclude>
+                      <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:*</exclude>
+                    </excludes>
+                  </dependencyConvergence>
+                </rules>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>analyze</id>
+              <goals>
+                <goal>analyze-only</goal>
+              </goals>
+              <phase>test-compile</phase>
+              <configuration>
+                <failOnWarning>true</failOnWarning>
+                <ignoredUsedUndeclaredDependencies>
+                  <!-- These come from junit-jupiter, so version is tied to that direct dependency -->
+                  <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api</ignoredUsedUndeclaredDependency>
+                  <!-- These come from testcontainers junit-jupiter -->
+                  <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
+                </ignoredUsedUndeclaredDependencies>
+                <ignoredUnusedDeclaredDependencies>
+                  <!-- junit-jupiter is a module containing the junit api jars used directly -->
+                  <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter:</ignoredUnusedDeclaredDependency>
+                  <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
+                  <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
+                  <!-- slf4j is the API used in the code, jcl is used by a transitive dep -->
+                  <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
+                  <!-- Deficiency of analyzer bytecode -->
+                  <ignoredUnusedDeclaredDependency>org.projectlombok:lombok:</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>com.oracle.database.jdbc::</ignoredUnusedDeclaredDependency>
+                </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
           </executions>

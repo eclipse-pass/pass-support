@@ -38,6 +38,7 @@
         <pass.core.url>http://localhost:8080</pass.core.url>
         <pass.core.user>backend</pass.core.user>
         <pass.core.password>backend</pass.core.password>
+        <mockito.version>4.8.1</mockito.version>
     </properties>
 
     <build>

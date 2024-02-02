@@ -42,12 +42,21 @@
     </scm>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <commons-io.version>2.11.0</commons-io.version>
-        <junit.jupiter.version>5.9.3</junit.jupiter.version>
-        <handlebars.version>4.3.0</handlebars.version>
+        <!-- Properties for dependency versions -->
+        <spring-boot-maven-plugin.version>3.2.1</spring-boot-maven-plugin.version>
+        <lombok.version>1.18.30</lombok.version>
+        <logback.version>1.4.14</logback.version>
+        <slf4j.version>2.0.11</slf4j.version>
+        <javax-mail.version>2.0.1</javax-mail.version>
+        <commons-io.version>2.15.1</commons-io.version>
+        <commons-lang.version>3.14.0</commons-lang.version>
+        <handlebars.version>4.3.1</handlebars.version>
         <amazon.sqs.version>2.1.1</amazon.sqs.version>
+        <junit.jupiter.version>5.10.1</junit.jupiter.version>
+        <testcontainers.version>1.19.4</testcontainers.version>
+        <greenmail-junit5.version>2.0.1</greenmail-junit5.version>
+        <javax-json.version>1.1.4</javax-json.version>
+        <maven-model.version>3.9.6</maven-model.version>
     </properties>
 
     <dependencies>
@@ -61,20 +70,20 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.28</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.6</version>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.12</version>
+            <version>${logback.version}</version>
         </dependency>
 
         <dependency>
@@ -108,45 +117,21 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.6.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>
 
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.jknack</groupId>
             <artifactId>handlebars</artifactId>
             <version>${handlebars.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${okhttp.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>logging-interceptor</artifactId>
-            <version>${okhttp.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot-maven-plugin.version}</version>
         </dependency>
 
         <dependency>
@@ -162,22 +147,16 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-            <version>3.4.3.Final</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring-boot-maven-plugin.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>${javax-mail.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -189,65 +168,37 @@
         </dependency>
 
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.icegreen</groupId>
             <artifactId>greenmail-junit5</artifactId>
-            <version>2.0.0</version>
+            <version>${greenmail-junit5.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
-            <version>1.1.4</version>
+            <version>${javax-json.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.18.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>3.0.0</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>localstack</artifactId>
-            <version>1.18.3</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
-            <version>3.9.3</version>
+            <version>${maven-model.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -298,19 +249,92 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-failsafe-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence>
+                                    <excludes>
+                                        <!-- These are all transitive dependencies  -->
+                                        <exclude>io.netty::</exclude>
+                                        <exclude>jakarta.xml.bind:jakarta.xml.bind-api:</exclude>
+                                        <exclude>org.jetbrains.kotlin:kotlin-stdlib:</exclude>
+                                        <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:</exclude>
+                                        <exclude>org.junit.jupiter:junit-jupiter-api:</exclude>
+                                        <exclude>org.hamcrest:hamcrest:</exclude>
+                                        <exclude>net.minidev:json-smart:</exclude>
+                                        <exclude>commons-codec:commons-codec:</exclude>
+                                        <exclude>com.squareup.okio:okio:</exclude>
+                                        <exclude>net.bytebuddy:byte-buddy:</exclude>
+                                    </excludes>
+                                </dependencyConvergence>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoredDependencies>
+                                <!-- These come from bundled jars -->
+                                <ignoredDependency>org.springframework*::</ignoredDependency>
+                                <ignoredDependency>software.amazon.awssdk::</ignoredDependency>
+                            </ignoredDependencies>
+                            <ignoredUsedUndeclaredDependencies>
+                                <!-- These come from spring boot starter json -->
+                                <ignoredUsedUndeclaredDependency>com.fasterxml.jackson.core::</ignoredUsedUndeclaredDependency>
+                                <!-- These come from spring boot starter aop -->
+                                <ignoredUsedUndeclaredDependency>org.aspectj::</ignoredUsedUndeclaredDependency>
+                                <!-- These come from spring boot starter mail -->
+                                <ignoredUsedUndeclaredDependency>org.eclipse.angus:jakarta.mail:</ignoredUsedUndeclaredDependency>
+                                <!-- These come from spring boot starter test -->
+                                <ignoredUsedUndeclaredDependency>org.mockito::</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>org.awaitility::</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>org.junit.jupiter::</ignoredUsedUndeclaredDependency>
+                                <!-- These come from testcontainers junit-jupiter -->
+                                <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
+                                <!-- These come from amazon sqs java messaging -->
+                                <ignoredUsedUndeclaredDependency>jakarta.jms::</ignoredUsedUndeclaredDependency>
+                                <!-- These come from greenmail junit5 -->
+                                <ignoredUsedUndeclaredDependency>com.icegreen:greenmail:</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+                            <ignoredUnusedDeclaredDependencies>
+                                <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
+                                <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

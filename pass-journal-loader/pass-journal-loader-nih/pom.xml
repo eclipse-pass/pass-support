@@ -10,8 +10,11 @@
 
   <artifactId>pass-journal-loader-nih</artifactId>
 
-  <!-- Properties for ITs -->
   <properties>
+    <!-- Properties for dependency versions -->
+    <wiremock-jre8.version>2.35.1</wiremock-jre8.version>
+    <commons-lang3.version>3.14.0</commons-lang3.version>
+    <!-- Properties for ITs -->
     <pass.core.port>8080</pass.core.port>
     <pass.core.url>http://localhost:8080</pass.core.url>
     <pass.core.user>backend</pass.core.user>
@@ -30,20 +33,24 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -61,7 +68,7 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-jre8</artifactId>
-      <version>2.35.1</version>
+      <version>${wiremock-jre8.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -179,9 +186,55 @@
             <pass.core.url>${pass.core.url}</pass.core.url>
             <pass.core.user>${pass.core.user}</pass.core.user>
             <pass.core.password>${pass.core.password}</pass.core.password>
-            <nih.loader.jar>${org.eclipse.pass:pass-journal-loader-nih:jar:exe}</nih.loader.jar>            
           </systemPropertyVariables>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <dependencyConvergence>
+                  <excludes>
+                    <exclude>com.squareup.okio:okio:*</exclude>
+                    <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:*</exclude>
+                  </excludes>
+                </dependencyConvergence>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>analyze</id>
+            <goals>
+              <goal>analyze-only</goal>
+            </goals>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+              <ignoredUsedUndeclaredDependencies>
+                <!-- These both come from junit-jupiter, so version is tied to that direct dependency -->
+                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api</ignoredUsedUndeclaredDependency>
+              </ignoredUsedUndeclaredDependencies>
+              <ignoredUnusedDeclaredDependencies>
+                <!-- junit-jupiter is a module containing the junit api jars used directly -->
+                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
+              </ignoredUnusedDeclaredDependencies>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
