@@ -47,6 +47,12 @@
       <organization>The Sheridan Libraries, Johns Hopkins University</organization>
       <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
     </developer>
+    <developer>
+      <name>Russ Poetker</name>
+      <email>rpoetke1@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
   </developers>
 
   <modules>
@@ -66,14 +72,11 @@
   </scm>
 
   <properties>
-    <javapoet.version>1.13.0</javapoet.version>
-    <jsonapi-adapters.version>1.1.0</jsonapi-adapters.version>
-    <mockito.version>4.8.1</mockito.version>
     <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-remote-resources-plugin.version>3.1.0</maven-remote-resources-plugin.version>
-    <!-- this overrides the spring-boot-maven-plugin.version property in the parent pom -->
-    <spring-boot-maven-plugin.version>3.0.7</spring-boot-maven-plugin.version>
+    <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
+    <maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -102,6 +105,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${maven-dependency-plugin.version}</version>
       </plugin>
     </plugins>
   </build>
