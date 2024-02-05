@@ -27,6 +27,17 @@
     </dependency>
 
     <dependency>
+      <groupId>org.eclipse.pass</groupId>
+      <artifactId>nihms-etl-util</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
     </dependency>
