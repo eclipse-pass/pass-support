@@ -22,24 +22,90 @@
     </modules>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <http-client.version>4.5.13</http-client.version>
-        <org-json.version>20180130</org-json.version>
-        <commons.csv.version>1.6</commons.csv.version>
-        <selenium.version>3.11.0</selenium.version>
+        <http-client.version>4.5.14</http-client.version>
+        <org-json.version>20231013</org-json.version>
+        <commons.csv.version>1.10.0</commons.csv.version>
         <args4j.version>2.33</args4j.version>
         <handy-uri-templates.version>2.1.8</handy-uri-templates.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-io.version>2.15.1</commons-io.version>
         <okhttp.version>4.10.0</okhttp.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
-        <commons-collections4.version>4.3</commons-collections4.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <joda-time.version>2.12.5</joda-time.version>
+
+        <logback.version>1.4.14</logback.version>
+        <slf4j.version>2.0.11</slf4j.version>
+        <junit.jupiter.version>5.10.1</junit.jupiter.version>
+        <mockito.version>5.10.0</mockito.version>
+        <wiremock.version>3.3.1</wiremock.version>
+
         <pass.core.port>8080</pass.core.port>
         <pass.core.url>http://localhost:8080</pass.core.url>
         <pass.core.user>backend</pass.core.user>
         <pass.core.password>backend</pass.core.password>
-        <mockito.version>4.8.1</mockito.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.eclipse.pass</groupId>
+                <artifactId>pass-data-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>${commons.csv.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${org-json.version}</version>
+            </dependency>
+
+            <!-- Test dependencies -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <pluginManagement>
@@ -47,19 +113,11 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>${build-helper-maven-plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>${maven-dependency-plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven-failsafe-plugin.version}</version>
                     <executions>
                         <execution>
                             <goals>
@@ -125,6 +183,76 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-dependency-convergence</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence>
+                                    <excludes>
+                                        <!-- Transitive deps -->
+                                        <exclude>commons-io:commons-io:jar:</exclude>
+                                        <exclude>com.squareup.okio:okio:</exclude>
+                                        <exclude>org.jetbrains.kotlin:kotlin-stdlib*:*</exclude>
+                                        <!-- Omitted from handy uri transitive dep -->
+                                        <exclude>joda-time:joda-time:2.10.2</exclude>
+                                    </excludes>
+                                </dependencyConvergence>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoredUsedUndeclaredDependencies>
+                                <!-- These both come from junit-jupiter, so version is tied to that direct dependency -->
+                                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>
+                                <!-- Comes from httpclient, transitive deps -->
+                                <ignoredUsedUndeclaredDependency>org.apache.httpcomponents:httpcore:</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+                            <ignoredUnusedDeclaredDependencies>
+                                <!-- junit-jupiter is a module containing the junit api jars used directly -->
+                                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
+                                <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
+                                <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
+                                <!-- slf4j is the API used in the code, jcl is used by a transitive dep -->
+                                <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <!-- junit-jupiter is a module containing the junit api jars used directly -->
+                                <ignoredNonTestScopedDependency>org.junit.jupiter:junit-jupiter-api:</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-help-plugin</artifactId>
+                <version>3.4.0</version>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
