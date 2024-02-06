@@ -22,7 +22,7 @@
     </modules>
 
     <properties>
-        <!-- Deps versions -->
+        <!-- Properties for dependency versions -->
         <http-client.version>4.5.14</http-client.version>
         <org-json.version>20231013</org-json.version>
         <commons.csv.version>1.10.0</commons.csv.version>
@@ -38,7 +38,7 @@
         <junit.jupiter.version>5.10.1</junit.jupiter.version>
         <mockito.version>5.10.0</mockito.version>
         <wiremock.version>3.3.1</wiremock.version>
-        <!-- IT props -->
+        <!-- Properties for integration tests -->
         <pass.core.port>8080</pass.core.port>
         <pass.core.url>http://localhost:8080</pass.core.url>
         <pass.core.user>backend</pass.core.user>
