@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -35,7 +36,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.MessageDigestCalculatingInputStream;
+import org.apache.commons.io.input.MessageDigestInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.eclipse.pass.deposit.assembler.ExplodedPackage;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
@@ -234,9 +235,9 @@ public class BagItPackageVerifier implements PackageVerifier {
         // verify checksum of each tag file in the manifest
         manifest.forEach((key, value) -> {
             File payloadFile = new File(packageDir, key);
-            try (NullOutputStream nullOut = new NullOutputStream();
+            try (NullOutputStream nullOut = NullOutputStream.INSTANCE;
                  FileInputStream fileIn = new FileInputStream(payloadFile);
-                 MessageDigestCalculatingInputStream xsumCalculator = checksumCalculatorFor(fileIn, algo)) {
+                 MessageDigestInputStream xsumCalculator = checksumCalculatorFor(fileIn, algo)) {
                 IOUtils.copy(xsumCalculator, nullOut);
                 assertEquals(value, encodeHexString(xsumCalculator.getMessageDigest().digest()));
             } catch (FileNotFoundException e) {
@@ -307,9 +308,9 @@ public class BagItPackageVerifier implements PackageVerifier {
         // verify checksum of each payload file in the manifest
         manifest.forEach((key, value) -> {
             File payloadFile = new File(packageDir, key);
-            try (NullOutputStream nullOut = new NullOutputStream();
+            try (NullOutputStream nullOut = NullOutputStream.INSTANCE;
                  FileInputStream fileIn = new FileInputStream(payloadFile);
-                 MessageDigestCalculatingInputStream xsumCalculator = checksumCalculatorFor(fileIn, algo)) {
+                 MessageDigestInputStream xsumCalculator = checksumCalculatorFor(fileIn, algo)) {
                 IOUtils.copy(xsumCalculator, nullOut);
                 assertEquals(value, encodeHexString(xsumCalculator.getMessageDigest().digest()));
             } catch (FileNotFoundException e) {
@@ -322,15 +323,16 @@ public class BagItPackageVerifier implements PackageVerifier {
     }
 
     /**
-     * Returns a {@link MessageDigestCalculatingInputStream} by mapping the supplied checksum algorithm to a
+     * Returns a {@link MessageDigestInputStream} by mapping the supplied checksum algorithm to a
      * {@link MessageDigest}.
      *
      * @param payloadFile  the payload file to calculate a checksum over
      * @param checksumAlgo the algorithm to use, must be mapped to a Java MessageDigest
      * @return an InputStream that will calculate a checksum for the supplied InputStream
      */
-    private static MessageDigestCalculatingInputStream checksumCalculatorFor(InputStream payloadFile,
-                                                                             Checksum.OPTS checksumAlgo) {
+    private static MessageDigestInputStream checksumCalculatorFor(InputStream payloadFile,
+                                                                             Checksum.OPTS checksumAlgo)
+        throws IOException {
         MessageDigest md;
 
         try {
@@ -351,6 +353,6 @@ public class BagItPackageVerifier implements PackageVerifier {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        return new MessageDigestCalculatingInputStream(payloadFile, md);
+        return MessageDigestInputStream.builder().setInputStream(payloadFile).setMessageDigest(md).get();
     }
 }

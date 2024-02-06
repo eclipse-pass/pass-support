@@ -23,7 +23,6 @@ import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.LF_ENCODED;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT;
 import static org.eclipse.pass.deposit.provider.bagit.BagItWriter.PERCENT_ENCODED;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -70,12 +69,7 @@ public class BagItReader {
      * @see <a href="https://tools.ietf.org/html/rfc8493#section-2.1.1">RFC 8493 §2.1.1</a>
      */
     LinkedHashMap<String, String> readBagDecl(InputStream bagDeclaration) {
-        List<String> lines = null;
-        try {
-            lines = IOUtils.readLines(bagDeclaration, UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        List<String> lines = IOUtils.readLines(bagDeclaration, UTF_8);
         LinkedHashMap<String, List<String>> entriesAndValues = parseLines(lines);
         return entriesAndValues
             .entrySet()
@@ -97,12 +91,7 @@ public class BagItReader {
      * @return Map of checksums keyed by the file path, in encounter order
      */
     LinkedHashMap<String, String> readManifest(InputStream manifest) {
-        List<String> lines = null;
-        try {
-            lines = IOUtils.readLines(manifest, charset);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        List<String> lines = IOUtils.readLines(manifest, charset);
         LinkedHashMap<String, String> entriesAndValues = parseManifestLines(lines);
         return entriesAndValues;
     }
@@ -119,13 +108,7 @@ public class BagItReader {
      * @see <a href="https://tools.ietf.org/html/rfc8493#section-2.2.2">RFC 8493 §2.2.2</a>
      */
     List<String> readLabels(InputStream bagInfo) {
-        List<String> lines = null;
-        try {
-            lines = IOUtils.readLines(bagInfo, charset);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+        List<String> lines = IOUtils.readLines(bagInfo, charset);
         return lines.stream()
                     .filter(line -> line.contains(LABEL_SEP_SPACE) || line.contains(LABEL_SEP_TAB))
                     .map(line -> {
@@ -151,13 +134,7 @@ public class BagItReader {
      * @see <a href="https://tools.ietf.org/html/rfc8493#section-2.2.2">RFC 8493 §2.2.2</a>
      */
     LinkedHashMap<String, List<String>> readLabelsAndValues(InputStream bagInfo) {
-        List<String> lines = null;
-        try {
-            lines = IOUtils.readLines(bagInfo, charset);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+        List<String> lines = IOUtils.readLines(bagInfo, charset);
         return parseLines(lines);
     }
 
@@ -224,7 +201,7 @@ public class BagItReader {
                         } else {
                             value = line.substring(line.indexOf(LABEL_SEP_TAB) + LABEL_SEP_TAB.length());
                         }
-                        ArrayList<String> list = new ArrayList(1);
+                        ArrayList<String> list = new ArrayList<>(1);
                         list.add(value);
                         return list;
                     }, (value1, value2) -> {
