@@ -159,6 +159,7 @@
                             <image>
                                 <name>ghcr.io/eclipse-pass/pass-core-main:%v</name>
                                 <run>
+                                    <platform>${docker.platforms}</platform>
                                     <env>
                                         <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
                                         <PASS_CORE_BACKEND_USER>${pass.core.user}</PASS_CORE_BACKEND_USER>

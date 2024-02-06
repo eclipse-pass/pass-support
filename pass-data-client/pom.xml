@@ -109,17 +109,18 @@
             <image>
               <name>ghcr.io/eclipse-pass/pass-core-main:%v</name>
               <run>
-		<env>
+                <platform>${docker.platforms}</platform>
+		        <env>
                   <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
                   <PASS_CORE_BACKEND_USER>${pass.core.user}</PASS_CORE_BACKEND_USER>
                   <PASS_CORE_BACKEND_PASSWORD>${pass.core.password}</PASS_CORE_BACKEND_PASSWORD>
-		</env>
+		        </env>
                 <wait>
                   <http>
                     <url>
                       ${pass.core.url}/data/grant
                     </url>
-		    <status>401</status>
+		            <status>401</status>
                   </http>
                   <time>60000</time>
                 </wait>
