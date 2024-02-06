@@ -22,6 +22,7 @@
     </modules>
 
     <properties>
+        <!-- Deps versions -->
         <http-client.version>4.5.14</http-client.version>
         <org-json.version>20231013</org-json.version>
         <commons.csv.version>1.10.0</commons.csv.version>
@@ -32,13 +33,12 @@
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <joda-time.version>2.12.5</joda-time.version>
-
         <logback.version>1.4.14</logback.version>
         <slf4j.version>2.0.11</slf4j.version>
         <junit.jupiter.version>5.10.1</junit.jupiter.version>
         <mockito.version>5.10.0</mockito.version>
         <wiremock.version>3.3.1</wiremock.version>
-
+        <!-- IT props -->
         <pass.core.port>8080</pass.core.port>
         <pass.core.url>http://localhost:8080</pass.core.url>
         <pass.core.user>backend</pass.core.user>
@@ -199,9 +199,9 @@
                                 <dependencyConvergence>
                                     <excludes>
                                         <!-- Transitive deps -->
-                                        <exclude>commons-io:commons-io:jar:</exclude>
+                                        <exclude>commons-io:commons-io:</exclude>
                                         <exclude>com.squareup.okio:okio:</exclude>
-                                        <exclude>org.jetbrains.kotlin:kotlin-stdlib*:*</exclude>
+                                        <exclude>org.jetbrains.kotlin:kotlin-stdlib*:</exclude>
                                         <!-- Omitted from handy uri transitive dep -->
                                         <exclude>joda-time:joda-time:2.10.2</exclude>
                                     </excludes>
