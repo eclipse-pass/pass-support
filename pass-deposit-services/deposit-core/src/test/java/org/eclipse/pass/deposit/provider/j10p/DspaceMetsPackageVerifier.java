@@ -110,7 +110,7 @@ public class DspaceMetsPackageVerifier implements PackageVerifier {
                             new FileInputStream(asJavaIoFile));
                         ResourceBuilderImpl builder = new ResourceBuilderImpl();
                         obsIn.add(new DigestObserver(builder, preferredChecksumAlgo));
-                        IOUtils.copy(obsIn, new NullOutputStream());
+                        IOUtils.copy(obsIn, NullOutputStream.INSTANCE);
                         assertEquals(builder.build().checksum().asHex(), metsFile.getChecksum());
                     } catch (IOException e) {
                         throw new RuntimeException(e);

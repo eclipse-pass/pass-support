@@ -21,7 +21,6 @@ import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ErrorHandler;
 
 /**
@@ -34,7 +33,6 @@ import org.springframework.util.ErrorHandler;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@Component
 public class DepositServiceErrorHandler implements ErrorHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositServiceErrorHandler.class);

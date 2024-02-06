@@ -84,7 +84,7 @@ public class SubmissionTestUtil {
         try {
             // Read JSON stream that defines the sample repo data
             String contentString = IOUtils.toString(is, Charset.defaultCharset());
-            JsonArray entitiesJson = new JsonParser().parse(contentString).getAsJsonArray();
+            JsonArray entitiesJson = JsonParser.parseString(contentString).getAsJsonArray();
 
             // Add all the PassEntity objects to the map and remember the Submission object
             ObjectMapper objectMapper = new ObjectMapper()

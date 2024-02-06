@@ -37,17 +37,6 @@
     </license>
   </licenses>
 
-  <developers>
-    <developer>
-      <name>Elliot Metsger</name>
-      <email>emetsger@jhu.edu</email>
-      <organization>Johns Hopkins University, Sheridan Libraries, Digital Research and Curation Center
-      </organization>
-      <organizationUrl>https://www.library.jhu.edu/library-departments/digital-research-curation-center/
-      </organizationUrl>
-    </developer>
-  </developers>
-
   <modules>
     <module>deposit-model</module>
     <module>assembler-api</module>
@@ -64,23 +53,24 @@
   </scm>
 
   <properties>
-    <slf4j.version>2.0.6</slf4j.version>
-    <logback-classic.version>1.4.12</logback-classic.version>
-    <commons-net.version>3.9.0</commons-net.version>
-    <commons-compress.version>1.21</commons-compress.version>
-    <commons-io.version>2.7</commons-io.version>
-    <guava.version>23.5-jre</guava.version>
-    <xmlunit.version>2.3.0</xmlunit.version>
-    <xstream.version>1.4.20</xstream.version>
-    <commons-codec.version>1.11</commons-codec.version>
-    <sword2-client.version>0.9.3</sword2-client.version>
-    <mets-api.version>1.3.0</mets-api.version>
-    <tika.version>1.28.3</tika.version>
-    <jackson.version>2.9.6</jackson.version>
-    <gson.version>2.8.2</gson.version>
-    <xom.version>1.3.9</xom.version>
-    <mockito.version>4.8.1</mockito.version>
     <spring-boot-maven-plugin.version>3.2.1</spring-boot-maven-plugin.version>
+    <slf4j.version>2.0.11</slf4j.version>
+    <logback-classic.version>1.4.14</logback-classic.version>
+    <commons-net.version>3.10.0</commons-net.version>
+    <commons-compress.version>1.25.0</commons-compress.version>
+    <commons-io.version>2.15.1</commons-io.version>
+    <commons-lang3.version>3.14.0</commons-lang3.version>
+    <guava.version>32.1.3-jre</guava.version>
+    <xmlunit.version>2.9.1</xmlunit.version>
+    <xstream.version>1.4.20</xstream.version>
+    <commons-codec.version>1.16.0</commons-codec.version>
+    <sword2-client.version>0.9.3</sword2-client.version>
+    <mets-api.version>1.3</mets-api.version>
+    <tika.version>2.9.1</tika.version>
+    <gson.version>2.10.1</gson.version>
+    <xom.version>1.3.9</xom.version>
+    <servlet-api.version>2.4</servlet-api.version>
+    <junit.jupiter.version>5.10.1</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
@@ -180,6 +170,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
@@ -195,6 +191,7 @@
         <groupId>org.xmlunit</groupId>
         <artifactId>xmlunit-core</artifactId>
         <version>${xmlunit.version}</version>
+        <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -276,7 +273,7 @@
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>servlet-api</artifactId>
-        <version>2.4</version>
+        <version>${servlet-api.version}</version>
       </dependency>
 
       <dependency>
@@ -294,17 +291,6 @@
     </dependencies>
 
   </dependencyManagement>
-
-  <repositories>
-    <repository>
-      <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 
   <build>
     <pluginManagement>
@@ -427,6 +413,99 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-dependency-convergence</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <dependencyConvergence>
+                  <excludes>
+                    <!-- Transitive deps from sword2-client-->
+                    <exclude>xerces:xercesImpl:</exclude>
+                    <exclude>org.codehaus.woodstox:wstx-asl:</exclude>
+                    <exclude>org.jsoup:jsoup:</exclude>
+                  </excludes>
+                </dependencyConvergence>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>analyze</id>
+            <goals>
+              <goal>analyze-only</goal>
+            </goals>
+            <phase>test-compile</phase>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+              <ignoredDependencies>
+                <!-- These come from bundled jars -->
+                <ignoredDependency>org.springframework*::</ignoredDependency>
+                <ignoredDependency>software.amazon.awssdk::</ignoredDependency>
+                <!-- Comes from outdated sword2 client -->
+                <ignoredDependency>org.apache.abdera::</ignoredDependency>
+                <ignoredDependency>junit:junit:</ignoredDependency>
+                <ignoredDependency>commons-httpclient:commons-httpclient:</ignoredDependency>
+                <ignoredDependency>commons-lang:commons-lang:</ignoredDependency>
+              </ignoredDependencies>
+              <ignoredUsedUndeclaredDependencies>
+                <!-- These both come from junit-jupiter, so version is tied to that direct dependency -->
+                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>
+                <!-- These come from spring boot starter json -->
+                <ignoredUsedUndeclaredDependency>com.fasterxml.jackson.core::</ignoredUsedUndeclaredDependency>
+                <ignoredUsedUndeclaredDependency>com.fasterxml.jackson.datatype::</ignoredUsedUndeclaredDependency>
+                <!-- These come from spring boot starter mail -->
+                <ignoredUsedUndeclaredDependency>org.eclipse.angus:jakarta.mail:</ignoredUsedUndeclaredDependency>
+                <!-- These come from spring boot starter test -->
+                <ignoredUsedUndeclaredDependency>org.mockito::</ignoredUsedUndeclaredDependency>
+                <ignoredUsedUndeclaredDependency>org.awaitility::</ignoredUsedUndeclaredDependency>
+                <ignoredUsedUndeclaredDependency>org.junit.jupiter::</ignoredUsedUndeclaredDependency>
+                <!-- These come from testcontainers junit-jupiter -->
+                <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
+                <!-- These come from amazon sqs java messaging -->
+                <ignoredUsedUndeclaredDependency>jakarta.jms::</ignoredUsedUndeclaredDependency>
+                <!-- These come from greenmail junit5 -->
+                <ignoredUsedUndeclaredDependency>com.icegreen:greenmail:</ignoredUsedUndeclaredDependency>
+                <!-- These come from sshd-sftp -->
+                <ignoredUsedUndeclaredDependency>org.apache.sshd:sshd*:</ignoredUsedUndeclaredDependency>
+              </ignoredUsedUndeclaredDependencies>
+              <ignoredUnusedDeclaredDependencies>
+                <!-- junit-jupiter is a module containing the junit api jars used directly -->
+                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
+                <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
+                <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
+                <!-- slf4j is the API used in the code, log4j is used by a transitive dep -->
+                <ignoredUnusedDeclaredDependency>org.slf4j:log4j-over-slf4j:</ignoredUnusedDeclaredDependency>
+                <!-- mockito-inline is needed to mock final classes -->
+                <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:</ignoredUnusedDeclaredDependency>
+              </ignoredUnusedDeclaredDependencies>
+              <ignoredNonTestScopedDependencies>
+                <!-- junit-jupiter is a module containing the junit api jars used directly -->
+                <ignoredNonTestScopedDependency>com.fasterxml.jackson.datatype::</ignoredNonTestScopedDependency>
+              </ignoredNonTestScopedDependencies>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-help-plugin</artifactId>
+        <version>3.4.0</version>
       </plugin>
 
     </plugins>
