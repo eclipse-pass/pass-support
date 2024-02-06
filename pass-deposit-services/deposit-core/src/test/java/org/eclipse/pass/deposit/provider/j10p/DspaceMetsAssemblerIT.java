@@ -100,7 +100,7 @@ public class DspaceMetsAssemblerIT extends AbstractDspaceMetsAssemblerIT {
                     ResourceBuilder builder = rbf.newInstance();
                     DigestObserver digestObserver = new DigestObserver(builder, packageStreamAlgo);
                     obsIn.add(digestObserver);
-                    IOUtils.copy(obsIn, new NullOutputStream());
+                    IOUtils.copy(obsIn, NullOutputStream.INSTANCE);
                     actualChecksums.put(fileName, builder.build().checksum());
                 } catch (IOException e) {
                     throw new RuntimeException(e.getMessage(), e);

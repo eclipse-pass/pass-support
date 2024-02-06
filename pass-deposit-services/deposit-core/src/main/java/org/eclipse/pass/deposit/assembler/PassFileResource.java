@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 
 import org.eclipse.pass.support.client.PassClient;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.AbstractResource;
 
 /**
@@ -36,25 +35,21 @@ public class PassFileResource extends AbstractResource {
         this.passFileId = passFileId;
     }
 
-    @NotNull
     @Override
     public InputStream getInputStream() throws IOException {
         return passClient.downloadFile(passFileId);
     }
 
-    @NotNull
     @Override
     public byte[] getContentAsByteArray() throws IOException {
         return super.getContentAsByteArray();
     }
 
-    @NotNull
     @Override
-    public String getContentAsString(@NotNull Charset charset) throws IOException {
+    public String getContentAsString(Charset charset) throws IOException {
         return super.getContentAsString(charset);
     }
 
-    @NotNull
     @Override
     public String getDescription() {
         return "PassFileResource File ID: " + passFileId;

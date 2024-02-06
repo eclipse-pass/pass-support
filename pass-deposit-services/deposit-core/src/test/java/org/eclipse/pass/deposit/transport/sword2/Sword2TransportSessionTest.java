@@ -105,7 +105,7 @@ public class Sword2TransportSessionTest {
                                    "        ]\n" +
                                    "    }\n" + "}";
 
-        JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
+        JsonObject submissionMeta = JsonParser.parseString(submissionMetaStr).getAsJsonObject();
         when(packageMd.submissionMeta()).thenReturn(submissionMeta);
 
         // Decorate the serviceDoc with SWORDCollections to answer to, being careful use it in our test methods below
@@ -153,7 +153,7 @@ public class Sword2TransportSessionTest {
                                    "        ]\n" +
                                    "    }\n" + "}";
 
-        JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
+        JsonObject submissionMeta = JsonParser.parseString(submissionMetaStr).getAsJsonObject();
         when(packageMd.submissionMeta()).thenReturn(submissionMeta);
 
         // Decorate the serviceDoc with SWORDCollections to answer to, being careful use it in our test methods below
@@ -196,7 +196,7 @@ public class Sword2TransportSessionTest {
                                    "        ]\n" +
                                    "    }\n" + "}";
 
-        JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
+        JsonObject submissionMeta = JsonParser.parseString(submissionMetaStr).getAsJsonObject();
         when(packageMd.submissionMeta()).thenReturn(submissionMeta);
 
         // Decorate the serviceDoc with SWORDCollections to answer to, being careful use it in our test methods below

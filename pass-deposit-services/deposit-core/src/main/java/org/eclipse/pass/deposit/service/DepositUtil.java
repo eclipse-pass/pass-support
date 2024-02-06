@@ -15,13 +15,6 @@
  */
 package org.eclipse.pass.deposit.service;
 
-import static java.time.Instant.ofEpochMilli;
-
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.stream.Stream;
-import javax.jms.Session;
-
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.DepositSubmission;
@@ -34,7 +27,6 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.jms.JmsProperties;
 
 /**
  * Utility methods for deposit messaging.
@@ -47,78 +39,6 @@ public class DepositUtil {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositUtil.class);
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
-    private static final String UTC = "UTC";
-    static final String UNKNOWN_DATETIME = "UNKNOWN";
-
-    /**
-     * Parses a timestamp into a formatted date and time string.
-     *
-     * @param timeStamp the timestamp
-     * @return a formatted date and time string
-     */
-    public static String parseDateTime(long timeStamp) {
-        return (timeStamp > 0) ? TIME_FORMATTER.format(
-            ofEpochMilli(timeStamp).atZone(ZoneId.of(UTC))) : UNKNOWN_DATETIME;
-    }
-
-    /**
-     * Obtain the acknowledgement mode of the {@link Session} as a String.
-     *
-     * @param session  the JMS session
-     * @param dateTime the formatted date and time the message was received
-     * @param id       the identifier of the received message
-     * @return the acknowlegement mode as a {@code String}
-     */
-    public static String parseAckMode(Session session, String dateTime, String id) {
-        String ackMode;
-        try {
-            JmsProperties.AcknowledgeMode mode = asAcknowledgeMode(session.getAcknowledgeMode());
-            ackMode = mode.name();
-        } catch (Exception e) {
-            ackMode = "UNKNOWN";
-        }
-        return ackMode;
-    }
-
-    /**
-     * Converts the acknowledgement mode from the JMS {@link Session} to the Spring {@link
-     * JmsProperties.AcknowledgeMode}.
-     *
-     * @param mode the mode from the JMS {@code Session}
-     * @return the Spring {@code AcknowledgeMode}
-     * @throws RuntimeException if the supplied {@code mode} cannot be mapped to a Spring {@code AcknowledgeMode}.
-     */
-    public static JmsProperties.AcknowledgeMode asAcknowledgeMode(int mode) {
-        switch (mode) {
-            case Session.AUTO_ACKNOWLEDGE:
-                return JmsProperties.AcknowledgeMode.AUTO;
-            case Session.CLIENT_ACKNOWLEDGE:
-                return JmsProperties.AcknowledgeMode.CLIENT;
-            case Session.DUPS_OK_ACKNOWLEDGE:
-                return JmsProperties.AcknowledgeMode.DUPS_OK;
-            default:
-        }
-
-        throw new RuntimeException("Unknown acknowledgement mode for session: " + mode);
-    }
-
-    /**
-     * Splits a comma-delimited multi-valued string into individual strings, and tests whether {@code toMatch} matches
-     * any of the values.
-     *
-     * @param toMatch       the String to match
-     * @param csvCandidates a String that may contain multiple values separated by commas
-     * @return true if {@code toMatch} is contained within {@code csvCandidates}
-     */
-    public static boolean csvStringContains(String toMatch, String csvCandidates) {
-        if (csvCandidates == null || csvCandidates.trim().length() == 0) {
-            return false;
-        }
-
-        return Stream.of(csvCandidates.split(","))
-                     .anyMatch(candidateType -> candidateType.trim().equals(toMatch));
-    }
 
     /**
      * Creates a convenience object that holds references to the objects related to performing a deposit.

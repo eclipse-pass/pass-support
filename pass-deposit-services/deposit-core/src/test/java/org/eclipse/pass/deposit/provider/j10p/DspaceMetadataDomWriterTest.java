@@ -91,7 +91,7 @@ import au.edu.apsr.mtk.base.DmdSec;
 import au.edu.apsr.mtk.base.File;
 import au.edu.apsr.mtk.base.FileGrp;
 import au.edu.apsr.mtk.base.FileSec;
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.assembler.ChecksumImpl;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageStream;
