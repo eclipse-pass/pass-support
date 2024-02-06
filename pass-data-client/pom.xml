@@ -180,10 +180,11 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <id>analyze</id>
+            <id>analyze-dependencies</id>
             <goals>
               <goal>analyze-only</goal>
             </goals>
+            <phase>test-compile</phase>
             <configuration>
               <failOnWarning>true</failOnWarning>
               <ignoredUsedUndeclaredDependencies>
