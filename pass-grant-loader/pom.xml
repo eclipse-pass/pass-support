@@ -32,7 +32,7 @@
     <commons-lang.version>3.14.0</commons-lang.version>
     <ojdbc10.version>19.18.0.0</ojdbc10.version>
     <lombok.version>1.18.30</lombok.version>
-    <slf4j.version>2.0.11</slf4j.version>
+    <slf4j.version>2.0.7</slf4j.version>
     <logback.version>1.4.14</logback.version>
     <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <mockito.version>5.10.0</mockito.version>
