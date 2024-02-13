@@ -179,7 +179,7 @@ public class JsonApiPassClientIT {
         assertTrue(ioException.getMessage().contains("Update failed: http://localhost:8080/data/submission/"));
         assertTrue(ioException.getMessage().contains(
             "returned 409 {\"errors\":[{\"detail\":\"Optimistic lock check failed for Submission [ID="));
-        assertTrue(ioException.getMessage().contains("Request version: 0, Stored version: 1\"}]}"));
+        assertTrue(ioException.getMessage().contains("Request version: 1, Stored version: 2\"}]}"));
 
         Submission updateSubmission3 = client.getObject(Submission.class, sub.getId());
         assertEquals("Name", updateSubmission3.getSubmitterName());
@@ -208,7 +208,7 @@ public class JsonApiPassClientIT {
         assertTrue(ioException.getMessage().contains("Update failed: http://localhost:8080/data/deposit/"));
         assertTrue(ioException.getMessage().contains(
             "returned 409 {\"errors\":[{\"detail\":\"Optimistic lock check failed for Deposit [ID="));
-        assertTrue(ioException.getMessage().contains("Request version: 0, Stored version: 1\"}]}"));
+        assertTrue(ioException.getMessage().contains("Request version: 1, Stored version: 2\"}]}"));
 
         Deposit updateDeposit3 = client.getObject(Deposit.class, deposit.getId());
         assertEquals(DepositStatus.FAILED, updateDeposit3.getDepositStatus());
