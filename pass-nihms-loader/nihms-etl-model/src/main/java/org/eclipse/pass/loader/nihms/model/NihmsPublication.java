@@ -207,6 +207,17 @@ public class NihmsPublication {
     }
 
     /**
+     * @return the nihmsId without the prefix
+     */
+    public String getRawNihmsId() {
+        if (nihmsId != null && nihmsId.startsWith(NIHMSID_PREFIX)) {
+            return nihmsId.substring(NIHMSID_PREFIX.length());
+        }
+
+        return nihmsId;
+    }
+
+    /**
      * Sets the NIHMSID, will add the NIHMS prefix if missing
      *
      * @param nihmsId the nihmsId to set
