@@ -53,6 +53,8 @@ public class NihmsPassClientService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPassClientService.class);
 
+    public static final String NIHMS_DEP_STATUS_REF_PREFIX = "nihms-id:";
+
     /**
      * The field name for the ISSN
      */
@@ -62,6 +64,11 @@ public class NihmsPassClientService {
      * The field name for the submission
      */
     public static final String SUBMISSION_FLD = "submission.id";
+
+    /**
+     * The field name for the status ref of a deposit.
+     */
+    public static final String DEPOSIT_STATUS_REF_FLD = "depositStatusRef";
 
     /**
      * The field name for the repository
@@ -421,6 +428,47 @@ public class NihmsPassClientService {
             }
         }
         return null;
+    }
+
+    /**
+     * Searches for a Deposit to NIHMS that matches a NihmsID
+     *
+     * @param nihmsId the NihmsId
+     * @return the deposit associated with the submission with the submission and submission publication
+     *         properties inflated, may be {@code null} if not found
+     * @throws IOException if there is an error reading the deposit
+     */
+    public Deposit findNihmsDepositbyNihmsId(String nihmsId) throws IOException {
+        if (nihmsId == null) {
+            throw new IllegalArgumentException("nihmsId cannot be empty");
+        }
+
+        String filter = RSQL.and(
+                RSQL.equals(DEPOSIT_STATUS_REF_FLD, NIHMS_DEP_STATUS_REF_PREFIX + nihmsId),
+                RSQL.equals(REPOSITORY_FLD, nihmsRepoId));
+
+        PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
+        sel.setFilter(filter);
+        sel.setInclude("submission.publication");
+
+        List<Deposit> deposits = passClient.selectObjects(sel).getObjects();
+
+        if (deposits.size() == 0) {
+            return null;
+        }
+
+        if (deposits.size() == 1) {
+            Deposit deposit = deposits.get(0);
+            nihmsDepositCache.put(deposit.getSubmission().getId(), deposit.getId());
+            nihmsRepoCopyCache.put(deposit.getSubmission().getPublication().getId(),
+                    deposit.getRepositoryCopy().getId());
+            return deposit;
+        }
+
+        throw new RuntimeException(
+                String.format("There are multiple Deposits matching nihmsId %s and repositoryId %s. "
+                        + "This indicates a data corruption, please check the data and try again.",
+                        nihmsId, nihmsRepoId));
     }
 
     /**

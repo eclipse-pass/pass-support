@@ -56,6 +56,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -64,6 +65,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *
  * @author Karen Hanson
  */
+
 @ExtendWith(MockitoExtension.class)
 public class NihmsPassClientServiceTest {
 
@@ -82,6 +84,7 @@ public class NihmsPassClientServiceTest {
     private static final String awardNumber3 = "F31 MH128079";
     private static final String awardNumber4 = "S10 OD025226";
     private static final String title = "Article Title";
+    private static final String nihmsId = "123456";
 
     @Mock
     private PassClient mockClient;
@@ -324,6 +327,7 @@ public class NihmsPassClientServiceTest {
     /**
      * Checks that it findRepositoryCopyByRepoAndPubId returns match based on repository and publication
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void testFindRepositoryCopyByRepoAndPubIdHasMatch() throws Exception {
         RepositoryCopy repoCopy = new RepositoryCopy();
@@ -334,7 +338,8 @@ public class NihmsPassClientServiceTest {
         Stream<RepositoryCopy> mockRepositoryCopyStream = mock(Stream.class);
         List<RepositoryCopy> mockRepositoryCopies = List.of(repoCopy);
         when(mockRepositoryCopyStream.toList()).thenReturn(mockRepositoryCopies);
-        doReturn(mockRepositoryCopyStream).when(mockClient).streamObjects(any(PassClientSelector.class));
+        doReturn(mockRepositoryCopyStream).when(mockClient).
+                streamObjects(ArgumentMatchers.<PassClientSelector<?>>any());
 
         RepositoryCopy matchedRepoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
         assertEquals(repoCopy, matchedRepoCopy);
@@ -344,12 +349,14 @@ public class NihmsPassClientServiceTest {
     /**
      * Checks that it findRepositoryCopyByRepoAndPubId returns null when no match
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void testFindRepositoryCopyByRepoAndPubIdNoMatch() throws Exception {
         Stream<RepositoryCopy> mockRepositoryCopyStream = mock(Stream.class);
         List<RepositoryCopy> mockRepositoryCopies = List.of();
         when(mockRepositoryCopyStream.toList()).thenReturn(mockRepositoryCopies);
-        doReturn(mockRepositoryCopyStream).when(mockClient).streamObjects(any(PassClientSelector.class));
+        doReturn(mockRepositoryCopyStream).when(mockClient).
+                streamObjects(ArgumentMatchers.<PassClientSelector<?>>any());
         RepositoryCopy matchedRepoCopy = clientService.findNihmsRepositoryCopyForPubId(publicationId);
         assertNull(matchedRepoCopy);
     }
@@ -380,7 +387,7 @@ public class NihmsPassClientServiceTest {
 
         List<Submission> matchedSubmissions = clientService.findSubmissionsByPublicationAndUserId(publicationId,
                                                                                                   userId);
-        ArgumentCaptor<PassClientSelector> argumentCaptor = ArgumentCaptor.forClass(PassClientSelector.class);
+        ArgumentCaptor<PassClientSelector<?>> argumentCaptor = ArgumentCaptor.forClass(PassClientSelector.class);
 
         verify(mockClient).selectObjects(argumentCaptor.capture());
 
@@ -405,7 +412,7 @@ public class NihmsPassClientServiceTest {
         List<Submission> matchedSubmissions = clientService.findSubmissionsByPublicationAndUserId(publicationId,
                                                                                                   userId);
 
-        ArgumentCaptor<PassClientSelector> argumentCaptor = ArgumentCaptor.forClass(PassClientSelector.class);
+        ArgumentCaptor<PassClientSelector<?>> argumentCaptor = ArgumentCaptor.forClass(PassClientSelector.class);
 
         verify(mockClient).selectObjects(argumentCaptor.capture());
         assertEquals(PassClientSelector.class, argumentCaptor.getValue().getClass());
@@ -439,7 +446,46 @@ public class NihmsPassClientServiceTest {
 
         Deposit matchedDeposit = clientService.findNihmsDepositForSubmission(submissionId);
 
-        verify(mockClient).selectObjects(any(PassClientSelector.class));
+        verify(mockClient).selectObjects(ArgumentMatchers.<PassClientSelector<?>>any());
+        assertEquals(deposit, matchedDeposit);
+    }
+
+    /**
+     * Test that a deposit with a NihmsID can be found.
+     *
+     * @throws Exception if unable to retrieve the deposit
+     */
+    @Test
+    public void testFindNihmsDepositByNihmsId() throws Exception {
+        String ref = NihmsPassClientService.NIHMS_DEP_STATUS_REF_PREFIX + nihmsId;
+
+        String depositFilter = RSQL.and(
+                RSQL.equals(NihmsPassClientService.DEPOSIT_STATUS_REF_FLD, ref),
+                RSQL.equals(REPOSITORY_FLD, repositoryId));
+
+        Submission submission = new Submission(submissionId);
+        Publication pub = new Publication(publicationId);
+        RepositoryCopy rc = new RepositoryCopy(repositoryCopyId);
+        Repository repository = new Repository(repositoryId);
+        Deposit deposit = new Deposit(depositId);
+
+        submission.setPublication(pub);
+        deposit.setSubmission(submission);
+        deposit.setRepository(repository);
+        deposit.setRepositoryCopy(rc);
+        deposit.setDepositStatusRef(ref);
+        rc.setPublication(pub);
+
+        PassClientResult<Deposit> mockSubResult = new PassClientResult<>(List.of(deposit), 2);
+        doReturn(mockSubResult)
+                .when(mockClient)
+                .selectObjects(
+                        argThat(passClientSelector ->
+                                passClientSelector.getFilter().equals(depositFilter)));
+
+        Deposit matchedDeposit = clientService.findNihmsDepositbyNihmsId(nihmsId);
+
+        verify(mockClient).selectObjects(ArgumentMatchers.<PassClientSelector<?>>any());
         assertEquals(deposit, matchedDeposit);
     }
 
