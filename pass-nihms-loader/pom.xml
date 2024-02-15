@@ -242,6 +242,8 @@
                             <ignoredNonTestScopedDependencies>
                                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
                                 <ignoredNonTestScopedDependency>org.junit.jupiter:junit-jupiter-api:</ignoredNonTestScopedDependency>
+                                <!-- Needed for when data-transform jar is created -->
+                                <ignoredNonTestScopedDependency>org.json:json:</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
