@@ -86,6 +86,11 @@
       <version>${commons-io.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+    </dependency>
+
     <!-- Test dependencies -->
 
     <dependency>
@@ -107,12 +112,6 @@
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock</artifactId>
       <version>${wiremock.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
