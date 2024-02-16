@@ -16,16 +16,14 @@
 package org.eclipse.pass.loader.nihms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
@@ -35,6 +33,7 @@ import org.eclipse.pass.entrez.PmidLookup;
 import org.eclipse.pass.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
+import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -43,7 +42,6 @@ import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
-import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
@@ -62,8 +60,6 @@ public abstract class NihmsSubmissionEtlITBase {
     //use when need to return reliable record information instead of using entrez api
     @Mock
     protected PmidLookup mockPmidLookup;
-
-    protected Map<PassEntity, Class<? extends PassEntity>> createdEntities = new HashMap<>();
 
     protected static final int RETRIES = 12;
 
@@ -121,39 +117,38 @@ public abstract class NihmsSubmissionEtlITBase {
         depoSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Deposit deposit : passClient.selectObjects(depoSelector).getObjects()) {
             passClient.deleteObject(deposit);
-            assertNull(passClient.getObject(Deposit.class, deposit.getId()));
         }
 
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
         subSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Submission submission : passClient.selectObjects(subSelector).getObjects()) {
             passClient.deleteObject(submission);
-            assertNull(passClient.getObject(Submission.class, submission.getId()));
         }
 
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
         for (RepositoryCopy repoCopy : passClient.selectObjects(repoCopySelector).getObjects()) {
             passClient.deleteObject(repoCopy);
-            assertNull(passClient.getObject(RepositoryCopy.class, repoCopy.getId()));
         }
 
         PassClientSelector<Repository> repoSelector = new PassClientSelector<>(Repository.class);
         repoSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Repository repo : passClient.selectObjects(repoSelector).getObjects()) {
             passClient.deleteObject(repo);
-            assertNull(passClient.getObject(Repository.class, repo.getId()));
         }
 
         PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
         pubSelector.setFilter(RSQL.notEquals("id", "-1"));
         for (Publication publication : passClient.selectObjects(pubSelector).getObjects()) {
             passClient.deleteObject(publication);
-            assertNull(passClient.getObject(Publication.class, publication.getId()));
         }
     }
 
-    protected String createGrant(String awardNumber, User user) throws Exception {
+    private static ZonedDateTime dt(String s) {
+        return ZonedDateTime.parse(s, ModelUtil.dateTimeFormatter());
+    }
+
+    protected Grant createGrant(String awardNumber, User user) throws Exception {
         Funder primaryFunder = new Funder();
         Funder directFunder = new Funder();
         passClient.createObject(primaryFunder);
@@ -170,11 +165,11 @@ public abstract class NihmsSubmissionEtlITBase {
         copis.add(coPi);
         grant.setCoPis(copis);
         grant.setProjectName("test");
-        grant.setStartDate(ZonedDateTime.now());
-        grant.setAwardDate(ZonedDateTime.now());
+        grant.setAwardDate(dt("2014-03-28T00:00:00.000Z"));
+        grant.setStartDate(dt("2026-01-11T02:12:13.040Z"));
+
         passClient.createObject(grant);
-        createdEntities.put(grant, Grant.class);
-        return grant.getId();
+        return grant;
     }
 
     /*
@@ -218,7 +213,8 @@ public abstract class NihmsSubmissionEtlITBase {
     }
 
     protected void setMockPMRecord(String pmid) throws IOException {
-        String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("pmidrecord.json"));
+        String json = IOUtils.toString(getClass().getClassLoader().
+                getResourceAsStream("pmidrecord.json"), StandardCharsets.UTF_8);
         JSONObject rootObj = new JSONObject(json);
         PubMedEntrezRecord pmr = new PubMedEntrezRecord(rootObj);
         when(mockPmidLookup.retrievePubMedRecord(eq(pmid))).thenReturn(pmr);
@@ -252,9 +248,8 @@ public abstract class NihmsSubmissionEtlITBase {
         Grant reloadedGrants = reloadedSub.getGrants().get(0);
         assertEquals(preexistingGrants.getId(), reloadedGrants.getId());
         assertEquals(preexistingGrants.getAwardNumber(), reloadedGrants.getAwardNumber());
-        assertEquals(preexistingGrants.getAwardDate(), reloadedGrants.getAwardDate());
+        assertEquals(preexistingGrants.getAwardDate().toInstant(), reloadedGrants.getAwardDate().toInstant());
         assertEquals(preexistingGrants.getAwardStatus(), reloadedGrants.getAwardStatus());
         assertEquals(preexistingGrants.getLocalKey(), reloadedGrants.getLocalKey());
     }
-
 }

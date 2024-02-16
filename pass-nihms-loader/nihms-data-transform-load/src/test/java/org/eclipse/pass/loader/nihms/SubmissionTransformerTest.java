@@ -34,20 +34,24 @@ import org.eclipse.pass.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
+import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
@@ -71,7 +75,6 @@ public class SubmissionTransformerTest {
 
     //PubMedEntrezRecord fields
     private static final String doi = "https://doi.org/10.001/0101ab";
-    private static final String issn = "1234-5678";
     private static final String pmid = "123456";
     private static final String title = "Test Title";
     private static final String issue = "3";
@@ -95,7 +98,6 @@ public class SubmissionTransformerTest {
     public void init() {
         System.setProperty("nihms.pass.uri", nihmsRepositoryId);
         System.setProperty("pmc.url.template", pmcIdTemplateUrl);
-        MockitoAnnotations.initMocks(this);
         transformer = new NihmsPublicationToSubmission(clientServiceMock, pmidLookupMock);
     }
 
@@ -220,8 +222,87 @@ public class SubmissionTransformerTest {
     }
 
     /**
-     * Tests the scenario where there is already a Publication and Submission in PASS for the article,
-     * The grant and repo were not included on the Submission, but it is not submitted so we can add it.
+     * Tests the scenario where there is a Deposit with a reference to a NihmsId. There will already
+     * be a Submission, Publication, and RepositoryCopy.
+     */
+    @Test
+    public void testTransformWithNihmsIdDepositStatusRef() throws Exception {
+        NihmsPublication pub = newTestPub();
+        pub.setNihmsStatus(NihmsStatus.COMPLIANT);
+        pub.setNihmsId(nihmsId);
+        pub.setFileDepositedDate(depositDate);
+        pub.setInitialApprovalDate(depositDate);
+        pub.setTaggingCompleteDate(depositDate);
+        pub.setPmcId(pmcId);
+
+        Publication publication = newTestPublication();
+
+        // Assume no DOI was given
+        publication.setDoi(null);
+        // No PMID because it comes through PASS
+        publication.setPmid(null);
+
+        Submission submission = newTestSubmission();
+        submission.setPublication(publication);
+        submission.setSource(Source.PASS);
+        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
+
+        RepositoryCopy rc = new RepositoryCopy("rc1");
+        rc.setPublication(publication);
+        rc.setCopyStatus(CopyStatus.IN_PROGRESS);
+        rc.setRepository(submission.getRepositories().get(0));
+
+        Deposit deposit = new Deposit("deposit1");
+        deposit.setDepositStatusRef(NihmsPassClientService.NIHMS_DEP_STATUS_REF_PREFIX + nihmsId);
+        deposit.setSubmission(submission);
+        deposit.setRepositoryCopy(rc);
+        deposit.setDepositStatus(DepositStatus.SUBMITTED);
+
+        List<Submission> submissions = new ArrayList<>();
+        submissions.add(submission);
+
+        Grant grant = newTestGrant();
+        when(clientServiceMock.findMostRecentGrantByAwardNumber(awardNumber)).thenReturn(grant);
+        when(clientServiceMock.findPublicationByPmid(pmid)).thenReturn(null);
+
+        when(pmidLookupMock.retrievePubMedRecord(Mockito.anyString())).thenReturn(pubMedRecordMock);
+        when(pubMedRecordMock.getDoi()).thenReturn(doi);
+
+        when(clientServiceMock.findNihmsDepositbyNihmsId(nihmsId)).thenReturn(deposit);
+        when(clientServiceMock.findNihmsRepositoryCopyForPubId(publicationId)).thenReturn(rc);
+        when(clientServiceMock.findSubmissionsByPublicationAndUserId(publication.getId(), grant.getPi().getId()))
+                .thenReturn(submissions);
+
+        SubmissionDTO dto = transformer.transform(pub);
+
+        assertEquals(title, dto.getPublication().getTitle());
+        assertEquals(volume, dto.getPublication().getVolume());
+        assertEquals(issue, dto.getPublication().getIssue());
+        assertEquals(pmid, dto.getPublication().getPmid());
+        assertEquals(doi, dto.getPublication().getDoi());
+        assertEquals(grantId, dto.getSubmission().getGrants().get(0).getId());
+        assertEquals(Source.PASS, dto.getSubmission().getSource());
+        assertEquals(userId, dto.getSubmission().getSubmitter().getId());
+        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
+
+        assertEquals(true, dto.getSubmission().getSubmitted());
+        assertNotNull(dto.getSubmission().getSubmittedDate());
+
+        assertEquals(CopyStatus.COMPLETE, dto.getRepositoryCopy().getCopyStatus());
+        assertTrue(dto.getRepositoryCopy().getExternalIds().contains("NIHMS" + nihmsId));
+        assertTrue(dto.getRepositoryCopy().getExternalIds().contains("PMC" + pmcId));
+        assertEquals(2, dto.getRepositoryCopy().getExternalIds().size());
+
+        assertEquals(SubmissionStatus.COMPLETE, dto.getSubmission().getSubmissionStatus());
+        assertEquals(DepositStatus.ACCEPTED, dto.getDeposit().getDepositStatus());
+        assertEquals(AggregatedDepositStatus.IN_PROGRESS, dto.getSubmission().getAggregatedDepositStatus());
+    }
+
+    /**
+     * Tests the scenario where there is already a Publication, Submission, Deposit, and RepositoryCopy
+     * in PASS for the article because a PASS submission was done by a user.
+     * The NIHMS submission is done and now the corresponding PASS submission should be updated.
      */
     @Test
     public void testTransformUpdatePubAddGrantRepoToSubNoRepoCopy() throws Exception {

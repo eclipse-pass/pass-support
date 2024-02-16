@@ -53,25 +53,22 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         stubFor(get(urlMatching("/entrez/eutils/esummary.fcgi\\?db=pubmed&retmode=json&rettype=abstract&id=([0-9]*)"))
                 .willReturn(ok(jsonErrorResponse)));
 
-        NihmsTransformLoadApp app = new NihmsTransformLoadApp(null);
-
-        app.run();
-
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         PassClientSelector<Publication> publicationSelector = new PassClientSelector<>(Publication.class);
         PassClientSelector<Submission> submissionSelector = new PassClientSelector<>(Submission.class);
 
+        NihmsTransformLoadApp app = new NihmsTransformLoadApp(null);
+
+        app.run();
+
         //now that it has run lets do some basic tallys to make sure they are as expected:
         //make sure RepositoryCopies are all in before moving on so we can be sure the counts are done.
-        repoCopySelector.setFilter(RSQL.notEquals("id", "-1"));
         List<RepositoryCopy> repositoryCopies = passClient.selectObjects(repoCopySelector).getObjects();
         assertEquals(23, repositoryCopies.size());
 
-        publicationSelector.setFilter(RSQL.notEquals("id", "-1"));
         List<Publication> publications = passClient.selectObjects(publicationSelector).getObjects();
         assertEquals(32, publications.size());
 
-        submissionSelector.setFilter(RSQL.notEquals("id", "-1"));
         List<Submission> submissions = passClient.selectObjects(submissionSelector).getObjects();
         assertEquals(32, submissions.size());
 
@@ -168,11 +165,11 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         createGrant("R01 HD086026", user);
 
         String checkableAwardNumber = "R01 AAAAAA";
-        String checkableGrantId = createGrant(checkableAwardNumber, user);
+        Grant checkableGrant = createGrant(checkableAwardNumber, user);
 
         grantSelector.setFilter(RSQL.equals("awardNumber", checkableAwardNumber));
         String testGrantId = passClient.streamObjects(grantSelector).findFirst().orElseThrow().getId();
-        assertEquals(checkableGrantId, testGrantId);
+        assertEquals(checkableGrant.getId(), testGrantId);
 
     }
 
