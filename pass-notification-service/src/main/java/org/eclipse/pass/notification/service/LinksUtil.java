@@ -169,7 +169,6 @@ public class LinksUtil {
      * @param json Serialized JSON
      * @return collection of links.
      */
-    @SuppressWarnings("unchecked")
     public static Collection<Link> deserialize(String json) {
         try {
             return asList(mapper.readValue(json, Link[].class));

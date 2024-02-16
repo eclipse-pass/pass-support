@@ -61,7 +61,6 @@ public class DepositTaskTest {
     private DepositTask depositTask;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         DepositUtil.DepositWorkerContext dwc = new DepositUtil.DepositWorkerContext();
         dc = Mockito.spy(dwc);
@@ -71,7 +70,6 @@ public class DepositTaskTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void j10sStatementUrlHack() throws Exception {
         String prefix = "http://moo";
         String replacement = "http://foo";

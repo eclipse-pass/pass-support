@@ -18,10 +18,10 @@ package org.eclipse.pass.loader.nihms;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
@@ -125,7 +125,6 @@ public class CompletedPublicationsCache {
     /**
      * Load contents of cache file into memory from file
      */
-    @SuppressWarnings("unchecked")
     public synchronized void loadFromFile() {
         try {
             if (!cacheFile.exists()) {
@@ -133,7 +132,7 @@ public class CompletedPublicationsCache {
                 cacheFile.createNewFile();
             }
             // read in cached values
-            completedPubsCache = new HashSet<String>(FileUtils.readLines(cacheFile));
+            completedPubsCache = new HashSet<>(Files.readAllLines(cacheFile.toPath()));
         } catch (Exception ex) {
             throw new RuntimeException(
                 "Could not create cache file to hold compliant records at path " + cacheFile.getAbsolutePath(), ex);

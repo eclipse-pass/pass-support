@@ -19,11 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -123,8 +122,7 @@ public class CompletedPublicationsCacheTest {
         assertTrue(completedPubsCache.contains(pmid1, awardNum1));
         assertTrue(completedPubsCache.contains(pmid2, awardNum2));
 
-        @SuppressWarnings("unchecked")
-        List<String> processed = new ArrayList<String>(FileUtils.readLines(new File(cachepath)));
+        List<String> processed = Files.readAllLines(Paths.get(cachepath));
         assertEquals(2, processed.size());
     }
 
