@@ -61,7 +61,6 @@ public class DepositTaskHelperTest {
     private Repositories repositories;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         passClient = mock(PassClient.class);
         repositories = mock(Repositories.class);

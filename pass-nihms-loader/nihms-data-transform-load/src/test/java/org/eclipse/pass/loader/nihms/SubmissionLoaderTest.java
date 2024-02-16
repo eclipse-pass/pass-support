@@ -54,7 +54,6 @@ public class SubmissionLoaderTest {
     private SubmissionStatusService statusServiceMock;
 
     private static final String submissionId = "1";
-    private static final String repositoryCopyId = "1";
     private static final String depositId = "1";
     private static final String publicationId = "1";
     private static final String userId = "1";

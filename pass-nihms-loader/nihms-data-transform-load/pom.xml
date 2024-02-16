@@ -114,6 +114,19 @@
       <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -162,19 +175,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>standard</id>
-      <properties>
-      </properties>
-    </profile>
-    <profile>
-      <id>local-context</id>
-      <properties>
-        <COMPACTION_PRELOAD_FILE_PASS_STATIC>/mnt/context.jsonld</COMPACTION_PRELOAD_FILE_PASS_STATIC>
-      </properties>
-    </profile>
-  </profiles>
-
 </project>

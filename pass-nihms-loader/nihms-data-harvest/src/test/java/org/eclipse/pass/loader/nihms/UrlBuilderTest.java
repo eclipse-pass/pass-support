@@ -147,7 +147,7 @@ public class UrlBuilderTest {
 
     @AfterEach
     public void tearDown() {
-        System.err.println(generatedUrl.toString());
+        // System.err.println(generatedUrl.toString());
     }
 
     @Test
