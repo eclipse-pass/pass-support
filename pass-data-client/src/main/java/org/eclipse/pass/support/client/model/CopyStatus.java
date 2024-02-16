@@ -35,10 +35,9 @@ public enum CopyStatus {
      */
     STALLED("stalled"),
     /**
-     * The target Repository has rejected the Deposit
+     * The target Repository has accepted the files, and publication is pending if not already complete
      */
     COMPLETE("complete"),
-
     /**
      * The RepositoryCopy has been rejected by the remote Repository.
      */
