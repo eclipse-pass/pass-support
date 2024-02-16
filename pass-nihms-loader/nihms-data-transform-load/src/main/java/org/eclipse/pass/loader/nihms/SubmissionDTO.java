@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.loader.nihms;
 
+import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
@@ -33,11 +34,15 @@ public class SubmissionDTO {
 
     private RepositoryCopy repositoryCopy = null;
 
+    private Deposit deposit = null;
+
     private boolean updatePublication = false;
 
     private boolean updateSubmission = false;
 
     private boolean updateRepositoryCopy = false;
+
+    private boolean updateDeposit = false;
 
     private String grantId = null;
 
@@ -81,6 +86,20 @@ public class SubmissionDTO {
      */
     public void setRepositoryCopy(RepositoryCopy repositoryCopy) {
         this.repositoryCopy = repositoryCopy;
+    }
+
+    /**
+     * @return the deposit
+     */
+    public Deposit getDeposit() {
+        return deposit;
+    }
+
+    /**
+     * @param deposit the deposit to set
+     */
+    public void setDeposit(Deposit deposit) {
+        this.deposit = deposit;
     }
 
     /**
@@ -136,7 +155,7 @@ public class SubmissionDTO {
      * @return updateRepositoryCopy true if update should be performed
      */
     public boolean doUpdate() {
-        return (updateRepositoryCopy || updateSubmission || updatePublication);
+        return (updateRepositoryCopy || updateSubmission || updatePublication || updateDeposit);
     }
 
     /**
@@ -146,4 +165,17 @@ public class SubmissionDTO {
         this.updateRepositoryCopy = updateRepositoryCopy;
     }
 
+    /**
+     * @param updateDeposit the updateDeposit to set
+     */
+    public void setUpdateDeposoit(boolean updateDeposit) {
+        this.updateDeposit = updateDeposit;
+    }
+
+    /**
+     * @return updateDeposit true if update should be performed
+     */
+    public boolean doUpdateDeposit() {
+        return updateDeposit;
+    }
 }

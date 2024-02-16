@@ -103,7 +103,7 @@ public class SubmissionLoader {
                 deposit.setRepositoryCopy(repositoryCopy);
                 deposit.setDepositStatus(DepositStatus.ACCEPTED);
                 clientService.updateDeposit(deposit);
-            } else if (deposit != null && !deposit.getRepositoryCopy().equals(repositoryCopy.getId())) {
+            } else if (deposit != null && !deposit.getRepositoryCopy().getId().equals(repositoryCopy.getId())) {
                 //this shouldn't happen in principle, but if it does it should be checked.
                 LOG.warn(
                     "A NIHMS Deposit with id {} was found for the Submission but it is associated with a different " +
@@ -111,6 +111,10 @@ public class SubmissionLoader {
                     + "This may indicate a data error, please verify the RepositoryCopy association for this Deposit",
                     deposit.getId(), deposit.getRepositoryCopy(), repositoryCopy.getId());
             }
+        }
+
+        if (dto.doUpdateDeposit() && dto.getDeposit() != null) {
+            clientService.updateDeposit(dto.getDeposit());
         }
 
         //before moving on do one last check to see if SubmissionStatus has been affected by the changes
