@@ -34,6 +34,8 @@ import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.model.CopyStatus;
+import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.Repository;
@@ -166,6 +168,31 @@ public class NihmsPublicationToSubmission {
         PubMedEntrezRecord pubmedRecord = null;
 
         Publication publication = clientService.findPublicationByPmid(pmid);
+
+        // Check for a user deposit which matches the nihms id
+        if (publication == null && nihmsPub.getRawNihmsId() != null) {
+            Deposit deposit = clientService.findNihmsDepositbyNihmsId(nihmsPub.getRawNihmsId());
+
+            if (deposit != null) {
+                submissionDTO.setUpdateDeposoit(true);
+                submissionDTO.setDeposit(deposit);
+
+                switch (nihmsPub.getNihmsStatus()) {
+                    case COMPLIANT:
+                        deposit.setDepositStatus(DepositStatus.ACCEPTED);
+                        break;
+                    case IN_PROCESS:
+                        deposit.setDepositStatus(DepositStatus.SUBMITTED);
+                        break;
+                    case NON_COMPLIANT:
+                        deposit.setDepositStatus(DepositStatus.FAILED);
+                        break;
+                    default:
+                }
+
+                publication = deposit.getSubmission().getPublication();
+            }
+        }
 
         // get missing information from Entrez, if necessary
         if (publication == null || StringUtils.isEmpty(publication.getDoi())) {
@@ -322,7 +349,6 @@ public class NihmsPublicationToSubmission {
         if (publicationId != null) {
             List<Submission> submissions = clientService.findSubmissionsByPublicationAndUserId(publicationId,
                                                                                                grant.getPi().getId());
-
             if (CollectionUtils.isNotEmpty(submissions)) {
                 // is there already a nihms submission in the system for this publication? if so add to it instead of
                 // making a new one
