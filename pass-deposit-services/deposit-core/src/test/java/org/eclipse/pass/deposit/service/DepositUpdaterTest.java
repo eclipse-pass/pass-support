@@ -77,8 +77,8 @@ public class DepositUpdaterTest {
         depositUpdater.doUpdate();
 
         // THEN
-        verify(depositTaskHelper).processDepositStatus("dp-1");
-        verify(depositTaskHelper).processDepositStatus("dp-2");
+        verify(depositTaskHelper).processDepositStatus(deposit1);
+        verify(depositTaskHelper).processDepositStatus(deposit2);
 
         ArgumentCaptor<PassClientSelector<Deposit>> argument = ArgumentCaptor.forClass(PassClientSelector.class);
         verify(passClient, times(2)).streamObjects(argument.capture());

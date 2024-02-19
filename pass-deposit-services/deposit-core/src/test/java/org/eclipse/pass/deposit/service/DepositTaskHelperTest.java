@@ -35,7 +35,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
-import org.eclipse.pass.deposit.RemedialDepositException;
 import org.eclipse.pass.deposit.config.repository.DepositProcessing;
 import org.eclipse.pass.deposit.config.repository.Repositories;
 import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
@@ -50,33 +49,17 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-// TODO this test needs to be redone. It doesn't look to actually test DepositTaskHelper
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DepositTaskHelperTest {
     private PassClient passClient;
-    private Repository repository;
     private Deposit deposit;
-    private Repositories repositories;
 
     @BeforeEach
     public void setUp() throws Exception {
         passClient = mock(PassClient.class);
-        repositories = mock(Repositories.class);
         deposit = mock(Deposit.class);
-        repository = mock(Repository.class);
-    }
-
-    @Test
-    public void lookupRepositoryConfigByKey() {
-        String key = "repoKey";
-        Repository repo = newRepositoryWithKey(key);
-        Repositories repositories = newRepositoriesWithConfigFor(key);
-
-        DepositTaskHelper.lookupConfig(repo, repositories)
-                         .orElseThrow(
-                             () -> new RuntimeException("Missing expected repository config for key '" + key + "'"));
     }
 
     /**
@@ -90,7 +73,7 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncPreconditionSuccess() throws IOException {
+    public void depositCriFuncPreconditionSuccess() {
         String repoKey = randomId();
         String repoCopyId = randomId();
 
@@ -208,7 +191,7 @@ public class DepositTaskHelperTest {
         String repoKey = randomId();
         when(deposit.getDepositStatus()).thenReturn(
             randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
-        when(deposit.getDepositStatusRef()).thenReturn(statusRef.toString());
+        when(deposit.getDepositStatusRef()).thenReturn(statusRef);
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
 
         assertFalse(DepositStatusCriFunc.precondition().test(deposit));
@@ -253,7 +236,7 @@ public class DepositTaskHelperTest {
     }
 
     @Test
-    public void depositCriFuncCriticalSuccessAccepted() throws IOException {
+    public void depositCriFuncCriticalSuccessAccepted() {
         Deposit testDeposit = new Deposit();
         testDepositCriFuncCriticalForStatus(DepositStatus.ACCEPTED, testDeposit, passClient);
     }
@@ -270,48 +253,19 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncCriticalSuccessIntermediate() throws IOException {
+    public void depositCriFuncCriticalSuccessIntermediate() {
         DepositStatus statusProcessorResult = randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED);
 
         String repoKey = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
-        Repository repo = newRepositoryWithKey(repoKey);
+        newRepositoryWithKey(repoKey);
         Repositories repos = newRepositoriesWithConfigFor(repoKey, statusProcessor);
-        RepositoryCopy repoCopy = mock(RepositoryCopy.class);
-
-        when(deposit.getRepository()).thenReturn(repo);
-        when(deposit.getRepositoryCopy()).thenReturn(repoCopy);
-
-        when(passClient.getObject(repo)).thenReturn(repo);
-        when(passClient.getObject(repoCopy)).thenReturn(repoCopy);
-
+        RepositoryConfig repositoryConfig = repos.getConfig(repoKey);
         when(statusProcessor.process(eq(deposit), any())).thenReturn(statusProcessorResult);
 
-        assertSame(deposit, DepositStatusCriFunc.critical(repos, passClient).apply(deposit));
+        assertSame(deposit, DepositStatusCriFunc.critical(repositoryConfig, statusProcessor).apply(deposit));
 
-        verify(passClient).getObject(repo);
-        verifyNoMoreInteractions(passClient);
         verify(statusProcessor).process(eq(deposit), any());
-        verifyNoInteractions(repoCopy);
-    }
-
-    /**
-     * When there is an error looking up the RepositoryConfig insure there is a proper error message
-     * @throws IOException
-     */
-    @Test
-    public void depositCriFuncCriticalMissingRepositoryConfig() throws IOException {
-        when(deposit.getRepository()).thenReturn(repository);
-        when(passClient.getObject(repository)).thenReturn(repository);
-
-        Exception e = assertThrows(RemedialDepositException.class, () -> {
-            DepositStatusCriFunc.critical(repositories, passClient).apply(deposit);
-        });
-
-        assertTrue(e.getMessage().contains("Unable to resolve Repository Configuration for Repository"));
-
-        verify(passClient).getObject(repository);
-        verifyNoMoreInteractions(passClient);
     }
 
     /**
@@ -319,91 +273,20 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncCriticalNullDepositConfig() throws IOException {
+    public void depositCriFuncCriticalDepositStatusProcessorProducesNullStatus() {
         String repoKey = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
-        Repository repo = newRepositoryWithKey(repoKey);
+        newRepositoryWithKey(repoKey);
         Repositories repos = newRepositoriesWithConfigFor(repoKey, statusProcessor);
-
-        when(deposit.getRepository()).thenReturn(repo);
-        when(passClient.getObject(repo)).thenReturn(repo);
-        repos.getConfig(repoKey).setRepositoryDepositConfig(null);
-
-        verifyNullObjectInDepositStatusProcessorLookup(repo, repos);
-    }
-
-    /**
-     * When there is an error resolving the DepositStatusProcessor, insure there is a proper error message
-     * @throws IOException
-     */
-    @Test
-    public void depositCriFuncCriticalNullDepositProcessing() throws IOException {
-        String repoKey = randomId();
-        DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
-        Repository repo = newRepositoryWithKey(repoKey);
-        Repositories repos = newRepositoriesWithConfigFor(repoKey, statusProcessor);
-
-        when(deposit.getRepository()).thenReturn(repo);
-        when(passClient.getObject(Repository.class, repoKey)).thenReturn(repo);
-        repos.getConfig(repoKey).getRepositoryDepositConfig().setDepositProcessing(null);
-
-        verifyNullObjectInDepositStatusProcessorLookup(repo, repos);
-    }
-
-    /**
-     * When there is an error resolving the DepositStatusProcessor, insure there is a proper error message
-     * @throws IOException
-     */
-    @Test
-    public void depositCriFuncCriticalNullDepositStatusProcessor() throws IOException {
-        String repoKey = randomId();
-        DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
-        Repository repo = newRepositoryWithKey(repoKey);
-        Repositories repos = newRepositoriesWithConfigFor(repoKey, statusProcessor);
-
-        when(deposit.getRepository()).thenReturn(repo);
-        when(passClient.getObject(Repository.class, repoKey)).thenReturn(repo);
-        repos.getConfig(repoKey).getRepositoryDepositConfig().getDepositProcessing().setProcessor(null);
-
-        verifyNullObjectInDepositStatusProcessorLookup(repo, repos);
-    }
-
-    /**
-     * When there is an error resolving the DepositStatusProcessor, insure there is a proper error message
-     * @throws IOException
-     */
-    @Test
-    public void depositCriFuncCriticalDepositStatusProcessorProducesNullStatus() throws IOException {
-        String repoKey = randomId();
-        DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
-        Repository repo = newRepositoryWithKey(repoKey);
-        Repositories repos = newRepositoriesWithConfigFor(repoKey, statusProcessor);
-
-        when(deposit.getRepository()).thenReturn(repo);
-        when(passClient.getObject(repo)).thenReturn(repo);
+        RepositoryConfig repositoryConfig = repos.getConfig(repoKey);
         when(statusProcessor.process(deposit, repos.getConfig(repoKey))).thenReturn(null);
 
         Exception e = assertThrows(DepositServiceRuntimeException.class, () -> {
-            DepositStatusCriFunc.critical(repos, passClient).apply(deposit);
+            DepositStatusCriFunc.critical(repositoryConfig, statusProcessor).apply(deposit);
         });
 
         assertTrue(e.getMessage().contains("Failed to update deposit status"));
 
-        verify(deposit).getRepository();
-        verify(passClient).getObject(repo);
-        verifyNoMoreInteractions(passClient);
-    }
-
-    private void verifyNullObjectInDepositStatusProcessorLookup(Repository repository, Repositories repos)
-        throws IOException {
-
-        Exception e = assertThrows(DepositServiceRuntimeException.class, () -> {
-            DepositStatusCriFunc.critical(repos, passClient).apply(deposit);
-        });
-
-        assertTrue(e.getMessage().contains("parsing the status document referenced by"));
-
-        verify(passClient).getObject(repository);
         verifyNoMoreInteractions(passClient);
     }
 
@@ -437,22 +320,15 @@ public class DepositTaskHelperTest {
 
     private static void testDepositCriFuncCriticalForStatus(DepositStatus statusProcessorResult,
                                                             Deposit deposit,
-                                                            PassClient passClient) throws IOException {
+                                                            PassClient passClient) {
         String repoKey = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
-        Repository repo = newRepositoryWithKey(repoKey);
+        newRepositoryWithKey(repoKey);
         Repositories repos = newRepositoriesWithConfigFor(repoKey, statusProcessor);
-        RepositoryCopy repoCopy = new RepositoryCopy(); // concrete to capture state changes performed by critical
-
-        deposit.setRepository(repo);
-        deposit.setRepositoryCopy(repoCopy);
-
-        when(passClient.getObject(repo)).thenReturn(repo);
-        when(passClient.getObject(repoCopy)).thenReturn(repoCopy);
-
+        RepositoryConfig repositoryConfig = repos.getConfig(repoKey);
         when(statusProcessor.process(eq(deposit), any())).thenReturn(statusProcessorResult);
 
-        Deposit result = DepositStatusCriFunc.critical(repos, passClient).apply(deposit);
+        Deposit result = DepositStatusCriFunc.critical(repositoryConfig, statusProcessor).apply(deposit);
 
         assertEquals(statusProcessorResult, result.getDepositStatus());
         verify(statusProcessor).process(eq(deposit), any());

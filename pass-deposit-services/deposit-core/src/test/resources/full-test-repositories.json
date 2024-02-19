@@ -3,6 +3,11 @@
     "deposit-config": {
       "processing": {
         "beanName": "org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor"
+      },
+      "mapping": {
+        "http://dspace.org/state/archived": "accepted",
+        "http://dspace.org/state/withdrawn": "rejected",
+        "default-mapping": "submitted"
       }
     },
     "assembler": {

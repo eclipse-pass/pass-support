@@ -70,7 +70,7 @@ public class DepositProcessor implements Consumer<Deposit> {
             // if result is still intermediate, add Deposit to queue for processing?
 
             // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy
-            depositHelper.processDepositStatus(deposit.getId());
+            depositHelper.processDepositStatus(deposit);
         }
     }
 
