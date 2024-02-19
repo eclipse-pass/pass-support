@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.eclipse.deposit.util.loggers.Loggers.WORKERS_LOGGER;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +28,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.RemedialDepositException;
@@ -69,9 +71,6 @@ public class DepositTaskHelper {
                                                   "Missing Packager for Repository named '{}', marking Deposit as " +
                                                   "FAILED.";
     private static final String PRECONDITION_FAILED = "Refusing to update {}, the following pre-condition failed: ";
-    private static final String ERR_RESOLVE_REPOSITORY = "Unable to resolve Repository Configuration for Repository " +
-                                                         "%s (%s).  Verify the Deposit Services runtime configuration" +
-                                                         " location and " + "content.";
     private static final String ERR_PARSING_STATUS_DOC = "Failed to update deposit status for [%s], parsing the " +
                                                          "status document referenced by %s failed: %s";
     private static final String ERR_MAPPING_STATUS = "Failed to update deposit status for [%s], mapping the status " +
@@ -146,44 +145,23 @@ public class DepositTaskHelper {
         }
     }
 
-    void processDepositStatus(String depositId) {
-
-        CriticalResult<Deposit, Deposit> cr = cri.performCritical(
-            depositId, Deposit.class,
-            DepositStatusCriFunc.precondition(),
-            DepositStatusCriFunc.postcondition(),
-            DepositStatusCriFunc.critical(repositories, passClient)
-        );
-
-        if (!cr.success()) {
-            if (cr.throwable().isPresent()) {
-                Throwable t = cr.throwable().get();
-                if (t instanceof RemedialDepositException) {
-                    LOG.error(format("Failed to update Deposit %s", depositId), t);
-                    return;
-                }
-
-                if (t instanceof DepositServiceRuntimeException) {
-                    throw (DepositServiceRuntimeException) t;
-                }
-
-                if (cr.resource().isPresent()) {
-                    throw new DepositServiceRuntimeException(
-                        format("Failed to update Deposit %s: %s", depositId, t.getMessage()),
-                        t, cr.resource().get());
-                }
-            }
-
-            LOG.debug(format("Failed to update Deposit %s: no cause was present, probably a pre- or post-condition " +
-                             "was not satisfied.", depositId));
-            return;
+    void processDepositStatus(Deposit deposit) {
+        try {
+            Repository repository = passClient.getObject(deposit.getRepository());
+            RepositoryConfig repositoryConfig = repositories.getConfig(repository.getRepositoryKey());
+            getDepositStatusProcessor(repositoryConfig)
+                .ifPresentOrElse(
+                    depositStatusProcessor ->
+                        updateDepositStatusIfNeeded(deposit, repositoryConfig, depositStatusProcessor),
+                    () -> LOG.info("No deposit status processor found for Deposit {}, status not updated",
+                        deposit.getId())
+                );
+        } catch (IOException e) {
+            LOG.error("Failed to update Deposit Status {}", deposit.getId(), e);
         }
-
-        cr.result().ifPresent(this::updateDepositRepositoryCopyStatus);
-        LOG.info("Successfully processed Deposit {}", depositId);
     }
 
-    RepositoryCopy updateDepositRepositoryCopyStatus(Deposit deposit) {
+    void updateDepositRepositoryCopyStatus(Deposit deposit) {
         try {
             RepositoryCopy repoCopy = passClient.getObject(deposit.getRepositoryCopy());
             switch (deposit.getDepositStatus()) {
@@ -200,18 +178,57 @@ public class DepositTaskHelper {
                 default -> {
                 }
             }
-            return repoCopy;
         } catch (Exception e) {
             String msg = String.format(ERR_UPDATE_REPOCOPY, deposit.getRepositoryCopy(), deposit.getId());
             throw new DepositServiceRuntimeException(msg, e, deposit);
         }
     }
 
-    static Optional<RepositoryConfig> lookupConfig(Repository passRepository, Repositories repositories) {
-        if (passRepository.getRepositoryKey() != null) {
-            return Optional.of(repositories.getConfig(passRepository.getRepositoryKey()));
+    private Optional<DepositStatusProcessor> getDepositStatusProcessor(RepositoryConfig repositoryConfig) {
+        if (Objects.isNull(repositoryConfig)
+            || Objects.isNull(repositoryConfig.getRepositoryDepositConfig())
+            || Objects.isNull(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing())
+            || Objects.isNull(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing().getProcessor())) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        return Optional.of(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing().getProcessor());
+    }
+
+    private void updateDepositStatusIfNeeded(Deposit deposit, RepositoryConfig repositoryConfig,
+                                             DepositStatusProcessor depositStatusProcessor) {
+        CriticalResult<Deposit, Deposit> cr = cri.performCritical(
+            deposit.getId(), Deposit.class,
+            DepositStatusCriFunc.precondition(),
+            DepositStatusCriFunc.postcondition(),
+            DepositStatusCriFunc.critical(repositoryConfig, depositStatusProcessor)
+        );
+
+        if (!cr.success()) {
+            if (cr.throwable().isPresent()) {
+                Throwable t = cr.throwable().get();
+                if (t instanceof RemedialDepositException) {
+                    LOG.error(format("Failed to update Deposit %s", deposit.getId()), t);
+                    return;
+                }
+
+                if (t instanceof DepositServiceRuntimeException) {
+                    throw (DepositServiceRuntimeException) t;
+                }
+
+                if (cr.resource().isPresent()) {
+                    throw new DepositServiceRuntimeException(
+                        format("Failed to update Deposit %s: %s", deposit.getId(), t.getMessage()),
+                        t, cr.resource().get());
+                }
+            }
+
+            LOG.debug(format("Failed to update Deposit %s: no cause was present, probably a pre- or post-condition " +
+                "was not satisfied.", deposit.getId()));
+            return;
+        }
+
+        cr.result().ifPresent(this::updateDepositRepositoryCopyStatus);
+        LOG.info("Successfully processed Deposit {}", deposit.getId());
     }
 
     static class DepositStatusCriFunc {
@@ -233,7 +250,7 @@ public class DepositTaskHelper {
                     return false;
                 }
 
-                if (deposit.getDepositStatusRef() == null || deposit.getDepositStatusRef().trim().length() == 0) {
+                if (deposit.getDepositStatusRef() == null || StringUtils.isBlank(deposit.getDepositStatusRef())) {
                     LOG.debug(PRECONDITION_FAILED + " missing Deposit status reference.", deposit.getId());
                     return false;
                 }
@@ -258,23 +275,12 @@ public class DepositTaskHelper {
             return (deposit, updatedDeposit) -> Objects.nonNull(updatedDeposit.getRepositoryCopy());
         }
 
-        static Function<Deposit, Deposit> critical(Repositories repositories, PassClient passClient) {
+        static Function<Deposit, Deposit> critical(RepositoryConfig repositoryConfig,
+                                                   DepositStatusProcessor depositStatusProcessor) {
             return (deposit) -> {
                 AtomicReference<DepositStatus> status = new AtomicReference<>();
                 try {
-
-                    Repository repo = passClient.getObject(deposit.getRepository());
-
-                    RepositoryConfig repoConfig = lookupConfig(repo, repositories)
-                        .orElseThrow(() ->
-                                         new RemedialDepositException(
-                                             format(ERR_RESOLVE_REPOSITORY, repo.getName(), repo.getId()), repo));
-                    DepositStatusProcessor statusProcessor = repoConfig.getRepositoryDepositConfig()
-                                                                       .getDepositProcessing()
-                                                                       .getProcessor();
-                    status.set(statusProcessor.process(deposit, repoConfig));
-                } catch (RemedialDepositException e) {
-                    throw e;
+                    status.set(depositStatusProcessor.process(deposit, repositoryConfig));
                 } catch (Exception e) {
                     String msg = format(ERR_PARSING_STATUS_DOC,
                                         deposit.getId(), deposit.getDepositStatusRef(), e.getMessage());

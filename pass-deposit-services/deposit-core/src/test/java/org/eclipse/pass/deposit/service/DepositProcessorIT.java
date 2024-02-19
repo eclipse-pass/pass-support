@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Johns Hopkins University
+ * Copyright 2024 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,22 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
-import org.eclipse.pass.support.client.PassClientResult;
-import org.eclipse.pass.support.client.PassClientSelector;
-import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Repository;
+import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -41,39 +39,42 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = {
     "pass.deposit.repository.configuration=classpath:/full-test-repositories.json"
 })
-public class DepositUpdaterIT extends AbstractDepositIT {
+public class DepositProcessorIT extends AbstractDepositIT {
 
-    @Autowired private DepositUpdater depositUpdater;
-    @MockBean private DepositTaskHelper depositTaskHelper;
+    @Autowired private DepositProcessor depositProcessor;
 
     @Test
-    public void testDoUpdate_SkipNoDepositStatusProcessorRepos() throws Exception {
+    public void testDepositProcessor_WithDepositProcessor() throws Exception {
         // GIVEN
-        Submission submission = initSubmissionAndDeposits();
+        Deposit j10pDeposit = initJScholarshipDeposit();
         mockSword();
 
         // WHEN
-        try {
-            depositUpdater.doUpdate();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        depositProcessor.accept(j10pDeposit);
 
         // THEN
-        PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
-        depositSelector.setFilter(RSQL.equals("submission.id", submission.getId()));
-        PassClientResult<Deposit> actualDeposits = passClient.selectObjects(depositSelector);
-        Deposit pmcDeposit = actualDeposits.getObjects().stream()
-            .filter(deposit -> deposit.getDepositStatusRef().equals("test-pmc-package"))
-            .findFirst().get();
-        Deposit j10pDeposit = actualDeposits.getObjects().stream()
-            .filter(deposit -> deposit.getDepositStatusRef().equals("test-j10p-ref"))
-            .findFirst().get();
-        verify(depositTaskHelper, times(0)).processDepositStatus(eq(pmcDeposit));
-        verify(depositTaskHelper, times(1)).processDepositStatus(eq(j10pDeposit));
+        Deposit actualDeposit = passClient.getObject(j10pDeposit);
+        assertEquals(DepositStatus.ACCEPTED, actualDeposit.getDepositStatus());
+        assertEquals("test-j10p-ref", actualDeposit.getDepositStatusRef());
+        verify(passClient).updateObject(eq(actualDeposit));
     }
 
-    private Submission initSubmissionAndDeposits() throws Exception {
+    @Test
+    public void testDepositProcessor_NoUpdateOnDepositNoDepositProcessor() throws Exception {
+        // GIVEN
+        Deposit pmcDeposit = initPmcDeposit();
+
+        // WHEN
+        depositProcessor.accept(pmcDeposit);
+
+        // THEN
+        Deposit actualDeposit = passClient.getObject(pmcDeposit);
+        assertEquals(DepositStatus.SUBMITTED, actualDeposit.getDepositStatus());
+        assertEquals("test-pmc-package", actualDeposit.getDepositStatusRef());
+        verify(passClient, times(0)).updateObject(eq(actualDeposit));
+    }
+
+    private Deposit initPmcDeposit() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample1")));
         submission.setSubmittedDate(ZonedDateTime.now());
@@ -87,16 +88,29 @@ public class DepositUpdaterIT extends AbstractDepositIT {
         pmcDeposit.setDepositStatus(DepositStatus.SUBMITTED);
         pmcDeposit.setDepositStatusRef("test-pmc-package");
         passClient.createObject(pmcDeposit);
+        return pmcDeposit;
+    }
+
+    private Deposit initJScholarshipDeposit() throws Exception {
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample1")));
+        submission.setSubmittedDate(ZonedDateTime.now());
+        passClient.updateObject(submission);
         Repository j10pRepo = submission.getRepositories().stream()
             .filter(repository -> repository.getRepositoryKey().equals("JScholarship"))
             .findFirst().get();
+        RepositoryCopy repositoryCopy = new RepositoryCopy();
+        repositoryCopy.setRepository(j10pRepo);
+        repositoryCopy.setCopyStatus(CopyStatus.IN_PROGRESS);
+        passClient.createObject(repositoryCopy);
         Deposit j10pDeposit = new Deposit();
         j10pDeposit.setSubmission(submission);
         j10pDeposit.setRepository(j10pRepo);
+        j10pDeposit.setRepositoryCopy(repositoryCopy);
         j10pDeposit.setDepositStatus(DepositStatus.SUBMITTED);
         j10pDeposit.setDepositStatusRef("test-j10p-ref");
         passClient.createObject(j10pDeposit);
-        return submission;
+        return j10pDeposit;
     }
 
 }

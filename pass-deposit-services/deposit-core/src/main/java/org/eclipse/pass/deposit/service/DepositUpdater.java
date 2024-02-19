@@ -105,7 +105,7 @@ public class DepositUpdater {
         submittedDeposits.forEach(deposit -> {
             try {
                 LOG.info("Updating Deposit.depositStatus for {}", deposit.getId());
-                depositHelper.processDepositStatus(deposit.getId());
+                depositHelper.processDepositStatus(deposit);
             } catch (Exception e) {
                 LOG.warn("Failed to update Deposit {}: {}", deposit.getId(), e.getMessage(), e);
             }

@@ -183,7 +183,7 @@ public class DepositProcessorTest {
 
         verify(intermediateDeposit).getDepositStatus();
         verifyNoInteractions(cri);
-        verify(depositTaskHelper).processDepositStatus(depositId);
+        verify(depositTaskHelper).processDepositStatus(intermediateDeposit);
     }
 
     private void prepareCriFuncCriticalSuccess(DepositStatus depositStatus) throws IOException {
