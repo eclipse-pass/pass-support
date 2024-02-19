@@ -16,12 +16,17 @@
 package org.eclipse.pass.deposit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.time.ZonedDateTime;
 
+import org.eclipse.pass.deposit.DepositServiceRuntimeException;
+import org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -31,6 +36,7 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -42,6 +48,7 @@ import org.springframework.test.context.TestPropertySource;
 public class DepositProcessorIT extends AbstractDepositIT {
 
     @Autowired private DepositProcessor depositProcessor;
+    @SpyBean private DefaultDepositStatusProcessor defaultDepositStatusProcessor;
 
     @Test
     public void testDepositProcessor_WithDepositProcessor() throws Exception {
@@ -57,6 +64,27 @@ public class DepositProcessorIT extends AbstractDepositIT {
         assertEquals(DepositStatus.ACCEPTED, actualDeposit.getDepositStatus());
         assertEquals("test-j10p-ref", actualDeposit.getDepositStatusRef());
         verify(passClient).updateObject(eq(actualDeposit));
+    }
+
+    @Test
+    public void testDepositProcessor_WithDepositProcessorThrowsException() throws Exception {
+        // GIVEN
+        Deposit j10pDeposit = initJScholarshipDeposit();
+        doThrow(new RuntimeException("Testing deposit status error"))
+            .when(defaultDepositStatusProcessor).process(any(Deposit.class), any());
+
+        // WHEN
+        DepositServiceRuntimeException exception =
+            assertThrows(DepositServiceRuntimeException.class, () -> depositProcessor.accept(j10pDeposit));
+
+        // THEN
+        assertEquals("Failed to update deposit status for [" + j10pDeposit.getId() +
+            "], parsing the status document referenced by test-j10p-ref failed: Testing deposit status error",
+            exception.getMessage());
+        Deposit actualDeposit = passClient.getObject(j10pDeposit);
+        assertEquals(DepositStatus.SUBMITTED, actualDeposit.getDepositStatus());
+        assertEquals("test-j10p-ref", actualDeposit.getDepositStatusRef());
+        verify(passClient, times(0)).updateObject(eq(actualDeposit));
     }
 
     @Test
