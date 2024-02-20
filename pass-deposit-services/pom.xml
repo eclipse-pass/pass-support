@@ -496,6 +496,7 @@
                 <ignoredUnusedDeclaredDependency>org.slf4j:log4j-over-slf4j:</ignoredUnusedDeclaredDependency>
                 <!-- mockito-inline is needed to mock final classes -->
                 <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:</ignoredUnusedDeclaredDependency>
+                <ignoredUnusedDeclaredDependency>io.awspring.cloud:spring-cloud-aws-starter-s3:</ignoredUnusedDeclaredDependency>
               </ignoredUnusedDeclaredDependencies>
               <ignoredNonTestScopedDependencies>
                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
