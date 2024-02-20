@@ -47,7 +47,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractListenerIT {
 
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:2.1.0");
+        DockerImageName.parse("localstack/localstack:3.1.0");
 
     @Container
     static final LocalStackContainer LOCALSTACK_CONTAINER =

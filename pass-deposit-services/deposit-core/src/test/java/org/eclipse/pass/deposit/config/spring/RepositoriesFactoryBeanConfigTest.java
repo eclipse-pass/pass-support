@@ -36,7 +36,7 @@ public class RepositoriesFactoryBeanConfigTest {
     private Repositories repositories;
 
     @Test
-    public void foo() throws Exception {
+    public void testLoadRepositoryConfigurations() {
         assertNotNull(repositories);
 
         assertEquals(4, repositories.getAllConfigs().size());

@@ -35,7 +35,20 @@
     <greenmail-junit5.version>2.0.1</greenmail-junit5.version>
     <javax-json.version>1.1.4</javax-json.version>
     <maven-model.version>3.9.6</maven-model.version>
+    <awsspring.version>3.1.0</awsspring.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.awspring.cloud</groupId>
+        <artifactId>spring-cloud-aws-dependencies</artifactId>
+        <version>${awsspring.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
 
@@ -62,6 +75,11 @@
     <dependency>
       <groupId>org.springframework.integration</groupId>
       <artifactId>spring-integration-mail</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.awspring.cloud</groupId>
+      <artifactId>spring-cloud-aws-starter-s3</artifactId>
     </dependency>
 
     <dependency>
