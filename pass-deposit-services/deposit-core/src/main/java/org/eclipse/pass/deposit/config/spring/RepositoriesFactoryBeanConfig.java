@@ -32,9 +32,6 @@ public class RepositoriesFactoryBeanConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepositoriesFactoryBeanConfig.class);
 
-    @Value("${pass.deposit.repository.configuration}")
-    private Resource repositoryConfigResource;
-
     @Bean
     public ObjectMapper repositoriesMapper(Environment env) {
         ObjectMapper mapper = new ObjectMapper();
