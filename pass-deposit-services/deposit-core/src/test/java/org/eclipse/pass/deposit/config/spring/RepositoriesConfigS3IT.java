@@ -46,6 +46,7 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(classes = DepositApp.class)
 @TestPropertySource(properties = {
     "spring.jms.listener.auto-startup=false",
+    "spring.cloud.aws.s3.enabled=true",
     "pass.deposit.repository.configuration=s3://test-bucket/s3-test-repositories.json"
 })
 @Testcontainers
