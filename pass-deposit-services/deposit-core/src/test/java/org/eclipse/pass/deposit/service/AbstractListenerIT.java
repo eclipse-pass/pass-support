@@ -39,6 +39,7 @@ import org.testcontainers.utility.DockerImageName;
     "aws.region=us-east-1",
     "aws.sqs.endpoint.override=",
     "spring.jms.listener.auto-startup=true",
+    "spring.cloud.aws.s3.enabled=false",
     "pass.deposit.queue.submission.name=" + AwsSqsTestConfig.QUEUE_NAME,
     "pass.deposit.jobs.disabled=true"
 })
