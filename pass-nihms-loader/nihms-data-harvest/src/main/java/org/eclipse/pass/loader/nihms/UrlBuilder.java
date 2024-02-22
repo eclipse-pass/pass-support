@@ -15,29 +15,43 @@
  *  * limitations under the License.
  *
  */
-
 package org.eclipse.pass.loader.nihms;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.damnhandy.uri.template.UriTemplate;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 /**
  * The URLBuilder class is responsible for building NIHMS Loader URLs.
  */
+@Component
 public class UrlBuilder {
 
+    private static final String API_URL_PARAM_PREFIX = "nihmsetl.api.url.param.";
     private static final String TEMPLATE = "{scheme}://{host}{+path}{+type}{?params*}";
+    private static final List<String> nihmsParams = List.of("format", "inst", "ipf", "api-token", "pdf", "pdt");
 
-    /**
-     * Get url for the type Compliant without any parameters
-     * @return the URL without any parameters
-     */
-    public URL compliantUrl() {
-        return urlFor(UrlType.COMPLIANT, Collections.emptyMap());
+    @Value("${nihmsetl.api.scheme}")
+    private String apiScheme;
+
+    @Value("${nihmsetl.api.host}")
+    private String apiHost;
+
+    @Value("${nihmsetl.api.path}")
+    private String apiPath;
+
+    private final Environment environment;
+
+    public UrlBuilder(Environment environment) {
+        this.environment = environment;
     }
 
     /**
@@ -50,28 +64,12 @@ public class UrlBuilder {
     }
 
     /**
-     * Get the url for the type Non-Compliant without any parameters
-     * @return the URL without any parameters
-     */
-    public URL nonCompliantUrl() {
-        return urlFor(UrlType.NON_COMPLIANT, Collections.emptyMap());
-    }
-
-    /**
      * Get the url for the type Non-Compliant with the provided parameters
      * @param params parameters for the URL
      * @return the Non-Compliant URL with the provided parameters
      */
     public URL nonCompliantUrl(Map<String, String> params) {
         return urlFor(UrlType.NON_COMPLIANT, params);
-    }
-
-    /**
-     * Get the url for the type In-Process without any parameters
-     * @return the URL without any parameters
-     */
-    public URL inProcessUrl() {
-        return urlFor(UrlType.IN_PROCESS, Collections.emptyMap());
     }
 
     /**
@@ -85,19 +83,30 @@ public class UrlBuilder {
 
     private URL urlFor(UrlType type, Map<String, String> params) {
         try {
-            Map<String, String> mergedParams = NihmsHarvesterConfig.getApiUrlParams();
+            Map<String, String> mergedParams = getApiUrlParams();
             mergedParams.putAll(params);
 
             return new URL(UriTemplate.fromTemplate(TEMPLATE)
-                                      .set("scheme", NihmsHarvesterConfig.getApiScheme())
-                                      .set("host", NihmsHarvesterConfig.getApiHost())
-                                      .set("path", NihmsHarvesterConfig.getApiPath())
+                                      .set("scheme", apiScheme)
+                                      .set("host", apiHost)
+                                      .set("path", apiPath)
                                       .set("type", type.getCode())
                                       .set("params", mergedParams)
                                       .expand());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private Map<String, String> getApiUrlParams() {
+        Map<String, String> params = new HashMap<>();
+        nihmsParams.forEach(paramKey -> {
+            String value = environment.getProperty(API_URL_PARAM_PREFIX + paramKey);
+            if (StringUtils.isNotBlank(value)) {
+                params.put(paramKey, value);
+            }
+        });
+        return params;
     }
 
 }

@@ -1,4 +1,19 @@
-package org.eclipse.pass.loader.nihms.cli;
+/*
+ * Copyright 2024 Johns Hopkins University
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.eclipse.pass.loader.nihms;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -8,20 +23,17 @@ import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * NIHMS Submission Loader CLI
  *
  * @author Karen Hanson
  */
-public class NihmsHarvesterCLI {
-
-    //java -Dnihmsetl.harvester.configfile="/pass/config/config.properties" -jar example.jar -c -startdate 12-2008
-
-    /**
-     *
-     * General Options
-     */
+@SpringBootApplication
+public class NihmsHarvesterCLI implements CommandLineRunner {
 
     /**
      * Request for help/usage documentation
@@ -66,59 +78,48 @@ public class NihmsHarvesterCLI {
                     + "NIHMS system default which is one year before the current month")
     private String startDate = "";
 
-    /**
-     * This is the main entry point for the NihmsHarvesterCLI application.
-     * The method processes the command line arguments, determines the Nihms statuses to be processed
-     * and initializes and runs the NihmsHarvesterApp.
-     *
-     * <p>Command line arguments are used to determine the statuses to process and to filter by start date.
-     * If no status is specified, all statuses will be processed. If the 'help' argument is specified,
-     * usage information will be printed and the application will terminate.
-     *
-     * <p>If there are issues with the provided command line arguments, a message detailing the error
-     * will be printed, followed by the usage information. The application will then terminate with an exit code of 1.
-     *
-     * <p>Other exceptions that may occur during the execution of the application are caught and their stack trace
-     * is printed, followed by the exception's message. The application will then terminate with an exit code of 1.
-     *
-     * @param args command line arguments
-     */
+    private final NihmsHarvester nihmsHarvester;
+
     public static void main(String[] args) {
+        SpringApplication.run(NihmsHarvesterCLI.class, args);
+    }
 
-        final NihmsHarvesterCLI application = new NihmsHarvesterCLI();
-        CmdLineParser parser = new CmdLineParser(application);
+    public NihmsHarvesterCLI(NihmsHarvester nihmsHarvester) {
+        this.nihmsHarvester = nihmsHarvester;
+    }
 
+    @Override
+    public void run(String... args) {
+        CmdLineParser parser = new CmdLineParser(this);
         try {
 
             parser.parseArgument(args);
             /* Handle general options such as help, version */
-            if (application.help) {
+            if (this.help) {
                 parser.printUsage(System.err);
                 System.err.println();
                 System.exit(0);
             }
 
-            Set<NihmsStatus> statusesToProcess = new HashSet<NihmsStatus>();
-            String startDateFilter = application.startDate;
+            Set<NihmsStatus> statusesToProcess = new HashSet<>();
+            String startDateFilter = this.startDate;
 
             //select statuses to process
-            if (application.compliant) {
+            if (this.compliant) {
                 statusesToProcess.add(NihmsStatus.COMPLIANT);
             }
-            if (application.nonCompliant) {
+            if (this.nonCompliant) {
                 statusesToProcess.add(NihmsStatus.NON_COMPLIANT);
             }
-            if (application.inProcess) {
+            if (this.inProcess) {
                 statusesToProcess.add(NihmsStatus.IN_PROCESS);
             }
-            if (statusesToProcess.size() == 0) {
+            if (statusesToProcess.isEmpty()) {
                 statusesToProcess.addAll(EnumSet.allOf(NihmsStatus.class));
             }
 
             /* Run the package generation application proper */
-            NihmsHarvesterApp app = new NihmsHarvesterApp(statusesToProcess, startDateFilter);
-            app.run();
-            System.exit((0));
+            nihmsHarvester.harvest(statusesToProcess, startDateFilter);
 
         } catch (CmdLineException e) {
             /**
@@ -127,15 +128,11 @@ public class NihmsHarvesterCLI {
              */
             System.err.println(e.getMessage());
             parser.printUsage(System.err);
-            System.err.println();
             System.exit(1);
-
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println(e.getMessage());
             System.exit(1);
-
         }
     }
-
 }

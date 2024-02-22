@@ -85,18 +85,6 @@ public class FileUtilTest {
     }
 
     /**
-     * Confirms select directory picks correctly from props list
-     *
-     * @throws IOException if file cannot be created
-     */
-    @Test
-    public void testSelectDirectoryFromProperties() throws IOException {
-        System.setProperty(DATA_DIR_KEY, createdFolder.getAbsolutePath());
-        File file = FileUtil.getDataDirectory();
-        assertEquals(createdFolder.getAbsolutePath(), file.toString());
-    }
-
-    /**
      * Confirms that getFilePaths will retrieve 3 csv files in target directory
      *
      * @throws IOException if file cannot be created

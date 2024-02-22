@@ -86,7 +86,8 @@ public class NihmsTransformLoadService {
      * @param statusesToProcess if null or empty, all statuses will be processed.
      */
     public void transformAndLoadFiles(Set<NihmsStatus> statusesToProcess) {
-        File dataDirectory = FileUtil.getDataDirectory();
+        // TODO fix
+        File dataDirectory = new File("");
         if (dataDirectory == null) {
             throw new RuntimeException("dataDirectory cannot be empty");
         }

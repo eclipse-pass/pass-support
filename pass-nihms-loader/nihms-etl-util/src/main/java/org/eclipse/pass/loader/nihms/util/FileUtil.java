@@ -36,10 +36,6 @@ public class FileUtil {
         //never called
     }
 
-    private static final String NIHMS_DATA_DIR_PROPKEY = "nihmsetl.data.dir";
-
-    private static final String DEFAULT_DATA_FOLDER = "/data";
-
     /**
      * Gets directory that the app was run from
      *
@@ -66,23 +62,6 @@ public class FileUtil {
                                                              getCurrentDirectory() + "/" + defaultFileName);
         File configDirectory = new File(configFilePath);
         return configDirectory;
-    }
-
-    /**
-     * Selects the directory that data will be downloaded to or read from.
-     * Uses system property first, if none then use environment variable, otherwise default to ./data
-     *
-     * @return the path to the download directory
-     */
-    public static File getDataDirectory() {
-        String currDirectoryPath = getCurrentDirectory();
-        String dataFilePath = ConfigUtil.getSystemProperty(NIHMS_DATA_DIR_PROPKEY,
-                                                           getCurrentDirectory() + "/" + DEFAULT_DATA_FOLDER);
-        if (dataFilePath == null) {
-            dataFilePath = currDirectoryPath + DEFAULT_DATA_FOLDER;
-        }
-        File downloadDirectory = new File(dataFilePath);
-        return downloadDirectory;
     }
 
     /**

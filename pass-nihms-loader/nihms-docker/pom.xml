@@ -29,7 +29,7 @@
               <outputDirectory>target</outputDirectory>
               <resources>
                 <resource>
-                  <directory>../nihms-data-harvest-cli/target</directory>
+                  <directory>../nihms-data-harvest/target</directory>
                   <includes>
                     <include>nihms-data-harvest-cli-exec.jar</include>
                   </includes>

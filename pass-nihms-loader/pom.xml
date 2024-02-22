@@ -13,7 +13,6 @@
     <modules>
         <module>entrez-pmid-lookup</module>
         <module>nihms-data-harvest</module>
-        <module>nihms-data-harvest-cli</module>
         <module>nihms-data-transform-load</module>
         <module>nihms-docker</module>
         <module>nihms-etl-model</module>
@@ -23,6 +22,8 @@
 
     <properties>
         <!-- Properties for dependency versions -->
+        <spring-boot-maven-plugin.version>3.2.1</spring-boot-maven-plugin.version>
+        <awsspring.version>3.1.0</awsspring.version>
         <http-client.version>4.5.14</http-client.version>
         <org-json.version>20231013</org-json.version>
         <commons.csv.version>1.10.0</commons.csv.version>
@@ -81,6 +82,14 @@
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
                 <version>${org-json.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- Test dependencies -->
@@ -225,6 +234,10 @@
                         <phase>test-compile</phase>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
+                            <ignoredDependencies>
+                                <!-- These come from bundled jars -->
+                                <ignoredDependency>org.springframework*::</ignoredDependency>
+                            </ignoredDependencies>
                             <ignoredUsedUndeclaredDependencies>
                                 <!-- These both come from junit-jupiter, so version is tied to that direct dependency -->
                                 <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>
