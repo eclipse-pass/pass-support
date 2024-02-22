@@ -51,20 +51,6 @@ public class FileUtil {
     }
 
     /**
-     * Selects the path of the config file to load properties from. Uses system property first with key provided first,
-     * if none then uses environment variable, otherwise default to current folder
-     * @param filepathKey the system property key to use
-     * @param defaultFileName the default filename to use of the configuration file
-     * @return the path to the config file
-     */
-    public static File getConfigFilePath(String filepathKey, String defaultFileName) {
-        String configFilePath = ConfigUtil.getSystemProperty(filepathKey,
-                                                             getCurrentDirectory() + "/" + defaultFileName);
-        File configDirectory = new File(configFilePath);
-        return configDirectory;
-    }
-
-    /**
      * Retrieve a list of files in a directory, filter by directory
      *
      * @param directory the directory
@@ -75,7 +61,7 @@ public class FileUtil {
         try {
             filepaths = Files.list(directory)
                              .filter(FILTER_GENERAL)
-                             .filter(FILTER_CSV)
+                             .filter(path -> path.getFileName().toString().endsWith(".csv"))
                              .map(Path::toAbsolutePath)
                              .collect(toList());
         } catch (Exception ex) {
@@ -90,19 +76,11 @@ public class FileUtil {
      */
     private static Predicate<Path> FILTER_GENERAL = path -> {
         PathMatcher pathFilter = p -> true;
-        String filterProp = ConfigUtil.getSystemProperty("filter", null);
+        String filterProp = System.getProperty("filter", null);
         if (filterProp != null) {
             pathFilter = FileSystems.getDefault().getPathMatcher("glob:" + filterProp);
         }
         return pathFilter.matches(path.getFileName());
-    };
-
-    /**
-     * Calculate filter based on whether there is a filter system property, and whether the file is appended
-     * with ".done" which signals the file was processed
-     */
-    private static Predicate<Path> FILTER_CSV = path -> {
-        return path.getFileName().toString().endsWith(".csv");
     };
 
     /**

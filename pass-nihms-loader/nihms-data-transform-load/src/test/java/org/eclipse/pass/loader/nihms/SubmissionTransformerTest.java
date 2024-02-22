@@ -33,7 +33,6 @@ import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -53,6 +52,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for NIHMS Transformer code
@@ -83,22 +83,17 @@ public class SubmissionTransformerTest {
 
     private static final String pmcIdTemplateUrl = "https://example.com/pmc/pmc%s";
 
-    @Mock
-    private NihmsPassClientService clientServiceMock;
-
-    @Mock
-    private PmidLookup pmidLookupMock;
-
-    @Mock
-    private PubMedEntrezRecord pubMedRecordMock;
+    @Mock private NihmsPassClientService clientServiceMock;
+    @Mock private PmidLookup pmidLookupMock;
+    @Mock private PubMedEntrezRecord pubMedRecordMock;
 
     private NihmsPublicationToSubmission transformer;
 
     @BeforeEach
     public void init() {
-        System.setProperty("nihms.pass.uri", nihmsRepositoryId);
-        System.setProperty("pmc.url.template", pmcIdTemplateUrl);
         transformer = new NihmsPublicationToSubmission(clientServiceMock, pmidLookupMock);
+        ReflectionTestUtils.setField(transformer, "nihmsRepositoryId", nihmsRepositoryId);
+        ReflectionTestUtils.setField(transformer, "pmcUrlTemplate", pmcIdTemplateUrl);
     }
 
     /**
@@ -129,7 +124,7 @@ public class SubmissionTransformerTest {
         SubmissionDTO dto = transformer.transform(pub);
 
         checkPmrValues(dto);
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
+        assertEquals(nihmsRepositoryId, dto.getSubmission().getRepositories().get(0).getId());
         assertNull(dto.getPublication().getId());
         assertNull(dto.getSubmission().getId());
         assertNull(dto.getRepositoryCopy());
@@ -165,7 +160,7 @@ public class SubmissionTransformerTest {
         SubmissionDTO dto = transformer.transform(pub);
 
         checkPmrValues(dto);
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
+        assertEquals(nihmsRepositoryId, dto.getSubmission().getRepositories().get(0).getId());
 
         assertNull(dto.getPublication().getId());
         assertNull(dto.getSubmission().getId());
@@ -208,7 +203,7 @@ public class SubmissionTransformerTest {
         SubmissionDTO dto = transformer.transform(pub);
 
         checkPmrValues(dto);
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
+        assertEquals(nihmsRepositoryId, dto.getSubmission().getRepositories().get(0).getId());
 
         assertEquals(true, dto.getSubmission().getSubmitted());
         assertNotNull(dto.getSubmission().getSubmittedDate());
@@ -284,7 +279,7 @@ public class SubmissionTransformerTest {
         assertEquals(grantId, dto.getSubmission().getGrants().get(0).getId());
         assertEquals(Source.PASS, dto.getSubmission().getSource());
         assertEquals(userId, dto.getSubmission().getSubmitter().getId());
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
+        assertEquals(nihmsRepositoryId, dto.getSubmission().getRepositories().get(0).getId());
 
         assertEquals(true, dto.getSubmission().getSubmitted());
         assertNotNull(dto.getSubmission().getSubmittedDate());
@@ -337,7 +332,7 @@ public class SubmissionTransformerTest {
         checkPmrValues(dto);
 
         assertEquals(false, dto.getSubmission().getSubmitted());
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), dto.getSubmission().getRepositories().get(0).getId());
+        assertEquals(nihmsRepositoryId, dto.getSubmission().getRepositories().get(0).getId());
         assertEquals(grant.getId(), dto.getSubmission().getGrants().get(0).getId());
         assertNull(dto.getSubmission().getSubmittedDate());
         assertNull(dto.getRepositoryCopy());
@@ -408,7 +403,7 @@ public class SubmissionTransformerTest {
         submission.setSubmittedDate(ZonedDateTime.now());
         submission.setPublication(publication);
 
-        Repository repository = new Repository(ConfigUtil.getNihmsRepositoryId());
+        Repository repository = new Repository(nihmsRepositoryId);
         List<Repository> repositories = new ArrayList<>();
         repositories.add(repository);
         submission.setRepositories(repositories);

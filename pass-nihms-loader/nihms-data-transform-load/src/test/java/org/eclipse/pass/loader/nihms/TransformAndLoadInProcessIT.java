@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -42,14 +41,10 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 
 /**
  * @author Karen Hanson
  */
-@ExtendWith(MockitoExtension.class)
 public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
     private final String nihmsId1 = "NIHMS987654321";
     private final String title = "Article A";
@@ -84,9 +79,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
 
         //load all new publication, repo copy and submission
         NihmsPublication pub = newInProcessNihmsPub(grant1, pmid1);
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //wait for publication to appear
         PassClientSelector<Publication> testPubSelector = new PassClientSelector<>(Publication.class);
@@ -106,7 +99,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
 
         //check fields in submission
         assertEquals(grant.getId(), submission.getGrants().get(0).getId());
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), submission.getRepositories().get(0).getId());
+        assertEquals(nihmsRepoId, submission.getRepositories().get(0).getId());
         assertEquals(1, submission.getRepositories().size());
         assertEquals(Source.OTHER, submission.getSource());
         assertTrue(submission.getSubmitted());
@@ -162,16 +155,14 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
 
         Deposit preexistingDeposit = new Deposit();
         preexistingDeposit.setDepositStatus(DepositStatus.SUBMITTED);
-        preexistingDeposit.setRepository(new Repository(ConfigUtil.getNihmsRepositoryId()));
+        preexistingDeposit.setRepository(new Repository(nihmsRepoId));
         preexistingDeposit.setSubmission(new Submission(preexistingSub.getId()));
         passClient.createObject(preexistingDeposit);
 
         //now we have an existing publication, deposit, and submission for same grant/repo...
         //do transform/load to make sure we get a repocopy and the deposit record is updated
         NihmsPublication pub = newInProcessNihmsPub(grant1, pmid1);
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //make sure we wait for submission, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getNihmsId()));
@@ -211,7 +202,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
                                     title);
     }
 
-    private Publication newPublication(String pmid1) throws Exception {
+    private Publication newPublication(String pmid1) {
         Publication publication = new Publication();
         publication.setDoi(doi);
         publication.setPmid(pmid1);
@@ -221,7 +212,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
     }
 
     private Submission newSubmission1(Grant grant, Publication pub, User user, boolean submitted,
-                                      SubmissionStatus status) throws Exception {
+                                      SubmissionStatus status) {
         Submission submission1 = new Submission();
 
         submission1.setGrants(List.of(grant));
@@ -230,7 +221,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
         submission1.setSource(Source.PASS);
         submission1.setSubmitted(submitted);
         submission1.setSubmissionStatus(status);
-        submission1.setRepositories(List.of(new Repository(ConfigUtil.getNihmsRepositoryId())));
+        submission1.setRepositories(List.of(new Repository(nihmsRepoId)));
 
         return submission1;
     }
@@ -240,7 +231,7 @@ public class TransformAndLoadInProcessIT extends NihmsSubmissionEtlITBase {
         assertNotNull(repoCopy);
         assertEquals(1, repoCopy.getExternalIds().size());
         assertEquals(nihmsId1, repoCopy.getExternalIds().get(0));
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), repoCopy.getRepository().getId());
+        assertEquals(nihmsRepoId, repoCopy.getRepository().getId());
         assertEquals(CopyStatus.IN_PROGRESS, repoCopy.getCopyStatus());
         assertNull(repoCopy.getAccessUrl());
     }

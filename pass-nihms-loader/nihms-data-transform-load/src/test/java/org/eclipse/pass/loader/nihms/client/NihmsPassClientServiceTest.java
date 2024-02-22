@@ -59,6 +59,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Tests many of the public methods in NihmsPassClientService.
@@ -86,13 +87,13 @@ public class NihmsPassClientServiceTest {
     private static final String title = "Article Title";
     private static final String nihmsId = "123456";
 
-    @Mock
-    private PassClient mockClient;
+    @Mock private PassClient mockClient;
     private NihmsPassClientService clientService;
 
     @BeforeEach
     public void initMocks() {
         clientService = new NihmsPassClientService(mockClient);
+        ReflectionTestUtils.setField(clientService, "nihmsRepoId", repositoryId);
         clientService.clearCache();
     }
 

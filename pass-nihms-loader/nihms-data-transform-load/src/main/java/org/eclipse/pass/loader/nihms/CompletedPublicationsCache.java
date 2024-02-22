@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 
 /**
@@ -42,15 +41,11 @@ public class CompletedPublicationsCache {
 
     private static CompletedPublicationsCache completedPubsSpace = null;
 
-    private static final String CACHEPATH_KEY = "nihmsetl.loader.cachepath";
-
     private static final String CACHEPATH_DEFAULT = "/cache/compliant-cache.data";
 
     private CompletedPublicationsCache() {
-        completedPubsCache = new HashSet<String>();
-        String sCacheFile = ConfigUtil.getSystemProperty(CACHEPATH_KEY,
-                                                         FileUtil.getCurrentDirectory() + CACHEPATH_DEFAULT);
-        cacheFile = new File(sCacheFile);
+        completedPubsCache = new HashSet<>();
+        cacheFile = new File(CACHEPATH_DEFAULT);
         loadFromFile();
     }
 

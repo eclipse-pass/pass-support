@@ -26,27 +26,20 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Creates / updates the Submission, RepositoryCopy, Publication, and Deposit in the database as needed
  *
  * @author Karen Hanson
  */
+@Component
 public class SubmissionLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionLoader.class);
 
-    private NihmsPassClientService clientService;
-
-    private SubmissionStatusService statusService;
-
-    /**
-     * Initiates with default client service
-     */
-    public SubmissionLoader() {
-        this.clientService = new NihmsPassClientService();
-        this.statusService = new SubmissionStatusService();
-    }
+    private final NihmsPassClientService clientService;
+    private final SubmissionStatusService statusService;
 
     /**
      * Supports initiation with specific client service

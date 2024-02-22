@@ -29,7 +29,6 @@ import java.util.UUID;
 import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
@@ -46,13 +45,10 @@ import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Karen Hanson
  */
-@ExtendWith(MockitoExtension.class)
 public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
     private final String pmcid1 = "PMC12345678";
     private final String title = "Article A";
@@ -86,7 +82,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         Grant testgrant = createGrant(awardNumber1, user);
 
-        Repository repo = new Repository(ConfigUtil.getNihmsRepositoryId());
+        Repository repo = new Repository(nihmsRepoId);
         passClient.createObject(repo);
 
         setMockPMRecord(pmid1);
@@ -98,9 +94,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //load all new publication, repo copy and submission
         NihmsPublication pub = newCompliantNihmsPub();
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //The pubmeb publication should be created during the transformAndLoadNihmsPub
         PassClientSelector<Publication> pmrPubSelector2 = new PassClientSelector<>(Publication.class);
@@ -122,7 +116,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         Submission submission = passClient.getObject(Submission.class, submissionId);
         //check fields in submission
         assertEquals(testgrant.getId(), submission.getGrants().get(0).getId());
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), submission.getRepositories().get(0).getId());
+        assertEquals(nihmsRepoId, submission.getRepositories().get(0).getId());
         assertEquals(1, submission.getRepositories().size());
         assertEquals(Source.OTHER, submission.getSource());
         assertTrue(submission.getSubmitted());
@@ -141,7 +135,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(CopyStatus.COMPLETE, repoCopy.getCopyStatus());
         assertTrue(repoCopy.getExternalIds().contains(pub.getNihmsId()));
         assertTrue(repoCopy.getExternalIds().contains(pub.getPmcId()));
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), repoCopy.getRepository().getId());
+        assertEquals(nihmsRepoId, repoCopy.getRepository().getId());
         assertTrue(repoCopy.getAccessUrl().toString().contains(pub.getPmcId()));
 
     }
@@ -182,9 +176,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //now we have an existing publication and submission for different grant/repo... do transform/load
         NihmsPublication pub = newCompliantNihmsPub();
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //get the submission, should only be one from the test
         subSelector.setFilter(RSQL.equals("grants.id", grant1.getId()));
@@ -208,7 +200,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         //check fields in new submission
         assertEquals(grant1.getId(), newSubmission.getGrants().get(0).getId());
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), newSubmission.getRepositories().get(0).getId());
+        assertEquals(nihmsRepoId, newSubmission.getRepositories().get(0).getId());
         assertEquals(1, newSubmission.getRepositories().size());
         assertEquals(Source.OTHER, newSubmission.getSource());
         assertTrue(newSubmission.getSubmitted());
@@ -262,9 +254,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         //now we have an existing publication and submission for same grant/repo... do transform/load to make sure we
         // get a repocopy
         NihmsPublication pub = newCompliantNihmsPub();
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //make sure we wait for RepositoryCopy, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
@@ -332,9 +322,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         // now we have an existing publication and unsubmitted submission for same grant/repo... do transform/load to
         // make sure we get a repocopy and submission status changes
         NihmsPublication pub = newCompliantNihmsPub();
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //make sure we wait for RepositoryCopy, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
@@ -399,7 +387,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         nihmsPassClientService.createSubmission(preexistingSub);
 
         PassClientSelector<Repository> nihmsRepoSel = new PassClientSelector<>(Repository.class);
-        nihmsRepoSel.setFilter(RSQL.equals("id", ConfigUtil.getNihmsRepositoryId()));
+        nihmsRepoSel.setFilter(RSQL.equals("id", nihmsRepoId));
         Repository nihmsRepo = passClient.streamObjects(nihmsRepoSel).findAny().orElseThrow();
 
         Deposit preexistingDeposit = new Deposit();
@@ -413,9 +401,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         //now we have an existing publication, deposit, and submission for same grant/repo...
         //do transform/load to make sure we get a repocopy and the deposit record is updated
         NihmsPublication pub = newCompliantNihmsPub();
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //make sure we wait for repoCopy, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
@@ -493,9 +479,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         // now we have an existing publication and submission for same grant/repo... do transform/load to make sure we
         // get a repocopy
         NihmsPublication pub = newCompliantNihmsPub();
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //wait for repoCopy to update
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getPmcId()));
@@ -540,7 +524,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
 
         Grant testGrant = createGrant(awardNumber1, user);
 
-        Repository repo = new Repository(ConfigUtil.getNihmsRepositoryId());
+        Repository repo = new Repository(nihmsRepoId);
         passClient.createObject(repo);
 
         setMockPMRecord(pmid1);
@@ -569,7 +553,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         RepositoryCopy rc = new RepositoryCopy();
         rc.setPublication(publication);
         rc.setCopyStatus(CopyStatus.IN_PROGRESS);
-        rc.setRepository(new Repository(ConfigUtil.getNihmsRepositoryId()));
+        rc.setRepository(new Repository(nihmsRepoId));
 
         passClient.createObject(rc);
 
@@ -579,14 +563,11 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         deposit.setDepositStatusRef(NihmsPassClientService.NIHMS_DEP_STATUS_REF_PREFIX + pub.getRawNihmsId());
         deposit.setSubmission(submission);
         deposit.setRepositoryCopy(rc);
-        deposit.setRepository(new Repository(ConfigUtil.getNihmsRepositoryId()));
+        deposit.setRepository(new Repository(nihmsRepoId));
         deposit.setDepositStatus(DepositStatus.SUBMITTED);
 
         passClient.createObject(deposit);
-
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         submission = passClient.getObject(submission);
         deposit = passClient.getObject(deposit);
@@ -623,7 +604,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         submission1.setSource(Source.OTHER);
         submission1.setSubmitted(submitted);
         submission1.setSubmissionStatus(status);
-        submission1.getRepositories().add(new Repository(ConfigUtil.getNihmsRepositoryId()));
+        submission1.getRepositories().add(new Repository(nihmsRepoId));
 
         return submission1;
     }
@@ -644,7 +625,7 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         submission2.setSource(Source.PASS);
         submission2.setSubmitted(submitted);
         submission2.setSubmissionStatus(status);
-        submission2.getRepositories().add(new Repository(ConfigUtil.getNihmsRepositoryId()));
+        submission2.getRepositories().add(new Repository(nihmsRepoId));
         submission2.getRepositories().add(repo);
 
         return submission2;
@@ -657,13 +638,13 @@ public class TransformAndLoadCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(CopyStatus.COMPLETE, repoCopy.getCopyStatus());
         assertTrue(repoCopy.getExternalIds().contains(nihmsId1));
         assertTrue(repoCopy.getExternalIds().contains(pmcid1));
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), repoCopy.getRepository().getId());
+        assertEquals(nihmsRepoId, repoCopy.getRepository().getId());
         assertTrue(repoCopy.getAccessUrl().toString().contains(pmcid1));
     }
 
     private Repository getNihmsRepo() throws IOException {
         PassClientSelector<Repository> nihmsRepoSel = new PassClientSelector<>(Repository.class);
-        nihmsRepoSel.setFilter(RSQL.equals("id", ConfigUtil.getNihmsRepositoryId()));
+        nihmsRepoSel.setFilter(RSQL.equals("id", nihmsRepoId));
         return passClient.streamObjects(nihmsRepoSel).findFirst().orElseThrow();
     }
 }

@@ -32,7 +32,6 @@ import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -45,6 +44,8 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Does the heavy lifting of data transform work, converting a NihmsPublication to a
@@ -52,50 +53,21 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karen Hanson
  */
+@Component
 public class NihmsPublicationToSubmission {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPublicationToSubmission.class);
 
-    private static final String PMC_URL_TEMPLATE_KEY = "nihmsetl.pmcurl.template";
-    private static final String PMC_URL_TEMPLATE_DEFAULT = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s/";
-
     private static final String NIHMS_CSV_DATE_PATTERN = "M/d/yyyy";
 
-    /**
-     * The Nihms client service communicates with the Pass Client to perform database interactions for the
-     * NIHMS loader
-     */
-    private NihmsPassClientService clientService;
+    private final NihmsPassClientService clientService;
+    private final PmidLookup pmidLookup;
 
-    /**
-     * Service for looking up PMID
-     */
-    private PmidLookup pmidLookup;
-
-    /**
-     * ID for the NIHMS repository, this should be set as a property
-     */
+    @Value("${nihmsetl.repository.id}")
     private String nihmsRepositoryId;
 
-    /**
-     * PMC URL template is used with String.format() to pass a PMCID into.
-     * This in turn forms the accessUrl for the deposited item
-     */
+    @Value("${nihmsetl.pmcurl.template}")
     private String pmcUrlTemplate;
-
-    /**
-     * Captures information needed to generate Submission using Submission Loader.
-     */
-    private SubmissionDTO submissionDTO;
-
-    /**
-     * Constructor uses defaults for client service and pmid lookup
-     */
-    public NihmsPublicationToSubmission() {
-        this.pmidLookup = new PmidLookup();
-        this.clientService = new NihmsPassClientService();
-        setProperties();
-    }
 
     /**
      * Constructor initiates with the required NIHMS Client Service and PMID lookup
@@ -105,20 +77,8 @@ public class NihmsPublicationToSubmission {
      * @param pmidLookup    Entrez client
      */
     public NihmsPublicationToSubmission(NihmsPassClientService clientService, PmidLookup pmidLookup) {
-        if (clientService == null) {
-            throw new RuntimeException("NihmsPassClientService cannot be null");
-        }
-        if (pmidLookup == null) {
-            throw new RuntimeException("PmidLookup cannot be null");
-        }
         this.pmidLookup = pmidLookup;
         this.clientService = clientService;
-        setProperties();
-    }
-
-    private void setProperties() {
-        this.pmcUrlTemplate = ConfigUtil.getSystemProperty(PMC_URL_TEMPLATE_KEY, PMC_URL_TEMPLATE_DEFAULT);
-        this.nihmsRepositoryId = ConfigUtil.getNihmsRepositoryId();
     }
 
     /**
@@ -139,17 +99,17 @@ public class NihmsPublicationToSubmission {
         }
 
         //this stage will be all about building up the DTO
-        submissionDTO = new SubmissionDTO();
+        SubmissionDTO submissionDTO = new SubmissionDTO();
         submissionDTO.setGrantId(grant.getId());
 
-        Publication publication = retrieveOrCreatePublication(pub);
+        Publication publication = retrieveOrCreatePublication(pub, submissionDTO);
         submissionDTO.setPublication(publication);
 
-        RepositoryCopy repoCopy = retrieveOrCreateRepositoryCopy(pub, publication.getId());
+        RepositoryCopy repoCopy = retrieveOrCreateRepositoryCopy(pub, publication.getId(), submissionDTO);
         submissionDTO.setRepositoryCopy(repoCopy);
 
         Submission submission = retrieveOrCreateSubmission(publication.getId(), grant, repoCopy, pub.getNihmsStatus(),
-                                                           pub.getFileDepositedDate());
+                                                           pub.getFileDepositedDate(), submissionDTO);
         submissionDTO.setSubmission(submission);
 
         return submissionDTO;
@@ -161,7 +121,8 @@ public class NihmsPublicationToSubmission {
     //
     //****************************************************
 
-    private Publication retrieveOrCreatePublication(NihmsPublication nihmsPub) throws IOException {
+    private Publication retrieveOrCreatePublication(NihmsPublication nihmsPub, SubmissionDTO submissionDTO)
+        throws IOException {
         //use pmid to get additional metadata from Entrez. Need this for DOI, maybe other fields too
         String pmid = nihmsPub.getPmid();
         String doi = null;
@@ -261,7 +222,8 @@ public class NihmsPublicationToSubmission {
     //
     //****************************************************
 
-    private RepositoryCopy retrieveOrCreateRepositoryCopy(NihmsPublication pub, String publicationId)
+    private RepositoryCopy retrieveOrCreateRepositoryCopy(NihmsPublication pub, String publicationId,
+                                                          SubmissionDTO submissionDTO)
             throws IOException {
         RepositoryCopy repoCopy = null;
         if (publicationId != null) {
@@ -340,7 +302,8 @@ public class NihmsPublicationToSubmission {
     //****************************************************
 
     private Submission retrieveOrCreateSubmission(String publicationId, Grant grant, RepositoryCopy repoCopy,
-                                                  NihmsStatus nihmsStatus, String depositedDate) throws IOException {
+                                                  NihmsStatus nihmsStatus, String depositedDate,
+                                                  SubmissionDTO submissionDTO) throws IOException {
         boolean hasRepoCopy = repoCopy != null;
         Submission submission = null;
         String grantId = grant.getId();
@@ -354,7 +317,7 @@ public class NihmsPublicationToSubmission {
                 // making a new one
                 List<Submission> nihmsSubmissions = submissions.stream()
                         .filter(s -> s.getRepositories().stream()
-                                .anyMatch(repo -> ConfigUtil.getNihmsRepositoryId().equals(repo.getId()))).toList();
+                                .anyMatch(repo -> nihmsRepositoryId.equals(repo.getId()))).toList();
 
                 if (nihmsSubmissions.size() == 1) {
                     submission = nihmsSubmissions.get(0);

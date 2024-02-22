@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -86,9 +85,7 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
 
         //load all new publication, repo copy and submission
         NihmsPublication pub = newNonCompliantNihmsPub(pmid1, grant1_award_num);
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //wait for new publication to appear
         PassClientSelector<Publication> testPubSelector = new PassClientSelector<>(Publication.class);
@@ -109,7 +106,7 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
 
         //check fields in submission
         assertEquals(grant1.getId(), submission.getGrants().get(0).getId());
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), submission.getRepositories().get(0).getId());
+        assertEquals(nihmsRepoId, submission.getRepositories().get(0).getId());
         assertEquals(1, submission.getRepositories().size());
         assertEquals(Source.OTHER, submission.getSource());
         assertFalse(submission.getSubmitted());
@@ -158,16 +155,14 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
 
         Deposit preexistingDeposit = new Deposit();
         preexistingDeposit.setDepositStatus(DepositStatus.SUBMITTED);
-        preexistingDeposit.setRepository(new Repository(ConfigUtil.getNihmsRepositoryId()));
+        preexistingDeposit.setRepository(new Repository(nihmsRepoId));
         preexistingDeposit.setSubmission(preexistingSub);
         passClient.createObject(preexistingDeposit);
 
         //now we have an existing publication, deposit, and submission for same grant/repo...
         //do transform/load to make sure we get a stalled repocopy and the deposit record is updated
         NihmsPublication pub = newNonCompliantStalledNihmsPub(pmid1, grant1_award_num);
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         //make sure we wait for submission, should only be one from the test
         repoCopySelector.setFilter(RSQL.hasMember("externalIds", pub.getNihmsId()));
@@ -258,15 +253,13 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         //now we have an existing publication, submission for same user/publication...
         //do transform/load to make sure we get an updated submission that includes grant/repo
         NihmsPublication pub = newNonCompliantNihmsPub(pmid1, grant1_award_num);
-        NihmsTransformLoadService transformLoadService = new NihmsTransformLoadService(nihmsPassClientService,
-                                                                                       mockPmidLookup, statusService);
-        transformLoadService.transformAndLoadNihmsPub(pub);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
         Submission reloadedPreexistingSub = nihmsPassClientService.readSubmission(preexistingSub.getId());
         assertFalse(reloadedPreexistingSub.getSubmitted());
 
         assertTrue(reloadedPreexistingSub.getRepositories().stream().map(PassEntity::getId).
-                anyMatch(k -> k.equals(ConfigUtil.getNihmsRepositoryId())));
+                anyMatch(k -> k.equals(nihmsRepoId)));
 
         assertTrue(reloadedPreexistingSub.getRepositories().contains(testRepo));
         assertEquals(2, reloadedPreexistingSub.getRepositories().size());
@@ -322,7 +315,7 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         submission1.setSource(Source.OTHER);
         submission1.setSubmitted(submitted);
         submission1.setSubmissionStatus(status);
-        submission1.setRepositories(List.of(new Repository(ConfigUtil.getNihmsRepositoryId())));
+        submission1.setRepositories(List.of(new Repository(nihmsRepoId)));
 
         return submission1;
     }
@@ -333,7 +326,7 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         assertNotNull(repoCopy);
         assertEquals(1, repoCopy.getExternalIds().size());
         assertEquals(nihmsId1, repoCopy.getExternalIds().get(0));
-        assertEquals(ConfigUtil.getNihmsRepositoryId(), repoCopy.getRepository().getId());
+        assertEquals(nihmsRepoId, repoCopy.getRepository().getId());
         assertNull(repoCopy.getAccessUrl());
     }
 
