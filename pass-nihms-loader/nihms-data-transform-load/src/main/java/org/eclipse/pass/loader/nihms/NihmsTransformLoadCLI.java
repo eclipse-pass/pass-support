@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Johns Hopkins University
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.eclipse.pass.loader.nihms;
 
 import java.util.HashSet;
@@ -7,13 +22,17 @@ import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * NIHMS Submission Loader CLI
  *
  * @author Karen Hanson
  */
-public class NihmsTransformLoadCLI {
+@SpringBootApplication
+public class NihmsTransformLoadCLI implements CommandLineRunner {
 
     /**
      *
@@ -53,54 +72,42 @@ public class NihmsTransformLoadCLI {
                     "will be processed.")
     private boolean inProcess = false;
 
-    /**
-     * This is the main entry point for the NihmsTransformLoadCLI application.
-     * The method processes the command line arguments, determines the Nihms statuses to be processed,
-     * and initializes and runs the NihmsTransformLoadApp.
-     *
-     * <p>Command line arguments are used to select the statuses to process.
-     * If the 'help' argument is specified, usage information will be printed and the application will terminate.
-     *
-     * <p>If there are issues with the provided command line arguments, a message detailing the error
-     * will be printed, followed by the usage information. The application will then terminate with an exit code of 1.
-     *
-     * <p>Other exceptions that may occur during the execution of the application are caught and their stack trace is
-     * printed, followed by the exception's message. The application will then terminate with an exit code of 1.
-     *
-     * @param args command line arguments
-     */
+    private final NihmsTransformLoadService nihmsTransformLoadService;
+
     public static void main(String[] args) {
+        SpringApplication.run(NihmsTransformLoadCLI.class, args);
+    }
 
-        final NihmsTransformLoadCLI application = new NihmsTransformLoadCLI();
-        CmdLineParser parser = new CmdLineParser(application);
+    public NihmsTransformLoadCLI(NihmsTransformLoadService nihmsTransformLoadService) {
+        this.nihmsTransformLoadService = nihmsTransformLoadService;
+    }
 
-        Set<NihmsStatus> statusesToProcess = new HashSet<NihmsStatus>();
-
+    @Override
+    public void run(String... args) {
+        CmdLineParser parser = new CmdLineParser(this);
         try {
-
             parser.parseArgument(args);
             /* Handle general options such as help, version */
-            if (application.help) {
+            if (this.help) {
                 parser.printUsage(System.err);
                 System.err.println();
                 System.exit(0);
             }
 
+            Set<NihmsStatus> statusesToProcess = new HashSet<>();
             //select statuses to process
-            if (application.compliant) {
+            if (this.compliant) {
                 statusesToProcess.add(NihmsStatus.COMPLIANT);
             }
-            if (application.nonCompliant) {
+            if (this.nonCompliant) {
                 statusesToProcess.add(NihmsStatus.NON_COMPLIANT);
             }
-            if (application.inProcess) {
+            if (this.inProcess) {
                 statusesToProcess.add(NihmsStatus.IN_PROCESS);
             }
 
             /* Run the package generation application proper */
-            NihmsTransformLoadApp app = new NihmsTransformLoadApp(statusesToProcess);
-            app.run();
-            System.exit((0));
+            nihmsTransformLoadService.transformAndLoadFiles(statusesToProcess);
 
         } catch (CmdLineException e) {
             /**

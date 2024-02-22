@@ -17,7 +17,7 @@ package org.eclipse.pass.loader.nihms;
 
 import java.io.IOException;
 
-import org.eclipse.pass.client.nihms.NihmsPassClientService;
+import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;

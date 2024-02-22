@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.entrez;
+package org.eclipse.pass.loader.nihms.entrez;
 
 import java.io.IOException;
 import java.net.URI;
@@ -33,6 +33,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Service to retrieve a PMID records from Entrez. If you prefer to avoid dealing with JSON,
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * @author Karen Hanson
  * @version $Id$
  */
+@Component
 public class PmidLookup {
 
     private static final Logger LOG = LoggerFactory.getLogger(PmidLookup.class);

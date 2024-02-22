@@ -27,14 +27,16 @@ import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.pass.client.nihms.NihmsPassClientService;
-import org.eclipse.pass.entrez.PmidLookup;
+import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
+import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Service that takes a filepath, gets the csvs there, and transforms/loads the data according to a
@@ -42,40 +44,32 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karen Hanson
  */
+@Service
 public class NihmsTransformLoadService {
 
     private static Logger LOG = LoggerFactory.getLogger(NihmsTransformLoadService.class);
 
-    private NihmsPassClientService nihmsPassClient;
-
-    private PmidLookup pmidLookup;
-
     private static CompletedPublicationsCache completedPubsCache;
 
-    private SubmissionStatusService statusService;
+    @Value("${nihmsetl.data.dir}")
+    private String downloadDirectory;
 
-    /**
-     * Default constructor for NihmsTransformLoadService
-     */
-    public NihmsTransformLoadService() {
-        nihmsPassClient = new NihmsPassClientService();
-        pmidLookup = new PmidLookup();
-        statusService = new SubmissionStatusService();
-        completedPubsCache = CompletedPublicationsCache.getInstance();
-    }
+    private final NihmsPassClientService nihmsPassClient;
+    private final PmidLookup pmidLookup;
+    private final SubmissionStatusService submissionStatusService;
 
     /**
      * Option to inject dependencies
      *
      * @param passClientService the NihmsPassClientService instance to use
      * @param pmidLookup        the PmidLookup instance to use
-     * @param statusService     the SubmissionStatusService instance to use
+     * @param submissionStatusService     the SubmissionStatusService instance to use
      */
     public NihmsTransformLoadService(NihmsPassClientService passClientService, PmidLookup pmidLookup,
-                                     SubmissionStatusService statusService) {
+                                     SubmissionStatusService submissionStatusService) {
         this.nihmsPassClient = passClientService;
         this.pmidLookup = pmidLookup;
-        this.statusService = statusService;
+        this.submissionStatusService = submissionStatusService;
         completedPubsCache = CompletedPublicationsCache.getInstance();
     }
 
@@ -86,13 +80,12 @@ public class NihmsTransformLoadService {
      * @param statusesToProcess if null or empty, all statuses will be processed.
      */
     public void transformAndLoadFiles(Set<NihmsStatus> statusesToProcess) {
-        // TODO fix
-        File dataDirectory = new File("");
+        File dataDirectory = new File(downloadDirectory);
         if (dataDirectory == null) {
             throw new RuntimeException("dataDirectory cannot be empty");
         }
         if (CollectionUtils.isEmpty(statusesToProcess)) {
-            statusesToProcess = new HashSet<NihmsStatus>();
+            statusesToProcess = new HashSet<>();
             statusesToProcess.addAll(EnumSet.allOf(NihmsStatus.class));
         }
 
@@ -123,17 +116,7 @@ public class NihmsTransformLoadService {
         }
     }
 
-    /**
-     * Takes pub record from CSV loader, transforms it then passes transformed record to the
-     * loader. Exceptions generally should not be caught here, they should be caught by CSV processor which
-     * tallies the successes/failures. The only Exception caught is UpdateConflictException, which is easy to
-     * recover from. On catching an UpdateConflictException, it will attempt several retries before failing and
-     * moving on
-     *
-     * @param pub the NihmsPublication object
-     * @throws IOException if there is an error transforming or loading the publication
-     */
-    public void transformAndLoadNihmsPub(NihmsPublication pub) throws IOException {
+    void transformAndLoadNihmsPub(NihmsPublication pub) throws IOException {
         final int MAX_ATTEMPTS = 3; //applies to UpdateConflictExceptions only, which can be recovered from
         int attempt = 0;
 
@@ -153,7 +136,7 @@ public class NihmsTransformLoadService {
                                                                                             pmidLookup);
                 SubmissionDTO transformedRecord = transformer.transform(pub);
                 if (transformedRecord.doUpdate()) {
-                    SubmissionLoader loader = new SubmissionLoader(nihmsPassClient, statusService);
+                    SubmissionLoader loader = new SubmissionLoader(nihmsPassClient, submissionStatusService);
                     loader.load(transformedRecord);
                 } else {
                     LOG.info("No update required for PMID {} with award number {}", pub.getPmid(),

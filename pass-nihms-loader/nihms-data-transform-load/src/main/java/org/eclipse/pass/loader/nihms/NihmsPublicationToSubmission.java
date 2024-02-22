@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.pass.client.nihms.NihmsPassClientService;
-import org.eclipse.pass.entrez.PmidLookup;
-import org.eclipse.pass.entrez.PubMedEntrezRecord;
+import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
+import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
+import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;

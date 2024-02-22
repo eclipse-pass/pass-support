@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.client.nihms;
+package org.eclipse.pass.loader.nihms.client;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -23,11 +23,11 @@ import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.pass.client.nihms.cache.GrantIdCache;
-import org.eclipse.pass.client.nihms.cache.NihmsDepositIdCache;
-import org.eclipse.pass.client.nihms.cache.NihmsRepositoryCopyIdCache;
-import org.eclipse.pass.client.nihms.cache.PublicationIdCache;
-import org.eclipse.pass.client.nihms.cache.UserPubSubmissionsCache;
+import org.eclipse.pass.loader.nihms.client.cache.GrantIdCache;
+import org.eclipse.pass.loader.nihms.client.cache.NihmsDepositIdCache;
+import org.eclipse.pass.loader.nihms.client.cache.NihmsRepositoryCopyIdCache;
+import org.eclipse.pass.loader.nihms.client.cache.PublicationIdCache;
+import org.eclipse.pass.loader.nihms.client.cache.UserPubSubmissionsCache;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
@@ -43,12 +43,14 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 /**
  * NIHMS PASS client service deals with interactions with the data via the PASS client and controls local data caches
  *
  * @author Karen Hanson
  */
+@Service
 public class NihmsPassClientService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPassClientService.class);

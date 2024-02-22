@@ -28,9 +28,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.pass.client.nihms.NihmsPassClientService;
-import org.eclipse.pass.entrez.PmidLookup;
-import org.eclipse.pass.entrez.PubMedEntrezRecord;
+import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
+import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
+import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;

@@ -12,6 +12,13 @@
 
   <name>NIHMS Data Transform/Load</name>
 
+  <properties>
+    <pass.core.port>8080</pass.core.port>
+    <pass.core.url>http://localhost:8080</pass.core.url>
+    <pass.core.user>backend</pass.core.user>
+    <pass.core.password>backend</pass.core.password>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.eclipse.pass</groupId>
@@ -39,12 +46,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.pass</groupId>
-      <artifactId>nihms-pass-client</artifactId>
-      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
@@ -87,8 +88,25 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>${http-client.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
     </dependency>
 
     <!-- Test dependencies -->
@@ -136,34 +154,18 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.0.0</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>org.eclipse.pass.loader.nihms.NihmsTransformLoadCLI</mainClass>
+          <finalName>nihms-data-transform-load</finalName>
+          <classifier>exec</classifier>
+        </configuration>
         <executions>
           <execution>
             <goals>
-              <goal>shade</goal>
+              <goal>repackage</goal>
             </goals>
-            <configuration>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <finalName>nihms-data-transform-load-exec</finalName>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.eclipse.pass.loader.nihms.NihmsTransformLoadCLI</mainClass>
-                </transformer>
-              </transformers>
-              <filters>
-                <filter>
-                  <!-- filter out signature files from signed dependencies, else repackaging fails with security ex -->
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-            </configuration>
           </execution>
         </executions>
       </plugin>

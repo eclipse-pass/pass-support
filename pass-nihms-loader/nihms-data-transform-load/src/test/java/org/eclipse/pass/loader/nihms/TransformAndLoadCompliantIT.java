@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.eclipse.pass.client.nihms.NihmsPassClientService;
+import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
