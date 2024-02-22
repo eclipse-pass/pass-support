@@ -46,19 +46,19 @@ public class NihmsTransformLoadService {
 
     private static Logger LOG = LoggerFactory.getLogger(NihmsTransformLoadService.class);
 
-    private static CompletedPublicationsCache completedPubsCache;
-
     @Value("${nihmsetl.data.dir}")
     private String downloadDirectory;
 
     private final NihmsPublicationToSubmission nihmsPublicationToSubmission;
     private final SubmissionLoader submissionLoader;
+    private final CompletedPublicationsCache completedPublicationsCache;
 
     public NihmsTransformLoadService(SubmissionLoader submissionLoader,
-                                     NihmsPublicationToSubmission nihmsPublicationToSubmission) {
+                                     NihmsPublicationToSubmission nihmsPublicationToSubmission,
+                                     CompletedPublicationsCache completedPublicationsCache) {
         this.submissionLoader = submissionLoader;
         this.nihmsPublicationToSubmission = nihmsPublicationToSubmission;
-        completedPubsCache = CompletedPublicationsCache.getInstance();
+        this.completedPublicationsCache = completedPublicationsCache;
     }
 
     /**
@@ -110,7 +110,7 @@ public class NihmsTransformLoadService {
 
         // if the record is compliant, let's check the cache to see if it has been processed previously
         if (pub.getNihmsStatus().equals(NihmsStatus.COMPLIANT)
-            && completedPubsCache.contains(pub.getPmid(), pub.getGrantNumber())) {
+            && completedPublicationsCache.contains(pub.getPmid(), pub.getGrantNumber())) {
             LOG.info(
                 "Compliant NIHMS record with pmid {} and award number \"{}\" has been processed in a previous load",
                 pub.getPmid(), pub.getGrantNumber());
@@ -149,7 +149,7 @@ public class NihmsTransformLoadService {
         if (pub.getNihmsStatus().equals(NihmsStatus.COMPLIANT)
             && StringUtils.isNotEmpty(pub.getPmcId())) {
             //add to cache so it doesn't check it again once it has been processed and has a pmcid assigned
-            completedPubsCache.add(pub.getPmid(), pub.getGrantNumber());
+            completedPublicationsCache.add(pub.getPmid(), pub.getGrantNumber());
             LOG.debug("Added pmid {} and grant \"{}\" to cache", pub.getPmid(), pub.getGrantNumber());
         }
     }

@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
+import org.springframework.stereotype.Component;
 
 /**
  * This controls a simple local text file containing a list of compliant "pmid|grantNumber" combinations
@@ -33,31 +34,18 @@ import org.eclipse.pass.loader.nihms.util.FileUtil;
  *
  * @author Karen Hanson
  */
+@Component
 public class CompletedPublicationsCache {
+    private static final String CACHEPATH_DEFAULT = "/cache/compliant-cache.data";
 
     private Set<String> completedPubsCache;
 
-    private File cacheFile;
+    private final File cacheFile;
 
-    private static CompletedPublicationsCache completedPubsSpace = null;
-
-    private static final String CACHEPATH_DEFAULT = "/cache/compliant-cache.data";
-
-    private CompletedPublicationsCache() {
+    public CompletedPublicationsCache() {
         completedPubsCache = new HashSet<>();
-        cacheFile = new File(CACHEPATH_DEFAULT);
+        cacheFile = new File(FileUtil.getCurrentDirectory() + CACHEPATH_DEFAULT);
         loadFromFile();
-    }
-
-    /**
-     * Get singleton instance of cache
-     * @return the singleton instance
-     */
-    public static synchronized CompletedPublicationsCache getInstance() {
-        if (completedPubsSpace == null) {
-            completedPubsSpace = new CompletedPublicationsCache();
-        }
-        return completedPubsSpace;
     }
 
     /**

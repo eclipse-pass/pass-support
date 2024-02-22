@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
-import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Tests CompletedPublicationsCache class
@@ -35,14 +35,11 @@ import org.junit.jupiter.api.Test;
  */
 public class CompletedPublicationsCacheTest {
 
-    private static CompletedPublicationsCache completedPubsCache;
-    private String cachepath;
+    private CompletedPublicationsCache completedPubsCache;
 
     @BeforeEach
     public void startup() {
-        cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
-        System.setProperty("nihmsetl.loader.cachepath", cachepath);
-        completedPubsCache = CompletedPublicationsCache.getInstance();
+        completedPubsCache = new CompletedPublicationsCache();
     }
 
     @AfterEach
@@ -122,7 +119,8 @@ public class CompletedPublicationsCacheTest {
         assertTrue(completedPubsCache.contains(pmid1, awardNum1));
         assertTrue(completedPubsCache.contains(pmid2, awardNum2));
 
-        List<String> processed = Files.readAllLines(Paths.get(cachepath));
+        File cacheFile = (File) ReflectionTestUtils.getField(completedPubsCache, "cacheFile");
+        List<String> processed = Files.readAllLines(cacheFile.toPath());
         assertEquals(2, processed.size());
     }
 
