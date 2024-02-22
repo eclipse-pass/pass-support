@@ -16,7 +16,7 @@
  *
  */
 
-package org.eclipse.pass.client.nihms;
+package org.eclipse.pass.loader.nihms.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

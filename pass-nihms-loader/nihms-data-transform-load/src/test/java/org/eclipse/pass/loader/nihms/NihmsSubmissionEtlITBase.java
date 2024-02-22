@@ -28,9 +28,9 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.pass.client.nihms.NihmsPassClientService;
-import org.eclipse.pass.entrez.PmidLookup;
-import org.eclipse.pass.entrez.PubMedEntrezRecord;
+import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
+import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
+import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.eclipse.pass.support.client.ModelUtil;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.client.nihms.cache;
+package org.eclipse.pass.loader.nihms.client.cache;
 
 import java.util.HashMap;
 import java.util.HashSet;

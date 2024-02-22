@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import org.eclipse.pass.client.nihms.NihmsPassClientService;
+import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
 import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.CopyStatus;

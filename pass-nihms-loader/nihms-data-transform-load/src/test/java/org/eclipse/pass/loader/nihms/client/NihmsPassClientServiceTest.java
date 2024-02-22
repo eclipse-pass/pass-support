@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.client.nihms;
+package org.eclipse.pass.loader.nihms.client;
 
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.AWARD_NUMBER_FLD;
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.ERR_CREATE_PUBLICATION;
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.PUBLICATION_FLD;
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.REPOSITORY_FLD;
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.SUBMISSION_FLD;
-import static org.eclipse.pass.client.nihms.NihmsPassClientService.SUBMITTER_FLD;
+import static org.eclipse.pass.loader.nihms.client.NihmsPassClientService.AWARD_NUMBER_FLD;
+import static org.eclipse.pass.loader.nihms.client.NihmsPassClientService.ERR_CREATE_PUBLICATION;
+import static org.eclipse.pass.loader.nihms.client.NihmsPassClientService.PUBLICATION_FLD;
+import static org.eclipse.pass.loader.nihms.client.NihmsPassClientService.REPOSITORY_FLD;
+import static org.eclipse.pass.loader.nihms.client.NihmsPassClientService.SUBMISSION_FLD;
+import static org.eclipse.pass.loader.nihms.client.NihmsPassClientService.SUBMITTER_FLD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
