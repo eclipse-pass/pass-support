@@ -93,7 +93,7 @@ public class NihmsPassClientServiceTest {
     @BeforeEach
     public void initMocks() {
         clientService = new NihmsPassClientService(mockClient);
-        ReflectionTestUtils.setField(clientService, "nihmsRepoId", repositoryId);
+        ReflectionTestUtils.setField(clientService, "nihmsRepositoryId", repositoryId);
         clientService.clearCache();
     }
 

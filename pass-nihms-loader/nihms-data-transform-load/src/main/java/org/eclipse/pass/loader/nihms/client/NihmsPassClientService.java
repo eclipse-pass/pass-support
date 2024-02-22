@@ -133,7 +133,7 @@ public class NihmsPassClientService {
      * Store NIHMS REPO ID setting
      */
     @Value("${nihmsetl.repository.id}")
-    private String nihmsRepoId;
+    private String nihmsRepositoryId;
 
     /**
      * Default constructor that uses the default PassClient
@@ -284,7 +284,7 @@ public class NihmsPassClientService {
         if (repoCopyId == null) {
             String repoCopyFilter = RSQL.and(
                     RSQL.equals(PUBLICATION_FLD, pubId),
-                    RSQL.equals(REPOSITORY_FLD, nihmsRepoId));
+                    RSQL.equals(REPOSITORY_FLD, nihmsRepositoryId));
 
             PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
             repoCopySelector.setFilter(repoCopyFilter);
@@ -300,7 +300,7 @@ public class NihmsPassClientService {
                 throw new RuntimeException(
                     String.format("There are multiple repository copies matching RepositoryId %s and PublicationId %s. "
                                   + "This indicates a data corruption, please check the data and try again.", pubId,
-                                  nihmsRepoId));
+                        nihmsRepositoryId));
             }
         }
 
@@ -412,7 +412,7 @@ public class NihmsPassClientService {
         if (depositId == null) {
             String depositFilter = RSQL.and(
                     RSQL.equals(SUBMISSION_FLD, submissionId),
-                    RSQL.equals(REPOSITORY_FLD, nihmsRepoId));
+                    RSQL.equals(REPOSITORY_FLD, nihmsRepositoryId));
             PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
             depositSelector.setFilter(depositFilter);
             PassClientResult<Deposit> subResult = passClient.selectObjects(depositSelector);
@@ -426,7 +426,7 @@ public class NihmsPassClientService {
                 throw new RuntimeException(
                     String.format("There are multiple Deposits matching submissionId %s and repositoryId %s. "
                                   + "This indicates a data corruption, please check the data and try again.",
-                                  submissionId, nihmsRepoId));
+                                  submissionId, nihmsRepositoryId));
             }
         }
         return null;
@@ -447,7 +447,7 @@ public class NihmsPassClientService {
 
         String filter = RSQL.and(
                 RSQL.equals(DEPOSIT_STATUS_REF_FLD, NIHMS_DEP_STATUS_REF_PREFIX + nihmsId),
-                RSQL.equals(REPOSITORY_FLD, nihmsRepoId));
+                RSQL.equals(REPOSITORY_FLD, nihmsRepositoryId));
 
         PassClientSelector<Deposit> sel = new PassClientSelector<>(Deposit.class);
         sel.setFilter(filter);
@@ -470,7 +470,7 @@ public class NihmsPassClientService {
         throw new RuntimeException(
                 String.format("There are multiple Deposits matching nihmsId %s and repositoryId %s. "
                         + "This indicates a data corruption, please check the data and try again.",
-                        nihmsId, nihmsRepoId));
+                        nihmsId, nihmsRepositoryId));
     }
 
     /**
@@ -478,7 +478,7 @@ public class NihmsPassClientService {
      */
     public List<Submission> findNihmsSubmissionsByPublicationId(String publicationId) throws IOException {
         PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
-        subSelector.setFilter(RSQL.and(RSQL.equals("repositories.id", nihmsRepoId),
+        subSelector.setFilter(RSQL.and(RSQL.equals("repositories.id", nihmsRepositoryId),
                         RSQL.equals("publication.id", publicationId)));
         subSelector.setInclude("repositories");
         return passClient.streamObjects(subSelector).toList();

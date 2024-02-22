@@ -31,7 +31,6 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
 import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
-import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -48,9 +47,10 @@ import org.eclipse.pass.support.client.model.User;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Karen Hanson
@@ -59,11 +59,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 public abstract class NihmsSubmissionEtlITBase {
 
     //use when need to return reliable record information instead of using entrez api
-    @Mock
-    protected PmidLookup mockPmidLookup;
+    @MockBean protected PmidLookup mockPmidLookup;
+
+    @MockBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
 
     @Autowired protected NihmsPassClientService nihmsPassClientService;
+    @Autowired protected CompletedPublicationsCache completedPubsCache;
     @Autowired protected NihmsTransformLoadService nihmsTransformLoadService;
+    @Autowired protected NihmsPublicationToSubmission nihmsPublicationToSubmission;
 
     protected PassClient passClient;
     protected String nihmsRepoId;
@@ -86,15 +89,12 @@ public abstract class NihmsSubmissionEtlITBase {
         }
     }
 
-    protected static CompletedPublicationsCache completedPubsCache;
-
     @BeforeEach
     public void startup() throws IOException {
-        String cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
-        System.setProperty("nihmsetl.loader.cachepath", cachepath);
-        completedPubsCache = CompletedPublicationsCache.getInstance();
         passClient = PassClient.newInstance();
         nihmsRepoId = initiateNihmsRepo();
+        ReflectionTestUtils.setField(nihmsPassClientService, "nihmsRepositoryId", nihmsRepoId);
+        ReflectionTestUtils.setField(nihmsPublicationToSubmission, "nihmsRepositoryId", nihmsRepoId);
     }
 
     @AfterEach

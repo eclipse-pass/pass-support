@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.pass.loader.nihms.NihmsSubmissionEtlITBase;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -46,20 +47,16 @@ import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class NihmsPassClientServiceIT {
+public class NihmsPassClientServiceIT extends NihmsSubmissionEtlITBase {
 
-    private  NihmsPassClientService underTest;
     private PassClient passClient;
-    private String nihmsRepoId;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() {
         System.setProperty("pass.core.url","http://localhost:8080");
         System.setProperty("pass.core.user","backend");
         System.setProperty("pass.core.password","backend");
         passClient = PassClient.newInstance();
-        nihmsRepoId = initiateNihmsRepo();
-        underTest = new NihmsPassClientService(passClient);
     }
 
     /**
@@ -74,11 +71,11 @@ public class NihmsPassClientServiceIT {
         passClient.createObject(journal);
         String journalId = journal.getId();
 
-        assertEquals(journalId, underTest.findJournalByIssn("fooissn"));
-        assertEquals(journalId, underTest.findJournalByIssn("barissn"));
+        assertEquals(journalId, nihmsPassClientService.findJournalByIssn("fooissn"));
+        assertEquals(journalId, nihmsPassClientService.findJournalByIssn("barissn"));
 
         // and that a lookup by a non-existent issn returns null.
-        assertNull(underTest.findJournalByIssn("nonexistentissn"));
+        assertNull(nihmsPassClientService.findJournalByIssn("nonexistentissn"));
     }
 
     /**
@@ -154,37 +151,44 @@ public class NihmsPassClientServiceIT {
 
         //test different variants of R01AR074846
         for (String variant : grant1Variants) {
-            assertEquals(grant1.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+            assertEquals(grant1.getAwardNumber(),
+                nihmsPassClientService.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
         }
 
         //test different variants of UM1AI068613
         for (String variant : grant2Variants) {
-            assertEquals(grant2.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+            assertEquals(grant2.getAwardNumber(),
+                nihmsPassClientService.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
         }
 
         //test different variants of K23HL151758
         for (String variant : grant3Variants) {
-            assertEquals(grant3.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+            assertEquals(grant3.getAwardNumber(),
+                nihmsPassClientService.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
         }
 
         //test different variants of F32NS120940-01A1
         for (String variant : grant4Variants) {
-            assertEquals(grant4.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+            assertEquals(grant4.getAwardNumber(),
+                nihmsPassClientService.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
         }
 
         //test different variants of K23HL153778-1A1
         for (String variant : grant5Variants) {
-            assertEquals(grant5.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+            assertEquals(grant5.getAwardNumber(),
+                nihmsPassClientService.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
         }
 
         //test different variants of P50DA044123-B2
         for (String variant : grant6Variants) {
-            assertEquals(grant6.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+            assertEquals(grant6.getAwardNumber(),
+                nihmsPassClientService.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
         }
 
         //test different variants of 5R01ES020425-05S2
         for (String variant : grant7Variants) {
-            assertEquals(grant7.getAwardNumber(), underTest.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
+            assertEquals(grant7.getAwardNumber(),
+                nihmsPassClientService.findMostRecentGrantByAwardNumber(variant).getAwardNumber());
         }
     }
 
@@ -203,7 +207,7 @@ public class NihmsPassClientServiceIT {
             grant.setAwardNumber(award);
             grant.setStartDate(ZonedDateTime.now());
             passClient.createObject(grant);
-            Grant found = underTest.findMostRecentGrantByAwardNumber(award);
+            Grant found = nihmsPassClientService.findMostRecentGrantByAwardNumber(award);
             assertEquals(award, found.getAwardNumber());
             assertEquals(grant.getId(), found.getId());
         }
@@ -226,20 +230,20 @@ public class NihmsPassClientServiceIT {
         Grant foundGrant;
 
         //ensure the search returns the grant with the same award number
-        foundGrant = underTest.findMostRecentGrantByAwardNumber(awardNumber);
+        foundGrant = nihmsPassClientService.findMostRecentGrantByAwardNumber(awardNumber);
         assertEquals(testGrant.getId(), foundGrant.getId());
 
         //test similar ids
-        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant1);
+        foundGrant = nihmsPassClientService.findMostRecentGrantByAwardNumber(variant1);
         assertNull(foundGrant);
 
-        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant2);
+        foundGrant = nihmsPassClientService.findMostRecentGrantByAwardNumber(variant2);
         assertNull(foundGrant);
 
-        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant3);
+        foundGrant = nihmsPassClientService.findMostRecentGrantByAwardNumber(variant3);
         assertNull(foundGrant);
 
-        foundGrant = underTest.findMostRecentGrantByAwardNumber(variant4);
+        foundGrant = nihmsPassClientService.findMostRecentGrantByAwardNumber(variant4);
         assertNull(foundGrant);
     }
 
@@ -249,7 +253,7 @@ public class NihmsPassClientServiceIT {
     @Test
     public void testCreateSubmission() throws IOException {
         Submission submission = initSubmission();
-        underTest.createSubmission(submission);
+        nihmsPassClientService.createSubmission(submission);
 
         PassClientSelector<Submission> subSelect = new PassClientSelector<>(Submission.class);
         subSelect.setFilter(RSQL.equals("id", submission.getId()));
@@ -273,7 +277,7 @@ public class NihmsPassClientServiceIT {
         passClient.createObject(user);
         Grant grant = new Grant();
         passClient.createObject(grant);
-        Repository nihmsRepo = underTest.readRepository(nihmsRepoId);
+        Repository nihmsRepo = nihmsPassClientService.readRepository(nihmsRepoId);
 
         grants.add(grant);
         submission.setGrants(grants);
@@ -286,11 +290,11 @@ public class NihmsPassClientServiceIT {
         submission.setRepositories(repos);
 
         //submission with a nihms repository, should be returned
-        underTest.createSubmission(submission);
+        nihmsPassClientService.createSubmission(submission);
         //submission that shouldn't be returned. It's not a nihms submission
-        underTest.createSubmission(initSubmission());
+        nihmsPassClientService.createSubmission(initSubmission());
 
-        List<Submission> foundSubs = underTest.findNihmsSubmissionsByPublicationId(pub.getId());
+        List<Submission> foundSubs = nihmsPassClientService.findNihmsSubmissionsByPublicationId(pub.getId());
         assertEquals(1, foundSubs.size());
         assertEquals(submission.getId(), foundSubs.get(0).getId());
     }
@@ -320,14 +324,6 @@ public class NihmsPassClientServiceIT {
         repos.add(repo);
         submission.setRepositories(repos);
         return submission;
-    }
-
-    private String initiateNihmsRepo() throws IOException {
-        Repository nihmsRepo = new Repository();
-        nihmsRepo.setName("NIHMS");
-        nihmsRepo.setRepositoryKey("nihms");
-        passClient.createObject(nihmsRepo);
-        return nihmsRepo.getId();
     }
 
 }
