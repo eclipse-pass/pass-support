@@ -28,7 +28,6 @@ import org.eclipse.pass.loader.nihms.client.cache.NihmsDepositIdCache;
 import org.eclipse.pass.loader.nihms.client.cache.NihmsRepositoryCopyIdCache;
 import org.eclipse.pass.loader.nihms.client.cache.PublicationIdCache;
 import org.eclipse.pass.loader.nihms.client.cache.UserPubSubmissionsCache;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
@@ -43,6 +42,7 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -132,7 +132,8 @@ public class NihmsPassClientService {
     /**
      * Store NIHMS REPO ID setting
      */
-    private final String nihmsRepoId;
+    @Value("${nihmsetl.repository.id}")
+    private String nihmsRepoId;
 
     /**
      * Default constructor that uses the default PassClient
@@ -147,7 +148,6 @@ public class NihmsPassClientService {
      */
     public NihmsPassClientService(PassClient passClient) {
         this.passClient = passClient;
-        nihmsRepoId = ConfigUtil.getNihmsRepositoryId();
         initCaches();
     }
 

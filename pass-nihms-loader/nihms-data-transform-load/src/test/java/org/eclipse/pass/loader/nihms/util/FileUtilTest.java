@@ -62,29 +62,6 @@ public class FileUtilTest {
     }
 
     /**
-     * Confirms config directory works if path is a system property
-     *
-     * @throws IOException if file cannot be created
-     */
-    @Test
-    public void testSelectConfigDirectoryFromSystemProperty() throws IOException {
-        System.setProperty(NIHMS_CONFIG_FILEPATH_KEY, testFilePath);
-        File file = FileUtil.getConfigFilePath(NIHMS_CONFIG_FILEPATH_KEY, "nihmsetl.config");
-        assertEquals(testFilePath, file.toString());
-    }
-
-    /**
-     * Confirms config directory works if use default
-     *
-     * @throws IOException if file cannot be created
-     */
-    @Test
-    public void testSelectConfigDirectoryDefault() throws IOException {
-        File file = FileUtil.getConfigFilePath(NIHMS_CONFIG_FILEPATH_KEY, "nihmsetl.config");
-        assertEquals("nihmsetl.config", file.getName());
-    }
-
-    /**
      * Confirms that getFilePaths will retrieve 3 csv files in target directory
      *
      * @throws IOException if file cannot be created

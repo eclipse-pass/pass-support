@@ -31,7 +31,7 @@ public class UserPubSubmissionsCache {
     private static UserPubSubmissionsCache userPubSubmissionCache = null;
 
     private UserPubSubmissionsCache() {
-        userPubSubmissionsCache = new HashMap<String, Set<String>>();
+        userPubSubmissionsCache = new HashMap<>();
     }
 
     /**

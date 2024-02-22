@@ -29,7 +29,7 @@ public class NihmsRepositoryCopyIdCache {
     private static NihmsRepositoryCopyIdCache repositoryCopySpace = null;
 
     private NihmsRepositoryCopyIdCache() {
-        nihmsRepoCopyCache = new HashMap<String, String>();
+        nihmsRepoCopyCache = new HashMap<>();
     }
 
     /**

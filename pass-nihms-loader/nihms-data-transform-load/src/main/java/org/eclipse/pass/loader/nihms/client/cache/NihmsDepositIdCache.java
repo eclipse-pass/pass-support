@@ -29,7 +29,7 @@ public class NihmsDepositIdCache {
     private static NihmsDepositIdCache depositSpace = null;
 
     private NihmsDepositIdCache() {
-        depositCache = new HashMap<String, String>();
+        depositCache = new HashMap<>();
     }
 
     /**

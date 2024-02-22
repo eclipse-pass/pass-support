@@ -15,7 +15,6 @@
         <module>nihms-data-transform-load</module>
         <module>nihms-docker</module>
         <module>nihms-etl-model</module>
-        <module>nihms-etl-util</module>
     </modules>
 
     <properties>

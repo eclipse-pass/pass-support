@@ -35,11 +35,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class NihmsTransformLoadCLI implements CommandLineRunner {
 
     /**
-     *
-     * General Options
-     */
-
-    /**
      * Request for help/usage documentation
      */
     @Option(name = "-h", aliases = {"-help", "--help"}, usage = "print help message")

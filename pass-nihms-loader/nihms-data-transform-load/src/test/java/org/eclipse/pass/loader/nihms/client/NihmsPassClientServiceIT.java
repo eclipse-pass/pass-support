@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -50,8 +49,8 @@ import org.junit.jupiter.api.Test;
 public class NihmsPassClientServiceIT {
 
     private  NihmsPassClientService underTest;
-
     private PassClient passClient;
+    private String nihmsRepoId;
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -59,7 +58,7 @@ public class NihmsPassClientServiceIT {
         System.setProperty("pass.core.user","backend");
         System.setProperty("pass.core.password","backend");
         passClient = PassClient.newInstance();
-        initiateNihmsRepo(); //need to initiate the nihms repository before init the NihmsPassClientService
+        nihmsRepoId = initiateNihmsRepo();
         underTest = new NihmsPassClientService(passClient);
     }
 
@@ -274,7 +273,7 @@ public class NihmsPassClientServiceIT {
         passClient.createObject(user);
         Grant grant = new Grant();
         passClient.createObject(grant);
-        Repository nihmsRepo = underTest.readRepository(ConfigUtil.getNihmsRepositoryId());
+        Repository nihmsRepo = underTest.readRepository(nihmsRepoId);
 
         grants.add(grant);
         submission.setGrants(grants);
@@ -323,12 +322,12 @@ public class NihmsPassClientServiceIT {
         return submission;
     }
 
-    private void initiateNihmsRepo() throws IOException {
+    private String initiateNihmsRepo() throws IOException {
         Repository nihmsRepo = new Repository();
         nihmsRepo.setName("NIHMS");
         nihmsRepo.setRepositoryKey("nihms");
         passClient.createObject(nihmsRepo);
-        ConfigUtil.setNihmsRepositoryId(nihmsRepo.getId());
+        return nihmsRepo.getId();
     }
 
 }

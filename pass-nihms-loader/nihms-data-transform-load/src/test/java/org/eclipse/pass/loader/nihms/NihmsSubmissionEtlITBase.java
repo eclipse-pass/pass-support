@@ -31,13 +31,11 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
 import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
-import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.Funder;
@@ -51,23 +49,24 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * @author Karen Hanson
  */
+@SpringBootTest
 public abstract class NihmsSubmissionEtlITBase {
 
     //use when need to return reliable record information instead of using entrez api
     @Mock
     protected PmidLookup mockPmidLookup;
 
-    protected static final int RETRIES = 12;
+    @Autowired protected NihmsPassClientService nihmsPassClientService;
+    @Autowired protected NihmsTransformLoadService nihmsTransformLoadService;
 
-    protected final PassClient passClient = PassClient.newInstance();
-
-    protected final SubmissionStatusService statusService = new SubmissionStatusService(passClient);
-
-    protected NihmsPassClientService nihmsPassClientService;
+    protected PassClient passClient;
+    protected String nihmsRepoId;
 
     protected static String path = Objects.requireNonNull(TransformAndLoadSmokeIT.class.getClassLoader()
             .getResource("data")).getPath();
@@ -94,10 +93,8 @@ public abstract class NihmsSubmissionEtlITBase {
         String cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
         System.setProperty("nihmsetl.loader.cachepath", cachepath);
         completedPubsCache = CompletedPublicationsCache.getInstance();
-        initiateNihmsRepoCopy();
-        // need to init the nihmsPassClientService after the nihmsRepoCopy is initialized,
-        // as the nihmsRepoId needs to be set in the ConfigUtil
-        nihmsPassClientService = new NihmsPassClientService(passClient);
+        passClient = PassClient.newInstance();
+        nihmsRepoId = initiateNihmsRepo();
     }
 
     @AfterEach
@@ -220,12 +217,12 @@ public abstract class NihmsSubmissionEtlITBase {
         when(mockPmidLookup.retrievePubMedRecord(eq(pmid))).thenReturn(pmr);
     }
 
-    protected void initiateNihmsRepoCopy() throws IOException {
+    protected String initiateNihmsRepo() throws IOException {
         Repository nihmsRepo = new Repository();
         nihmsRepo.setName("NIHMS");
         nihmsRepo.setRepositoryKey("nihms");
         passClient.createObject(nihmsRepo);
-        ConfigUtil.setNihmsRepositoryId(nihmsRepo.getId());
+        return nihmsRepo.getId();
     }
 
     protected void verifySubmission(Submission preexistingSub, Submission reloadedSub) {

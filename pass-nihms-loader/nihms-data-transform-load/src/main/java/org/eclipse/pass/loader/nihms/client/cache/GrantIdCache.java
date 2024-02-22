@@ -28,7 +28,7 @@ public class GrantIdCache {
     private static GrantIdCache grantSpace = null;
 
     private GrantIdCache() {
-        grantCache = new HashMap<String, String>();
+        grantCache = new HashMap<>();
     }
 
     /**

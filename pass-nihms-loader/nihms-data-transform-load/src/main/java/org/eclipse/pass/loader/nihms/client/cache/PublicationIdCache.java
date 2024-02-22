@@ -28,7 +28,7 @@ public class PublicationIdCache {
     private static PublicationIdCache publicationSpace = null;
 
     private PublicationIdCache() {
-        publicationCache = new HashMap<String, String>();
+        publicationCache = new HashMap<>();
     }
 
     /**

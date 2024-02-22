@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
-import org.eclipse.pass.loader.nihms.util.ConfigUtil;
 import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -57,6 +56,7 @@ public class SubmissionLoaderTest {
     private static final String depositId = "1";
     private static final String publicationId = "1";
     private static final String userId = "1";
+    private static final String nihmsRepositoryId = "1234";
 
     private static final String title = "A Title";
     private static String pmid = "12345678";
@@ -197,7 +197,7 @@ public class SubmissionLoaderTest {
         submission.setPublication(publication);
         submission.setSubmitter(submitter);
 
-        Repository nihmsRepo = new Repository(ConfigUtil.getNihmsRepositoryId());
+        Repository nihmsRepo = new Repository(nihmsRepositoryId);
 
         RepositoryCopy repositoryCopy = new RepositoryCopy();
         repositoryCopy.setPublication(publication);
@@ -243,7 +243,7 @@ public class SubmissionLoaderTest {
         submission.setPublication(publication);
         submission.setSubmitter(submitter);
 
-        Repository nihmsRepo = new Repository(ConfigUtil.getNihmsRepositoryId());
+        Repository nihmsRepo = new Repository(nihmsRepositoryId);
 
         RepositoryCopy repositoryCopy = new RepositoryCopy();
         repositoryCopy.setPublication(publication);

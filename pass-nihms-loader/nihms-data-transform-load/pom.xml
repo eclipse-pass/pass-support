@@ -27,18 +27,6 @@
 
     <dependency>
       <groupId>org.eclipse.pass</groupId>
-      <artifactId>entrez-pmid-lookup</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.pass</groupId>
-      <artifactId>nihms-etl-util</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.pass</groupId>
       <artifactId>nihms-etl-model</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
@@ -110,6 +98,12 @@
     </dependency>
 
     <!-- Test dependencies -->
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>

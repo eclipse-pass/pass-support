@@ -56,24 +56,10 @@ public class PmidLookup {
      */
     private static final String DEFAULT_ENTREZ_PATH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary" +
                                                       ".fcgi?db=pubmed&retmode=json&rettype=abstract&id=%s";
-
-    private static final String ENTREZ_PATH_KEY = "entrez.pmid.path";
-    private static final String ENTREZ_TIME_OUT_KEY = "entrez.time.out";
-    private static final String DEFAULT_ENTREZ_TIME_OUT = "400";
+    private static final Long DEFAULT_ENTREZ_TIME_OUT = Long.valueOf("400");
 
     private static final String JSON_ERROR_KEY = "error";
     private static final String JSON_RESULT_KEY = "result";
-
-    private String entrezPath;
-    private String entrezTimeout;
-
-    /**
-     * Default constructor uses the default Entrez path
-     */
-    public PmidLookup() {
-        entrezPath = System.getProperty(ENTREZ_PATH_KEY, DEFAULT_ENTREZ_PATH);
-        entrezTimeout = System.getProperty(ENTREZ_TIME_OUT_KEY, DEFAULT_ENTREZ_TIME_OUT);
-    }
 
     /**
      * Retrieve PubMedRecord object for PMID record from NIH's Entrez API service.
@@ -107,7 +93,7 @@ public class PmidLookup {
             if (jsonRecord == null) {
                 // pause and retry once to allow for API limitations
                 LOG.info("Pausing before trying to pull PMID {} from Entrez again", pmid);
-                TimeUnit.MILLISECONDS.sleep(Long.parseLong(entrezTimeout));
+                TimeUnit.MILLISECONDS.sleep(DEFAULT_ENTREZ_TIME_OUT);
                 jsonRecord = retrieveJsonFromApi(pmid);
             }
         } catch (InterruptedException e) {
@@ -124,8 +110,8 @@ public class PmidLookup {
      * @return the root JSON record
      */
     private JSONObject retrieveJsonFromApi(String pmid) {
-        JSONObject root = null;
-        String path = String.format(entrezPath, pmid);
+        JSONObject root;
+        String path = String.format(DEFAULT_ENTREZ_PATH, pmid);
         try {
             HttpClient client = HttpClientBuilder
                 .create()
@@ -177,7 +163,7 @@ public class PmidLookup {
         if (root.has(JSON_RESULT_KEY)) {
             root = root.getJSONObject(JSON_RESULT_KEY);
             if (root.has(pmid)) {
-                root = (JSONObject) root.getJSONObject(pmid);
+                root = root.getJSONObject(pmid);
             }
         }
 

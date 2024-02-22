@@ -27,12 +27,9 @@ import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
-import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.eclipse.pass.loader.nihms.util.FileUtil;
-import org.eclipse.pass.support.client.SubmissionStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,22 +51,13 @@ public class NihmsTransformLoadService {
     @Value("${nihmsetl.data.dir}")
     private String downloadDirectory;
 
-    private final NihmsPassClientService nihmsPassClient;
-    private final PmidLookup pmidLookup;
-    private final SubmissionStatusService submissionStatusService;
+    private final NihmsPublicationToSubmission nihmsPublicationToSubmission;
+    private final SubmissionLoader submissionLoader;
 
-    /**
-     * Option to inject dependencies
-     *
-     * @param passClientService the NihmsPassClientService instance to use
-     * @param pmidLookup        the PmidLookup instance to use
-     * @param submissionStatusService     the SubmissionStatusService instance to use
-     */
-    public NihmsTransformLoadService(NihmsPassClientService passClientService, PmidLookup pmidLookup,
-                                     SubmissionStatusService submissionStatusService) {
-        this.nihmsPassClient = passClientService;
-        this.pmidLookup = pmidLookup;
-        this.submissionStatusService = submissionStatusService;
+    public NihmsTransformLoadService(SubmissionLoader submissionLoader,
+                                     NihmsPublicationToSubmission nihmsPublicationToSubmission) {
+        this.submissionLoader = submissionLoader;
+        this.nihmsPublicationToSubmission = nihmsPublicationToSubmission;
         completedPubsCache = CompletedPublicationsCache.getInstance();
     }
 
@@ -132,12 +120,9 @@ public class NihmsTransformLoadService {
         while (true) {
             try {
                 attempt = attempt + 1;
-                NihmsPublicationToSubmission transformer = new NihmsPublicationToSubmission(nihmsPassClient,
-                                                                                            pmidLookup);
-                SubmissionDTO transformedRecord = transformer.transform(pub);
+                SubmissionDTO transformedRecord = nihmsPublicationToSubmission.transform(pub);
                 if (transformedRecord.doUpdate()) {
-                    SubmissionLoader loader = new SubmissionLoader(nihmsPassClient, submissionStatusService);
-                    loader.load(transformedRecord);
+                    submissionLoader.load(transformedRecord);
                 } else {
                     LOG.info("No update required for PMID {} with award number {}", pub.getPmid(),
                              pub.getGrantNumber());
