@@ -17,12 +17,12 @@
     </encoder>
   </appender>
 
-  <logger name="org.eclipse" additivity="false" level="${nihmsetl.log:-INFO}">
-    <appender-ref ref="STDOUT"/>
-  </logger>
-
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
   </root>
+
+  <logger name="org.eclipse" additivity="false" level="${nihmsetl.log:-INFO}">
+    <appender-ref ref="STDOUT"/>
+  </logger>
 
 </configuration>

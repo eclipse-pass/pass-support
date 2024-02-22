@@ -15,228 +15,66 @@
  *  * limitations under the License.
  *
  */
-
 package org.eclipse.pass.loader.nihms;
 
-import static java.lang.String.format;
-import static java.lang.String.join;
-import static org.eclipse.pass.loader.nihms.NihmsHarvesterConfig.API_URL_PARAM_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = NihmsHarvesterCLI.class)
+@TestPropertySource("classpath:test-application.properties")
 public class UrlBuilderTest {
 
-    private UrlBuilder underTest;
-
-    private URL generatedUrl;
-
-    private Map<String, String> overrides = Collections.emptyMap();
-
-    private Map<String, String> additional = Collections.emptyMap();
-
-    @BeforeAll
-    public static void apiParams() {
-        System.setProperty(join("", API_URL_PARAM_PREFIX, "filter"), "");
-        System.setProperty(join("", API_URL_PARAM_PREFIX, "format"), "csv");
-        System.setProperty(join("", API_URL_PARAM_PREFIX, "inst"), "JOHNS HOPKINS");
-        System.setProperty(join("", API_URL_PARAM_PREFIX, "ipf"), "4134401");
-        System.setProperty(join("", API_URL_PARAM_PREFIX, "rd"), "07/02/2019");
-        System.setProperty(join("", API_URL_PARAM_PREFIX, "pdf"), "07/2018");
-        System.setProperty(join("", API_URL_PARAM_PREFIX, "pdt"), "07/2019");
-
-        assertEquals("", NihmsHarvesterConfig.getApiUrlParams().get("filter"));
-        assertEquals("csv", NihmsHarvesterConfig.getApiUrlParams().get("format"));
-        assertEquals("JOHNS HOPKINS", NihmsHarvesterConfig.getApiUrlParams().get("inst"));
-        assertEquals("4134401", NihmsHarvesterConfig.getApiUrlParams().get("ipf"));
-        assertEquals("07/02/2019", NihmsHarvesterConfig.getApiUrlParams().get("rd"));
-        assertEquals("07/2018", NihmsHarvesterConfig.getApiUrlParams().get("pdf"));
-        assertEquals("07/2019", NihmsHarvesterConfig.getApiUrlParams().get("pdt"));
-    }
-
-    @AfterAll
-    public static void cleanUpSystemProps() {
-        System.getProperties()
-              .entrySet()
-              .stream()
-              .filter((entry) -> ((String) entry.getKey()).startsWith(API_URL_PARAM_PREFIX))
-              .collect(Collectors.toSet())
-              .forEach(entry -> System.clearProperty((String) entry.getKey()));
-    }
-
-    @BeforeEach
-    public void setUp() {
-        underTest = new UrlBuilder();
-    }
-
-    @AfterEach
-    public void verifyScheme() {
-        assertEquals(NihmsHarvesterConfig.getApiScheme(), generatedUrl.getProtocol());
-    }
-
-    @AfterEach
-    public void verifyHost() {
-        assertEquals(NihmsHarvesterConfig.getApiHost(), generatedUrl.getHost());
-    }
-
-    @AfterEach
-    public void verifyPath() {
-        assertTrue(generatedUrl.getPath().startsWith(NihmsHarvesterConfig.getApiPath()));
-    }
-
-    @AfterEach
-    public void verifyParams() throws URISyntaxException {
-        String query = generatedUrl.toURI().getQuery(); // .toURI() will decode the query parameter values
-        assertNotNull(query);
-        String[] parts = query.split("&");
-        assertEquals(additional.size() + 7, parts.length);
-
-        Stream.of(parts).forEach(part -> {
-            String[] subpart = part.split("=");
-            String param = subpart[0];
-            String value = subpart.length > 1 ? subpart[1] : null;
-
-            switch (param) {
-                case "format":
-                    assertEquals(overrides.getOrDefault("format", "csv"), value);
-                    break;
-                case "filter":
-                    assertEquals(overrides.getOrDefault("filter", null), value);
-                    break;
-                case "inst":
-                    assertEquals(overrides.getOrDefault("inst", "JOHNS HOPKINS"), value);
-                    break;
-                case "ipf":
-                    assertEquals(overrides.getOrDefault("ipf", "4134401"), value);
-                    break;
-                case "rd":
-                    assertEquals(overrides.getOrDefault("rd", "07/02/2019"), value);
-                    break;
-                case "pdf":
-                    assertEquals(overrides.getOrDefault("pdf", "07/2018"), value);
-                    break;
-                case "pdt":
-                    assertEquals(overrides.getOrDefault("pdt", "07/2019"), value);
-                    break;
-                default:
-                    if (additional.containsKey(param)) {
-                        assertEquals(additional.get(param), value);
-                    } else {
-                        throw new RuntimeException("Unknown URL parameter '" + param + "' with value '" + value + "'");
-                    }
-            }
-        });
-    }
-
-    @AfterEach
-    public void tearDown() {
-        // System.err.println(generatedUrl.toString());
-    }
+    @MockBean NihmsHarvester nihmsHarvester;
+    @Autowired private UrlBuilder urlBuilder;
 
     @Test
     public void compliantUrl() {
-        generatedUrl = underTest.compliantUrl();
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.COMPLIANT.getCode())));
+        URL generatedUrl = urlBuilder.compliantUrl(Collections.emptyMap());
+        assertEquals("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/c?" +
+            "pdt=07%2F2019&pdf=07%2F2018&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST",
+            generatedUrl.toString());
     }
 
     @Test
     public void inProcessUrl() {
-        generatedUrl = underTest.inProcessUrl();
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.IN_PROCESS.getCode())));
+        URL generatedUrl = urlBuilder.inProcessUrl(Collections.emptyMap());
+        assertEquals("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/p?" +
+                "pdt=07%2F2019&pdf=07%2F2018&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST",
+            generatedUrl.toString());
     }
 
     @Test
     public void nonCompliantUrl() {
-        generatedUrl = underTest.nonCompliantUrl();
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.NON_COMPLIANT.getCode())));
+        URL generatedUrl = urlBuilder.nonCompliantUrl(Collections.emptyMap());
+        assertEquals("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/n?" +
+                "pdt=07%2F2019&pdf=07%2F2018&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST",
+            generatedUrl.toString());
     }
 
     @Test
-    public void compliantUrlWithParamOverride() {
-        overrides = new HashMap<>() {
-            {
-                put("format", "moo");
-            }
-        };
-
-        generatedUrl = underTest.compliantUrl(overrides);
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.COMPLIANT.getCode())));
+    public void urlWithParamOverride() {
+        URL generatedUrl = urlBuilder.compliantUrl(Map.of("api-token", "api-key-value-over"));
+        assertEquals("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/c?" +
+                "pdt=07%2F2019&pdf=07%2F2018&api-token=api-key-value-over&inst=JOHNS-HOPKINS-TEST" +
+                "&format=csv&ipf=4134401-TEST",
+            generatedUrl.toString());
     }
 
     @Test
-    public void compliantUrlWithAdditionalParam() {
-        additional = new HashMap<>() {
-            {
-                put("api-key", "api-key-value");
-            }
-        };
-
-        generatedUrl = underTest.compliantUrl(additional);
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.COMPLIANT.getCode())));
-    }
-
-    @Test
-    public void nonCompliantUrlWithParamOverride() {
-        overrides = new HashMap<>() {
-            {
-                put("format", "moo");
-            }
-        };
-
-        generatedUrl = underTest.nonCompliantUrl(overrides);
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.NON_COMPLIANT.getCode())));
-    }
-
-    @Test
-    public void nonCompliantUrlWithAdditionalParam() {
-        additional = new HashMap<>() {
-            {
-                put("api-key", "api-key-value");
-            }
-        };
-
-        generatedUrl = underTest.nonCompliantUrl(additional);
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.NON_COMPLIANT.getCode())));
-    }
-
-    @Test
-    public void inProcessUrlWithParamOverride() {
-        overrides = new HashMap<>() {
-            {
-                put("format", "moo");
-            }
-        };
-
-        generatedUrl = underTest.inProcessUrl(overrides);
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.IN_PROCESS.getCode())));
-    }
-
-    @Test
-    public void inProcessUrlWithAdditionalParam() {
-        additional = new HashMap<>() {
-            {
-                put("api-key", "api-key-value");
-            }
-        };
-
-        generatedUrl = underTest.inProcessUrl(additional);
-        assertTrue(generatedUrl.getPath().endsWith(format("/%s", UrlType.IN_PROCESS.getCode())));
+    public void urlWithAdditionalParam() {
+        URL generatedUrl = urlBuilder.compliantUrl(Map.of("new-key", "moo"));
+        assertEquals("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/c?" +
+                "pdt=07%2F2019&pdf=07%2F2018&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv" +
+                "&new-key=moo&ipf=4134401-TEST",
+            generatedUrl.toString());
     }
 }
