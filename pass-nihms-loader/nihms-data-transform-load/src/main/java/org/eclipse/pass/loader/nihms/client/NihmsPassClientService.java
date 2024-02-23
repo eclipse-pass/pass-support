@@ -136,13 +136,6 @@ public class NihmsPassClientService {
     private String nihmsRepositoryId;
 
     /**
-     * Default constructor that uses the default PassClient
-     */
-    public NihmsPassClientService() {
-        this(PassClient.newInstance());
-    }
-
-    /**
      * Constructor that allows a PassClient to be passed in
      * @param passClient the PassClient used to persist data
      */

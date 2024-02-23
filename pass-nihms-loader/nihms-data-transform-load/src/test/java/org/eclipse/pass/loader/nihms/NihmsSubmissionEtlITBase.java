@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -27,6 +28,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.pass.loader.nihms.client.NihmsPassClientService;
 import org.eclipse.pass.loader.nihms.entrez.PmidLookup;
 import org.eclipse.pass.loader.nihms.entrez.PubMedEntrezRecord;
@@ -50,15 +53,52 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * @author Karen Hanson
  */
 @SpringBootTest
 @TestPropertySource("classpath:test-application.properties")
+@Testcontainers
+@DirtiesContext
 public abstract class NihmsSubmissionEtlITBase {
+
+    static {
+        MavenXpp3Reader reader = new MavenXpp3Reader();
+        try {
+            Model model = reader.read(new FileReader("pom.xml"));
+            String version = model.getParent().getVersion();
+            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:" + version);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final DockerImageName PASS_CORE_IMG;
+
+    @Container
+    protected static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
+        .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
+        .withEnv("PASS_CORE_BACKEND_USER", "backend")
+        .withEnv("PASS_CORE_BACKEND_PASSWORD", "backend")
+        .waitingFor(Wait.forHttp("/data/grant").forStatusCode(401))
+        .withExposedPorts(8080);
+
+    @DynamicPropertySource
+    static void updateProperties(DynamicPropertyRegistry registry) {
+        registry.add("pass.client.url",
+            () -> "http://localhost:" + PASS_CORE_CONTAINER.getMappedPort(8080));
+    }
 
     //use when need to return reliable record information instead of using entrez api
     @MockBean protected PmidLookup mockPmidLookup;
@@ -70,16 +110,15 @@ public abstract class NihmsSubmissionEtlITBase {
     @Autowired protected CompletedPublicationsCache completedPubsCache;
     @Autowired protected NihmsTransformLoadService nihmsTransformLoadService;
     @Autowired protected NihmsPublicationToSubmission nihmsPublicationToSubmission;
+    @Autowired protected PassClient passClient;
 
     @Value("${nihmsetl.data.dir}")
     protected String dataDir;
 
-    protected PassClient passClient;
     protected String nihmsRepoId;
 
     @BeforeEach
     public void startup() throws IOException {
-        passClient = PassClient.newInstance();
         nihmsRepoId = initiateNihmsRepo();
         ReflectionTestUtils.setField(nihmsPassClientService, "nihmsRepositoryId", nihmsRepoId);
         ReflectionTestUtils.setField(nihmsPublicationToSubmission, "nihmsRepositoryId", nihmsRepoId);

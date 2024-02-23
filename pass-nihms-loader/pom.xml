@@ -146,54 +146,6 @@
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
-
-                <plugin>
-                    <groupId>io.fabric8</groupId>
-                    <artifactId>docker-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>start</id>
-                            <phase>pre-integration-test</phase>
-                            <goals>
-                                <goal>start</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>stop</id>
-                            <phase>post-integration-test</phase>
-                            <goals>
-                                <goal>stop</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <images>
-                            <image>
-                                <name>ghcr.io/eclipse-pass/pass-core-main:%v</name>
-                                <run>
-                                    <platform>${docker.platforms}</platform>
-                                    <env>
-                                        <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
-                                        <PASS_CORE_BACKEND_USER>${pass.core.user}</PASS_CORE_BACKEND_USER>
-                                        <PASS_CORE_BACKEND_PASSWORD>${pass.core.password}</PASS_CORE_BACKEND_PASSWORD>
-                                    </env>
-                                    <wait>
-                                        <http>
-                                            <url>
-                                                ${pass.core.url}/data/journal
-                                            </url>
-                                            <status>401</status>
-                                        </http>
-                                        <time>60000</time>
-                                    </wait>
-                                    <ports>
-                                        <port>${pass.core.port}:${pass.core.port}</port>
-                                    </ports>
-                                </run>
-                            </image>
-                        </images>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -246,6 +198,8 @@
                                 <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>
                                 <!-- Comes from httpclient, transitive deps -->
                                 <ignoredUsedUndeclaredDependency>org.apache.httpcomponents:httpcore:</ignoredUsedUndeclaredDependency>
+                                <!-- These come from testcontainers junit-jupiter -->
+                                <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
                             </ignoredUsedUndeclaredDependencies>
                             <ignoredUnusedDeclaredDependencies>
                                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
