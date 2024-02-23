@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,9 +27,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.pass.loader.nihms.model.NihmsPublication;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
-import org.eclipse.pass.loader.nihms.util.FileUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,22 +41,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class NihmsCsvProcessorTest {
 
     private int count = 0;
-
-    String cachepath = null;
-
-    @BeforeEach
-    public void startup() {
-        cachepath = FileUtil.getCurrentDirectory() + "/cache/compliant-cache.data";
-        System.setProperty("nihmsetl.loader.cachepath", cachepath);
-    }
-
-    @AfterEach
-    public void cleanup() {
-        File cachefile = new File(cachepath);
-        if (cachefile.exists()) {
-            cachefile.delete();
-        }
-    }
 
     /**
      * Check the Iterator reads in CSV

@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
@@ -48,19 +47,23 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Karen Hanson
  */
 @SpringBootTest
+@TestPropertySource("classpath:test-application.properties")
 public abstract class NihmsSubmissionEtlITBase {
 
     //use when need to return reliable record information instead of using entrez api
     @MockBean protected PmidLookup mockPmidLookup;
 
+    // Needed so tests can run after application starts
     @MockBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
 
     @Autowired protected NihmsPassClientService nihmsPassClientService;
@@ -68,26 +71,11 @@ public abstract class NihmsSubmissionEtlITBase {
     @Autowired protected NihmsTransformLoadService nihmsTransformLoadService;
     @Autowired protected NihmsPublicationToSubmission nihmsPublicationToSubmission;
 
+    @Value("${nihmsetl.data.dir}")
+    protected String dataDir;
+
     protected PassClient passClient;
     protected String nihmsRepoId;
-
-    protected static String path = Objects.requireNonNull(TransformAndLoadSmokeIT.class.getClassLoader()
-            .getResource("data")).getPath();
-
-    static {
-        if (System.getProperty("pass.core.url") == null) {
-            System.setProperty("pass.core.url", "http://localhost:8080");
-        }
-        if (System.getProperty("pass.core.user") == null) {
-            System.setProperty("pass.core.user", "backend");
-        }
-        if (System.getProperty("pass.core.password") == null) {
-            System.setProperty("pass.core.password", "backend");
-        }
-        if (System.getProperty("nihmsetl.data.dir") == null) {
-            System.setProperty("nihmsetl.data.dir", path);
-        }
-    }
 
     @BeforeEach
     public void startup() throws IOException {
