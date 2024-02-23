@@ -20,7 +20,6 @@
     <properties>
         <!-- Properties for dependency versions -->
         <spring-boot-maven-plugin.version>3.2.1</spring-boot-maven-plugin.version>
-        <awsspring.version>3.1.0</awsspring.version>
         <http-client.version>4.5.14</http-client.version>
         <org-json.version>20231013</org-json.version>
         <commons.csv.version>1.10.0</commons.csv.version>
