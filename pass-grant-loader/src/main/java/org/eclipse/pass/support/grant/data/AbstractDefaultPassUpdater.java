@@ -158,6 +158,13 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
             String grantLocalKey = grantIngestRecord.getGrantNumber();
 
+            if (StringUtils.isBlank(grantIngestRecord.getPiEmployeeId())
+                && StringUtils.isBlank(grantIngestRecord.getPiInstitutionalId())) {
+                LOG.warn("Skipping grant ingest record grant localKey {}, " +
+                    "user has blank employeeId and institutionalId.", grantLocalKey);
+                continue;
+            }
+
             try {
                 //get funder local keys. if a primary funder is not specified, we set it to the direct funder
                 String directFunderLocalKey = grantIngestRecord.getDirectFunderCode();
