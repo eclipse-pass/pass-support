@@ -91,8 +91,8 @@ public class JhuPassUpdaterTest {
         assertEquals(grant.getDirectFunder(), funderMap.get("000029282"));
         assertEquals(grant.getPrimaryFunder(), funderMap.get("8675309"));
         Map<String, User> userMap = (Map<String, User>) FieldUtils.readField(passUpdater, "userMap", true);
-        assertEquals(grant.getPi(), userMap.get("0000333"));
-        assertEquals(grant.getCoPis().get(0), userMap.get("0000222"));
+        assertEquals(grant.getPi(), userMap.get("0000333ARECKON3"));
+        assertEquals(grant.getCoPis().get(0), userMap.get("0000222MLARTZ5"));
 
         assertEquals("12345678", grant.getAwardNumber());
         assertEquals(AwardStatus.ACTIVE, grant.getAwardStatus());

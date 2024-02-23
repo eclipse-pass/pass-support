@@ -179,11 +179,11 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 }
 
                 //same for any users
-                String employeeId = grantIngestRecord.getPiEmployeeId();
-                if (!userMap.containsKey(employeeId)) {
+                String userKey = grantIngestRecord.getPiEmployeeId() + grantIngestRecord.getPiInstitutionalId();
+                if (!userMap.containsKey(userKey)) {
                     User rowUser = buildUser(grantIngestRecord);
                     User updateUser = updateUserInPass(rowUser);
-                    userMap.put(employeeId, updateUser);
+                    userMap.put(userKey, updateUser);
                 }
 
                 //now we know all about our user and funders for this record
@@ -203,7 +203,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 String abbreviatedRole = grantIngestRecord.getPiRole();
                 //anybody who was ever a co-pi in an iteration will be in this list
                 if (abbreviatedRole.equals("C") || abbreviatedRole.equals("K")) {
-                    User user = userMap.get(employeeId);
+                    User user = userMap.get(userKey);
                     if (!grant.getCoPis().contains(user)) {
                         grant.getCoPis().add(user);
                         statistics.addCoPi();
@@ -253,7 +253,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
                     //we want the PI to be the one listed on the most recent grant iteration
                     if (abbreviatedRole.equals("P")) {
-                        User user = userMap.get(employeeId);
+                        User user = userMap.get(userKey);
                         User oldPiId = grant.getPi();
                         grant.setPi(user);
                         grant.getCoPis().remove(user);

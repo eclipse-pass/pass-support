@@ -142,7 +142,7 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("usertwo@jhu.edu", passGrant.getPi().getEmail());
         assertEquals(List.of("johnshopkins.edu:eppn:usertwo"), passGrant.getPi().getLocatorIds());
 
-        assertEquals(2, passGrant.getCoPis().size());
+        assertEquals(3, passGrant.getCoPis().size());
         User copi1 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userone@jhu.edu"))
             .findFirst().get();
         assertEquals("UserOneFn", copi1.getFirstName());
@@ -159,6 +159,14 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("UserThreeLn", copi2.getLastName());
         assertEquals("userthree@jhu.edu", copi2.getEmail());
         assertEquals(List.of("johnshopkins.edu:employeeid:789123"), copi2.getLocatorIds());
+
+        User copi3 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userfour@jhu.edu"))
+            .findFirst().get();
+        assertEquals("UserFourFn", copi3.getFirstName());
+        assertEquals("UserFourMn", copi3.getMiddleName());
+        assertEquals("UserFourLn", copi3.getLastName());
+        assertEquals("userfour@jhu.edu", copi3.getEmail());
+        assertEquals(List.of("johnshopkins.edu:eppn:userfour"), copi3.getLocatorIds());
     }
 
 }
