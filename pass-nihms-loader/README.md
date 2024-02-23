@@ -28,78 +28,16 @@ The following are required to run this tool:
 
 ### Data Harvest Configuration
 
-There are several ways to configure the Data Harvest CLI. You can use a configuration file, environment variables,
-system variables, or a combination of these. The configuration file will set system properties. In the absence of a
-config file, system properties will be used, and in the absence of those, environment variables will be used. Note that
-to use environment variables, the system property name must be converted to upper case, and the periods replaced with
-underscores. For example, to define `nihmsetl.data.dir` as an environment variable, use `NIHMSETL_DATA_DIR` instead.
+There are several ways to configure the Data Harvest CLI. Data Harvest CLI is a Spring Boot Application, so it can be
+configured as described here: [Spring Boot Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config)
 
-> **Note**: URL parameters specified using system properties named `nihmsetl.api.url.param.<param name>` cannot be specified as _environment variables_. They may only be specified as system properties or in the `nihms-harvest.properties` file.
+You will need to set values for the following props: `nihmsetl.api.url.param.inst`, `nihmsetl.api.url.param.ipf`, 
+and `nihmsetl.api.url.param.api-token`.  There are a number of ways to do this with a spring boot app that are described
+in the link above.
 
-By default, the application will look for a configuration file named `nihms-harvest.properties` in the folder containing
-the java application. You can override the location of the properties file by defining an environment variable
-for `nihmsetl.harvester.configfile` e.g.
-
+Here is an example using Java system properties `-D`.
 ```
-> java -Dnihmsetl.harvester.configfile=/path/to/configfile.properties -jar nihms-data-harvest-cli-exec.jar
-```
-
-The configuration file should look like this:
-
-```properties
-# Example properties file for nihms-data-harvest-cli
-#
-# Defines a folder to download CSV files to. If it doesn’t exist, it will create it for you.
-# Will default to ./data in the folder the Java app runs in
-# nihmsetl.data.dir=data
-#
-
-# NIH API hostname
-nihmsetl.api.host=www.ncbi.nlm.nih.gov
-
-# HTTP scheme
-nihmsetl.api.scheme=https
-
-# Currently the port is not used
-# nihmsetl.api.port = 
-
-# NIH API URL path
-nihmsetl.api.path=/pmc/utils/pacm/
-
-# Allow 30 seconds for a request to be read before timing out
-nihmsetl.http.read-timeout-ms=30000
-
-# Allow 30 seconds for establishing connections before timing out
-nihmsetl.http.connect-timeout-ms=30000
-
-# URL Parameters
-#   Additional parameters may be added, and they will be included in the API URL as request parameters
-#   Parameters may be added as 'nihmsetl.api.url.param.<parameter name>' where '<parameter name>' is the
-#   URL request parameter
-
-# Format ought to be CSV, otherwise the loader won't be able to process the saved files
-nihmsetl.api.url.param.format=csv
-
-# Institution name, unclear as to how it is used
-nihmsetl.api.url.param.inst=JOHNS HOPKINS UNIVERSITY
-
-#  IPF (Institutional Profile File) number, the unique ID assigned to a grantee organization in the eRA system. 
-nihmsetl.api.url.param.ipf=4134401
-
-# The API token retrieved from the PACM website.  These expire every three months.
-nihmsetl.api.url.param.api-token=XXXXXXX-XXXX-XXXX-XXXXXX
-
-# Date in MM/YYYY format that the PACM data should start from (may be set using the `-s` harvester command line option). By default, this date will be set to the current month, one year ago 
-# nihmsetl.api.url.param.pdf = 07/2018
-
-# Date in MM/YYYY format that the PACM data should end at (leave commented to default to the current month)
-# nihmsetl.api.url.param.pdt = 07/2019
-
-# Undocumented, not used
-# nihmsetl.api.url.param.rd =
-
-# Undocumented, not used
-# nihmsetl.api.url.param.filter =
+> java -Dnihmsetl.api.url.param.inst=my-inst -Dnihmsetl.api.url.param.ipf=my-ipf -Dnihmsetl.api.url.param.api-token=my-token -jar nihms-data-harvest-cli-exec.jar
 ```
 
 ### Running the Data Harvester
@@ -145,42 +83,17 @@ The following is required to run this tool:
 
 ### Data Transform-Load Configuration
 
-There are several ways to configure the Data Transform-Load CLI. You can use a configuration file, environment
-variables, system variables, or a combination of these. The configuration file will set system properties. In the
-absence of a config file, system properties will be used, and in the absence of those, environment variables will be
-used. Note, that on a Windows machine, any paths in the configuration file or system properties must use forward slashes
-(`/`) instead of backslashes (`\`), or double backslashes (`\\`).
+There are several ways to configure the Data Transform-Load CLI. Data Transform-Load CLI is a Spring Boot Application, 
+so it can be configured as described here: [Spring Boot Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config)
 
-By default, the application will look for a configuration file named `nihms-loader.properties` in the folder containing
-the java application. You can override the location of the properties file by defining an environment variable
-for `nihmsetl.harvester.configfile` e.g.
+You will need to set values for the following props: `nihmsetl.repository.id`, `pass.client.url`, `pass.client.user`
+and `pass.client.password`.  There are a number of ways to do this with a spring boot app that are described
+in the link above.
 
+Here is an example using Java system properties `-D`.
 ```
-> java -Dnihmsetl.loader.configfile=/path/to/configfile.properties -jar nihms-data-transform-load-exec.jar 
+> java -Dnihmsetl.repository.id=my-repo-id -Dpass.client.url=my-url -Dpass.client.user=my-user -Dpass.client.password=my-pw -jar nihms-data-transform-load-exec.jar 
 ```
-
-The configuration file should look like this:
-
-```
-nihmsetl.data.dir=/path/to/pass/loaders/data
-nihmsetl.loader.cachepath=/path/to/pass/loaders/cache/compliant-cache.data
-nihmsetl.pmcurl.template=https://www.ncbi.nlm.nih.gov/pmc/articles/%s/
-pass.core.url=http://localhost:8080/
-pass.core.user=admin
-pass.core.password=password
-```
-
-* `nihmsetl.data.dir` is the path that the CSV files will be read from. If a path is not defined, the app will look for
-  a `/data` folder in the folder containing the java app. When using a Windows path in the config file, use forward 
-  slashes (`/`) instead of backslashes (`\`), or double backslashes (`\\`).
-* `nihmsetl.loader.cachepath` designates a path to a file that will be used to store a cache of completed compliant data
-  so that it is not reprocessed. Note that this file can be deleted to force a complete recheck of the data. If a path
-  is not defined, this will default to a file at `/cache/compliant-cache.data` in the folder containing the java app.
-* `nihmsetl.pmcurl.template` is the template URL used to construct the RepositoryCopy.accessUrl. The article PMC is
-  passed into this URL.
-* `pass.core.url` - The base url for the pass-core REST API such as `http://localhost:8080`
-* `pass.core.user` - Username for pass-core access
-* `pass.core.password` - Password for pass-core access
 
 ### Running the Data Transform-Load
 
