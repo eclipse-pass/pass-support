@@ -13,10 +13,7 @@
   <name>NIHMS Data Transform/Load</name>
 
   <properties>
-    <pass.core.port>8080</pass.core.port>
-    <pass.core.url>http://localhost:8080</pass.core.url>
-    <pass.core.user>backend</pass.core.user>
-    <pass.core.password>backend</pass.core.password>
+    <maven-model.version>3.9.6</maven-model.version>
   </properties>
 
   <dependencies>
@@ -70,12 +67,6 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${commons-io.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>${http-client.version}</version>
@@ -121,6 +112,19 @@
     </dependency>
 
     <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${maven-model.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
@@ -133,11 +137,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
       </plugin>
 
       <plugin>
