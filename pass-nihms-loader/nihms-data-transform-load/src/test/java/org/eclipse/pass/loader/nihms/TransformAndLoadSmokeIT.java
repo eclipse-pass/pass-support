@@ -56,7 +56,7 @@ public class TransformAndLoadSmokeIT extends NihmsSubmissionEtlITBase {
         assertEquals(32, submissions.size());
 
         //reset file names:
-        File downloadDir = new File(path);
+        File downloadDir = new File(dataDir);
         resetPaths(downloadDir);
     }
 

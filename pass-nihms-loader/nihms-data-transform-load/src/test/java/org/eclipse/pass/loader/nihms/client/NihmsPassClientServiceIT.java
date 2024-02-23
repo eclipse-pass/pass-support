@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.pass.loader.nihms.NihmsSubmissionEtlITBase;
-import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.Grant;
@@ -44,20 +43,9 @@ import org.eclipse.pass.support.client.model.Source;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class NihmsPassClientServiceIT extends NihmsSubmissionEtlITBase {
-
-    private PassClient passClient;
-
-    @BeforeEach
-    public void setUp() {
-        System.setProperty("pass.core.url","http://localhost:8080");
-        System.setProperty("pass.core.user","backend");
-        System.setProperty("pass.core.password","backend");
-        passClient = PassClient.newInstance();
-    }
 
     /**
      * Demonstrate that a Journal can be looked up by any of its ISSNs.
