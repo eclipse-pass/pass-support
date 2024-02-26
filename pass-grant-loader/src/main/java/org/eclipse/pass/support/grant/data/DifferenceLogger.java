@@ -25,10 +25,12 @@ import java.util.stream.Collectors;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
+@Component
 public class DifferenceLogger {
 
     private static final Logger LOG = LoggerFactory.getLogger(DifferenceLogger.class);

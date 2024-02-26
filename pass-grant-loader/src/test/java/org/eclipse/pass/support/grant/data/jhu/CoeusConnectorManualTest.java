@@ -29,6 +29,8 @@ import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * Test class for the COEUS connector.  This is strictly a manual test for querying the Coeus database.
@@ -39,28 +41,17 @@ import org.junit.jupiter.api.Test;
  *
  * @author jrm@jhu.edu
  */
+@SpringBootTest
 @Disabled
 public class CoeusConnectorManualTest {
 
-    private CoeusConnector connector;
-
-    private final File connectionPropertiesFile = new File(
-        getClass().getClassLoader().getResource("connection.properties").getFile());
-
-    @BeforeEach
-    public void setup() throws Exception {
-        Properties connectionProperties = new Properties();
-        try (InputStream resourceStream = new FileInputStream(connectionPropertiesFile)) {
-            connectionProperties.load(resourceStream);
-        }
-        connector = new CoeusConnector(connectionProperties);
-    }
+    @Autowired private CoeusConnector connector;
 
     @Disabled
     @Test
     public void testGrantQuery() throws SQLException {
         List<GrantIngestRecord> results =
-            connector.retrieveUpdates("2023-10-20 00:00:00", "01/01/2011", "grant", null, null);
+            connector.retrieveUpdates("2023-10-20 00:00:00", "01/01/2011", "grant", null);
         assertNotNull(results);
     }
 
@@ -68,7 +59,7 @@ public class CoeusConnectorManualTest {
     @Test
     public void testUserQuery() throws SQLException {
         List<GrantIngestRecord> results =
-            connector.retrieveUpdates("2023-10-20 00:00:00", null, "user", null, null);
+            connector.retrieveUpdates("2023-10-20 00:00:00", null, "user", null);
         assertNotNull(results);
     }
 
@@ -76,7 +67,7 @@ public class CoeusConnectorManualTest {
     @Test
     public void testFunderQuery() throws SQLException {
         List<GrantIngestRecord> results =
-            connector.retrieveUpdates(null, null, "funder", null, Set.of());
+            connector.retrieveUpdates(null, null, "funder", null);
         assertNotNull(results);
     }
 

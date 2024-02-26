@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli.jhu;
+package org.eclipse.pass.support.grant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,7 +28,7 @@ import org.eclipse.pass.support.client.model.Grant;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class JhuGrantLoaderManualIT {
+public class GrantLoaderManualIT {
 
     /**
      * This is a manual test that can run locally to test loading the COEUS data.
@@ -46,7 +46,7 @@ public class JhuGrantLoaderManualIT {
                 "full_path_to/pass-support/pass-grant-loader/pass-grant-cli/src/test/resources"
         );
         String[] args = {"-a", "load", "full_path_to/testresults"};
-        JhuGrantLoaderCLI.main(args);
+        GrantLoaderCLI.main(args);
     }
 
     @Disabled

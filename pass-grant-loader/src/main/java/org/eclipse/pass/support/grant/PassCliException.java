@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli;
+package org.eclipse.pass.support.grant;
 
 /**
  * An Exception class to manage the various Exceptions thrown to the GrantLoaderApp, which then forwards

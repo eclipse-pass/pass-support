@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli.jhu;
+package org.eclipse.pass.support.grant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,15 +32,16 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
-import org.eclipse.pass.support.grant.AbstractIntegrationTest;
-import org.eclipse.pass.support.grant.cli.PassCliException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
+public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
+
+    @Autowired private GrantLoaderApp grantLoaderApp;
 
     @AfterEach
     void cleanUp() throws IOException {
@@ -55,11 +56,10 @@ public class JhuGrantLoaderLoadFileIT extends AbstractIntegrationTest {
         passClient.createObject(policy);
 
         System.setProperty("APP_HOME", "src/test/resources");
-        JhuGrantLoaderApp app = new JhuGrantLoaderApp("", "01/01/2011", "grant",
-            "load", "src/test/resources/test-load.csv", false, null);
 
         // WHEN
-        app.run();
+        grantLoaderApp.run("", "01/01/2011", "grant",
+            "load", "src/test/resources/test-load.csv", null, false);
 
         // THEN
         verifyGrantOne();

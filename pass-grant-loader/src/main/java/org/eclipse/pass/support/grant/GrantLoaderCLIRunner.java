@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli;
+package org.eclipse.pass.support.grant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +22,16 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 /**
  * This Class manages the command line interaction for the loading and updating processes
  *
  * @author jrm@jhu.edu
  */
-public abstract class AbstractGrantLoaderCLI {
+@Component
+public class GrantLoaderCLIRunner implements CommandLineRunner {
 
     /**
      * Request for help/usage documentation
@@ -104,14 +107,19 @@ public abstract class AbstractGrantLoaderCLI {
     @Argument
     protected static List<String> arguments = new ArrayList<>();
 
-    protected abstract AbstractBaseGrantLoaderApp getGrantLoaderApp(String dataFileName);
+    private final GrantLoaderApp grantLoaderApp;
+
+    public GrantLoaderCLIRunner(GrantLoaderApp grantLoaderApp) {
+        this.grantLoaderApp = grantLoaderApp;
+    }
 
     /**
      * The method which parses the command line arguments and options; also reports errors and exit statuses.
      *
      * @param args the command line arguments
      */
-    public void runGrantLoader(String[] args) {
+    @Override
+    public void run(String[] args) {
         CmdLineParser parser = new CmdLineParser(this);
         String dataFileName = "";
 
@@ -137,9 +145,7 @@ public abstract class AbstractGrantLoaderCLI {
             }
 
             /* Run the package generation application proper */
-            AbstractBaseGrantLoaderApp app = getGrantLoaderApp(dataFileName);
-            app.run();
-            System.exit((0));
+            grantLoaderApp.run(startDate, awardEndDate, mode, action, dataFileName, grant, init);
         } catch (CmdLineException e) {
             /*
              * This is an error in command line args, just print out usage data

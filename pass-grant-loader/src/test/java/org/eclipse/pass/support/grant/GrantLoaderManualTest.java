@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli.jhu;
+package org.eclipse.pass.support.grant;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class JhuGrantLoaderManualTest {
+public class GrantLoaderManualTest {
 
     /**
      * This is a manual test that can run locally to test pulling the COEUS data into a file.
@@ -37,7 +37,7 @@ public class JhuGrantLoaderManualTest {
         );
         String[] args = {"-a", "pull", "-s", "2023-04-01 00:00:00.000", "-z", "04/01/2023",
             "full_path_to/testresults"};
-        JhuGrantLoaderCLI.main(args);
+        GrantLoaderCLI.main(args);
     }
 
 }

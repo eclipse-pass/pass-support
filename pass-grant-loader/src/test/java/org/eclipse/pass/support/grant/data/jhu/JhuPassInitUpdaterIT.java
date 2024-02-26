@@ -36,13 +36,17 @@ import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
 import org.eclipse.pass.support.grant.TestUtil;
+import org.eclipse.pass.support.grant.data.DifferenceLogger;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
+import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
@@ -66,6 +70,8 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
     //private final String funderIdPrefix = "johnshopkins.edu:funder:";
 
+    @Autowired private JhuPassInitUpdater jhuPassInitUpdater;
+
     /**
      * we put an initial award for a grant into PASS, then simulate a pull of all records related
      * to this grant from the Beginning of Time (including records which created the initial object)
@@ -85,9 +91,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
         resultSet.add(piRecord2);
 
-        Properties policyProperties = TestUtil.loaderPolicyProperties();
-        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater(policyProperties);
-        passUpdater.updatePass(resultSet, "grant");
+        jhuPassInitUpdater.updatePass(resultSet, "grant");
 
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[2]));
@@ -109,10 +113,10 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         assertEquals(0, passGrant.getCoPis().size());
 
         //check statistics
-        assertEquals(1, passUpdater.getStatistics().getGrantsCreated());
-        assertEquals(1, passUpdater.getStatistics().getUsersCreated());
-        assertEquals(1, passUpdater.getStatistics().getPisAdded());
-        assertEquals(0, passUpdater.getStatistics().getCoPisAdded());
+        assertEquals(1, jhuPassInitUpdater.getStatistics().getGrantsCreated());
+        assertEquals(1, jhuPassInitUpdater.getStatistics().getUsersCreated());
+        assertEquals(1, jhuPassInitUpdater.getStatistics().getPisAdded());
+        assertEquals(0, jhuPassInitUpdater.getStatistics().getCoPisAdded());
 
         //now simulate a complete pull from the Beginning of Time and adjust the stored grant
         //we add a new co-pi Jones in the "1" iteration, and change the pi to Einstein in the "2" iteration
@@ -132,7 +136,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         resultSet.add(newCoPiRecord1);
         resultSet.add(piRecord2);
 
-        passUpdater.updatePass(resultSet, "grant");
+        jhuPassInitUpdater.updatePass(resultSet, "grant");
 
         resultGrant = passClient.selectObjects(grantSelector);
         assertEquals(1, resultGrant.getTotal());
@@ -176,12 +180,10 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         resultSet.add(piRecord2);
 
         PassClient spyPassClient = Mockito.spy(passClient);
-        Properties policyProperties = TestUtil.loaderPolicyProperties();
-        JhuPassInitUpdater passUpdater = new JhuPassInitUpdater(policyProperties);
-        FieldUtils.writeField(passUpdater, "passClient", spyPassClient, true);
+        FieldUtils.writeField(jhuPassInitUpdater, "passClient", spyPassClient, true);
 
         // WHEN
-        passUpdater.updatePass(resultSet, "grant");
+        jhuPassInitUpdater.updatePass(resultSet, "grant");
 
         // THEN
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
