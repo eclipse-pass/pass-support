@@ -34,14 +34,11 @@ import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
-
-    @Autowired private GrantLoaderApp grantLoaderApp;
 
     @AfterEach
     void cleanUp() throws IOException {
@@ -54,8 +51,6 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         Policy policy = new Policy();
         policy.setTitle("test policy");
         passClient.createObject(policy);
-
-        System.setProperty("APP_HOME", "src/test/resources");
 
         // WHEN
         grantLoaderApp.run("", "01/01/2011", "grant",

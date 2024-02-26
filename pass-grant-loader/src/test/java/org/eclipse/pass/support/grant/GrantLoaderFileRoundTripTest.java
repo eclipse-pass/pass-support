@@ -34,12 +34,9 @@ import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
-import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -47,9 +44,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
 
     private static final Path TEST_CSV_PATH = Path.of("src/test/resources/test-pull.csv");
-
-    @Autowired private GrantLoaderApp grantLoaderApp;
-    @MockBean private GrantConnector grantConnector;
 
     @AfterEach
     void cleanUp() throws IOException {
@@ -72,8 +66,8 @@ public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
             any());
 
         // WHEN
-        grantLoaderApp.run("", "01/01/2011", "grant",
-            "pull", TEST_CSV_PATH.toString(), null, false);
+        grantLoaderApp.run("2011-01-01 00:00:00", "01/01/2011",
+            "grant", "pull", "src/test/resources/test-pull.csv", null, false);
 
         // THEN
         String expectedContent = Files.readString(Path.of("src/test/resources/expected-csv.csv"));
