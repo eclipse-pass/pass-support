@@ -17,24 +17,32 @@ package org.eclipse.pass.support.grant.data.jhu;
 
 import java.util.Properties;
 
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.data.DifferenceLogger;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
  * The Init Grant Pass Updater for data sourced from Jhu Coeus.
  */
+@Component
+@Profile("jhu")
+@Qualifier("initUpdater")
 public class JhuPassInitUpdater extends JhuPassUpdater {
 
     private final DifferenceLogger differenceLogger;
 
     /**
      * Default constructor.
-     * @param policyProperties the policy props
      */
-    public JhuPassInitUpdater(Properties policyProperties) {
-        super(policyProperties);
-        differenceLogger = new DifferenceLogger();
+    public JhuPassInitUpdater(PassClient passClient,
+                              @Qualifier("policyProperties") Properties policyProperties,
+                              DifferenceLogger differenceLogger) {
+        super(passClient, policyProperties);
+        this.differenceLogger = differenceLogger;
     }
 
     @Override

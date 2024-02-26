@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.support.grant.cli.jhu;
+package org.eclipse.pass.support.grant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,23 +34,22 @@ import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
-import org.eclipse.pass.support.grant.AbstractIntegrationTest;
-import org.eclipse.pass.support.grant.TestUtil;
-import org.eclipse.pass.support.grant.cli.PassCliException;
 import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-@ExtendWith(MockitoExtension.class)
-public class JhuGrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
+public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
 
     private static final Path TEST_CSV_PATH = Path.of("src/test/resources/test-pull.csv");
+
+    @Autowired private GrantLoaderApp grantLoaderApp;
+    @MockBean private GrantConnector grantConnector;
 
     @AfterEach
     void cleanUp() throws IOException {
@@ -68,21 +65,15 @@ public class JhuGrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
         passClient.createObject(policy);
 
         // Use data from JHU grant source system and write the CSV
-        System.setProperty("APP_HOME", "src/test/resources");
         Files.createFile(TEST_CSV_PATH);
 
-        JhuGrantLoaderApp pullApp = new JhuGrantLoaderApp("2011-01-01 00:00:00", "01/01/2011",
-            "grant", "pull", "src/test/resources/test-pull.csv", false, null);
-        JhuGrantLoaderApp spyPullApp = spy(pullApp);
-        GrantConnector mockGrantConnector = mock(GrantConnector.class);
-        doReturn(mockGrantConnector).when(spyPullApp).configureConnector(any());
-
         List<GrantIngestRecord> grantIngestRecordList = getTestIngestRecords();
-        doReturn(grantIngestRecordList).when(mockGrantConnector).retrieveUpdates(anyString(), anyString(), anyString(),
-            any(), any());
+        doReturn(grantIngestRecordList).when(grantConnector).retrieveUpdates(anyString(), anyString(), anyString(),
+            any());
 
         // WHEN
-        spyPullApp.run();
+        grantLoaderApp.run("", "01/01/2011", "grant",
+            "pull", TEST_CSV_PATH.toString(), null, false);
 
         // THEN
         String expectedContent = Files.readString(Path.of("src/test/resources/expected-csv.csv"));
@@ -91,11 +82,8 @@ public class JhuGrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
 
         // WHEN
         // Use CSV file create above and load into PASS
-        JhuGrantLoaderApp loadApp = new JhuGrantLoaderApp("", "01/01/2011", "grant",
-            "load", TEST_CSV_PATH.toString(), false, null);
-
-        // WHEN
-        loadApp.run();
+        grantLoaderApp.run("", "01/01/2011", "grant",
+            "load", TEST_CSV_PATH.toString(), null, false);
 
         // THEN
         verifyGrantOne();

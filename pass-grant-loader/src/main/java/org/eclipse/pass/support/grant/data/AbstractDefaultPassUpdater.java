@@ -61,7 +61,6 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     private String domain = "default.domain";
     private String latestUpdateString = "";
 
-    private final PassClient passClient;
     private final PassUpdateStatistics statistics = new PassUpdateStatistics();
 
     private final Map<String, Grant> grantResultMap = new HashMap<>();
@@ -74,11 +73,13 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
     private String mode;
 
-    private Properties funderPolicyProperties;
+    private final PassClient passClient;
+    private final Properties funderPolicyProperties;
 
-    public AbstractDefaultPassUpdater(Properties funderPolicyProperties) {
+    public AbstractDefaultPassUpdater(PassClient passClient,
+                                      Properties funderPolicyProperties) {
         this.funderPolicyProperties = funderPolicyProperties;
-        this.passClient = PassClient.newInstance();
+        this.passClient = passClient;
     }
 
     public void updatePass(Collection<GrantIngestRecord> results, String mode) {

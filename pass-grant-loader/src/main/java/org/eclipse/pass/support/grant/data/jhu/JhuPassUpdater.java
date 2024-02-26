@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
@@ -29,6 +30,9 @@ import org.eclipse.pass.support.grant.data.AbstractDefaultPassUpdater;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
  * This class is responsible for taking the Set of Maps derived from the ResultSet from the database query and
@@ -36,6 +40,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author jrm@jhu.edu
  */
+@Component
+@Profile("jhu")
+@Qualifier("defaultUpdater")
 public class JhuPassUpdater extends AbstractDefaultPassUpdater {
 
     private static final Logger LOG = LoggerFactory.getLogger(JhuPassUpdater.class);
@@ -50,8 +57,9 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
      * Constructor.
      * @param policyProperties the policy props
      */
-    public JhuPassUpdater(Properties policyProperties) {
-        super(policyProperties);
+    public JhuPassUpdater(PassClient passClient,
+                          @Qualifier("policyProperties") Properties policyProperties) {
+        super(passClient, policyProperties);
         setDomain(DOMAIN);
     }
 

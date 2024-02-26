@@ -32,10 +32,9 @@ public interface GrantConnector {
      * @param awardEndDate - the end date of the award
      * @param mode      - indicates whether the data pull is for grants, or users
      * @param grant      - a grant number
-     * @param funderIds set of funder ids to update if mode is funder
      * @throws SQLException           if there is an SQL exception
      */
-    List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant,
-                                            Set<String> funderIds) throws SQLException;
+    List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant)
+        throws SQLException;
 
 }

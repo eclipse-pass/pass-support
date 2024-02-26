@@ -35,6 +35,9 @@ import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
  * This class connects to a COEUS database via the Oracle JDBC driver. The query string reflects local JHU
@@ -42,12 +45,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author jrm@jhu.edu
  */
+@Component
+@Profile("jhu")
 public class CoeusConnector implements GrantConnector {
     private static final Logger LOG = LoggerFactory.getLogger(CoeusConnector.class);
-    //property names
-    private static final String COEUS_URL = "coeus.url";
-    private static final String COEUS_USER = "coeus.user";
-    private static final String COEUS_PASS = "coeus.pass";
 
     static final String C_GRANT_AWARD_NUMBER = "AWARD_ID";
     static final String C_GRANT_AWARD_STATUS = "AWARD_STATUS";
@@ -127,31 +128,25 @@ public class CoeusConnector implements GrantConnector {
             "FROM COEUS.SWIFT_SPONSOR " +
             "WHERE SPONSOR_CODE IN (%s)";
 
+    @Value("${grant.db.url}")
     private String coeusUrl;
+
+    @Value("${grant.db.username}")
     private String coeusUser;
+
+    @Value("${grant.db.password}")
     private String coeusPassword;
+
+    private final Set<String> funderIds;
 
     /**
      * Class constructor.
-     * @param connectionProperties the connection props
      */
-    public CoeusConnector(Properties connectionProperties) {
-        if (connectionProperties != null) {
-
-            if (connectionProperties.getProperty(COEUS_URL) != null) {
-                this.coeusUrl = connectionProperties.getProperty(COEUS_URL);
-            }
-            if (connectionProperties.getProperty(COEUS_USER) != null) {
-                this.coeusUser = connectionProperties.getProperty(COEUS_USER);
-            }
-            if (connectionProperties.getProperty(COEUS_PASS) != null) {
-                this.coeusPassword = connectionProperties.getProperty(COEUS_PASS);
-            }
-        }
+    public CoeusConnector(Properties policyProperties) {
+        this.funderIds = policyProperties.stringPropertyNames();
     }
 
-    public List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant,
-                                                   Set<String> funderIds)
+    public List<GrantIngestRecord> retrieveUpdates(String startDate, String awardEndDate, String mode, String grant)
         throws SQLException {
         if (mode.equals("user")) {
             return retrieveUserUpdates(startDate);
