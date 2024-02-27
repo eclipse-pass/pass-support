@@ -15,8 +15,6 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -26,12 +24,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 
 @Configuration
 public class GrantLoaderConfig {
-
-    @Value("${app.home}")
-    private String appHome;
 
     @Value("${pass.client.url}")
     private String passClientUrl;
@@ -49,11 +45,10 @@ public class GrantLoaderConfig {
 
     @Bean
     @Qualifier("policyProperties")
-    public Properties policyProperties() throws IOException {
-        String policyPropertiesFileName = "policy.properties";
-        File policyPropertiesFile = new File(new File(appHome), policyPropertiesFileName);
+    public Properties policyProperties(@Value("${pass.policy.prop.path}")
+                                           Resource policyPropResource) throws IOException {
         Properties properties = new Properties();
-        try (InputStream resourceStream = new FileInputStream(policyPropertiesFile.getCanonicalPath())) {
+        try (InputStream resourceStream = policyPropResource.getInputStream()) {
             properties.load(resourceStream);
         }
         return properties;
