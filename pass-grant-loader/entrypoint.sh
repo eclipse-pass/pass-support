@@ -1,2 +1,2 @@
 #!/bin/sh
-java -jar jhu-grant-loader-exec.jar "$@"
+java $PASS_GRANT_LOADER_JAVA_OPTS -jar jhu-grant-loader-exec.jar "$@"
