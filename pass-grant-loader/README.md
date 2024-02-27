@@ -13,29 +13,13 @@ the service providing the grant data. The JHU implementation is complex regardin
 
 ## Developer Notes
 
-This project has been adapted to be able to build several jars for loading data for loading data into PASS instances for
-different institutions. For the sake of efficiency, we do this in one project rather than in several projects. We abuse
-the shade plugin and provide a separate `<execution>` for each artifact. Because different jars will have different
-revision schedules, we control the versioning for each implementation manually. We increment the current version for
-each implementation at the end of the `<properties>` section of the main pom file for the project. This is reflected in
-the `<finalName>` element in the configuration for the corresponding `<execution>` section for the implementation in the
-pass-grant-cli pom file.
+The grant loader uses Spring Boot Profiles to select the appropriate classes to be used for a given institution.
+There is a property in application.properties named `spring.profiles.active` that needs to be set when starting the
+grant loader.  This property can be set at runtime as well using the normal spring boot configuration functionality.
+[Spring Boot Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config)
 
-The code has been factored to ease development for multiple institutions. The main components are the CLI, the App, the
-Connector and the Updater. In addition, there is an institution-specific PassEntityUtility Class which contains the
-logic for deciding when an entity needs to be updated.
-
-#### CLI
-
-The CLI class defines which options or files need to be supplied to the App. This needs to be written for each
-implementation.
-
-#### App
-
-The App setup has a BaseGrantLoaderApp class which contains a few abstract methods to be implemented in child classes
-for each institution. These methods essentially configure the App class for each institution by supplying a Connector
-and an Updater implementation. We also let the App know if the implementation has enough data in its feed to enable
-updating (requires some kind of latest update timestamp in the data).
+The code has been factored to ease development for multiple institutions. These are the institution-specific classes 
+which typically need to be implemented and annotated with the `@Profile` annotation:
 
 #### Connector
 
@@ -49,9 +33,9 @@ repository accordingly. There is a Default class whose children may override cer
 policies require. In most cases, the child classes will simply supply a PassEntityUtil class which has been tuned for
 the institution, and also a domain string for constructing identifiers.
 
-## Implementations
+## Profiles
 
-### JHU
+### JHU (jhu)
 
 The JHU implementation is used to pull data from the COEUS Oracle database views for the purpose of performing regular
 updates. We look at grants which have been updated since a particular time (typically the time of the previous update),
@@ -63,26 +47,14 @@ about operation are available at
 
 ## Usage
 
-Using java system properties to launch the jhu grant loader:
+Refer to the application.properties file to determine which properties that need runtime values set. The grant loader
+is a spring boot application, so use the standard Spring Boot configuration functionality 
+[Spring Boot Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config)
+
+Here is an example using Java system properties `-D`.
 ```
-    java -DAPP_HOME=<full_path_to_home> -Dpass.core.url=http://localhost:8080 -Dpass.core.user=USER -Dpass.core.password=PASS -jar jhu-grant-loader-0.6.0-SNAPSHOT.jar -startDateTime "<yyyy-mm-dd hh:mm:ss.m{mm}>" -awardEndDate <MM/dd/yyyy>
-
+    java -Dapp.hom-/my/home/path -jar jhu-grant-loader-0.6.0-SNAPSHOT.jar -startDateTime "<yyyy-mm-dd hh:mm:ss.m{mm}>" -awardEndDate <MM/dd/yyyy>
 ```
-### Properties or Environment Variables
-
-The following may be provided as system properties on the command line `-Dprop-value`.
-
-`APP_HOME`
-The full path to where the connections.properties and policy.properties are located
-
-`pass.core.url`
-The base url for the pass-core REST API such as `http://localhost:8080`
-
-`pass.core.user`
-The pass-core backend user.
-
-`pass.core.password`
-The pass-core backend user password.
 
 ### Arguments
 
