@@ -34,7 +34,7 @@
     <commons-lang.version>3.14.0</commons-lang.version>
     <ojdbc10.version>19.18.0.0</ojdbc10.version>
     <lombok.version>1.18.30</lombok.version>
-    <slf4j.version>2.0.7</slf4j.version>
+    <slf4j.version>2.0.9</slf4j.version>
     <logback.version>1.4.14</logback.version>
     <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <mockito.version>5.10.0</mockito.version>
@@ -72,10 +72,16 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
       </dependency>
-      <dependency>
-        <groupId>io.awspring.cloud</groupId>
-        <artifactId>spring-cloud-aws-starter-s3</artifactId>
-      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>io.awspring.cloud</groupId>-->
+<!--        <artifactId>spring-cloud-aws-starter-s3</artifactId>-->
+<!--        <exclusions>-->
+<!--          <exclusion>-->
+<!--            <groupId>commons-logging</groupId>-->
+<!--            <artifactId>commons-logging</artifactId>-->
+<!--          </exclusion>-->
+<!--        </exclusions>-->
+<!--      </dependency>-->
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
@@ -169,11 +175,6 @@
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
         </plugin>
 
@@ -212,36 +213,18 @@
         </plugin>
 
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>3.0.0</version>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <mainClass>org.eclipse.pass.support.grant.GrantLoaderCLI</mainClass>
+            <finalName>jhu-grant-loader</finalName>
+            <classifier>exec</classifier>
+          </configuration>
           <executions>
             <execution>
-              <id>jhu-grant-loader</id>
               <goals>
-                <goal>shade</goal>
+                <goal>repackage</goal>
               </goals>
-              <configuration>
-                <shadedArtifactAttached>true</shadedArtifactAttached>
-                <finalName>jhu-grant-loader-exec</finalName>
-                <shadedClassifierName>jhu</shadedClassifierName>
-                <transformers>
-                  <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                    <mainClass>org.eclipse.pass.support.grant.cli.jhu.JhuGrantLoaderCLI</mainClass>
-                  </transformer>
-                </transformers>
-                <filters>
-                  <filter>
-                    <artifact>*:*</artifact>
-                    <excludes>
-                      <exclude>META-INF/*.SF</exclude>
-                      <exclude>META-INF/*.DSA</exclude>
-                      <exclude>META-INF/*.RSA</exclude>
-                    </excludes>
-                  </filter>
-                </filters>
-              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -261,6 +244,8 @@
                     <excludes>
                       <exclude>com.squareup.okio:okio:*</exclude>
                       <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:*</exclude>
+                      <!-- TODO try removing -->
+                      <exclude>org.apache.commons:commons-lang3:*</exclude>
                     </excludes>
                   </dependencyConvergence>
                 </rules>
@@ -281,6 +266,10 @@
               <phase>test-compile</phase>
               <configuration>
                 <failOnWarning>true</failOnWarning>
+                <ignoredDependencies>
+                  <!-- These come from bundled jars -->
+                  <ignoredDependency>org.springframework*::</ignoredDependency>
+                </ignoredDependencies>
                 <ignoredUsedUndeclaredDependencies>
                   <!-- These come from junit-jupiter, so version is tied to that direct dependency -->
                   <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>

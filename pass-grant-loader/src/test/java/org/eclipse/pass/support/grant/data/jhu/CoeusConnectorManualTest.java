@@ -17,20 +17,15 @@ package org.eclipse.pass.support.grant.data.jhu;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test class for the COEUS connector.  This is strictly a manual test for querying the Coeus database.
@@ -42,6 +37,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @author jrm@jhu.edu
  */
 @SpringBootTest
+@TestPropertySource("classpath:test-application.properties")
 @Disabled
 public class CoeusConnectorManualTest {
 

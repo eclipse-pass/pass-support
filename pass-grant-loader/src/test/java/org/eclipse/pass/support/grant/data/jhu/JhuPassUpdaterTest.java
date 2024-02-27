@@ -33,20 +33,20 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.User;
-import org.eclipse.pass.support.grant.TestUtil;
+import org.eclipse.pass.support.grant.GrantLoaderCLIRunner;
 import org.eclipse.pass.support.grant.data.DateTimeUtil;
+import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test class for building the {@code List} of {@code Grant}s
@@ -54,10 +54,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
  * @author jrm@jhu.edu
  */
 @SpringBootTest
+@TestPropertySource("classpath:test-application.properties")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class JhuPassUpdaterTest {
 
     @MockBean private PassClient passClientMock;
+    @MockBean private GrantConnector grantConnector;
+    @MockBean private GrantLoaderCLIRunner grantLoaderCLIRunner;
     @Autowired private JhuPassUpdater jhuPassUpdater;
+    @Autowired @Qualifier("policyProperties") private Properties policyProperties;
 
     @SuppressWarnings("unchecked")
     @Test
@@ -100,7 +105,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUpdatePassGrant_Success_SkipDuplicateGrantInPass() throws IOException, IllegalAccessException {
+    public void testUpdatePassGrant_Success_SkipDuplicateGrantInPass() throws IOException {
 
         List<GrantIngestRecord> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
@@ -247,12 +252,10 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testPrimaryFunderBuilding() throws IOException {
+    public void testPrimaryFunderBuilding() {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setPrimaryFunderName( "Funder Name");
         grantIngestRecord.setPrimaryFunderCode("8675309");
-
-        Properties policyProperties = TestUtil.loaderPolicyProperties();
         policyProperties.put("8675309", "policy1");
 
         Funder newFunder = jhuPassUpdater.buildPrimaryFunder(grantIngestRecord);

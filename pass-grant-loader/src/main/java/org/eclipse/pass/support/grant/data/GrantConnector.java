@@ -17,7 +17,6 @@ package org.eclipse.pass.support.grant.data;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 /**
  * This interface defines methods for connecting to a grant datasource for us with PASS
