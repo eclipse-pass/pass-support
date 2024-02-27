@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author jrm@jhu.edu
  */
 @SpringBootApplication
+@SuppressWarnings({"checkstyle:hideutilityclassconstructor"})
 public class GrantLoaderCLI {
 
     public static void main(String[] args) {

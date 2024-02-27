@@ -35,6 +35,7 @@ import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -142,7 +143,7 @@ public class CoeusConnector implements GrantConnector {
     /**
      * Class constructor.
      */
-    public CoeusConnector(Properties policyProperties) {
+    public CoeusConnector(@Qualifier("policyProperties") Properties policyProperties) {
         this.funderIds = policyProperties.stringPropertyNames();
     }
 

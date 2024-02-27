@@ -24,6 +24,8 @@ import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -36,9 +38,10 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-@SpringBootTest(classes = GrantLoaderCLI.class)
+@SpringBootTest
 @TestPropertySource("classpath:test-application.properties")
 @Testcontainers
+@DirtiesContext
 public abstract class AbstractIntegrationTest {
 
     static {
@@ -62,7 +65,7 @@ public abstract class AbstractIntegrationTest {
         .waitingFor(Wait.forHttp("/data/grant").forStatusCode(401))
         .withExposedPorts(8080);
 
-    @Autowired protected PassClient passClient;
+    @SpyBean protected PassClient passClient;
     @Autowired protected GrantLoaderApp grantLoaderApp;
     @MockBean protected GrantConnector grantConnector;
     @MockBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;

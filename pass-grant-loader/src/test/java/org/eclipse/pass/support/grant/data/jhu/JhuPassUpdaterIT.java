@@ -24,10 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -43,7 +40,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class JhuPassUpdaterIT extends AbstractIntegrationTest {
 
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
@@ -70,10 +69,6 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
-
-        Properties policyProperties = TestUtil.loaderPolicyProperties();
-        policyProperties.put("20000000", policy.getId());
-        policyProperties.put("20000001", policy.getId());
 
         // WHEN
         jhuPassUpdater.updatePass(resultSet, "grant");
@@ -158,9 +153,9 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void processGrantIT_DoesNotUpdateWithNoChange() throws IOException, IllegalAccessException {
+    public void processGrantIT_DoesNotUpdateWithNoChange() throws IOException {
         // GIVEN
-        Policy policy = getTestPolicy();
+        getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(3, 3, "P");
         GrantIngestRecord coPiRecord0 = TestUtil.makeGrantIngestRecord(3, 3, "C");
 
@@ -168,17 +163,11 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
 
-        PassClient spyPassClient = Mockito.spy(passClient);
-        Properties policyProperties = TestUtil.loaderPolicyProperties();
-        policyProperties.put("20000000", policy.getId());
-        policyProperties.put("20000001", policy.getId());
-        FieldUtils.writeField(jhuPassUpdater, "passClient", spyPassClient, true);
-
         // WHEN
         jhuPassUpdater.updatePass(resultSet, "grant");
 
         // THEN
-        Mockito.verify(spyPassClient, Mockito.times(1)).createObject(ArgumentMatchers.any(Grant.class));
+        Mockito.verify(passClient, Mockito.times(1)).createObject(ArgumentMatchers.any(Grant.class));
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + TestUtil.grantLocalKey[3]));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
@@ -210,7 +199,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         jhuPassUpdater.updatePass(resultSet, "grant");
 
         // THEN
-        Mockito.verify(spyPassClient, Mockito.times(0)).updateObject(ArgumentMatchers.any());
+        Mockito.verify(passClient, Mockito.times(0)).updateObject(ArgumentMatchers.any());
         PassClientResult<Grant> resultGrant2 = passClient.selectObjects(grantSelector);
         assertEquals(1, resultGrant2.getTotal());
         Grant passGrant2 = resultGrant2.getObjects().get(0);
@@ -238,15 +227,11 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     @Test
     public void processGrantIT_UpdateUserLocatorsJhed() throws IOException {
         // GIVEN
-        Policy policy = getTestPolicy();
+        getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(4, 4, "P");
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
-
-        Properties policyProperties = TestUtil.loaderPolicyProperties();
-        policyProperties.put("20000000", policy.getId());
-        policyProperties.put("20000001", policy.getId());
 
         // WHEN
         jhuPassUpdater.updatePass(resultSet, "grant");

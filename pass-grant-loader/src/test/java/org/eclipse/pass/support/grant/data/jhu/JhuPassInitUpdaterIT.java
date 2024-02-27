@@ -24,10 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -35,10 +32,7 @@ import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
-import org.eclipse.pass.support.grant.TestUtil;
-import org.eclipse.pass.support.grant.data.DifferenceLogger;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
-import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -46,7 +40,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
@@ -179,9 +172,6 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         resultSet.add(newCoPiRecord1);
         resultSet.add(piRecord2);
 
-        PassClient spyPassClient = Mockito.spy(passClient);
-        FieldUtils.writeField(jhuPassInitUpdater, "passClient", spyPassClient, true);
-
         // WHEN
         jhuPassInitUpdater.updatePass(resultSet, "grant");
 
@@ -197,7 +187,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         User user1 = getVerifiedUser(1);
         User user2 = getVerifiedUser(2);
 
-        Mockito.verify(spyPassClient, Mockito.times(0)).updateObject(ArgumentMatchers.any());
+        Mockito.verify(passClient, Mockito.times(0)).updateObject(ArgumentMatchers.any());
         assertEquals(grantAwardNumber[0], passGrant.getAwardNumber());//initial
         assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
         assertEquals(grantIdPrefix + grantLocalKey[0], passGrant.getLocalKey());
