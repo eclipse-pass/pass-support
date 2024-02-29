@@ -36,6 +36,7 @@ import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.GrantLoaderCLIRunner;
 import org.eclipse.pass.support.grant.data.DateTimeUtil;
 import org.eclipse.pass.support.grant.data.GrantConnector;
+import org.eclipse.pass.support.grant.data.GrantDataException;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -66,7 +67,7 @@ public class JhuPassUpdaterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testUpdatePassGrant_Success_NewGrant() throws IOException, IllegalAccessException {
+    public void testUpdatePassGrant_Success_NewGrant() throws IOException, IllegalAccessException, GrantDataException {
 
         List<GrantIngestRecord> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
@@ -96,8 +97,8 @@ public class JhuPassUpdaterTest {
         assertEquals(AwardStatus.ACTIVE, grant.getAwardStatus());
         assertEquals("johnshopkins.edu:grant:8675309", grant.getLocalKey());
         Assertions.assertEquals(DateTimeUtil.createZonedDateTime("01/01/2000"), grant.getAwardDate());
-        assertEquals(DateTimeUtil.createZonedDateTime("01/01/2001"), grant.getStartDate());
-        assertEquals(DateTimeUtil.createZonedDateTime("01/01/2002"), grant.getEndDate());
+        assertEquals(DateTimeUtil.createZonedDateTime("2001-01-01"), grant.getStartDate());
+        assertEquals(DateTimeUtil.createZonedDateTime("2002-01-01"), grant.getEndDate());
         assertEquals("2018-01-01 00:00:00.0", jhuPassUpdater.getLatestUpdate());//latest
         assertEquals("Moo Project", grant.getProjectName());
 

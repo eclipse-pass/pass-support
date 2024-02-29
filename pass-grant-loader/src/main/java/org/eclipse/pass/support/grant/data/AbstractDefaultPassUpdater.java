@@ -15,11 +15,12 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import static java.lang.String.format;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
@@ -70,6 +72,9 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     //of these by looking them up here; if they are on the Map, they have already been processed
     private final Map<String, Funder> funderMap = new HashMap<>();
     private final Map<String, User> userMap = new HashMap<>();
+
+    @Getter
+    private final List<String> ingestRecordErrors = new ArrayList<>();
 
     private String mode;
 
@@ -159,14 +164,9 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
             String grantLocalKey = grantIngestRecord.getGrantNumber();
 
-            if (StringUtils.isBlank(grantIngestRecord.getPiEmployeeId())
-                && StringUtils.isBlank(grantIngestRecord.getPiInstitutionalId())) {
-                LOG.warn("Skipping grant ingest record grant localKey {}, " +
-                    "user has blank employeeId and institutionalId.", grantLocalKey);
-                continue;
-            }
-
             try {
+                validate(grantIngestRecord);
+
                 //get funder local keys. if a primary funder is not specified, we set it to the direct funder
                 String directFunderLocalKey = grantIngestRecord.getDirectFunderCode();
                 String primaryFunderLocalKey = grantIngestRecord.getPrimaryFunderCode();
@@ -208,9 +208,9 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
                 grant = grantRowMap.get(grantLocalKey);
 
-                String abbreviatedRole = grantIngestRecord.getPiRole();
+                GrantIngestUserRole grantIngestUserRole = GrantIngestUserRole.valueOf(grantIngestRecord.getPiRole());
                 //anybody who was ever a co-pi in an iteration will be in this list
-                if (abbreviatedRole.equals("C") || abbreviatedRole.equals("K")) {
+                if (grantIngestUserRole == GrantIngestUserRole.C || grantIngestUserRole == GrantIngestUserRole.K) {
                     User user = userMap.get(userKey);
                     if (!grant.getCoPis().contains(user)) {
                         grant.getCoPis().add(user);
@@ -248,19 +248,11 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                         && (endDate != null && (grant.getEndDate() == null || !endDate.isBefore(grant.getEndDate())))) {
                     grant.setEndDate(endDate);
                     //status should be the latest one
-                    String status = grantIngestRecord.getAwardStatus();
-                    try {
-                        String lowercaseStatus = StringUtils.lowerCase(status);
-                        AwardStatus awardStatus = AwardStatus.of(lowercaseStatus);
-                        grant.setAwardStatus(awardStatus);
-                    } catch (IllegalArgumentException e) {
-                        LOG.error(format(
-                                "Invalid AwardStatus %s for Grant Row %s, setting to null", status, grantLocalKey));
-                        grant.setAwardStatus(null);
-                    }
+                    AwardStatus awardStatus = AwardStatus.of(grantIngestRecord.getAwardStatus().toLowerCase());
+                    grant.setAwardStatus(awardStatus);
 
                     //we want the PI to be the one listed on the most recent grant iteration
-                    if (abbreviatedRole.equals("P")) {
+                    if (grantIngestUserRole == GrantIngestUserRole.P) {
                         User user = userMap.get(userKey);
                         User oldPiId = grant.getPi();
                         grant.setPi(user);
@@ -289,7 +281,10 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                                     : DateTimeUtil.returnLaterUpdate(grantUpdateString, latestUpdateString);
                 }
             } catch (Exception e) {
-                LOG.error("Error building Grant Row with localKey: " + grantLocalKey, e);
+                String message = "Error processing Grant Row. Skipping this row: " + grantIngestRecord +
+                    "\nError Message: " + e.getMessage();
+                ingestRecordErrors.add(message);
+                LOG.error(message);
             }
         }
 
@@ -310,6 +305,52 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
             statistics.setReport(results.size(), grantResultMap.size());
         } else {
             LOG.warn("No records were processed in this update");
+        }
+    }
+
+    private void validate(GrantIngestRecord grantIngestRecord) throws GrantDataException {
+
+        required(grantIngestRecord.getGrantNumber(), "grantNumber");
+        required(grantIngestRecord.getGrantTitle(), "grantTitle");
+        required(grantIngestRecord.getAwardStatus(), "awardStatus");
+        required(grantIngestRecord.getAwardStart(), "awardStart");
+        required(grantIngestRecord.getAwardEnd(), "awardEnd");
+        required(grantIngestRecord.getDirectFunderCode(), "directFunderCode");
+        required(grantIngestRecord.getDirectFunderName(), "directFunderName");
+        required(grantIngestRecord.getPiFirstName(), "piFirstName");
+        required(grantIngestRecord.getPiLastName(), "piLastName");
+        required(grantIngestRecord.getPiEmail(), "piEmail");
+        required(grantIngestRecord.getPiRole(), "piRole");
+
+        if (StringUtils.isBlank(grantIngestRecord.getPiEmployeeId())
+            && StringUtils.isBlank(grantIngestRecord.getPiInstitutionalId())) {
+            throw new GrantDataException("User has blank employeeId and institutionalId.");
+        }
+
+        // Validates date and timestamp format
+        createZonedDateTime(grantIngestRecord.getAwardDate());
+        createZonedDateTime(grantIngestRecord.getAwardStart());
+        createZonedDateTime(grantIngestRecord.getAwardEnd());
+        createZonedDateTime(grantIngestRecord.getUpdateTimeStamp());
+
+        try {
+            AwardStatus.of(grantIngestRecord.getAwardStatus().toLowerCase());
+        } catch (IllegalArgumentException e) {
+            throw new GrantDataException("Invalid Award Status: " + grantIngestRecord.getAwardStatus() +
+                ". Valid " + Arrays.asList(AwardStatus.values()));
+        }
+
+        try {
+            GrantIngestUserRole.valueOf(grantIngestRecord.getPiRole());
+        } catch (IllegalArgumentException e) {
+            throw new GrantDataException("Invalid Pi Role: " + grantIngestRecord.getPiRole() +
+                ". Valid " + Arrays.asList(GrantIngestUserRole.values()));
+        }
+    }
+
+    private void required(String requiredValue, String attributeName) throws GrantDataException {
+        if (StringUtils.isBlank(requiredValue)) {
+            throw new GrantDataException("Required value missing for " + attributeName);
         }
     }
 

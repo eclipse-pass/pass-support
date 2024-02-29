@@ -32,6 +32,7 @@ import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
+import org.eclipse.pass.support.grant.data.GrantDataException;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -76,7 +77,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
      */
     @Test
     @Order(1)
-    public void processInitGrantIT() throws IOException {
+    public void processInitGrantIT() throws IOException, GrantDataException {
         // GIVEN
         List<GrantIngestRecord> resultSet = new ArrayList<>();
 
@@ -154,7 +155,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
 
     @Test
     @Order(2)
-    public void processInitGrantIT_DoesNotUpdateWithNoChange() throws IOException, IllegalAccessException {
+    public void processInitGrantIT_DoesNotUpdateWithNoChange() throws IOException, GrantDataException {
         // GIVEN
         GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
         GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
@@ -221,7 +222,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
      * @param abbrRole  the role: Pi ("P") or co-pi (C" or "K")
      * @return the row map for the record
      */
-    private GrantIngestRecord makeGrantIngestRecord(int iteration, int user, String abbrRole) throws IOException {
+    private GrantIngestRecord makeGrantIngestRecord(int iteration, int user, String abbrRole) {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setAwardNumber(grantAwardNumber[iteration]);
         grantIngestRecord.setAwardStatus("Active");

@@ -16,6 +16,7 @@
 package org.eclipse.pass.support.grant.data;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.pass.support.client.model.Funder;
@@ -97,4 +98,10 @@ public interface PassUpdater {
      * @return the map of grants.
      */
     Map<String, Grant> getGrantResultMap();
+
+    /**
+     * Returns a List of all error messages while ingesting records.
+     * @return a list of error messages;
+     */
+    List<String> getIngestRecordErrors();
 }
