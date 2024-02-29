@@ -18,6 +18,8 @@ package org.eclipse.pass.support.grant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,13 +34,18 @@ import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
+import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
+
+    @Autowired @Qualifier("defaultUpdater") PassUpdater passUpdater;
 
     @AfterEach
     void cleanUp() throws IOException {
@@ -46,19 +53,24 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testLoadCvsFile() throws IOException, PassCliException {
+    public void testLoadCvsFile() throws IOException {
         // GIVEN
         Policy policy = new Policy();
         policy.setTitle("test policy");
         passClient.createObject(policy);
 
         // WHEN
-        grantLoaderApp.run("", "01/01/2011", "grant",
-            "load", "src/test/resources/test-load.csv", null, false);
+        PassCliException passCliException = assertThrows(PassCliException.class, () -> {
+            grantLoaderApp.run("", "01/01/2011", "grant",
+                "load", "src/test/resources/test-load.csv", null, false);
+        });
 
         // THEN
+        assertEquals("!!There were record data errors during load!!", passCliException.getMessage());
         verifyGrantOne();
         verifyGrantTwo();
+        verifyGrantThree();
+        verifyInvalidGrants(passUpdater.getIngestRecordErrors());
     }
 
     private void verifyGrantOne() throws IOException {
@@ -162,6 +174,78 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("UserFourLn", copi3.getLastName());
         assertEquals("userfour@jhu.edu", copi3.getEmail());
         assertEquals(List.of("johnshopkins.edu:eppn:userfour"), copi3.getLocatorIds());
+    }
+
+    private void verifyGrantThree() throws IOException {
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:333333"));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant passGrant = resultGrant.getObjects().get(0);
+        assertNotNull(passGrant.getId());
+        assertEquals("johnshopkins.edu:grant:333333", passGrant.getLocalKey());
+        assertEquals("323453", passGrant.getAwardNumber());
+        assertEquals("Test Grant 3", passGrant.getProjectName());
+        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertEquals("2021-10-01T00:00Z", passGrant.getAwardDate().toString());
+        assertEquals("2021-05-01T00:00Z", passGrant.getStartDate().toString());
+        assertEquals("2026-04-30T00:00Z", passGrant.getEndDate().toString());
+
+        Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:300865", primaryFunder.getLocalKey());
+        assertEquals("NATIONAL INSTITUTES OF HEALTH", primaryFunder.getName());
+        assertEquals("1", primaryFunder.getPolicy().getId());
+
+        Funder directFunder = passClient.getObject(passGrant.getDirectFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:300865", primaryFunder.getLocalKey());
+        assertEquals("NATIONAL INSTITUTES OF HEALTH", primaryFunder.getName());
+        assertEquals("1", primaryFunder.getPolicy().getId());
+
+        assertEquals("UserOneFn", passGrant.getPi().getFirstName());
+        assertEquals("UserOneMn", passGrant.getPi().getMiddleName());
+        assertEquals("UserOneLn", passGrant.getPi().getLastName());
+        assertEquals("userone@jhu.edu", passGrant.getPi().getEmail());
+        assertEquals(List.of("johnshopkins.edu:employeeid:123456", "johnshopkins.edu:eppn:userone"),
+            passGrant.getPi().getLocatorIds());
+
+        assertEquals(0, passGrant.getCoPis().size());
+    }
+
+    private void verifyInvalidGrants(List<String> ingestRecordErrors) throws IOException {
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:444444"));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
+        // Has invalid award date format, skips row
+        assertEquals(0, resultGrant.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=130823.*\\sError Message: User has blank " +
+                "employeeId and institutionalId\\.")));
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:555555"));
+        PassClientResult<Grant> resultGrant2 = passClient.selectObjects(grantSelector);
+        // Missing required funder, skips row
+        assertEquals(0, resultGrant2.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=555555.*\\sError Message: " +
+                "Required value missing for directFunderCode")));
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:666666"));
+        PassClientResult<Grant> resultGrant3 = passClient.selectObjects(grantSelector);
+        // Invalid award status, skips row
+        assertEquals(0, resultGrant3.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=666666.*\\sError Message: " +
+                "Invalid Award Status: foobar. Valid \\[ACTIVE, PRE_AWARD, TERMINATED]")));
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:777777"));
+        PassClientResult<Grant> resultGrant4 = passClient.selectObjects(grantSelector);
+        // Invalid pi role, skips row
+        assertEquals(0, resultGrant4.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=777777.*\\sError Message: " +
+                "Invalid Pi Role: PI. Valid \\[P, C, K]")));
     }
 
 }

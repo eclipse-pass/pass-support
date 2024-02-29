@@ -35,6 +35,7 @@ import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.grant.AbstractIntegrationTest;
 import org.eclipse.pass.support.grant.TestUtil;
+import org.eclipse.pass.support.grant.data.GrantDataException;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -58,7 +59,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
      *
      */
     @Test
-    public void processGrantIT() throws IOException {
+    public void processGrantIT() throws IOException, GrantDataException {
         // GIVEN
         Policy policy = getTestPolicy();
 
@@ -153,7 +154,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void processGrantIT_DoesNotUpdateWithNoChange() throws IOException {
+    public void processGrantIT_DoesNotUpdateWithNoChange() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(3, 3, "P");
@@ -225,7 +226,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void processGrantIT_UpdateUserLocatorsJhed() throws IOException {
+    public void processGrantIT_UpdateUserLocatorsJhed() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(4, 4, "P");
