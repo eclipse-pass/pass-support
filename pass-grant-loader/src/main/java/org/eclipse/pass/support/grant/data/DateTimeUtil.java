@@ -20,17 +20,24 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoField;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This utility class provides static methods for intermunging ZonedDateTime objects and timestamp strings
  */
 public class DateTimeUtil {
-
+    private static final String DATE_TIME_PATTERN = "uuuu-MM-dd[ [HH][:mm][:ss][[.SSS][.SS][.S]]]";
     public static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss[[.SSS][.SS][.S]]")
-                .withResolverStyle(ResolverStyle.STRICT);
+        new DateTimeFormatterBuilder().appendPattern(DATE_TIME_PATTERN)
+                .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                .toFormatter();
     static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("M/d/uuuu")
                 .withResolverStyle(ResolverStyle.STRICT);
@@ -45,7 +52,7 @@ public class DateTimeUtil {
      * @param dateString the timestamp string
      * @return the corresponding ZonedDateTime object or null if not able to parse string
      */
-    public static ZonedDateTime createZonedDateTime(String dateString) {
+    public static ZonedDateTime createZonedDateTime(String dateString) throws GrantDataException {
         if (verifyDateTimeFormat(dateString)) {
             LocalDateTime localDateTime = LocalDateTime.parse(dateString, DATE_TIME_FORMATTER);
             return localDateTime.atZone(ZoneOffset.UTC);
@@ -53,6 +60,10 @@ public class DateTimeUtil {
         if (verifyDate(dateString)) { //we may have just a date - date format is mm/day/year
             LocalDate localDate = LocalDate.parse(dateString, DATE_FORMATTER);
             return localDate.atStartOfDay(ZoneOffset.UTC);
+        }
+        if (StringUtils.isNotBlank(dateString)) {
+            throw new GrantDataException("Invalid Format for " + dateString +
+                ".  Valid Format is " + DATE_TIME_PATTERN);
         }
         return null;
     }
@@ -97,7 +108,8 @@ public class DateTimeUtil {
      * @param latestUpdateString  the new timestamp to be compared against the current latest timestamp
      * @return the later of the two parameters
      */
-    public static String returnLaterUpdate(String currentUpdateString, String latestUpdateString) {
+    public static String returnLaterUpdate(String currentUpdateString, String latestUpdateString)
+        throws GrantDataException {
         ZonedDateTime currentUpdateTime = createZonedDateTime(currentUpdateString);
         ZonedDateTime latestUpdateTime = createZonedDateTime(latestUpdateString);
         return currentUpdateTime != null && currentUpdateTime.isAfter(latestUpdateTime)
