@@ -213,6 +213,10 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
     }
 
     private void verifyInvalidGrants(List<String> ingestRecordErrors) throws IOException {
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=130823.*\\sError Message: User has blank " +
+                "employeeId and institutionalId\\.")));
+
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:444444"));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
@@ -220,8 +224,8 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         // Has invalid award date format, skips row
         assertEquals(0, resultGrant.getTotal());
         assertTrue(ingestRecordErrors.stream().anyMatch(message ->
-            message.matches(".*GrantIngestRecord.*grantNumber=130823.*\\sError Message: User has blank " +
-                "employeeId and institutionalId\\.")));
+            message.matches(".*GrantIngestRecord.*grantNumber=444444.*" +
+                "\\sError Message: Invalid Format for 10-01-2021.  Valid Format is uuuu-MM-dd.*")));
 
         grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:555555"));
         PassClientResult<Grant> resultGrant2 = passClient.selectObjects(grantSelector);
