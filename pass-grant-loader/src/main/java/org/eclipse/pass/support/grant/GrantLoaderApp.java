@@ -198,6 +198,9 @@ public class GrantLoaderApp {
             //now everything succeeded - log this result
             String message = passUpdater.getReport();
             LOG.warn(message);
+            if (!passUpdater.getIngestRecordErrors().isEmpty()) {
+                throw processException("!!There were record data errors during load!!", null);
+            }
         } else { //don't need to update, just write the result set out to the data file
             try {
                 GrantDataCsvFileUtils.writeGrantIngestCsv(resultSet, dataFile.toPath());
