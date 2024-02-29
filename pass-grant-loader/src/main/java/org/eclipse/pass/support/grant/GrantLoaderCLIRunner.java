@@ -156,7 +156,6 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
             System.err.println();
             System.exit(1);
         } catch (PassCliException e) {
-            e.printStackTrace();
             System.err.println(e.getMessage());
             System.exit(1);
         }
