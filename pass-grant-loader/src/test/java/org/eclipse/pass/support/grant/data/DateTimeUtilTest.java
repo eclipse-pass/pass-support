@@ -18,7 +18,7 @@ package org.eclipse.pass.support.grant.data;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZoneOffset;
@@ -107,7 +107,7 @@ public class DateTimeUtilTest {
      * correct output
      */
     @Test
-    void testCreateZonedDateTime() {
+    void testCreateZonedDateTime() throws GrantDataException {
         String timestamp = "2018-01-30 23:59:58.0";
         ZonedDateTime dateTime = DateTimeUtil.createZonedDateTime(timestamp);
         assertNotNull(dateTime);
@@ -170,12 +170,18 @@ public class DateTimeUtilTest {
     @Test
     void testCreateZonedDateTime_Invalid_timezoneNotSupported() {
         String timestamp = "2018-01-30 23:59:58.0+05:00";
-        ZonedDateTime dateTime = DateTimeUtil.createZonedDateTime(timestamp);
-        assertNull(dateTime);
+        GrantDataException grantDataException = assertThrows(GrantDataException.class, () -> {
+            DateTimeUtil.createZonedDateTime(timestamp);
+        });
+        assertEquals("Invalid Format for 2018-01-30 23:59:58.0+05:00.  " +
+            "Valid Format is uuuu-MM-dd[ [HH][:mm][:ss][[.SSS][.SS][.S]]]", grantDataException.getMessage());
 
         String date = "01/30/2018-03:00";
-        dateTime = DateTimeUtil.createZonedDateTime(date);
-        assertNull(dateTime);
+        GrantDataException grantDataException2 = assertThrows(GrantDataException.class, () -> {
+            DateTimeUtil.createZonedDateTime(date);
+        });
+        assertEquals("Invalid Format for 01/30/2018-03:00.  " +
+            "Valid Format is uuuu-MM-dd[ [HH][:mm][:ss][[.SSS][.SS][.S]]]", grantDataException2.getMessage());
     }
 
     /**
@@ -196,7 +202,7 @@ public class DateTimeUtilTest {
      * Test static timestamp utility method to verify it returns the later of two supplied timestamps
      */
     @Test
-    void testReturnLatestUpdate() {
+    void testReturnLatestUpdate() throws GrantDataException {
         String baseString = "1980-01-01 00:00:00.0";
         String earlyDate = "2018-01-02 03:04:05.0";
         String laterDate = "2018-01-02 04:08:09.0";
