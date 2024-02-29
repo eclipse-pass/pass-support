@@ -20,7 +20,6 @@ import static org.awaitility.Awaitility.await;
 import static org.eclipse.pass.deposit.service.NihmsReceiveMailService.NIHMS_DEP_STATUS_REF_PREFIX;
 import static org.eclipse.pass.deposit.util.ResourceTestUtil.findByNameAsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -107,10 +106,10 @@ public class NihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
             List<Deposit> actualDeposits = passClient.selectObjects(sel).getObjects();
             assertEquals(1, actualDeposits.size());
             Deposit pmcDeposit = actualDeposits.get(0);
-            assertEquals(DepositStatus.ACCEPTED, pmcDeposit.getDepositStatus());
-            assertEquals(CopyStatus.COMPLETE, pmcDeposit.getRepositoryCopy().getCopyStatus());
+            assertEquals(DepositStatus.SUBMITTED, pmcDeposit.getDepositStatus());
+            assertEquals(CopyStatus.IN_PROGRESS, pmcDeposit.getRepositoryCopy().getCopyStatus());
             assertEquals(NIHMS_DEP_STATUS_REF_PREFIX + "test-nihms-id", pmcDeposit.getDepositStatusRef());
-            assertNull(pmcDeposit.getStatusMessage());
+            assertEquals("Accepted by the NIHMS workflow. NIHMS-ID: test-nihms-id", pmcDeposit.getStatusMessage());
         });
     }
 
