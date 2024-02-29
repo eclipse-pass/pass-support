@@ -144,7 +144,7 @@ public class NihmsReceiveMailService {
                 String submissionId = parseSubmissionId(packageId);
                 String nihmsId =  matchResult.group(2);
                 try {
-                    updateDepositAccepted(submissionId, packageId, nihmsId);
+                    updateDepositSuccess(submissionId, packageId, nihmsId);
                 } catch (Exception e) {
                     LOG.error("Error updating nihms deposit for submission ID " + submissionId, e);
                 }
@@ -168,11 +168,11 @@ public class NihmsReceiveMailService {
         });
     }
 
-    private void updateDepositAccepted(String submissionId, String packageId, String nihmsId) throws IOException {
+    private void updateDepositSuccess(String submissionId, String packageId, String nihmsId) throws IOException {
         getDeposits(submissionId, packageId).forEach(deposit -> {
-            deposit.setDepositStatus(DepositStatus.ACCEPTED);
+            deposit.setDepositStatus(DepositStatus.SUBMITTED);
             deposit.setDepositStatusRef(NIHMS_DEP_STATUS_REF_PREFIX + nihmsId);
-            deposit.setStatusMessage(null);
+            deposit.setStatusMessage("Accepted by the NIHMS workflow. NIHMS-ID: " + nihmsId);
             updateDeposit(deposit);
         });
     }

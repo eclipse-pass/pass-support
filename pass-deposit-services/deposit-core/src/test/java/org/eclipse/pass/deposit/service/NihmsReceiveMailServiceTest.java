@@ -203,7 +203,7 @@ public class NihmsReceiveMailServiceTest {
     }
 
     private void verifyDepositUpdates() throws IOException {
-        verify(passClient, times(6)).updateObject(passEntityCaptor.capture());
+        verify(passClient, times(5)).updateObject(passEntityCaptor.capture());
         List<Deposit> updatedDeposits = passEntityCaptor.getAllValues().stream()
             .filter(passEntity -> passEntity instanceof Deposit)
             .map(passEntity -> (Deposit) passEntity)
@@ -213,7 +213,7 @@ public class NihmsReceiveMailServiceTest {
             .filter(passEntity -> passEntity instanceof RepositoryCopy)
             .map(passEntity -> (RepositoryCopy) passEntity)
             .toList();
-        assertEquals(3, updatedRepoCopies.size());
+        assertEquals(2, updatedRepoCopies.size());
         Deposit updatedDeposit1 = updatedDeposits.stream()
             .filter(deposit -> deposit.getId().equals("1"))
             .findFirst().get();
@@ -241,15 +241,12 @@ public class NihmsReceiveMailServiceTest {
         Deposit updatedDeposit3 = updatedDeposits.stream()
             .filter(deposit -> deposit.getId().equals("3"))
             .findFirst().get();
-        assertEquals(DepositStatus.ACCEPTED, updatedDeposit3.getDepositStatus());
-        assertEquals(CopyStatus.COMPLETE, updatedDeposit3.getRepositoryCopy().getCopyStatus());
-        assertNull(updatedDeposit3.getStatusMessage());
+        assertEquals(DepositStatus.SUBMITTED, updatedDeposit3.getDepositStatus());
+        assertEquals(CopyStatus.IN_PROGRESS, updatedDeposit3.getRepositoryCopy().getCopyStatus());
+        assertEquals("Accepted by the NIHMS workflow. NIHMS-ID: 1502302", updatedDeposit3.getStatusMessage());
         assertEquals(NihmsReceiveMailService.NIHMS_DEP_STATUS_REF_PREFIX + "1502302",
             updatedDeposit3.getDepositStatusRef());
-        RepositoryCopy updatedRepoCopy3 = updatedRepoCopies.stream()
-            .filter(repositoryCopy -> repositoryCopy.getId().equals("rc-3"))
-            .findFirst().get();
-        assertEquals(CopyStatus.COMPLETE, updatedRepoCopy3.getCopyStatus());
+        assertEquals(CopyStatus.IN_PROGRESS, updatedDeposit3.getRepositoryCopy().getCopyStatus());
     }
 
     @Test
