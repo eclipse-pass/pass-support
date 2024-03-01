@@ -187,7 +187,7 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("johnshopkins.edu:grant:333333", passGrant.getLocalKey());
         assertEquals("323453", passGrant.getAwardNumber());
         assertEquals("Test Grant 3", passGrant.getProjectName());
-        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertNull(passGrant.getAwardStatus());
         assertEquals("2021-10-01T00:00Z", passGrant.getAwardDate().toString());
         assertEquals("2021-05-01T00:00Z", passGrant.getStartDate().toString());
         assertEquals("2026-04-30T00:00Z", passGrant.getEndDate().toString());
