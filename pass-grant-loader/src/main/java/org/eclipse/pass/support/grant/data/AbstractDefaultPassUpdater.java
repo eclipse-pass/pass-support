@@ -248,7 +248,9 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                         && (endDate != null && (grant.getEndDate() == null || !endDate.isBefore(grant.getEndDate())))) {
                     grant.setEndDate(endDate);
                     //status should be the latest one
-                    AwardStatus awardStatus = AwardStatus.of(grantIngestRecord.getAwardStatus().toLowerCase());
+                    AwardStatus awardStatus = StringUtils.isNotBlank(grantIngestRecord.getAwardStatus())
+                        ? AwardStatus.of(grantIngestRecord.getAwardStatus().toLowerCase())
+                        : null;
                     grant.setAwardStatus(awardStatus);
 
                     //we want the PI to be the one listed on the most recent grant iteration
@@ -312,7 +314,6 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
         required(grantIngestRecord.getGrantNumber(), "grantNumber");
         required(grantIngestRecord.getGrantTitle(), "grantTitle");
-        required(grantIngestRecord.getAwardStatus(), "awardStatus");
         required(grantIngestRecord.getAwardStart(), "awardStart");
         required(grantIngestRecord.getAwardEnd(), "awardEnd");
         required(grantIngestRecord.getDirectFunderCode(), "directFunderCode");
@@ -333,11 +334,13 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         createZonedDateTime(grantIngestRecord.getAwardEnd());
         createZonedDateTime(grantIngestRecord.getUpdateTimeStamp());
 
-        try {
-            AwardStatus.of(grantIngestRecord.getAwardStatus().toLowerCase());
-        } catch (IllegalArgumentException e) {
-            throw new GrantDataException("Invalid Award Status: " + grantIngestRecord.getAwardStatus() +
-                ". Valid " + Arrays.asList(AwardStatus.values()));
+        if (StringUtils.isNotBlank(grantIngestRecord.getAwardStatus())) {
+            try {
+                AwardStatus.of(grantIngestRecord.getAwardStatus().toLowerCase());
+            } catch (IllegalArgumentException e) {
+                throw new GrantDataException("Invalid Award Status: " + grantIngestRecord.getAwardStatus() +
+                    ". Valid " + Arrays.asList(AwardStatus.values()));
+            }
         }
 
         try {
