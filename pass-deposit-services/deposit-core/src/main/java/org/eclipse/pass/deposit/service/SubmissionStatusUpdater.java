@@ -16,9 +16,11 @@
 package org.eclipse.pass.deposit.service;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.stream.Stream;
 
+import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -28,6 +30,7 @@ import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -52,6 +55,9 @@ public class SubmissionStatusUpdater {
     private final SubmissionStatusService statusService;
     private final PassClient passClient;
 
+    @Value("${pass.status.update.window.days}")
+    private long updateWindowDays;
+
     @Autowired
     public SubmissionStatusUpdater(SubmissionStatusService statusService, PassClient passClient) {
         this.statusService = statusService;
@@ -63,11 +69,15 @@ public class SubmissionStatusUpdater {
      * @throws IOException io exception
      */
     public void doUpdate() throws IOException {
+        ZonedDateTime submissionFromDate = ZonedDateTime.now(ZoneOffset.UTC).minusDays(updateWindowDays);
+
         PassClientSelector<Submission> sel = new PassClientSelector<>(Submission.class);
         sel.setFilter(
             RSQL.and(
-                RSQL.in("submissionStatus", getSubmissionStatusFilter()),
-                RSQL.equals("submitted", "true")
+                RSQL.out("submissionStatus", SubmissionStatus.COMPLETE.getValue(),
+                        SubmissionStatus.CANCELLED.getValue()),
+                RSQL.equals("submitted", "true"),
+                RSQL.gte("submittedDate", ModelUtil.dateTimeFormatter().format(submissionFromDate))
             )
         );
         List<Submission> submissions = passClient.streamObjects(sel).toList();
@@ -88,12 +98,4 @@ public class SubmissionStatusUpdater {
             }
         });
     }
-
-    private String[] getSubmissionStatusFilter() {
-        return Stream.of(SubmissionStatus.values())
-            .filter(status -> status != SubmissionStatus.COMPLETE)
-            .filter(status -> status != SubmissionStatus.CANCELLED)
-            .map(SubmissionStatus::getValue).toArray(String[]::new);
-    }
-
 }
