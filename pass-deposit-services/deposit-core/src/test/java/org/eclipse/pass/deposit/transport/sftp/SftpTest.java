@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -86,7 +87,7 @@ public class SftpTest {
             TRANSPORT_SERVER_PORT, String.valueOf(sshd.getPort()),
             TRANSPORT_USERNAME, "dummyUser",
             TRANSPORT_PASSWORD, "dummyPass",
-            SFTP_BASE_DIRECTORY, "/upload/test/%s"
+            SFTP_BASE_DIRECTORY, Path.of("/upload/test/%s").toString() //convert path for different platforms
         );
         String testFileName = System.currentTimeMillis() + "package.tar.gz";
         NullInputStream content = new NullInputStream(ONE_MIB);
