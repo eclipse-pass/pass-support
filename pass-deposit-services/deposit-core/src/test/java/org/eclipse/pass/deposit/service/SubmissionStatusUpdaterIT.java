@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 /**
@@ -45,6 +46,9 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionIT {
 
     @Autowired private SubmissionStatusUpdater submissionStatusUpdater;
     @MockBean private SubmissionStatusService statusService;
+
+    @Value("${pass.status.update.window.days}")
+    private long updateWindowDays;
 
     private Submission submission;
 
@@ -128,6 +132,22 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionIT {
         submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
         submission.setSubmitted(false);
         submission.setSubmittedDate(ZonedDateTime.now());
+        passClient.updateObject(submission);
+        Mockito.clearInvocations(passClient);
+
+        // WHEN
+        submissionStatusUpdater.doUpdate();
+
+        // THEN
+        verify(passClient, times(0)).updateObject(any());
+    }
+
+    @Test
+    void testDoUpdate_Success_OutSideDateWindow() throws IOException {
+        // GIVEN
+        submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+        submission.setSubmitted(true);
+        submission.setSubmittedDate(ZonedDateTime.now().minusDays(updateWindowDays + 1));
         passClient.updateObject(submission);
         Mockito.clearInvocations(passClient);
 
