@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -70,6 +71,7 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionIT {
         // GIVEN
         submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
         submission.setSubmitted(true);
+        submission.setSubmittedDate(ZonedDateTime.now());
         passClient.updateObject(submission);
         when(statusService.calculateSubmissionStatus(any(Submission.class))).thenReturn(SubmissionStatus.COMPLETE);
         Mockito.clearInvocations(passClient);
@@ -91,6 +93,7 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionIT {
         // GIVEN
         submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
         submission.setSubmitted(true);
+        submission.setSubmittedDate(ZonedDateTime.now());
         passClient.updateObject(submission);
         when(statusService.calculateSubmissionStatus(any(Submission.class))).thenReturn(SubmissionStatus.SUBMITTED);
         Mockito.clearInvocations(passClient);
@@ -107,6 +110,7 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionIT {
         // GIVEN
         submission.setSubmissionStatus(null);
         submission.setSubmitted(true);
+        submission.setSubmittedDate(ZonedDateTime.now());
         passClient.updateObject(submission);
         when(statusService.calculateSubmissionStatus(any(Submission.class))).thenReturn(SubmissionStatus.SUBMITTED);
         Mockito.clearInvocations(passClient);
@@ -123,6 +127,7 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionIT {
         // GIVEN
         submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
         submission.setSubmitted(false);
+        submission.setSubmittedDate(ZonedDateTime.now());
         passClient.updateObject(submission);
         Mockito.clearInvocations(passClient);
 

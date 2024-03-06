@@ -163,7 +163,7 @@ any messages relating to the resource. Failed `Deposit` resources will be retrie
 A resource will be considered as failed when errors occur during the processing of `Submission` and `Deposit` resources.
 Some errors may be caused by transient network issues, or a server being rebooted.  In the case of such failures,
 Deposit Services will retry for n number of days after the `Submission` is created. The number of days
-is set in an application property named `pass.deposit.update.window.days`.
+is set in an application property named `pass.status.update.window.days`.
 
 `Submission` resources are failed when:
 
@@ -187,7 +187,7 @@ the user interface, and resubmit it.
 See `DepositTask` for details. Deposits fail for transient reasons; a server being down, an interruption in network
 communication, or invalid credentials for the downstream repository are just a few examples. As stated, DS will retry
 failed `Deposit` resources for n number of days after the creation of the associated `Submission`.  The number of days
-is set in an application property named `pass.deposit.update.window.days`.
+is set in an application property named `pass.status.update.window.days`.
 
 ## Build and Deployment
 

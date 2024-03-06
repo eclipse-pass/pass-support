@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZonedDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -138,6 +139,8 @@ public abstract class AbstractDepositSubmissionIT {
     public void triggerSubmission(Submission submission) throws IOException {
         submission.setSubmitted(true);
         submission.setSubmissionStatus(SubmissionStatus.SUBMITTED);
+        submission.setSubmittedDate(ZonedDateTime.now());
+
         passClient.updateObject(submission);
     }
 

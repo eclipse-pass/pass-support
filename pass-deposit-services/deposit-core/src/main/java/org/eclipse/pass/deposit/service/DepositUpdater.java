@@ -18,12 +18,12 @@ package org.eclipse.pass.deposit.service;
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.pass.deposit.config.repository.Repositories;
 import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
+import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -37,10 +37,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DepositUpdater {
-
     private static final Logger LOG = LoggerFactory.getLogger(DepositUpdater.class);
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
     private final PassClient passClient;
     private final DepositTaskHelper depositHelper;
@@ -49,7 +46,7 @@ public class DepositUpdater {
 
     private final List<String> repoKeysWithDepositProcessors;
 
-    @Value("${pass.deposit.update.window.days}")
+    @Value("${pass.status.update.window.days}")
     private long updateWindowDays;
 
     @Autowired
@@ -73,7 +70,7 @@ public class DepositUpdater {
         failedDepositsSelector.setFilter(
             RSQL.and(
                 RSQL.equals("depositStatus", DepositStatus.FAILED.getValue()),
-                RSQL.gte("submission.submittedDate", DATE_TIME_FORMATTER.format(submissionFromDate))
+                RSQL.gte("submission.submittedDate", ModelUtil.dateTimeFormatter().format(submissionFromDate))
             )
         );
         List<Deposit> failedDeposits = passClient.streamObjects(failedDepositsSelector).toList();
@@ -96,7 +93,7 @@ public class DepositUpdater {
         submittedDepositsSelector.setFilter(
             RSQL.and(
                 RSQL.equals("depositStatus", DepositStatus.SUBMITTED.getValue()),
-                RSQL.gte("submission.submittedDate", DATE_TIME_FORMATTER.format(submissionFromDate)),
+                RSQL.gte("submission.submittedDate", ModelUtil.dateTimeFormatter().format(submissionFromDate)),
                 RSQL.in("repository.repositoryKey", repoKeysWithDepositProcessors.toArray(new String[0]))
             )
         );
