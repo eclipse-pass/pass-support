@@ -132,30 +132,24 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     }
 
     private boolean funderNeedsUpdate(Funder system, Funder stored) {
-
         //this adjustment handles the case where we take data from policy.properties file, which has no name info
-        if (system.getName() != null && !system.getName().equals(stored.getName())) {
+        if (Objects.nonNull(system.getName()) && !system.getName().equals(stored.getName())) {
             return true;
         }
-        if (system.getLocalKey() != null
-            ? !system.getLocalKey().equals(stored.getLocalKey())
-            : stored.getLocalKey() != null) {
+        if (!Objects.equals(system.getLocalKey(), stored.getLocalKey())) {
             return true;
         }
-        if (system.getPolicy() != null
-            ? !system.getPolicy().getId().equals(getPassEntityId(stored.getPolicy()))
-            : stored.getPolicy() != null) {
+        if (!Objects.equals(getPassEntityId(system.getPolicy()), getPassEntityId(stored.getPolicy()))) {
             return true;
         }
         return false;
     }
 
     private Funder updateFunder(Funder system, Funder stored) {
-        //stored.setLocalKey(system.getLocalKey());
-        if (system.getName() != null) {
+        if (Objects.nonNull(system.getName())) {
             stored.setName(system.getName());
         }
-        if (system.getPolicy() != null) {
+        if (Objects.nonNull(system.getPolicy())) {
             stored.setPolicy(system.getPolicy());
         }
         return stored;
@@ -163,16 +157,13 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
 
     private boolean userNeedsUpdate(User system, User stored) {
         //first the fields for which COEUS is authoritative
-        if (system.getFirstName() != null ? !system.getFirstName()
-            .equals(stored.getFirstName()) : stored.getFirstName() != null) {
+        if (!Objects.equals(system.getFirstName(), stored.getFirstName())) {
             return true;
         }
-        if (system.getMiddleName() != null ? !system.getMiddleName()
-            .equals(stored.getMiddleName()) : stored.getMiddleName() != null) {
+        if (!Objects.equals(system.getMiddleName(), stored.getMiddleName())) {
             return true;
         }
-        if (system.getLastName() != null ? !system.getLastName()
-            .equals(stored.getLastName()) : stored.getLastName() != null) {
+        if (!Objects.equals(system.getLastName(), stored.getLastName())) {
             return true;
         }
         String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
@@ -180,10 +171,10 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
             return true;
         }
         //next, other fields which require some reasoning to decide whether an update is necessary
-        if (system.getEmail() != null && stored.getEmail() == null) {
+        if (Objects.nonNull(system.getEmail()) && Objects.isNull(stored.getEmail())) {
             return true;
         }
-        if (system.getDisplayName() != null && stored.getDisplayName() == null) {
+        if (Objects.nonNull(system.getDisplayName()) && Objects.isNull(stored.getDisplayName())) {
             return true;
         }
         return false;
