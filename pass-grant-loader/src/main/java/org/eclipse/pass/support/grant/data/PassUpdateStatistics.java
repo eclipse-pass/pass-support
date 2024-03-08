@@ -83,7 +83,7 @@ public class PassUpdateStatistics {
         this.report = sb.toString();
     }
 
-    void reset() {
+    public void reset() {
         grantsUpdated = 0;
         fundersUpdated = 0;
         usersUpdated = 0;
