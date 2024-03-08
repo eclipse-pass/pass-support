@@ -43,7 +43,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
+public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
 
     private final String[] grantAwardNumber = {"A10000000", "A10000001", "A10000002"};
     private final String[] grantLocalKey = {"10000000", "10000000", "10000000"}; //all the same
@@ -64,7 +64,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
     //private final String funderIdPrefix = "johnshopkins.edu:funder:";
 
-    @Autowired private JhuPassUpdater jhuPassInitUpdater;
+    @Autowired private JhuPassUpdater jhuPassUpdater;
 
     /**
      * we put an initial award for a grant into PASS, then simulate a pull of all records related
@@ -77,7 +77,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
      */
     @Test
     @Order(1)
-    public void processInitGrantIT() throws IOException, GrantDataException {
+    public void testUpdateGrantCreate() throws IOException, GrantDataException {
         // GIVEN
         List<GrantIngestRecord> resultSet = new ArrayList<>();
 
@@ -85,7 +85,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
         resultSet.add(piRecord2);
 
-        jhuPassInitUpdater.updatePass(resultSet, "grant");
+        jhuPassUpdater.updatePass(resultSet, "grant");
 
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[2]));
@@ -107,63 +107,26 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         assertEquals(0, passGrant.getCoPis().size());
 
         //check statistics
-        assertEquals(1, jhuPassInitUpdater.getStatistics().getGrantsCreated());
-        assertEquals(1, jhuPassInitUpdater.getStatistics().getUsersCreated());
-        assertEquals(1, jhuPassInitUpdater.getStatistics().getPisAdded());
-        assertEquals(0, jhuPassInitUpdater.getStatistics().getCoPisAdded());
-
-        //now simulate a pull adding grant records the stored grant changing pi and adding co-pis.
-        //we add a new co-pi Jones in the "1" iteration, and change the pi to Einstein in the "2" iteration
-        //we drop co-pi jones in the last iteration
-        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
-        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
-        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P");
-        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
-        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
-
-        // TODO return to change order from newest to oldest
-        resultSet.clear();
-        resultSet.add(piRecord0);
-        resultSet.add(coPiRecord0);
-        resultSet.add(piRecord1);
-        resultSet.add(coPiRecord1);
-        resultSet.add(newCoPiRecord1);
-        resultSet.add(piRecord2);
-
-        jhuPassInitUpdater.updatePass(resultSet, "grant");
-
-        resultGrant = passClient.selectObjects(grantSelector);
-        assertEquals(1, resultGrant.getTotal());
-        Grant updatePassGrant = resultGrant.getObjects().get(0);
-
-        User user0 = getVerifiedUser(0);
-        User user1 = getVerifiedUser(1);
-        User user2 = getVerifiedUser(2);
-
-        assertEquals(grantAwardNumber[0], updatePassGrant.getAwardNumber());//initial
-        assertEquals(AwardStatus.ACTIVE, updatePassGrant.getAwardStatus());
-        assertEquals(grantIdPrefix + grantLocalKey[0], updatePassGrant.getLocalKey());
-        assertEquals(grantProjectName[0], updatePassGrant.getProjectName());//initial
-        assertEquals(createZonedDateTime(grantAwardDate[0]), updatePassGrant.getAwardDate());//initial
-        assertEquals(createZonedDateTime(grantStartDate[0]), updatePassGrant.getStartDate());//initial
-        assertEquals(createZonedDateTime(grantEndDate[2]), updatePassGrant.getEndDate());//latest
-        assertEquals(user1, updatePassGrant.getPi());//Einstein
-        assertEquals(2, updatePassGrant.getCoPis().size());
-        assertTrue(updatePassGrant.getCoPis().contains(user0));//Melon
-        assertTrue(updatePassGrant.getCoPis().contains(user2));//Jones
+        assertEquals(1, jhuPassUpdater.getStatistics().getGrantsCreated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getGrantsUpdated());
+        assertEquals(2, jhuPassUpdater.getStatistics().getFundersCreated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getFundersUpdated());
+        assertEquals(1, jhuPassUpdater.getStatistics().getUsersCreated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getUsersUpdated());
+        assertEquals(1, jhuPassUpdater.getStatistics().getPisAdded());
+        assertEquals(0, jhuPassUpdater.getStatistics().getCoPisAdded());
     }
 
     @Test
     @Order(2)
-    public void processInitGrantIT_DoesUpdateWithNoChange() throws IOException, GrantDataException {
-        // GIVEN
+    public void testUpdateGrantSecond() throws IOException, GrantDataException {
+        // GIVEN ordered oldest to newest
         GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
         GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
         GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P");
         GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
         GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
         GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
-
         List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
@@ -171,11 +134,60 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         resultSet.add(coPiRecord1);
         resultSet.add(newCoPiRecord1);
         resultSet.add(piRecord2);
+        jhuPassUpdater.getStatistics().reset();
 
         // WHEN
-        jhuPassInitUpdater.updatePass(resultSet, "grant");
+        jhuPassUpdater.updatePass(resultSet, "grant");
 
         // THEN
+        assertEquals(0, jhuPassUpdater.getStatistics().getGrantsCreated());
+        assertEquals(1, jhuPassUpdater.getStatistics().getGrantsUpdated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getFundersCreated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getFundersUpdated());
+        assertEquals(2, jhuPassUpdater.getStatistics().getUsersCreated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getUsersUpdated());
+        assertEquals(1, jhuPassUpdater.getStatistics().getPisAdded());
+        assertEquals(3, jhuPassUpdater.getStatistics().getCoPisAdded());
+        verifyGrant();
+    }
+
+    @Test
+    @Order(3)
+    public void testUpdateGrantThird_ChangeRecordOrderWithDuplicate() throws IOException, GrantDataException {
+        // GIVEN ordered newest then mix
+        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
+        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
+        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
+        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
+        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P");
+        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
+
+        List<GrantIngestRecord> resultSet = new ArrayList<>();
+        resultSet.add(piRecord2);
+        resultSet.add(newCoPiRecord1);
+        resultSet.add(coPiRecord1);
+        resultSet.add(coPiRecord0);
+        resultSet.add(coPiRecord0); // simulate duplicate
+        resultSet.add(piRecord1);
+        resultSet.add(piRecord0);
+        jhuPassUpdater.getStatistics().reset();
+
+        // WHEN
+        jhuPassUpdater.updatePass(resultSet, "grant");
+
+        // THEN
+        assertEquals(0, jhuPassUpdater.getStatistics().getGrantsCreated());
+        assertEquals(1, jhuPassUpdater.getStatistics().getGrantsUpdated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getFundersCreated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getFundersUpdated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getUsersCreated());
+        assertEquals(0, jhuPassUpdater.getStatistics().getUsersUpdated());
+        assertEquals(1, jhuPassUpdater.getStatistics().getPisAdded());
+        assertEquals(2, jhuPassUpdater.getStatistics().getCoPisAdded());
+        verifyGrant();
+    }
+
+    private void verifyGrant() throws IOException, GrantDataException {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("localKey", grantIdPrefix + grantLocalKey[2]));
         grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");

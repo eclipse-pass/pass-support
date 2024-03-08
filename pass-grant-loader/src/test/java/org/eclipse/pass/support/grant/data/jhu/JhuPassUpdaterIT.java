@@ -186,14 +186,13 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(createZonedDateTime(TestUtil.grantEndDate[3]), passGrant.getEndDate());
         assertEquals(TestUtil.grantUpdateTimestamp[3], jhuPassUpdater.getLatestUpdate());//latest
         assertEquals(user3, passGrant.getPi()); //Reckondwith
-        assertEquals(1, passGrant.getCoPis().size());
-        assertEquals(user3, passGrant.getCoPis().get(0));
+        assertEquals(0, passGrant.getCoPis().size()); // same user is also PI
 
         //check statistics
         assertEquals(1, jhuPassUpdater.getStatistics().getGrantsCreated());
         assertEquals(1, jhuPassUpdater.getStatistics().getUsersCreated());
         assertEquals(1, jhuPassUpdater.getStatistics().getPisAdded());
-        assertEquals(1, jhuPassUpdater.getStatistics().getCoPisAdded());
+        assertEquals(0, jhuPassUpdater.getStatistics().getCoPisAdded());
 
         // WHEN
         jhuPassUpdater.updatePass(resultSet, "grant");
@@ -214,8 +213,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(createZonedDateTime(TestUtil.grantStartDate[3]), passGrant2.getStartDate());
         assertEquals(createZonedDateTime(TestUtil.grantEndDate[3]), passGrant2.getEndDate());
         assertEquals(user3_2, passGrant2.getPi()); //Reckondwith
-        assertEquals(1, passGrant2.getCoPis().size());
-        assertEquals(user3_2, passGrant2.getCoPis().get(0));
+        assertEquals(0, passGrant2.getCoPis().size()); // same user is also PI
         assertEquals(TestUtil.grantUpdateTimestamp[3], jhuPassUpdater.getLatestUpdate());//latest
 
         //check statistics
