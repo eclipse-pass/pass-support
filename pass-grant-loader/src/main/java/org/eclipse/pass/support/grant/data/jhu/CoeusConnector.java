@@ -104,11 +104,14 @@ public class CoeusConnector implements GrantConnector {
         "INNER JOIN COEUS.JHU_FACULTY_FORCE_PRSN B ON A.INST_PROPOSAL = B.INST_PROPOSAL " +
         "INNER JOIN COEUS.JHU_FACULTY_FORCE_PRSN_DETAIL C ON B.EMPLOYEE_ID = C.EMPLOYEE_ID " +
         "LEFT JOIN COEUS.SWIFT_SPONSOR D ON A.PRIME_SPONSOR_CODE = D.SPONSOR_CODE " +
-        "WHERE A.UPDATE_TIMESTAMP > ? " +
-        "AND TO_DATE(A.AWARD_END, 'MM/DD/YYYY') >= TO_DATE(?, 'MM/DD/YYYY') " +
-        "AND A.PROPOSAL_STATUS = 'Funded' " +
-        "AND (B.ABBREVIATED_ROLE = 'P' OR B.ABBREVIATED_ROLE = 'C' " +
-            "OR REGEXP_LIKE (UPPER(B.ROLE), '^CO ?-?INVESTIGATOR$')) ";
+        "WHERE (B.ABBREVIATED_ROLE = 'P' OR B.ABBREVIATED_ROLE = 'C' " +
+        "OR REGEXP_LIKE (UPPER(B.ROLE), '^CO ?-?INVESTIGATOR$')) " +
+        "AND EXISTS (" +
+        "    select * from COEUS.JHU_FACULTY_FORCE_PROP EA where" +
+        "        EA.UPDATE_TIMESTAMP > ?" +
+        "        AND TO_DATE(EA.AWARD_END, 'MM/DD/YYYY') >= TO_DATE(?, 'MM/DD/YYYY')" +
+        "        and EA.PROPOSAL_STATUS = 'Funded'" +
+        "        and EA.GRANT_NUMBER = A.GRANT_NUMBER";
 
     private static final String SELECT_USER_SQL =
         "SELECT " +
@@ -210,8 +213,8 @@ public class CoeusConnector implements GrantConnector {
 
     private String buildGrantQueryString(String grant) {
         return StringUtils.isEmpty(grant)
-            ? SELECT_GRANT_SQL + "AND A.GRANT_NUMBER IS NOT NULL"
-            : SELECT_GRANT_SQL + "AND A.GRANT_NUMBER = ?";
+            ? SELECT_GRANT_SQL + "AND A.GRANT_NUMBER IS NOT NULL)"
+            : SELECT_GRANT_SQL + "AND A.GRANT_NUMBER = ?)";
     }
 
     private List<GrantIngestRecord> retrieveFunderUpdates(Set<String> funderIds) throws SQLException {
