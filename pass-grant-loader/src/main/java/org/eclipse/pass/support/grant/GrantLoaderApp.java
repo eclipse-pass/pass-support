@@ -50,7 +50,6 @@ import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.eclipse.pass.support.grant.data.file.GrantDataCsvFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -78,23 +77,20 @@ public class GrantLoaderApp {
 
     private final GrantConnector grantConnector;
     private final PassUpdater passUpdater;
-    private final PassUpdater initPassUpdater;
 
     /**
      * Constructor for this class
      *
      */
     public GrantLoaderApp(GrantConnector grantConnector,
-                          @Qualifier("defaultUpdater") PassUpdater passUpdater,
-                          @Qualifier("initUpdater") PassUpdater initPassUpdater) {
+                          PassUpdater passUpdater) {
         this.grantConnector = grantConnector;
         this.passUpdater = passUpdater;
-        this.initPassUpdater = initPassUpdater;
         this.updateTimestampsFileName = "grant_update_timestamps";
     }
 
     public void run(String startDate, String awardEndDate, String mode, String action,
-                    String dataFileName, String grant, boolean init) throws PassCliException {
+                    String dataFileName, String grant) throws PassCliException {
 
         File dataFile = new File(dataFileName);
 
@@ -178,7 +174,6 @@ public class GrantLoaderApp {
 
         //update PASS if required
         if (!action.equals("pull")) {
-            PassUpdater passUpdater = selectUpdater(init);
             try {
                 passUpdater.updatePass(resultSet, mode);
             } catch (RuntimeException e) {
@@ -293,19 +288,6 @@ public class GrantLoaderApp {
      */
     protected boolean checkMode(String s) {
         return (s.equals("user") || s.equals("grant") || s.equals("funder"));
-    }
-
-    /**
-     * Configure and return the PassUpdater responsible for updating PASS with grant updates.
-     * @param init update mode is init or not
-     * @return the PassUpdater
-     */
-    protected PassUpdater selectUpdater(boolean init) {
-        if (init) {
-            LOG.warn("**Grant Loader running in init mode**");
-            return initPassUpdater;
-        }
-        return passUpdater;
     }
 
 }

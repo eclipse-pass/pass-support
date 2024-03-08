@@ -64,7 +64,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
     //private final String funderIdPrefix = "johnshopkins.edu:funder:";
 
-    @Autowired private JhuPassInitUpdater jhuPassInitUpdater;
+    @Autowired private JhuPassUpdater jhuPassInitUpdater;
 
     /**
      * we put an initial award for a grant into PASS, then simulate a pull of all records related
@@ -81,7 +81,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         // GIVEN
         List<GrantIngestRecord> resultSet = new ArrayList<>();
 
-        //put in last iteration as existing record - PI is Einstein
+        //put in initial grant - PI is Einstein
         GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
         resultSet.add(piRecord2);
 
@@ -112,7 +112,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         assertEquals(1, jhuPassInitUpdater.getStatistics().getPisAdded());
         assertEquals(0, jhuPassInitUpdater.getStatistics().getCoPisAdded());
 
-        //now simulate a complete pull from the Beginning of Time and adjust the stored grant
+        //now simulate a pull adding grant records the stored grant changing pi and adding co-pis.
         //we add a new co-pi Jones in the "1" iteration, and change the pi to Einstein in the "2" iteration
         //we drop co-pi jones in the last iteration
         GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
@@ -121,7 +121,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
         GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
 
-        //in the initial pull, we will find all of the records (check?)
+        // TODO return to change order from newest to oldest
         resultSet.clear();
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
@@ -155,7 +155,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
 
     @Test
     @Order(2)
-    public void processInitGrantIT_DoesNotUpdateWithNoChange() throws IOException, GrantDataException {
+    public void processInitGrantIT_DoesUpdateWithNoChange() throws IOException, GrantDataException {
         // GIVEN
         GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
         GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
@@ -164,7 +164,6 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
         GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
 
-        //in the initial pull, we will find all of the records (check?)
         List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
@@ -188,7 +187,7 @@ public class JhuPassInitUpdaterIT extends AbstractIntegrationTest {
         User user1 = getVerifiedUser(1);
         User user2 = getVerifiedUser(2);
 
-        Mockito.verify(passClient, Mockito.times(0)).updateObject(ArgumentMatchers.any());
+        Mockito.verify(passClient, Mockito.times(1)).updateObject(ArgumentMatchers.any());
         assertEquals(grantAwardNumber[0], passGrant.getAwardNumber());//initial
         assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
         assertEquals(grantIdPrefix + grantLocalKey[0], passGrant.getLocalKey());
