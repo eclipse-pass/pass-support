@@ -115,7 +115,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(1, jhuPassUpdater.getStatistics().getCoPisAdded());
 
         // WHEN
-        //now simulate an incremental pull since the initial,  adjust the stored grant
+        //now simulate a grant update, update the stored grant
         //we add a new co-pi Jones in the "1" iteration, and change the pi to Einstein in the "2" iteration
         //we drop co-pi jones in the last iteration
         GrantIngestRecord piRecord1 = TestUtil.makeGrantIngestRecord(1, 0, "P");
@@ -123,8 +123,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         GrantIngestRecord newCoPiRecord1 = TestUtil.makeGrantIngestRecord(1, 2, "C");
         GrantIngestRecord piRecord2 = TestUtil.makeGrantIngestRecord(2, 1, "P");
 
-        //add in everything since the initial pull
-        resultSet.clear();
+        //add in new records, now has complete set for grant
         resultSet.add(piRecord1);
         resultSet.add(coPiRecord1);
         resultSet.add(newCoPiRecord1);
@@ -154,7 +153,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void processGrantIT_DoesNotUpdateWithNoChange() throws IOException, GrantDataException {
+    public void processGrantIT_DoesUpdateWithNoChange() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(3, 3, "P");
@@ -200,7 +199,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         jhuPassUpdater.updatePass(resultSet, "grant");
 
         // THEN
-        Mockito.verify(passClient, Mockito.times(0)).updateObject(ArgumentMatchers.any());
+        Mockito.verify(passClient, Mockito.times(1)).updateObject(ArgumentMatchers.any());
         PassClientResult<Grant> resultGrant2 = passClient.selectObjects(grantSelector);
         assertEquals(1, resultGrant2.getTotal());
         Grant passGrant2 = resultGrant2.getObjects().get(0);
@@ -221,7 +220,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
 
         //check statistics
         assertEquals(0, jhuPassUpdater.getStatistics().getGrantsCreated());
-        assertEquals(0, jhuPassUpdater.getStatistics().getGrantsUpdated());
+        assertEquals(1, jhuPassUpdater.getStatistics().getGrantsUpdated());
         assertEquals(0, jhuPassUpdater.getStatistics().getUsersCreated());
     }
 

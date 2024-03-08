@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -223,7 +221,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 ZonedDateTime startDate = createZonedDateTime(grantIngestRecord.getAwardStart());
                 ZonedDateTime endDate = createZonedDateTime(grantIngestRecord.getAwardEnd());
 
-                //set values that should match earliest iteration of the grant. we wet these on the system record
+                //set values that should match earliest iteration of the grant. we set these on the system record
                 //in case they are needed to update a stored grant record.
                 //these values will not override existing stored values unless the PassEntityUtil implementation
                 //allows it.
@@ -380,15 +378,6 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
      */
     protected String getPassEntityId(PassEntity passEntity) {
         return Optional.ofNullable(passEntity).map(PassEntity::getId).orElse(null);
-    }
-
-    /**
-     * Returns a Set of Pass entity ID of passEntities.
-     * @param passEntities the list of passEntities
-     * @return the Set of passEntity IDs
-     */
-    protected Set<String> getPassEntityIds(List<? extends PassEntity> passEntities) {
-        return passEntities.stream().map(PassEntity::getId).collect(Collectors.toSet());
     }
 
     private void updateUsers(Collection<GrantIngestRecord> results) {

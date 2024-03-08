@@ -71,17 +71,6 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
     protected static String awardEndDate = "01/01/2011";
 
     /**
-     * Specifies whether this run is an "initializing run" which is allowed to overwrite normally non-writable fields
-     * on grants
-     */
-    @Option(name = "-i", aliases = {"-init", "--init", "-initialize", "--initialize"},
-            usage = "When set to true, changes the behavior of the loader to allow it" +
-                    "to update all fields stored on grants with info coming in from the pull. This is useful when " +
-                    "updating existing grant records due to a change in policy" +
-                    "about what the semantics of the stored records are.")
-    protected static boolean init = false;
-
-    /**
      * Specifies an optional action - either "pull" or "load" - to restrict the operation of the application to only
      * pull data from Grant source system to store in a file, or to only load into PASS data taken from a stored file,
      * respectively. In either case, the path to the file in question is the first command line argument after all
@@ -145,7 +134,7 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
             }
 
             /* Run the package generation application proper */
-            grantLoaderApp.run(startDate, awardEndDate, mode, action, dataFileName, grant, init);
+            grantLoaderApp.run(startDate, awardEndDate, mode, action, dataFileName, grant);
         } catch (CmdLineException e) {
             /*
              * This is an error in command line args, just print out usage data

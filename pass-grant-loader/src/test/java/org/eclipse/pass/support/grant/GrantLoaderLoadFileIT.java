@@ -38,14 +38,13 @@ import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
 
-    @Autowired @Qualifier("defaultUpdater") PassUpdater passUpdater;
+    @Autowired PassUpdater passUpdater;
 
     @AfterEach
     void cleanUp() throws IOException {
@@ -62,7 +61,7 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         // WHEN
         PassCliException passCliException = assertThrows(PassCliException.class, () -> {
             grantLoaderApp.run("", "01/01/2011", "grant",
-                "load", "src/test/resources/test-load.csv", null, false);
+                "load", "src/test/resources/test-load.csv", null);
         });
 
         // THEN

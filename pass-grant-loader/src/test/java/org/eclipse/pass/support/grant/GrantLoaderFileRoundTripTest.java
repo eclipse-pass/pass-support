@@ -67,7 +67,7 @@ public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
 
         // WHEN
         grantLoaderApp.run("2011-01-01 00:00:00", "01/01/2011",
-            "grant", "pull", "src/test/resources/test-pull.csv", null, false);
+            "grant", "pull", "src/test/resources/test-pull.csv", null);
 
         // THEN
         String expectedContent = Files.readString(Path.of("src/test/resources/expected-csv.csv"));
@@ -77,7 +77,7 @@ public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
         // WHEN
         // Use CSV file create above and load into PASS
         grantLoaderApp.run("", "01/01/2011", "grant",
-            "load", TEST_CSV_PATH.toString(), null, false);
+            "load", TEST_CSV_PATH.toString(), null);
 
         // THEN
         verifyGrantOne();

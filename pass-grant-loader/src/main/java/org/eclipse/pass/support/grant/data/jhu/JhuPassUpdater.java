@@ -27,6 +27,7 @@ import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.client.model.UserRole;
 import org.eclipse.pass.support.grant.data.AbstractDefaultPassUpdater;
+import org.eclipse.pass.support.grant.data.DifferenceLogger;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Profile("jhu")
-@Qualifier("defaultUpdater")
 public class JhuPassUpdater extends AbstractDefaultPassUpdater {
 
     private static final Logger LOG = LoggerFactory.getLogger(JhuPassUpdater.class);
@@ -53,43 +53,23 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     static final String EMPLOYEE_LOCATOR_ID = DOMAIN + ":" + EMPLOYEE_ID_TYPE + ":";
     static final String JHED_LOCATOR_ID = DOMAIN + ":" + JHED_ID_TYPE + ":";
 
+    private final DifferenceLogger differenceLogger;
+
     /**
      * Constructor.
      * @param policyProperties the policy props
      */
-    public JhuPassUpdater(PassClient passClient,
+    public JhuPassUpdater(DifferenceLogger differenceLogger,
+                          PassClient passClient,
                           @Qualifier("policyProperties") Properties policyProperties) {
         super(passClient, policyProperties);
+        this.differenceLogger = differenceLogger;
         setDomain(DOMAIN);
     }
 
     @Override
     public Grant updateGrantIfNeeded(Grant system, Grant stored) {
-        //adjust the system view of co-pis  by merging in the stored view of pi and co-pis
-        for (User coPiUser : stored.getCoPis()) {
-            if (!system.getCoPis().contains(coPiUser)) {
-                system.getCoPis().add(coPiUser);
-            }
-        }
-
-        //need to be careful, system pi might be null if there is no record for it
-        //this is to finalize the version of the co-pi list we want to compare between
-        //system and stored
-        User storedPi = stored.getPi();
-        if (system.getPi() != null) {
-            if (!system.getPi().equals(storedPi)) {
-                // stored.setPi( system.getPi() );
-                if (!system.getCoPis().contains(storedPi)) {
-                    system.getCoPis().add(storedPi);
-                }
-                system.getCoPis().remove(system.getPi());
-            }
-        } else { //system view is null, do not trigger update based on this field
-            system.setPi(storedPi);
-        }
-
-        //now system view has all available info we want in this grant - look for update trigger
-        if (grantNeedsUpdate(system, stored)) {
+        if (Objects.nonNull(system) && Objects.nonNull(stored)) {
             return updateGrant(system, stored);
         }
         return null;
@@ -133,6 +113,22 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         user.getRoles().add(UserRole.SUBMITTER);
         LOG.debug("Built user with employee ID {}", employeeId);
         return user;
+    }
+
+    private Grant updateGrant(Grant system, Grant stored) {
+        differenceLogger.log(stored, system);
+        stored.setAwardNumber(system.getAwardNumber());
+        stored.setAwardStatus(system.getAwardStatus());
+        stored.setLocalKey(system.getLocalKey());
+        stored.setProjectName(system.getProjectName());
+        stored.setPrimaryFunder(system.getPrimaryFunder());
+        stored.setDirectFunder(system.getDirectFunder());
+        stored.setPi(system.getPi());
+        stored.setCoPis(system.getCoPis());
+        stored.setAwardDate(system.getAwardDate());
+        stored.setStartDate(system.getStartDate());
+        stored.setEndDate(system.getEndDate());
+        return stored;
     }
 
     private boolean funderNeedsUpdate(Funder system, Funder stored) {
@@ -231,53 +227,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         if ((stored.getDisplayName() == null && system.getDisplayName() != null)) {
             stored.setDisplayName(system.getDisplayName());
         }
-        return stored;
-    }
-
-    /**
-     * Compare two Grant objects. Note that the Lists of Co-Pis are compared as Sets
-     *
-     * @param system the version of the Grant as seen in the COES system pull
-     * @param stored the version of the Grant as read from Pass
-     * @return a boolean which asserts whether the two supplied Grants are "COEUS equal"
-     */
-    private boolean grantNeedsUpdate(Grant system, Grant stored) {
-        if (system.getAwardStatus() != null
-            ? !system.getAwardStatus().equals(stored.getAwardStatus())
-            : stored.getAwardStatus() != null) {
-            return true;
-        }
-        if (system.getPi() != null
-            ? !system.getPi().getId().equals(getPassEntityId(stored.getPi()))
-            : stored.getPi() != null) {
-            return true;
-        }
-        if (system.getCoPis() != null
-            ? !getPassEntityIds(system.getCoPis()).equals(getPassEntityIds(stored.getCoPis()))
-            : stored.getCoPis() != null) {
-            return true;
-        }
-        if (system.getEndDate() != null
-            ? system.getEndDate().isAfter(stored.getEndDate())
-            : stored.getEndDate() != null) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Update a Pass Grant object with new information from COEUS - only updatable fields are considered.
-     * the PASS version is authoritative for the rest
-     *
-     * @param system the version of the Grant as seen in the COEUS system pull
-     * @param stored the version of the Grant as read from Pass
-     * @return the Grant object which represents the Pass object, with any new information from COEUS merged in
-     */
-    private Grant updateGrant(Grant system, Grant stored) {
-        stored.setAwardStatus(system.getAwardStatus());
-        stored.setPi(system.getPi());
-        stored.setCoPis(system.getCoPis());
-        stored.setEndDate(system.getEndDate());
         return stored;
     }
 
