@@ -147,8 +147,8 @@ public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
         assertEquals("Stupendous Research ProjectIV", passGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
         assertEquals("2004-01-01T00:00Z", passGrant.getAwardDate().toString());
-        assertEquals("2000-07-01T00:00Z", passGrant.getStartDate().toString());
-        assertEquals("2004-06-30T00:00Z", passGrant.getEndDate().toString());
+        assertEquals("2004-07-01T00:00Z", passGrant.getStartDate().toString());
+        assertEquals("2007-06-30T00:00Z", passGrant.getEndDate().toString());
 
         Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
         assertEquals("johnshopkins.edu:funder:20000001", primaryFunder.getLocalKey());
