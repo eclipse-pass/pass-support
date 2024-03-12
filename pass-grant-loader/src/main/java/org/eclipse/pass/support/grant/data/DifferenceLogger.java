@@ -42,9 +42,11 @@ public class DifferenceLogger {
      * @param target the updated PassEntity state
      */
     public void log(PassEntity source, PassEntity target) {
-        LOG.info("Updated " + source.getClass().getSimpleName() + " with ID: " + source.getId());
         if (LOG.isInfoEnabled()) {
             List<String> diffs = getDifference(source, target, source.getId());
+            if (!diffs.isEmpty()) {
+                LOG.info("Updated " + source.getClass().getSimpleName() + " with ID: " + source.getId());
+            }
             diffs.forEach(LOG::info);
         }
     }
