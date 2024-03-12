@@ -57,6 +57,12 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
     private static final String GRANT_ID_TYPE = "grant";
     private static final String FUNDER_ID_TYPE = "funder";
+    private static final String AWARD_LO = "awardLo";
+    private static final String AWARD_HI = "awardHi";
+    private static final String START_LO = "startLo";
+    private static final String END_HI = "endHi";
+    private static final String PI_AWARD = "piAward";
+    private static final String PI_END   = "piEnd";
 
     @Getter
     private final PassUpdateStatistics statistics = new PassUpdateStatistics();
@@ -70,13 +76,19 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     private String domain = "default.domain";
     private String latestUpdateString = "";
 
+    record GrantAccumulate(GrantIngestRecord grantIngestRecord, ZonedDateTime awardDate, ZonedDateTime startDate,
+                           ZonedDateTime endDate) {
+        public ZonedDateTime getLoDate() {
+            return Objects.nonNull(awardDate) ? awardDate : startDate;
+        }
+
+        public ZonedDateTime getHiDate() {
+            return Objects.nonNull(awardDate) ? awardDate : endDate;
+        }
+    }
+
     private final Map<String, Funder> funderMap = new HashMap<>();
     private final Map<String, User> userMap = new HashMap<>();
-    private final Map<String, ZonedDateTime> awardDateLo = new HashMap<>();
-    private final Map<String, ZonedDateTime> awardDateHi = new HashMap<>();
-    private final Map<String, ZonedDateTime> awardStartDateLo = new HashMap<>();
-    private final Map<String, ZonedDateTime> awardEndDateHi = new HashMap<>();
-    private final Map<String,  Map<String, ZonedDateTime>> piAwardDateHi = new HashMap<>();
 
     private String mode;
 
@@ -137,11 +149,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         //a grant will have several rows in the ResultSet if there are co-pis. so we put the grant on this
         //Map and add to it as additional rows add information.
         Map<String, Grant> grantRowMap = new HashMap<>();
-        awardDateLo.clear();
-        awardDateHi.clear();
-        awardStartDateLo.clear();
-        awardEndDateHi.clear();
-        piAwardDateHi.clear();
+        Map<String,  Map<String, GrantAccumulate>> grantAggregateMap = new HashMap<>();
 
         LOG.warn("Processing result set with {} rows", results.size());
         boolean modeChecked = false;
@@ -163,8 +171,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
                 //get funder local keys. if a primary funder is not specified, we set it to the direct funder
                 String directFunderLocalKey = grantIngestRecord.getDirectFunderCode();
-                String primaryFunderLocalKey = grantIngestRecord.getPrimaryFunderCode();
-                primaryFunderLocalKey = (primaryFunderLocalKey == null ? directFunderLocalKey : primaryFunderLocalKey);
+                String primaryFunderLocalKey = getPrimaryFunderKey(grantIngestRecord);
 
                 //we will need funder PASS URIs - retrieve or create them,
                 //updating the info on them if necessary
@@ -181,7 +188,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 }
 
                 //same for any users
-                String userKey = grantIngestRecord.getPiEmployeeId() + grantIngestRecord.getPiInstitutionalId();
+                String userKey = getUserKey(grantIngestRecord);
                 if (!userMap.containsKey(userKey)) {
                     User rowUser = buildUser(grantIngestRecord);
                     User updateUser = updateUserInPass(rowUser);
@@ -202,52 +209,11 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
                 grant = grantRowMap.get(grantLocalKey);
 
-                GrantIngestUserRole grantIngestUserRole = GrantIngestUserRole.valueOf(grantIngestRecord.getPiRole());
-                //anybody who was ever a co-pi in an iteration will be in this list
-                if (grantIngestUserRole == GrantIngestUserRole.C || grantIngestUserRole == GrantIngestUserRole.K) {
-                    addCopiIfNeeded(grant, userKey);
-                }
-                if (GrantIngestUserRole.valueOf(grantIngestRecord.getPiRole()) == GrantIngestUserRole.P) {
-                    User user = userMap.get(userKey);
-                    ZonedDateTime awardDate = createZonedDateTime(grantIngestRecord.getAwardDate());
-                    ZonedDateTime endDate = createZonedDateTime(grantIngestRecord.getAwardEnd());
-                    Map<String, ZonedDateTime> grantPiDateMap = piAwardDateHi.computeIfAbsent(grantLocalKey,
-                        k -> {
-                            Map<String, ZonedDateTime> map = new HashMap<>();
-                            map.put("piawarddate", awardDate);
-                            map.put("piawardend", endDate);
-                            return map;
-                        });
-                    ZonedDateTime piAwardDate = grantPiDateMap.get("piawarddate");
-                    if (Objects.nonNull(awardDate)
-                        && (Objects.isNull(piAwardDate) || !awardDate.isBefore(piAwardDate)) ) {
-                        setPiOnGrant(grant, user);
-                        grantPiDateMap.put("piawarddate", awardDate);
-                        grantPiDateMap.put("piawardend", null);
-                    } else if (Objects.nonNull(piAwardDate)) {
-                        addCopiIfNeeded(grant, userKey);
-                    } else if (Objects.nonNull(endDate)) {
-                        ZonedDateTime piAwardEnd = grantPiDateMap.get("piawardend");
-                        if (Objects.isNull(piAwardEnd) || !endDate.isBefore(piAwardEnd)) {
-                            setPiOnGrant(grant, user);
-                            grantPiDateMap.put("piawardend", endDate);
-                        } else {
-                            addCopiIfNeeded(grant, userKey);
-                        }
-                    }
-                }
-
-                if (Objects.nonNull(grantIngestRecord.getAwardDate())) {
-                    ZonedDateTime awardDate = createZonedDateTime(grantIngestRecord.getAwardDate());
-                    changeGrantAttributes(awardDate, awardDate, grant, grantIngestRecord, directFunderLocalKey,
-                        primaryFunderLocalKey, userKey);
-                } else if (Objects.isNull(grant.getAwardDate()) && Objects.nonNull(grantIngestRecord.getAwardStart())
-                    && Objects.nonNull(grantIngestRecord.getAwardEnd())) {
-                    ZonedDateTime startDate = createZonedDateTime(grantIngestRecord.getAwardStart());
-                    ZonedDateTime endDate = createZonedDateTime(grantIngestRecord.getAwardEnd());
-                    changeGrantAttributes(startDate, endDate, grant, grantIngestRecord, directFunderLocalKey,
-                        primaryFunderLocalKey, userKey);
-                }
+                User user = userMap.get(userKey);
+                addCoPiIfNeeded(grant, user);
+                Map<String, GrantAccumulate> grantAccumulateMap = grantAggregateMap.computeIfAbsent(grantLocalKey,
+                    this::createGrantAccumulateMap);
+                aggregateGrantAttributes(grantIngestRecord, grantAccumulateMap);
 
                 //we are done with this record, let's save the state of this Grant
                 grantRowMap.put(grantLocalKey, grant);
@@ -271,6 +237,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         for (Grant grant : grantRowMap.values()) {
             String grantLocalKey = grant.getLocalKey();
             try {
+                setGrantAttributes(grant, grantAggregateMap);
                 Grant updatedGrant = updateGrantInPass(grant);
                 grantResultMap.put(grantLocalKey, updatedGrant);
             } catch (IOException | GrantDataException e) {
@@ -288,7 +255,6 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     }
 
     private void validate(GrantIngestRecord grantIngestRecord) throws GrantDataException {
-
         required(grantIngestRecord.getGrantNumber(), "grantNumber");
         required(grantIngestRecord.getGrantTitle(), "grantTitle");
         required(grantIngestRecord.getAwardStart(), "awardStart");
@@ -334,40 +300,111 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         }
     }
 
-    private void addCopiIfNeeded(Grant grant, String userKey) {
-        User user = userMap.get(userKey);
-        if (!Objects.equals(grant.getPi(), user) && !grant.getCoPis().contains(user)) {
-            grant.getCoPis().add(user);
+    private Map<String, GrantAccumulate> createGrantAccumulateMap(String key) {
+        Map<String, GrantAccumulate> map = new HashMap<>();
+        map.put(AWARD_LO, null);
+        map.put(AWARD_HI, null);
+        map.put(START_LO, null);
+        map.put(END_HI, null);
+        map.put(PI_AWARD, null);
+        map.put(PI_END, null);
+        return map;
+    }
+
+    private String getPrimaryFunderKey(GrantIngestRecord grantIngestRecord) {
+        String directFunderLocalKey = grantIngestRecord.getDirectFunderCode();
+        String primaryFunderLocalKey = grantIngestRecord.getPrimaryFunderCode();
+        return Objects.isNull(primaryFunderLocalKey) ? directFunderLocalKey : primaryFunderLocalKey;
+    }
+
+    private String getUserKey(GrantIngestRecord grantIngestRecord) {
+        return grantIngestRecord.getPiEmployeeId() + grantIngestRecord.getPiInstitutionalId();
+    }
+
+    private void addCoPiIfNeeded(Grant grant, User userCopi) {
+        if (!grant.getCoPis().contains(userCopi)) {
+            grant.getCoPis().add(userCopi);
             statistics.addCoPi();
         }
     }
 
-    private void changeGrantAttributes(ZonedDateTime grantLoDate, ZonedDateTime grantHiDate, Grant grant,
-                                       GrantIngestRecord grantIngestRecord, String directFunderKey,
-                                       String primaryFunderKey, String userKey)
-        throws GrantDataException {
-        String grantLocalKey = grant.getLocalKey();
-        ZonedDateTime loDate = Objects.nonNull(grantIngestRecord.getAwardDate()) ? awardDateLo.get(grantLocalKey)
-            : awardStartDateLo.get(grantLocalKey);
-        ZonedDateTime hiDate = Objects.nonNull(grantIngestRecord.getAwardDate()) ? awardDateHi.get(grantLocalKey)
-            : awardEndDateHi.get(grantLocalKey);
-
-        if (Objects.isNull(loDate) || grantLoDate.isBefore(loDate)) {
-            setGrantStartAttributes(grant, grantIngestRecord, directFunderKey, primaryFunderKey);
-            awardDateLo.put(grantLocalKey, grant.getAwardDate());
-            awardStartDateLo.put(grantLocalKey, grant.getStartDate());
+    /**
+     * Aggregate grant attribute values in grantAggregateMap.
+     * <p>
+     * The aggregation rules are as follows:
+     * -For all grant records for a grant, use the grant record with awardDate to compute the earliest record base on
+     * awardDate to set the start attributes.
+     * -For all grant records for a grant, use the grant record with awardDate to compute the latest record base on
+     * awardDate to set the end attributes and PI.
+     * -If all grant records for a grant have no awardDate, then the startDate and endDate will be used to compute the
+     * earliest and latest records respectively.
+     * -If all grant records for a grant contains records with and without awardDate, the records with awardDate will
+     * take precedence in determining the earliest and latest records.
+     *
+     * @param grantIngestRecord the grant ingest record being processed
+     * @param grantAccumulateMap the map holding the aggregation for the grant
+     * @throws GrantDataException thrown if bad grant data
+     */
+    private void aggregateGrantAttributes(GrantIngestRecord grantIngestRecord,
+                                          Map<String, GrantAccumulate> grantAccumulateMap) throws GrantDataException {
+        ZonedDateTime awardDate = createZonedDateTime(grantIngestRecord.getAwardDate());
+        ZonedDateTime startDate = Objects.requireNonNull(createZonedDateTime(grantIngestRecord.getAwardStart()));
+        ZonedDateTime endDate = Objects.requireNonNull(createZonedDateTime(grantIngestRecord.getAwardEnd()));
+        GrantIngestUserRole grantIngestUserRole = GrantIngestUserRole.valueOf(grantIngestRecord.getPiRole());
+        String loKey = Objects.nonNull(awardDate) ? AWARD_LO : START_LO;
+        String hiKey = Objects.nonNull(awardDate) ? AWARD_HI : END_HI;
+        String piKey = Objects.nonNull(awardDate) ? PI_AWARD : PI_END;
+        ZonedDateTime loGrantDate = Objects.nonNull(awardDate) ? awardDate : startDate;
+        ZonedDateTime hiGrantDate = Objects.nonNull(awardDate) ? awardDate : endDate;
+        GrantAccumulate accumLo = grantAccumulateMap.get(loKey);
+        if (Objects.isNull(accumLo) || loGrantDate.isBefore(accumLo.getLoDate())) {
+            grantAccumulateMap.put(loKey, new GrantAccumulate(grantIngestRecord, awardDate, startDate, endDate));
         }
-        if (Objects.isNull(hiDate) || !grantHiDate.isBefore(hiDate)) {
-            setGrantEndAttributes(grant, grantIngestRecord, userKey);
-            awardDateHi.put(grantLocalKey, grant.getAwardDate());
-            awardEndDateHi.put(grantLocalKey, grant.getEndDate());
+        GrantAccumulate accumHi = grantAccumulateMap.get(hiKey);
+        if (Objects.isNull(accumHi) || !hiGrantDate.isBefore(accumHi.getHiDate())) {
+            grantAccumulateMap.put(hiKey, new GrantAccumulate(grantIngestRecord, awardDate, startDate, endDate));
+        }
+        if (grantIngestUserRole == GrantIngestUserRole.P) {
+            GrantAccumulate piAccum = grantAccumulateMap.get(piKey);
+            if (Objects.isNull(piAccum) || !hiGrantDate.isBefore(piAccum.getHiDate())) {
+                grantAccumulateMap.put(piKey, new GrantAccumulate(grantIngestRecord, awardDate, startDate, endDate));
+            }
         }
     }
 
-    private void setGrantStartAttributes(Grant grant, GrantIngestRecord grantIngestRecord, String directFunderKey,
-                                         String primaryFunderKey) throws GrantDataException {
+    private void setGrantAttributes(Grant grant, Map<String,  Map<String, GrantAccumulate>> grantAggregateMap)
+        throws GrantDataException {
+        String grantLocalKey = grant.getLocalKey();
+        Map<String, GrantAccumulate> grantAccumulateMap = grantAggregateMap.get(grantLocalKey);
+
+        GrantAccumulate awardLo = grantAccumulateMap.get(AWARD_LO);
+        GrantIngestRecord grantIngestRecordStart = Objects.nonNull(awardLo) ? awardLo.grantIngestRecord()
+            : grantAccumulateMap.get(START_LO).grantIngestRecord();
+        setGrantStartAttributes(grant, grantIngestRecordStart);
+
+        GrantAccumulate awardHi = grantAccumulateMap.get(AWARD_HI);
+        GrantIngestRecord grantIngestRecordEnd = Objects.nonNull(awardHi) ? awardHi.grantIngestRecord()
+            : grantAccumulateMap.get(END_HI).grantIngestRecord();
+        setGrantEndAttributes(grant, grantIngestRecordEnd);
+
+        GrantAccumulate piAward = grantAccumulateMap.get(PI_AWARD);
+        if (Objects.nonNull(piAward)) {
+            GrantIngestRecord grantIngestRecordPi = piAward.grantIngestRecord();
+            setPiOnGrant(grant, grantIngestRecordPi);
+        } else {
+            GrantAccumulate piEnd = grantAccumulateMap.get(PI_END);
+            if (Objects.nonNull(piEnd)) {
+                GrantIngestRecord grantIngestRecordPi = piEnd.grantIngestRecord();
+                setPiOnGrant(grant, grantIngestRecordPi);
+            }
+        }
+    }
+
+    private void setGrantStartAttributes(Grant grant, GrantIngestRecord grantIngestRecord) throws GrantDataException {
         grant.setProjectName(grantIngestRecord.getGrantTitle());
         grant.setAwardNumber(grantIngestRecord.getAwardNumber());
+        String directFunderKey = grantIngestRecord.getDirectFunderCode();
+        String primaryFunderKey = getPrimaryFunderKey(grantIngestRecord);
         grant.setDirectFunder(funderMap.get(directFunderKey));
         grant.setPrimaryFunder(funderMap.get(primaryFunderKey));
         ZonedDateTime startDate = createZonedDateTime(grantIngestRecord.getAwardStart());
@@ -376,7 +413,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         grant.setAwardDate(awardDate);
     }
 
-    private void setGrantEndAttributes(Grant grant, GrantIngestRecord grantIngestRecord, String userKey)
+    private void setGrantEndAttributes(Grant grant, GrantIngestRecord grantIngestRecord)
         throws GrantDataException {
         ZonedDateTime endDate = createZonedDateTime(grantIngestRecord.getAwardEnd());
         grant.setEndDate(endDate);
@@ -386,18 +423,20 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         grant.setAwardStatus(awardStatus);
     }
 
-    private void setPiOnGrant(Grant grant, User newPi) {
-        User oldPiId = grant.getPi();
+    private void setPiOnGrant(Grant grant, GrantIngestRecord grantIngestRecord) {
+        String userKey = getUserKey(grantIngestRecord);
+        User newPi = userMap.get(userKey);
+        User oldPi = grant.getPi();
         grant.setPi(newPi);
-        grant.getCoPis().remove(newPi);
-        if (oldPiId == null) {
+        boolean removed = grant.getCoPis().remove(newPi);
+        if (removed) {
+            statistics.subtractCoPi();
+        }
+        if (oldPi == null) {
             statistics.addPi();
         } else {
-            if (!oldPiId.equals(newPi)) {
-                if (!grant.getCoPis().contains(oldPiId)) {
-                    grant.getCoPis().add(oldPiId);
-                    statistics.addCoPi();
-                }
+            if (!oldPi.equals(newPi)) {
+                addCoPiIfNeeded(grant, oldPi);
             }
         }
     }

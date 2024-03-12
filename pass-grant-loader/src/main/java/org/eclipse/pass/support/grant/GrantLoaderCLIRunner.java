@@ -45,6 +45,9 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
     @Option(name = "-v", aliases = {"-version", "--version"}, usage = "print version information")
     protected boolean version = false;
 
+    /**
+     * The grant id.
+     */
     @Option(name = "-m", aliases = {"-mode", "--mode"},
             usage = "option to set the query mode to \"grant\" (default) or \"user\"")
     protected static String mode = "grant";
@@ -93,11 +96,18 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
             usage = "option to specify a single grant to process")
     protected static String grant = null;
 
+    /**
+     * Holds arguments from command line.
+     */
     @Argument
     protected static List<String> arguments = new ArrayList<>();
 
     private final GrantLoaderApp grantLoaderApp;
 
+    /**
+     * Constructor.
+     * @param grantLoaderApp the grant loader app
+     */
     public GrantLoaderCLIRunner(GrantLoaderApp grantLoaderApp) {
         this.grantLoaderApp = grantLoaderApp;
     }

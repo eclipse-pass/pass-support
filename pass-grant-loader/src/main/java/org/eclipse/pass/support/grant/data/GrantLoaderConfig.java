@@ -26,6 +26,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
+/**
+ * @author Russ Poetker (rpoetke1@jh.edu)
+ */
 @Configuration
 public class GrantLoaderConfig {
 
@@ -38,11 +41,21 @@ public class GrantLoaderConfig {
     @Value("${pass.client.password}")
     private String passClientPassword;
 
+    /**
+     * Returns the pass client.
+     * @return the pass client
+     */
     @Bean
     public PassClient passClient() {
         return PassClient.newInstance(passClientUrl, passClientUser, passClientPassword);
     }
 
+    /**
+     * Returns policy properties.
+     * @param policyPropResource the resource of the policy properties
+     * @return the policy properties
+     * @throws IOException if io exception
+     */
     @Bean
     @Qualifier("policyProperties")
     public Properties policyProperties(@Value("${pass.policy.prop.path}")

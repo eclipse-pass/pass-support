@@ -83,6 +83,9 @@ public class PassUpdateStatistics {
         this.report = sb.toString();
     }
 
+    /**
+     * Reset the statistics.
+     */
     public void reset() {
         grantsUpdated = 0;
         fundersUpdated = 0;
@@ -126,6 +129,10 @@ public class PassUpdateStatistics {
 
     void addCoPi() {
         coPisAdded++;
+    }
+
+    void subtractCoPi() {
+        coPisAdded--;
     }
 
     void setLatestUpdateString(String latestUpdateString) {
