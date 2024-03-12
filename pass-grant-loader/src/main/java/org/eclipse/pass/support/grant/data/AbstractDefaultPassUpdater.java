@@ -76,8 +76,8 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     private String domain = "default.domain";
     private String latestUpdateString = "";
 
-    record GrantAccumulate(GrantIngestRecord grantIngestRecord, ZonedDateTime awardDate, ZonedDateTime startDate,
-                           ZonedDateTime endDate) {
+    private record GrantAccumulate(GrantIngestRecord grantIngestRecord, ZonedDateTime awardDate,
+                                   ZonedDateTime startDate, ZonedDateTime endDate) {
         public ZonedDateTime getLoDate() {
             return Objects.nonNull(awardDate) ? awardDate : startDate;
         }
