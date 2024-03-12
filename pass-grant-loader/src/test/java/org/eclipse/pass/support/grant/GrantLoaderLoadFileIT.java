@@ -110,7 +110,7 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("UserThreeFn", passGrant.getCoPis().get(0).getFirstName());
         assertNull(passGrant.getCoPis().get(0).getMiddleName());
         assertEquals("UserThreeLn", passGrant.getCoPis().get(0).getLastName());
-        assertEquals("userthree@jhu.edu", passGrant.getCoPis().get(0).getEmail());
+        assertNull(passGrant.getCoPis().get(0).getEmail());
         assertEquals(List.of("johnshopkins.edu:employeeid:789123"),
             passGrant.getCoPis().get(0).getLocatorIds());
     }
@@ -145,11 +145,11 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("UserTwoFn", passGrant.getPi().getFirstName());
         assertEquals("UserTwoMn", passGrant.getPi().getMiddleName());
         assertEquals("UserTwoLn", passGrant.getPi().getLastName());
-        assertEquals("usertwo@jhu.edu", passGrant.getPi().getEmail());
+        assertNull(passGrant.getPi().getEmail());
         assertEquals(List.of("johnshopkins.edu:eppn:usertwo"), passGrant.getPi().getLocatorIds());
 
         assertEquals(3, passGrant.getCoPis().size());
-        User copi1 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userone@jhu.edu"))
+        User copi1 = passGrant.getCoPis().stream().filter(copi -> copi.getLastName().equals("UserOneLn"))
             .findFirst().get();
         assertEquals("UserOneFn", copi1.getFirstName());
         assertEquals("UserOneMn", copi1.getMiddleName());
@@ -158,15 +158,15 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals(List.of("johnshopkins.edu:employeeid:123456", "johnshopkins.edu:eppn:userone"),
             copi1.getLocatorIds());
 
-        User copi2 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userthree@jhu.edu"))
+        User copi2 = passGrant.getCoPis().stream().filter(copi -> copi.getLastName().equals("UserThreeLn"))
             .findFirst().get();
         assertEquals("UserThreeFn", copi2.getFirstName());
         assertNull(copi2.getMiddleName());
         assertEquals("UserThreeLn", copi2.getLastName());
-        assertEquals("userthree@jhu.edu", copi2.getEmail());
+        assertNull(copi2.getEmail());
         assertEquals(List.of("johnshopkins.edu:employeeid:789123"), copi2.getLocatorIds());
 
-        User copi3 = passGrant.getCoPis().stream().filter(copi -> copi.getEmail().equals("userfour@jhu.edu"))
+        User copi3 = passGrant.getCoPis().stream().filter(copi -> copi.getLastName().equals("UserFourLn"))
             .findFirst().get();
         assertEquals("UserFourFn", copi3.getFirstName());
         assertEquals("UserFourMn", copi3.getMiddleName());

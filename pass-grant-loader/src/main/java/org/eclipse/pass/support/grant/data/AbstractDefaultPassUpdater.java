@@ -263,7 +263,6 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         required(grantIngestRecord.getDirectFunderName(), "directFunderName");
         required(grantIngestRecord.getPiFirstName(), "piFirstName");
         required(grantIngestRecord.getPiLastName(), "piLastName");
-        required(grantIngestRecord.getPiEmail(), "piEmail");
         required(grantIngestRecord.getPiRole(), "piRole");
 
         if (StringUtils.isBlank(grantIngestRecord.getPiEmployeeId())
