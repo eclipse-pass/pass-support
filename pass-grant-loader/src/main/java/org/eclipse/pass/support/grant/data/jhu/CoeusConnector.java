@@ -111,7 +111,7 @@ public class CoeusConnector implements GrantConnector {
         "        EA.UPDATE_TIMESTAMP > ?" +
         "        AND TO_DATE(EA.AWARD_END, 'MM/DD/YYYY') >= TO_DATE(?, 'MM/DD/YYYY')" +
         "        and EA.PROPOSAL_STATUS = 'Funded'" +
-        "        and EA.GRANT_NUMBER = A.GRANT_NUMBER";
+        "        and EA.GRANT_NUMBER = A.GRANT_NUMBER ";
 
     private static final String SELECT_USER_SQL =
         "SELECT " +
