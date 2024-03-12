@@ -19,7 +19,16 @@ package org.eclipse.pass.support.grant.data;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 public enum GrantIngestUserRole {
+    /**
+     * PI
+     */
     P,
+    /**
+     * Co-PI
+     */
     C,
+    /**
+     * K
+     */
     K
 }

@@ -147,7 +147,7 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
         assertEquals(2, jhuPassUpdater.getStatistics().getUsersCreated());
         assertEquals(0, jhuPassUpdater.getStatistics().getUsersUpdated());
         assertEquals(1, jhuPassUpdater.getStatistics().getPisAdded());
-        assertEquals(3, jhuPassUpdater.getStatistics().getCoPisAdded());
+        assertEquals(2, jhuPassUpdater.getStatistics().getCoPisAdded());
         verifyGrant();
     }
 

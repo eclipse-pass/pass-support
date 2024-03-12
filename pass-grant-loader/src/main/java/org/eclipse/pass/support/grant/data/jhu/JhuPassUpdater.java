@@ -57,7 +57,9 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
 
     /**
      * Constructor.
-     * @param policyProperties the policy props
+     * @param differenceLogger the diff logger
+     * @param passClient the pass client
+     * @param policyProperties the policy properties
      */
     public JhuPassUpdater(DifferenceLogger differenceLogger,
                           PassClient passClient,

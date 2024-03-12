@@ -79,8 +79,9 @@ public class GrantLoaderApp {
     private final PassUpdater passUpdater;
 
     /**
-     * Constructor for this class
-     *
+     * Constructor.
+     * @param grantConnector the grant connector
+     * @param passUpdater the pass update
      */
     public GrantLoaderApp(GrantConnector grantConnector,
                           PassUpdater passUpdater) {
@@ -89,6 +90,16 @@ public class GrantLoaderApp {
         this.updateTimestampsFileName = "grant_update_timestamps";
     }
 
+    /**
+     * Run the grant loader.
+     * @param startDate the start date
+     * @param awardEndDate the award end date
+     * @param mode the mode
+     * @param action the action
+     * @param dataFileName the data file name
+     * @param grant the grant id
+     * @throws PassCliException
+     */
     public void run(String startDate, String awardEndDate, String mode, String action,
                     String dataFileName, String grant) throws PassCliException {
 

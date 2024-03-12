@@ -27,6 +27,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SuppressWarnings({"checkstyle:hideutilityclassconstructor"})
 public class GrantLoaderCLI {
 
+    /**
+     * The main method of grant loader.
+     * @param args the args
+     */
     public static void main(String[] args) {
         SpringApplication.run(GrantLoaderCLI.class, args);
     }
