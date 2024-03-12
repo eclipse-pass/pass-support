@@ -30,8 +30,7 @@ in as standard a form as possible, the data to be consumed by the Updater.
 
 The Updater class takes the data supplied by the Connector and creates or updates the corresponding objects in the PASS
 repository accordingly. There is a Default class whose children may override certain substantive methods if the local
-policies require. In most cases, the child classes will simply supply a PassEntityUtil class which has been tuned for
-the institution, and also a domain string for constructing identifiers.
+policies require.
 
 ## Profiles
 
@@ -40,10 +39,9 @@ the institution, and also a domain string for constructing identifiers.
 The JHU implementation is used to pull data from the COEUS Oracle database views for the purpose of performing regular
 updates. We look at grants which have been updated since a particular time (typically the time of the previous update),
 join this with user and funder information associated with the grant, and then use this information to update the data
-in the PASS backend. The JHU implementation also treats the COEUS database as authoritative for certain fields in the
-data - the logic about whether updates are required is contained in the PassEntityUtil implementation for JHU. Details
-about operation are available at
-[JHU COEUS Loader](JHU-README.md)
+in the PASS backend. The JHU implementation also treats the COEUS database as authoritative for all fields in the
+data. If a grant is being passed in for update, it is assumed that all records for that grant are included in the
+input.
 
 ## Usage
 
@@ -53,7 +51,7 @@ is a spring boot application, so use the standard Spring Boot configuration func
 
 Here is an example using Java system properties `-D`.
 ```
-    java -Dapp.hom-/my/home/path -jar jhu-grant-loader-0.6.0-SNAPSHOT.jar -startDateTime "<yyyy-mm-dd hh:mm:ss.m{mm}>" -awardEndDate <MM/dd/yyyy>
+    java -Dapp.home-/my/home/path -jar jhu-grant-loader-0.6.0-SNAPSHOT.jar -startDateTime "<yyyy-mm-dd hh:mm:ss.m{mm}>" -awardEndDate <MM/dd/yyyy>
 ```
 
 ### Arguments
