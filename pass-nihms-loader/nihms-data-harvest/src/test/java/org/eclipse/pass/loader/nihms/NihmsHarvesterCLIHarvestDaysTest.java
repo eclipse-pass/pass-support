@@ -23,6 +23,9 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
@@ -35,28 +38,37 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-@SpringBootTest(classes = NihmsHarvesterCLI.class)
-@TestPropertySource("classpath:test-application.properties")
-public class NihmsHarvesterCLITest {
+@SpringBootTest(classes = NihmsHarvesterCLI.class, args = {"--harvestDays=30"})
+@TestPropertySource(
+    locations = "classpath:test-application.properties",
+    properties = {
+        "nihmsetl.api.url.param.pdf=",
+        "nihmsetl.api.url.param.pdt="
+    })
+public class NihmsHarvesterCLIHarvestDaysTest {
 
     @SpyBean NihmsHarvester nihmsHarvester;
     @MockBean NihmsHarvesterDownloader nihmsHarvesterDownloader;
 
     @Test
-    public void testHarvesterCLI() throws IOException, InterruptedException {
+    public void testHarvesterCLI_WithHarvestRange() throws IOException, InterruptedException {
         // GIVEN/WHEN
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/uuuu");
+        // 30 days passed in args up top in @SpringBootTest
+        String expectedPdf = LocalDate.now().minus(Period.ofDays(30)).format(formatter)
+            .replace("/", "%2F");
         // THEN
         verify(nihmsHarvester).harvest(eq(EnumSet.allOf(NihmsStatus.class)), anyInt());
         verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/c?pdt=07%2F2019&pdf=07%2F2018" +
+            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/c?pdf=" + expectedPdf +
                 "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
             eq(NihmsStatus.COMPLIANT));
         verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/p?pdt=07%2F2019&pdf=07%2F2018" +
+            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/p?pdf=" + expectedPdf +
                 "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
             eq(NihmsStatus.IN_PROCESS));
         verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/n?pdt=07%2F2019&pdf=07%2F2018" +
+            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/n?pdf=" + expectedPdf +
                 "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
             eq(NihmsStatus.NON_COMPLIANT));
     }
