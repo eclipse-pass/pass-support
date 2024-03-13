@@ -16,12 +16,14 @@
 package org.eclipse.pass.loader.nihms;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,8 @@ import org.springframework.stereotype.Component;
 public class NihmsHarvester {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsHarvester.class);
+
+    static final int DEFAULT_HARVEST_DAYS = -1;
 
     private final UrlBuilder urlBuilder;
     private final NihmsHarvesterDownloader nihmsHarvesterDownloader;
@@ -51,22 +55,19 @@ public class NihmsHarvester {
      * Retrieve files from NIHMS based on status list and startDate provided
      *
      * @param statusesToDownload list of {@code NihmsStatus} types to download from the NIHMS website
-     * @param startDate          formatted as {@code yyyy-mm}, can be null to default to 1 year prior to harvest date
+     * @param harvestPeriodDays number of days of data to query
      */
-    public void harvest(Set<NihmsStatus> statusesToDownload, String startDate) {
+    public void harvest(Set<NihmsStatus> statusesToDownload, int harvestPeriodDays) {
         if (CollectionUtils.isEmpty(statusesToDownload)) {
             throw new RuntimeException("statusesToDownload list cannot be empty");
-        }
-        if (!validStartDate(startDate)) {
-            throw new RuntimeException(
-                String.format("The startDate %s is not valid. The date must be formatted as mm-yyyy", startDate));
         }
 
         try {
             Map<String, String> params = new HashMap<>();
 
-            if (StringUtils.isNotEmpty(startDate)) {
-                startDate = startDate.replace("-", "/");
+            if (harvestPeriodDays != DEFAULT_HARVEST_DAYS) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/uuuu");
+                String startDate = LocalDate.now().minus(Period.ofDays(harvestPeriodDays)).format(formatter);
                 LOG.info("Filtering with Start Date " + startDate);
                 params.put("pdf", startDate);
             }
@@ -92,17 +93,6 @@ public class NihmsHarvester {
         } catch (Exception ex) {
             throw new RuntimeException("An error occurred while downloading the NIHMS files.", ex);
         }
-    }
-
-    /**
-     * null or empty are OK for start date, but a badly formatted date that does not have the format mm-yyyy should
-     * return false
-     *
-     * @param startDate true if valid start date (empty or formatted mm-yyyy)
-     * @return true if valid start date (empty or formatted mm-yyyy)
-     */
-    public static boolean validStartDate(String startDate) {
-        return (StringUtils.isEmpty(startDate) || startDate.matches("^(0?[1-9]|1[012])-(\\d{4})$"));
     }
 
 }

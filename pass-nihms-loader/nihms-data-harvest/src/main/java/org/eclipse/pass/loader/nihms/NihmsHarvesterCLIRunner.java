@@ -68,14 +68,13 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
     private boolean inProcess = false;
 
     /**
-     * The start date from which to load .
+     * The number of days of data to nihms harvest.
      */
-    @Option(name = "-s", aliases = {"-startDate", "--startDate"},
-            usage = "DateTime to start the query against NIHMS data. This will cause "
-                    + "a return of all records published since the date provided. Syntax must be mm-yyyy. This value " +
-                    "will override the "
-                    + "NIHMS system default which is one year before the current month")
-    private String startDate = "";
+    @Option(name = "-d", aliases = {"-harvestDays", "--harvestDays"},
+            usage = "Period of time by days to query against NIHMS data. For example, to query for the past 90 days " +
+                "of nihms data, the argument would be -harvestPeriod=90. This value will override the NIHMS system " +
+                "default which is one year before the current month.")
+    private int harvestDays = NihmsHarvester.DEFAULT_HARVEST_DAYS;
 
     private final NihmsHarvester nihmsHarvester;
 
@@ -97,7 +96,7 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
             }
 
             Set<NihmsStatus> statusesToProcess = new HashSet<>();
-            String startDateFilter = this.startDate;
+            int harvestPeriodDays = this.harvestDays;
 
             //select statuses to process
             if (this.compliant) {
@@ -114,7 +113,7 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
             }
 
             /* Run the package generation application proper */
-            nihmsHarvester.harvest(statusesToProcess, startDateFilter);
+            nihmsHarvester.harvest(statusesToProcess, harvestPeriodDays);
 
         } catch (CmdLineException e) {
             /**
