@@ -37,7 +37,7 @@ public class NihmsHarvester {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsHarvester.class);
 
-    static final int DEFAULT_HARVEST_MONTHS = -1;
+    static final int DEFAULT_HARVEST_MONTHS = 12;
 
     private final UrlBuilder urlBuilder;
     private final NihmsHarvesterDownloader nihmsHarvesterDownloader;
