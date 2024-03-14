@@ -70,7 +70,7 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
     /**
      * The number of months of data to nihms harvest.
      */
-    @Option(name = "-d", aliases = {"-harvestMonths", "--harvestMonths"},
+    @Option(name = "-m", aliases = {"-harvestMonths", "--harvestMonths"},
             usage = "Period of time by month to query against NIHMS data. For example, to query for the past 3 " +
                 "months of nihms data, the argument would be -harvestMonths=3. This value will override the NIHMS " +
                 "system default which is one year before the current month.")
