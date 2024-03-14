@@ -37,7 +37,7 @@ public class NihmsHarvester {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsHarvester.class);
 
-    static final int DEFAULT_HARVEST_DAYS = -1;
+    static final int DEFAULT_HARVEST_MONTHS = -1;
 
     private final UrlBuilder urlBuilder;
     private final NihmsHarvesterDownloader nihmsHarvesterDownloader;
@@ -55,9 +55,9 @@ public class NihmsHarvester {
      * Retrieve files from NIHMS based on status list and startDate provided
      *
      * @param statusesToDownload list of {@code NihmsStatus} types to download from the NIHMS website
-     * @param harvestPeriodDays number of days of data to query
+     * @param harvestPeriodMonths number of months of data to query
      */
-    public void harvest(Set<NihmsStatus> statusesToDownload, int harvestPeriodDays) {
+    public void harvest(Set<NihmsStatus> statusesToDownload, int harvestPeriodMonths) {
         if (CollectionUtils.isEmpty(statusesToDownload)) {
             throw new RuntimeException("statusesToDownload list cannot be empty");
         }
@@ -65,9 +65,9 @@ public class NihmsHarvester {
         try {
             Map<String, String> params = new HashMap<>();
 
-            if (harvestPeriodDays != DEFAULT_HARVEST_DAYS) {
+            if (harvestPeriodMonths != DEFAULT_HARVEST_MONTHS) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/uuuu");
-                String startDate = LocalDate.now().minus(Period.ofDays(harvestPeriodDays)).format(formatter);
+                String startDate = LocalDate.now().minus(Period.ofMonths(harvestPeriodMonths)).format(formatter);
                 LOG.info("Filtering with Start Date " + startDate);
                 params.put("pdf", startDate);
             }

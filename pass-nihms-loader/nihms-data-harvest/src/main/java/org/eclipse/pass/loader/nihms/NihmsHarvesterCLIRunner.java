@@ -68,13 +68,13 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
     private boolean inProcess = false;
 
     /**
-     * The number of days of data to nihms harvest.
+     * The number of months of data to nihms harvest.
      */
-    @Option(name = "-d", aliases = {"-harvestDays", "--harvestDays"},
-            usage = "Period of time by days to query against NIHMS data. For example, to query for the past 90 days " +
-                "of nihms data, the argument would be -harvestPeriod=90. This value will override the NIHMS system " +
-                "default which is one year before the current month.")
-    private int harvestDays = NihmsHarvester.DEFAULT_HARVEST_DAYS;
+    @Option(name = "-d", aliases = {"-harvestMonths", "--harvestMonths"},
+            usage = "Period of time by month to query against NIHMS data. For example, to query for the past 3 " +
+                "months of nihms data, the argument would be -harvestMonths=3. This value will override the NIHMS " +
+                "system default which is one year before the current month.")
+    private int harvestMonths = NihmsHarvester.DEFAULT_HARVEST_MONTHS;
 
     private final NihmsHarvester nihmsHarvester;
 
@@ -96,7 +96,7 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
             }
 
             Set<NihmsStatus> statusesToProcess = new HashSet<>();
-            int harvestPeriodDays = this.harvestDays;
+            int harvestPeriodMonths = this.harvestMonths;
 
             //select statuses to process
             if (this.compliant) {
@@ -113,7 +113,7 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
             }
 
             /* Run the package generation application proper */
-            nihmsHarvester.harvest(statusesToProcess, harvestPeriodDays);
+            nihmsHarvester.harvest(statusesToProcess, harvestPeriodMonths);
 
         } catch (CmdLineException e) {
             /**
