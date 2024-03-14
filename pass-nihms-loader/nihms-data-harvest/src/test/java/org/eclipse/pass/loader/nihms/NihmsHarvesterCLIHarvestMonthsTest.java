@@ -38,14 +38,14 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-@SpringBootTest(classes = NihmsHarvesterCLI.class, args = {"--harvestDays=30"})
+@SpringBootTest(classes = NihmsHarvesterCLI.class, args = {"--harvestMonths=3"})
 @TestPropertySource(
     locations = "classpath:test-application.properties",
     properties = {
         "nihmsetl.api.url.param.pdf=",
         "nihmsetl.api.url.param.pdt="
     })
-public class NihmsHarvesterCLIHarvestDaysTest {
+public class NihmsHarvesterCLIHarvestMonthsTest {
 
     @SpyBean NihmsHarvester nihmsHarvester;
     @MockBean NihmsHarvesterDownloader nihmsHarvesterDownloader;
@@ -55,7 +55,7 @@ public class NihmsHarvesterCLIHarvestDaysTest {
         // GIVEN/WHEN
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/uuuu");
         // 30 days passed in args up top in @SpringBootTest
-        String expectedPdf = LocalDate.now().minus(Period.ofDays(30)).format(formatter)
+        String expectedPdf = LocalDate.now().minus(Period.ofMonths(3)).format(formatter)
             .replace("/", "%2F");
         // THEN
         verify(nihmsHarvester).harvest(eq(EnumSet.allOf(NihmsStatus.class)), anyInt());
