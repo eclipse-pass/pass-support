@@ -51,10 +51,10 @@ public class NihmsHarvesterCLIHarvestMonthsTest {
     @MockBean NihmsHarvesterDownloader nihmsHarvesterDownloader;
 
     @Test
-    public void testHarvesterCLI_WithHarvestRange() throws IOException, InterruptedException {
+    public void testHarvesterCLI_WithHarvestMonths() throws IOException, InterruptedException {
         // GIVEN/WHEN
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/uuuu");
-        // 30 days passed in args up top in @SpringBootTest
+        // 3 months passed in args up top in @SpringBootTest
         String expectedPdf = LocalDate.now().minus(Period.ofMonths(3)).format(formatter)
             .replace("/", "%2F");
         // THEN
