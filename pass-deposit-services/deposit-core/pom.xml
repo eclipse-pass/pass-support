@@ -36,6 +36,7 @@
     <javax-json.version>1.1.4</javax-json.version>
     <maven-model.version>3.9.6</maven-model.version>
     <awsspring.version>3.1.0</awsspring.version>
+    <msal4j-version>1.14.3</msal4j-version>
   </properties>
 
   <dependencyManagement>
@@ -213,6 +214,13 @@
       <version>${handlebars.version}</version>
     </dependency>
 
+    <!--Microsoft Authentication Library for Java  -->
+    <dependency>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>msal4j</artifactId>
+      <version>${msal4j-version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -266,6 +274,12 @@
       <groupId>com.icegreen</groupId>
       <artifactId>greenmail-junit5</artifactId>
       <version>${greenmail-junit5.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
       <scope>test</scope>
     </dependency>
 
