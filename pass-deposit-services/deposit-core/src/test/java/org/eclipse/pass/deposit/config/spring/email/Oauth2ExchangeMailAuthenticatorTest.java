@@ -43,7 +43,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource("classpath:test-application.properties")
 @TestPropertySource(properties = {
     "pass.deposit.nihms.email.auth=MS_EXCHANGE_OAUTH2",
-    "nihms.mail.username=testnihms-oath@localhost",
+    "nihms.mail.username=testnihms-oauth@localhost",
     "nihms.mail.tenant.id=test-tenant",
     "nihms.mail.client.id=test-client-id",
     "nihms.mail.client.secret=test-client-id"
@@ -73,7 +73,7 @@ public class Oauth2ExchangeMailAuthenticatorTest {
             PasswordAuthentication authentication = oauth2ExchangeMailAuthenticator.getPasswordAuthentication();
 
             // THEN
-            assertEquals(authentication.getUserName(), "testnihms-oath@localhost");
+            assertEquals(authentication.getUserName(), "testnihms-oauth@localhost");
             assertEquals(authentication.getPassword(), "test-access-token");
         }
     }
