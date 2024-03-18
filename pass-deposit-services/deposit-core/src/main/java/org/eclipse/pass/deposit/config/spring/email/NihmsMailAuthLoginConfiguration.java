@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.config.EnableIntegration;
@@ -58,7 +57,6 @@ public class NihmsMailAuthLoginConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "pass.deposit.nihms.email.auth", havingValue = "LOGIN")
     public IntegrationFlow imapMailFlowLogin() {
         LOG.warn("Nihms Email Service is enabled (LOGIN AUTH), configuration is being executed");
         String storeUrl = new URLName("imaps", nihmsImapHost, nihmsImapPort, "inbox",
