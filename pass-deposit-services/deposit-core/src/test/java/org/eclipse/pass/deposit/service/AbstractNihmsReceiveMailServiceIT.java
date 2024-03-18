@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Johns Hopkins University
+ * Copyright 2024 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import jakarta.mail.Message;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
-import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.deposit.provider.nihms.NihmsAssembler;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -48,26 +47,12 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-@SpringBootTest(classes = DepositApp.class)
-@TestPropertySource("classpath:test-application.properties")
-@TestPropertySource(properties = {
-    "pass.deposit.nihms.email.enabled=true",
-    "pass.deposit.nihms.email.delay=2000",
-    "pass.deposit.nihms.email.from=test-from-2@localhost,test-from@localhost",
-    "nihms.mail.host=localhost",
-    "nihms.mail.port=3993",
-    "nihms.mail.username=testnihms@localhost",
-    "nihms.mail.password=testnihmspassword"
-
-})
-public class NihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
+public abstract class AbstractNihmsReceiveMailServiceIT extends AbstractDepositSubmissionIT {
 
     @RegisterExtension
     static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.IMAPS)

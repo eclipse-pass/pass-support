@@ -17,28 +17,22 @@ package org.eclipse.pass.deposit.service;
 
 import org.eclipse.pass.deposit.DepositApp;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @SpringBootTest(classes = DepositApp.class)
-@Import(OauthTestConfig.class)
 @TestPropertySource("classpath:test-application.properties")
 @TestPropertySource(properties = {
-    "nihms.email.oauth.test.it=true",
     "pass.deposit.nihms.email.enabled=true",
     "pass.deposit.nihms.email.delay=2000",
     "pass.deposit.nihms.email.from=test-from-2@localhost,test-from@localhost",
-    "pass.deposit.nihms.email.auth=MS_EXCHANGE_OAUTH2",
     "nihms.mail.host=localhost",
     "nihms.mail.port=3993",
     "nihms.mail.username=testnihms@localhost",
-    "nihms.mail.tenant.id=test-tenant",
-    "nihms.mail.client.id=test-client-id",
-    "nihms.mail.client.secret=test-client-id"
+    "nihms.mail.password=testnihmspassword"
 })
-public class NihmsReceiveMailServiceOauthIT extends AbstractNihmsReceiveMailServiceIT {
-    // Test is in abstract class; important config params for imap oauth auth in test annotations in this class.
+public class NihmsReceiveMailServiceLoginIT extends AbstractNihmsReceiveMailServiceIT {
+    // Test is in abstract class; important config params for imap login auth in test annotations in this class.
 }
