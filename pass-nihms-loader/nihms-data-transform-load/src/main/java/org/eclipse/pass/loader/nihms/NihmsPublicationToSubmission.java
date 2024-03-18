@@ -94,8 +94,8 @@ public class NihmsPublicationToSubmission {
         Grant grant = clientService.findMostRecentGrantByAwardNumber(pub.getGrantNumber());
         if (grant == null) {
             throw new RuntimeException(
-                String.format("No Grant matching award number \"%s\" was found. Cannot process submission with pmid %s",
-                              pub.getGrantNumber(), pub.getPmid()));
+                String.format("No Grant matching award number \"%s\" was found. Cannot process submission with " +
+                        "PMID %s and NIHMS ID %s", pub.getGrantNumber(), pub.getPmid(), pub.getRawNihmsId()));
         }
 
         //this stage will be all about building up the DTO
@@ -135,6 +135,8 @@ public class NihmsPublicationToSubmission {
             Deposit deposit = clientService.findNihmsDepositbyNihmsId(nihmsPub.getRawNihmsId());
 
             if (deposit != null) {
+                LOG.info("Deposit found for PMID {} using NIHMS ID {} lookup.", nihmsPub.getPmid(),
+                    nihmsPub.getRawNihmsId());
                 submissionDTO.setUpdateDeposoit(true);
                 submissionDTO.setDeposit(deposit);
 
@@ -198,8 +200,8 @@ public class NihmsPublicationToSubmission {
      * @return the Publication, never {@code null}
      */
     private Publication initiateNewPublication(NihmsPublication nihmsPub, PubMedEntrezRecord pmr) throws IOException {
-        LOG.info("No existing publication found for PMID \"{}\", initiating new Publication record",
-                 nihmsPub.getPmid());
+        LOG.info("No existing publication found for PMID {} and NIHMS ID {}, initiating new Publication record",
+                 nihmsPub.getPmid(), nihmsPub.getRawNihmsId());
         Publication publication = new Publication();
 
         publication.setPmid(nihmsPub.getPmid());
@@ -265,8 +267,8 @@ public class NihmsPublicationToSubmission {
 
     private RepositoryCopy initiateNewRepositoryCopy(NihmsPublication pub, String publicationId) throws IOException {
         RepositoryCopy repositoryCopy = new RepositoryCopy();
-        LOG.info("NIHMS RepositoryCopy record needed for PMID \"{}\", initiating new RepositoryCopy record",
-                 pub.getPmid());
+        LOG.info("NIHMS RepositoryCopy record needed for PMID {} and NIHMS ID {}, initiating new RepositoryCopy record",
+                 pub.getPmid(), pub.getRawNihmsId());
         repositoryCopy.setPublication((clientService.readPublication(publicationId)));
         repositoryCopy.setCopyStatus(calcRepoCopyStatus(pub, null));
         repositoryCopy.setRepository(clientService.readRepository(nihmsRepositoryId));
@@ -435,11 +437,9 @@ public class NihmsPublicationToSubmission {
         // probably bad data
         if (currCopyStatus != null && currCopyStatus.equals(CopyStatus.COMPLETE)) {
             LOG.warn(
-                "A NIHMS record for a publication with PMID {} is attempting to change the status of a COMPLETED " +
-                "Repository Copy. "
-                + "This may be due to two PMIDs being assigned to a single DOI, so the data should be checked. The " +
-                "status will not "
-                + "be changed.", pub.getPmid());
+                "A NIHMS record for a publication with PMID {} and NIHMS ID {} is attempting to change the status " +
+                "of a COMPLETED Repository Copy. This may be due to two PMIDs being assigned to a single DOI, " +
+                "so the data should be checked. The status will not be changed.", pub.getPmid(), pub.getRawNihmsId());
             return CopyStatus.COMPLETE;
         }
 
@@ -460,9 +460,8 @@ public class NihmsPublicationToSubmission {
                 || (currCopyStatus.equals(CopyStatus.IN_PROGRESS) && newStatus.equals(CopyStatus.ACCEPTED))) {
                 LOG.warn(
                     "The status of the RepositoryCopy in PASS was at a later stage than the current NIHMS status " +
-                    "would imply. "
-                    + "Rolled back from \"{}\" to \"{}\" for pmid {}", currCopyStatus.toString(),
-                    (newStatus == null ? "(null)" : newStatus.toString()), pub.getPmid());
+                    "would imply. Rolled back from \"{}\" to \"{}\" for PMID {} and NIHMS ID {}", currCopyStatus,
+                    (newStatus == null ? "(null)" : newStatus.toString()), pub.getPmid(), pub.getRawNihmsId());
             }
 
         }

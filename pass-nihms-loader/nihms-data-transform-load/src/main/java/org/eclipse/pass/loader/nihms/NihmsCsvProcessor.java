@@ -163,15 +163,15 @@ public class NihmsCsvProcessor {
                                        row.get(TAGGINGCOMPLETE_COLNUM), row.get(FINALAPPROVAL_COLNUM),
                                        row.get(ARTICLETITLE_COLNUM));
 
-            LOG.info("NIHMS record pmid={} is being processed", pub.getPmid());
+            LOG.info("NIHMS record PMID={} and NIHMS ID={} is being processed", pub.getPmid(), pub.getRawNihmsId());
             pubConsumer.accept(pub);
-            LOG.info("NIHMS record pmid={} was processed successfully", pub.getPmid());
+            LOG.info("NIHMS record PMID={} and NIHMS ID={} was processed successfully", pub.getPmid(),
+                pub.getRawNihmsId());
         } catch (Exception ex) {
             failCount = failCount + 1;
             LOG.error(
-                "A problem occurred while processing csv row {} with pmid {}. The record was not imported " +
-                "successfully.",
-                recCount + 1, pub.getPmid(), ex);
+                "A problem occurred while processing csv row {} with PMID {} and NIHMS ID {}. The record was not " +
+                    "imported successfully.", recCount + 1, pub.getPmid(), pub.getRawNihmsId(), ex);
         }
     }
 
