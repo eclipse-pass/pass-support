@@ -83,7 +83,7 @@ public class NihmsTransformLoadService {
             try {
                 transformAndLoadNihmsPub(pub);
             } catch (IOException e) {
-                LOG.error("Error transforming and loading NIHMS publication for NihmsId {}", pub.getNihmsId(), e);
+                LOG.error("Error transforming and loading NIHMS publication for NIHMS ID {}", pub.getRawNihmsId(), e);
                 throw new RuntimeException(e);
             }
         };
@@ -111,9 +111,8 @@ public class NihmsTransformLoadService {
         // if the record is compliant, let's check the cache to see if it has been processed previously
         if (pub.getNihmsStatus().equals(NihmsStatus.COMPLIANT)
             && completedPublicationsCache.contains(pub.getPmid(), pub.getGrantNumber())) {
-            LOG.info(
-                "Compliant NIHMS record with pmid {} and award number \"{}\" has been processed in a previous load",
-                pub.getPmid(), pub.getGrantNumber());
+            LOG.info("Compliant NIHMS record with PMID {}, NIHMS ID {}, and award number {} has been processed " +
+                    "in a previous load", pub.getPmid(), pub.getRawNihmsId(), pub.getGrantNumber());
             return;
         }
 
@@ -124,24 +123,24 @@ public class NihmsTransformLoadService {
                 if (transformedRecord.doUpdate()) {
                     submissionLoader.load(transformedRecord);
                 } else {
-                    LOG.info("No update required for PMID {} with award number {}", pub.getPmid(),
-                             pub.getGrantNumber());
+                    LOG.info("No update required for PMID {}, NIHMS ID {}, and award number {}", pub.getPmid(),
+                        pub.getRawNihmsId(), pub.getGrantNumber());
                 }
 
                 break;
             } catch (IllegalStateException | ConcurrentModificationException | IllegalArgumentException ex) {
                 if (attempt < MAX_ATTEMPTS) {
-                    LOG.warn("Update failed for PMID %s due to database conflict, attempting retry # %d", pub.getPmid(),
-                             attempt);
+                    LOG.warn("Update failed for PMID {} and NIHMS ID {} due to database conflict, " +
+                            "attempting retry # {}", pub.getPmid(), pub.getRawNihmsId(), attempt);
                     LOG.warn("Error message: {}", ex.getMessage());
                 } else {
                     throw new RuntimeException(
-                        String.format("Update could not be applied for PMID %s after %d attempts ", pub.getPmid(),
-                                      MAX_ATTEMPTS), ex);
+                        String.format("Update could not be applied for PMID %s and NIHMS ID %s after %d attempts ",
+                            pub.getPmid(), pub.getRawNihmsId(), MAX_ATTEMPTS), ex);
                 }
             } catch (IOException e) {
-                LOG.error("Error transforming or loading record for PMID {} with award number {}", pub.getPmid(),
-                          pub.getGrantNumber(), e);
+                LOG.error("Error transforming or loading record for PMID {} and NIHMS ID {} with award number {}",
+                    pub.getPmid(), pub.getRawNihmsId(), pub.getGrantNumber(), e);
                 throw new IOException(e);
             }
         }
@@ -150,7 +149,7 @@ public class NihmsTransformLoadService {
             && StringUtils.isNotEmpty(pub.getPmcId())) {
             //add to cache so it doesn't check it again once it has been processed and has a pmcid assigned
             completedPublicationsCache.add(pub.getPmid(), pub.getGrantNumber());
-            LOG.debug("Added pmid {} and grant \"{}\" to cache", pub.getPmid(), pub.getGrantNumber());
+            LOG.debug("Added PMID {} and grant \"{}\" to cache", pub.getPmid(), pub.getGrantNumber());
         }
     }
 
@@ -169,7 +168,7 @@ public class NihmsTransformLoadService {
         }
         if (CollectionUtils.isEmpty(filepaths)) {
             throw new RuntimeException(
-                String.format("No file found to process at path %s", downloadDirectory.toString()));
+                String.format("No file found to process at path %s", downloadDirectory));
         }
         return filepaths;
     }
