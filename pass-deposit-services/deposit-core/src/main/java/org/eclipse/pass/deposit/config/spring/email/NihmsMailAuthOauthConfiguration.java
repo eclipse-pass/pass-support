@@ -64,8 +64,8 @@ public class NihmsMailAuthOauthConfiguration {
         Properties javaMailProperties = new Properties();
         javaMailProperties.setProperty("mail.imaps.ssl.enable", "true");
         javaMailProperties.setProperty("mail.imaps.ssl.trust", nihmsImapHost);
-        javaMailProperties.setProperty("mail.imap.sasl.enable", "true");
-        javaMailProperties.setProperty("mail.imap.sasl.mechanisms", "XOAUTH2");
+        javaMailProperties.setProperty("mail.imaps.sasl.enable", "true");
+        javaMailProperties.setProperty("mail.imaps.sasl.mechanisms", "XOAUTH2");
         javaMailProperties.setProperty("mail.imaps.auth.login.disable", "true");
         javaMailProperties.setProperty("mail.imaps.auth.plain.disable", "true");
         return javaMailProperties;
