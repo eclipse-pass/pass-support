@@ -91,7 +91,7 @@ public abstract class NihmsSubmissionEtlITBase {
         .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
         .withEnv("PASS_CORE_BACKEND_USER", "backend")
         .withEnv("PASS_CORE_BACKEND_PASSWORD", "backend")
-        .waitingFor(Wait.forHttp("/data/grant").forStatusCode(401))
+        .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "backend"))
         .withExposedPorts(8080);
 
     @DynamicPropertySource
