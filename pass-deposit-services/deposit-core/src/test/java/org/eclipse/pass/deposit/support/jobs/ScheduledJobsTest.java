@@ -20,6 +20,7 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.verify;
 
 import org.eclipse.pass.deposit.DepositApp;
+import org.eclipse.pass.deposit.service.DeploymentTestDataService;
 import org.eclipse.pass.deposit.service.DepositUpdater;
 import org.eclipse.pass.deposit.service.SubmissionStatusUpdater;
 import org.junit.jupiter.api.Test;
@@ -34,14 +35,18 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource("classpath:test-application.properties")
 @TestPropertySource(properties = {
     "pass.deposit.jobs.disabled=false",
+    "pass.test.data.job.enabled=true",
     "pass.deposit.jobs.default-interval-ms=1500",
+    "pass.test.data.job.interval-ms=1500",
     "pass.deposit.jobs.1.init.delay=50",
-    "pass.deposit.jobs.2.init.delay=100"
+    "pass.deposit.jobs.2.init.delay=100",
+    "pass.deposit.jobs.3.init.delay=120"
 })
 public class ScheduledJobsTest {
 
     @MockBean private SubmissionStatusUpdater submissionStatusUpdater;
     @MockBean private DepositUpdater depositUpdater;
+    @MockBean private DeploymentTestDataService deploymentTestDataService;
 
     @Test
     void testDepositUpdaterJob() {
@@ -58,6 +63,15 @@ public class ScheduledJobsTest {
         // submissionStatusUpdater.doUpdate() will be called from Scheduled method in job
         await().atMost(3, SECONDS).untilAsserted(() -> {
             verify(submissionStatusUpdater).doUpdate();
+        });
+    }
+
+    @Test
+    void testDeploymentTestDataJob() {
+        // GIVEN/WHEN
+        // deploymentTestDataService.processTestData() will be called from Scheduled method in job
+        await().atMost(3, SECONDS).untilAsserted(() -> {
+            verify(deploymentTestDataService).processTestData();
         });
     }
 
