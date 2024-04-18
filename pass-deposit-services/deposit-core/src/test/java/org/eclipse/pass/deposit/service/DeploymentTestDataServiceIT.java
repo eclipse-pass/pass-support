@@ -16,7 +16,6 @@
 package org.eclipse.pass.deposit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -182,38 +181,55 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     @Test
     public void testProcessData_DoesNotDeleteTestSubmissionsForOtherGrant() throws Exception {
         // GIVEN
-        Grant testGrant = new Grant();
-        testGrant.setProjectName("Some Other Grant");
-        testGrant.setAwardStatus(AwardStatus.ACTIVE);
-        passClient.createObject(testGrant);
-        Submission testSubmission = initSubmissionAndDeposits(testGrant);
+        Grant deploymentGrant = new Grant();
+        deploymentGrant.setProjectName("PASS_E2E_TEST_GRANT");
+        deploymentGrant.setAwardStatus(AwardStatus.ACTIVE);
+        passClient.createObject(deploymentGrant);
+        initSubmissionAndDeposits(deploymentGrant);
+
+        Grant testOtherGrant = new Grant();
+        testOtherGrant.setProjectName("Some Other Grant");
+        testOtherGrant.setAwardStatus(AwardStatus.ACTIVE);
+        passClient.createObject(testOtherGrant);
+        Submission testOtherSubmission = initSubmissionAndDeposits(testOtherGrant);
 
         // WHEN
         deploymentTestDataService.processTestData();
 
         // THEN
-        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        final PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
         grantSelector.setFilter(RSQL.equals("projectName", "PASS_E2E_TEST_GRANT"));
-        List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
-        assertEquals(1, testGrants.size());
-        Grant actualTestGrant = testGrants.get(0);
+        List<Grant> actualTestGrants = passClient.streamObjects(grantSelector).toList();
+        assertEquals(1, actualTestGrants.size());
+        Grant actualTestGrant = actualTestGrants.get(0);
         assertEquals("PASS_E2E_TEST_GRANT", actualTestGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, actualTestGrant.getAwardStatus());
+
+        PassClientSelector<Submission> submissionSelector = new PassClientSelector<>(Submission.class);
+        List<Submission> testSubmissions = passClient.streamObjects(submissionSelector).toList();
+        assertEquals(1, testSubmissions.size());
+        Submission actualSubmission = testSubmissions.get(0);
+        assertEquals(testOtherSubmission.getId(), actualSubmission.getId());
+        assertEquals(testOtherGrant.getId(), actualSubmission.getGrants().get(0).getId());
+
         PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
         List<Deposit> testDeposits = passClient.streamObjects(depositSelector).toList();
-        assertFalse(testDeposits.isEmpty());
+        assertEquals(1, testDeposits.size());
+        Deposit actualDeposit = testDeposits.get(0);
+        assertEquals(testOtherSubmission.getId(), actualDeposit.getSubmission().getId());
+
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         List<RepositoryCopy> testRepoCopies = passClient.streamObjects(repoCopySelector).toList();
-        assertFalse(testRepoCopies.isEmpty());
+        assertEquals(1, testRepoCopies.size());
+        RepositoryCopy actualRepoCopy = testRepoCopies.get(0);
+        assertEquals(actualDeposit.getRepositoryCopy().getId(), actualRepoCopy.getId());
+
         PassClientSelector<Publication> publicationSelector = new PassClientSelector<>(Publication.class);
         List<Publication> testPublications = passClient.streamObjects(publicationSelector).toList();
-        assertFalse(testPublications.isEmpty());
-        PassClientSelector<Submission> submissionSelector = new PassClientSelector<>(Submission.class);
-        submissionSelector.setInclude("grants");
-        List<Submission> testSubmissions = passClient.streamObjects(submissionSelector).toList();
-        assertFalse(testSubmissions.isEmpty());
-        Submission actualSubmission = testSubmissions.get(0);
-        assertEquals(testSubmission.getId(), actualSubmission.getId());
+        assertEquals(1, testPublications.size());
+        Publication actualPublication = testPublications.get(0);
+        assertEquals(actualRepoCopy.getPublication().getId(), actualPublication.getId());
+        assertEquals(actualSubmission.getPublication().getId(), actualPublication.getId());
     }
 
     private Submission initSubmissionAndDeposits(Grant testGrant) throws Exception {
