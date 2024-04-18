@@ -62,6 +62,7 @@ public class DeploymentTestDataService {
         List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
         Grant testGrant = testGrants.isEmpty() ? createTestGrantData() : testGrants.get(0);
         deleteTestSubmissions(testGrant);
+        LOG.warn("Done running Deployment Test Data Service");
     }
 
     private void deleteTestSubmissions(Grant testGrant) throws IOException {
