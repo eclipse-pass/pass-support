@@ -25,6 +25,7 @@ import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Journal;
@@ -87,6 +88,10 @@ public class DeploymentTestDataService {
                     deleteObject(testDeposit);
                     deleteObject(testDeposit.getRepositoryCopy());
                 });
+                PassClientSelector<File> testFileSelector = new PassClientSelector<>(File.class);
+                testFileSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+                List<File> testFiles = passClient.streamObjects(testFileSelector).toList();
+                testFiles.forEach(this::deleteFile);
                 deleteObject(testSubmission);
                 deleteObject(testSubmission.getPublication());
             } catch (IOException e) {
@@ -99,6 +104,14 @@ public class DeploymentTestDataService {
     private void deleteObject(PassEntity entity) {
         try {
             passClient.deleteObject(entity);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteFile(File file) {
+        try {
+            passClient.deleteFile(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

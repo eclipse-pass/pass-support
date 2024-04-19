@@ -17,12 +17,15 @@ package org.eclipse.pass.deposit.service;
 
 import static org.eclipse.pass.deposit.service.DeploymentTestDataService.PASS_E2E_TEST_GRANT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -31,6 +34,7 @@ import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Policy;
@@ -86,6 +90,9 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
         List<RepositoryCopy> testRepoCopies = passClient.streamObjects(repoCopySelector).toList();
         testRepoCopies.forEach(this::deleteObject);
+        PassClientSelector<File> fileSelector = new PassClientSelector<>(File.class);
+        List<File> testFiles = passClient.streamObjects(fileSelector).toList();
+        testFiles.forEach(this::deleteFile);
         PassClientSelector<Submission> submissionSelector = new PassClientSelector<>(Submission.class);
         List<Submission> testSubmissions = passClient.streamObjects(submissionSelector).toList();
         testSubmissions.forEach(this::deleteObject);
@@ -97,6 +104,14 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     private void deleteObject(PassEntity entity) {
         try {
             passClient.deleteObject(entity);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteFile(File file) {
+        try {
+            passClient.deleteFile(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -177,6 +192,9 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         PassClientSelector<Publication> publicationSelector = new PassClientSelector<>(Publication.class);
         List<Publication> testPublications = passClient.streamObjects(publicationSelector).toList();
         assertTrue(testPublications.isEmpty());
+        PassClientSelector<File> fileSelector = new PassClientSelector<>(File.class);
+        List<File> testFiles = passClient.streamObjects(fileSelector).toList();
+        assertTrue(testFiles.isEmpty());
     }
 
     @Test
@@ -231,6 +249,12 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         Publication actualPublication = testPublications.get(0);
         assertEquals(actualRepoCopy.getPublication().getId(), actualPublication.getId());
         assertEquals(actualSubmission.getPublication().getId(), actualPublication.getId());
+
+        PassClientSelector<File> fileSelector = new PassClientSelector<>(File.class);
+        List<File> testFiles = passClient.streamObjects(fileSelector).toList();
+        assertEquals(1, testFiles.size());
+        File actualFile = testFiles.get(0);
+        assertEquals(actualSubmission.getId(), actualFile.getSubmission().getId());
     }
 
     private Submission initSubmissionAndDeposits(Grant testGrant) throws Exception {
@@ -260,6 +284,15 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
         submission.setPublication(publication);
         passClient.updateObject(submission);
+
+        File file = new File();
+        String data = "Test data file";
+        file.setName("test_data_file.txt");
+        URI data_uri = passClient.uploadBinary(file.getName(), data.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(data_uri);
+        file.setUri(data_uri);
+        file.setSubmission(submission);
+        passClient.createObject(file);
 
         return submission;
     }
