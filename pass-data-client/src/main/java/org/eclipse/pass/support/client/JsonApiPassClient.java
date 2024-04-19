@@ -675,6 +675,23 @@ public class JsonApiPassClient implements PassClient {
     }
 
     @Override
+    public void deleteFile(File file) throws IOException {
+        // Transform File URI to use baseUrl in order to avoid authentication issues
+        HttpUrl urlFileBin = HttpUrl.parse(baseUrl).newBuilder()
+            .addEncodedPathSegments(file.getUri().getRawPath().substring(1)).build();
+
+        Request requestFileBin = new Request.Builder().url(urlFileBin).delete().build();
+        Response responseFileBin = client.newCall(requestFileBin).execute();
+
+        if (!responseFileBin.isSuccessful() && responseFileBin.code() != 404) {
+            throw new IOException(String.format("Failed to delete for File: %s, URL: %s, Status code: %d",
+                file.getId(), urlFileBin, responseFileBin.code()));
+        }
+
+        deleteObject(file);
+    }
+
+    @Override
     public URI uploadBinary(String name, byte[] data) throws IOException {
         HttpUrl url = HttpUrl.parse(baseUrl).newBuilder()
                 .addEncodedPathSegment("file").build();

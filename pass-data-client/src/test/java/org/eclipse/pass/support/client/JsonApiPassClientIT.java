@@ -3,6 +3,7 @@ package org.eclipse.pass.support.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -736,5 +737,30 @@ public class JsonApiPassClientIT {
         String test_data = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
         assertEquals(data, test_data);
+    }
+
+    @Test
+    public void testDeleteFile() throws IOException {
+        // GIVEN
+        File file = new File();
+        String data = "What's in a name?";
+        file.setName("rose.txt");
+        URI data_uri = client.uploadBinary(file.getName(), data.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(data_uri);
+        file.setUri(data_uri);
+        client.createObject(file);
+
+        // WHEN
+        client.deleteFile(file);
+
+        // THEN
+        IOException ioExBin = assertThrows(IOException.class, () -> {
+            client.downloadFile(file);
+        });
+        assertEquals("Failed to retrieve binary for File: " + file.getId() + ", URL: "
+            + file.getUri().toString() + ", Status code: 404", ioExBin.getMessage());
+
+        File actualFile = client.getObject(File.class, file.getId());
+        assertNull(actualFile);
     }
 }

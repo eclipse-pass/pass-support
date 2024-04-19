@@ -212,6 +212,13 @@ public interface PassClient {
     InputStream downloadFile(File file) throws IOException;
 
     /**
+     * Deletes the binary data associated to the File parameter and the File entity.
+     * @param file the File to delete
+     * @throws IOException if operation fails
+     */
+    void deleteFile(File file) throws IOException;
+
+    /**
      * @param id of File
      * @return InputStream of bytes
      * @throws IOException if operation fails
