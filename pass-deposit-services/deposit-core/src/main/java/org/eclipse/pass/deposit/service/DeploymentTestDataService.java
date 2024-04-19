@@ -42,6 +42,8 @@ import org.springframework.stereotype.Component;
 public class DeploymentTestDataService {
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentTestDataService.class);
 
+    static final String PASS_E2E_TEST_GRANT = "PASS_E2E_TEST_GRANT";
+
     private final PassClient passClient;
 
     @Value("${pass.test.data.policy.title}")
@@ -58,7 +60,7 @@ public class DeploymentTestDataService {
     public void processTestData() throws IOException {
         LOG.warn("Deployment Test Data Service running...");
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("projectName", "PASS_E2E_TEST_GRANT"));
+        grantSelector.setFilter(RSQL.equals("projectName", PASS_E2E_TEST_GRANT));
         List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
         Grant testGrant = testGrants.isEmpty() ? createTestGrantData() : testGrants.get(0);
         deleteTestSubmissions(testGrant);
@@ -121,7 +123,7 @@ public class DeploymentTestDataService {
         passClient.createObject(testFunder);
 
         Grant testGrant = new Grant();
-        testGrant.setProjectName("PASS_E2E_TEST_GRANT");
+        testGrant.setProjectName(PASS_E2E_TEST_GRANT);
         testGrant.setAwardNumber("TEST_E2E_AWD_NUM");
         testGrant.setLocalKey("PASS_E2E_TEST_GRANT_LK");
         testGrant.setAwardDate(ZonedDateTime.parse("2020-02-01T00:00:00Z"));

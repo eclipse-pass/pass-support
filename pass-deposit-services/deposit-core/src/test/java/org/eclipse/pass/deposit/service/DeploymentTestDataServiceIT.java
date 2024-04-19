@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static org.eclipse.pass.deposit.service.DeploymentTestDataService.PASS_E2E_TEST_GRANT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,7 +77,7 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     @AfterEach
     public void cleanUp() throws IOException {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("projectName", "PASS_E2E_TEST_GRANT"));
+        grantSelector.setFilter(RSQL.equals("projectName", PASS_E2E_TEST_GRANT));
         List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
         testGrants.forEach(this::deleteObject);
         PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
@@ -108,12 +109,12 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
         // THEN
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("projectName", "PASS_E2E_TEST_GRANT"));
+        grantSelector.setFilter(RSQL.equals("projectName", PASS_E2E_TEST_GRANT));
         grantSelector.setInclude("pi", "directFunder", "primaryFunder");
         List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
         assertEquals(1, testGrants.size());
         Grant actualTestGrant = testGrants.get(0);
-        assertEquals("PASS_E2E_TEST_GRANT", actualTestGrant.getProjectName());
+        assertEquals(PASS_E2E_TEST_GRANT, actualTestGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, actualTestGrant.getAwardStatus());
         assertEquals("test-user-email@foo", actualTestGrant.getPi().getEmail());
         assertEquals("PASS_E2E_TEST_FUNDER", actualTestGrant.getDirectFunder().getName());
@@ -124,7 +125,7 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     public void testProcessData_DoesNotTestGrantDataCreatedIfExist() throws Exception {
         // GIVEN
         Grant testGrant = new Grant();
-        testGrant.setProjectName("PASS_E2E_TEST_GRANT");
+        testGrant.setProjectName(PASS_E2E_TEST_GRANT);
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
         Mockito.reset(passClient);
@@ -134,12 +135,12 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
         // THEN
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("projectName", "PASS_E2E_TEST_GRANT"));
+        grantSelector.setFilter(RSQL.equals("projectName", PASS_E2E_TEST_GRANT));
         List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
         assertEquals(1, testGrants.size());
         Grant actualTestGrant = testGrants.get(0);
         assertEquals(testGrant.getId(), actualTestGrant.getId());
-        assertEquals("PASS_E2E_TEST_GRANT", actualTestGrant.getProjectName());
+        assertEquals(PASS_E2E_TEST_GRANT, actualTestGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, actualTestGrant.getAwardStatus());
         verify(passClient, times(0)).createObject(any());
     }
@@ -148,7 +149,7 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     public void testProcessData_DeleteTestSubmissionsForTestGrant() throws Exception {
         // GIVEN
         Grant testGrant = new Grant();
-        testGrant.setProjectName("PASS_E2E_TEST_GRANT");
+        testGrant.setProjectName(PASS_E2E_TEST_GRANT);
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
         initSubmissionAndDeposits(testGrant);
@@ -158,11 +159,11 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
         // THEN
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("projectName", "PASS_E2E_TEST_GRANT"));
+        grantSelector.setFilter(RSQL.equals("projectName", PASS_E2E_TEST_GRANT));
         List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
         assertEquals(1, testGrants.size());
         Grant actualTestGrant = testGrants.get(0);
-        assertEquals("PASS_E2E_TEST_GRANT", actualTestGrant.getProjectName());
+        assertEquals(PASS_E2E_TEST_GRANT, actualTestGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, actualTestGrant.getAwardStatus());
         PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
         List<Deposit> testDeposits = passClient.streamObjects(depositSelector).toList();
@@ -182,7 +183,7 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     public void testProcessData_DoesNotDeleteTestSubmissionsForOtherGrant() throws Exception {
         // GIVEN
         Grant deploymentGrant = new Grant();
-        deploymentGrant.setProjectName("PASS_E2E_TEST_GRANT");
+        deploymentGrant.setProjectName(PASS_E2E_TEST_GRANT);
         deploymentGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(deploymentGrant);
         initSubmissionAndDeposits(deploymentGrant);
@@ -198,11 +199,11 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
         // THEN
         final PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
-        grantSelector.setFilter(RSQL.equals("projectName", "PASS_E2E_TEST_GRANT"));
+        grantSelector.setFilter(RSQL.equals("projectName", PASS_E2E_TEST_GRANT));
         List<Grant> actualTestGrants = passClient.streamObjects(grantSelector).toList();
         assertEquals(1, actualTestGrants.size());
         Grant actualTestGrant = actualTestGrants.get(0);
-        assertEquals("PASS_E2E_TEST_GRANT", actualTestGrant.getProjectName());
+        assertEquals(PASS_E2E_TEST_GRANT, actualTestGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, actualTestGrant.getAwardStatus());
 
         PassClientSelector<Submission> submissionSelector = new PassClientSelector<>(Submission.class);
