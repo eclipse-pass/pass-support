@@ -32,6 +32,7 @@ import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionEvent;
 import org.eclipse.pass.support.client.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +93,10 @@ public class DeploymentTestDataService {
                 testFileSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
                 List<File> testFiles = passClient.streamObjects(testFileSelector).toList();
                 testFiles.forEach(this::deleteFile);
+                PassClientSelector<SubmissionEvent> subEventSelector = new PassClientSelector<>(SubmissionEvent.class);
+                subEventSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+                List<SubmissionEvent> testSubmissionEvents = passClient.streamObjects(subEventSelector).toList();
+                testSubmissionEvents.forEach(this::deleteObject);
                 deleteObject(testSubmission);
                 deleteObject(testSubmission.getPublication());
             } catch (IOException e) {
