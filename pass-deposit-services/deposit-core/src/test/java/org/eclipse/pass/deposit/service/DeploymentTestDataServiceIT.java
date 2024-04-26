@@ -34,6 +34,7 @@ import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.EventType;
 import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
@@ -42,6 +43,7 @@ import org.eclipse.pass.support.client.model.Publication;
 import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.support.client.model.SubmissionEvent;
 import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,6 +95,9 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         PassClientSelector<File> fileSelector = new PassClientSelector<>(File.class);
         List<File> testFiles = passClient.streamObjects(fileSelector).toList();
         testFiles.forEach(this::deleteFile);
+        PassClientSelector<SubmissionEvent> subEventSelector = new PassClientSelector<>(SubmissionEvent.class);
+        List<SubmissionEvent> testSubEvents = passClient.streamObjects(subEventSelector).toList();
+        testSubEvents.forEach(this::deleteObject);
         PassClientSelector<Submission> submissionSelector = new PassClientSelector<>(Submission.class);
         List<Submission> testSubmissions = passClient.streamObjects(submissionSelector).toList();
         testSubmissions.forEach(this::deleteObject);
@@ -195,6 +200,9 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         PassClientSelector<File> fileSelector = new PassClientSelector<>(File.class);
         List<File> testFiles = passClient.streamObjects(fileSelector).toList();
         assertTrue(testFiles.isEmpty());
+        PassClientSelector<SubmissionEvent> subEventSelector = new PassClientSelector<>(SubmissionEvent.class);
+        List<SubmissionEvent> testSubEvents = passClient.streamObjects(subEventSelector).toList();
+        assertTrue(testSubEvents.isEmpty());
     }
 
     @Test
@@ -255,6 +263,12 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         assertEquals(1, testFiles.size());
         File actualFile = testFiles.get(0);
         assertEquals(actualSubmission.getId(), actualFile.getSubmission().getId());
+
+        PassClientSelector<SubmissionEvent> subEventSelector = new PassClientSelector<>(SubmissionEvent.class);
+        List<SubmissionEvent> testSubEvents = passClient.streamObjects(subEventSelector).toList();
+        assertEquals(1, testSubEvents.size());
+        SubmissionEvent actualSubEvent = testSubEvents.get(0);
+        assertEquals(actualSubmission.getId(), actualSubEvent.getSubmission().getId());
     }
 
     private Submission initSubmissionAndDeposits(Grant testGrant) throws Exception {
@@ -293,6 +307,16 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         file.setUri(data_uri);
         file.setSubmission(submission);
         passClient.createObject(file);
+
+        PassClientSelector<User> selectorUser = new PassClientSelector<>(User.class);
+        selectorUser.setFilter(RSQL.equals("email", "test-user-email@foo"));
+        User testUser = passClient.streamObjects(selectorUser).toList().get(0);
+
+        SubmissionEvent submissionEvent = new SubmissionEvent();
+        submissionEvent.setSubmission(submission);
+        submissionEvent.setEventType(EventType.SUBMITTED);
+        submissionEvent.setPerformedBy(testUser);
+        passClient.createObject(submissionEvent);
 
         return submission;
     }
