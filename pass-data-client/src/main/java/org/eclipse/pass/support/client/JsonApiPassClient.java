@@ -681,11 +681,14 @@ public class JsonApiPassClient implements PassClient {
             .addEncodedPathSegments(file.getUri().getRawPath().substring(1)).build();
 
         Request requestFileBin = new Request.Builder().url(urlFileBin).delete().build();
-        Response responseFileBin = client.newCall(requestFileBin).execute();
-
-        if (!responseFileBin.isSuccessful() && responseFileBin.code() != 404) {
-            throw new IOException(String.format("Failed to delete for File: %s, URL: %s, Status code: %d",
-                file.getId(), urlFileBin, responseFileBin.code()));
+        try (Response responseFileBin = client.newCall(requestFileBin).execute()) {
+            if (responseFileBin.code() == 404) {
+                return;
+            }
+            if (!responseFileBin.isSuccessful()) {
+                throw new IOException(String.format("Failed to delete for File: %s, URL: %s, Status code: %d",
+                    file.getId(), urlFileBin, responseFileBin.code()));
+            }
         }
 
         deleteObject(file);
