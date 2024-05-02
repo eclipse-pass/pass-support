@@ -20,13 +20,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 
+import io.awspring.cloud.s3.S3Resource;
+import io.awspring.cloud.s3.S3Template;
 import org.eclipse.pass.support.client.PassClientResult;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
@@ -36,36 +41,65 @@ import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.Policy;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.eclipse.pass.support.grant.data.PassUpdater;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
+@TestPropertySource(properties = {
+    "spring.cloud.aws.s3.enabled=true",
+    "pass.policy.prop.path=s3://test-bucket/s3-policy.properties",
+    "pass.grant.update.ts.path=s3://test-bucket/s3-testgrantupdatets"
+})
+public class GrantLoaderS3RoundTripTest extends AbstractIntegrationTest {
 
-    private static final Path TEST_CSV_PATH = Path.of("src/test/resources/test-pull.csv");
-    private static final Path GRANT_UPTS_PATH = Path.of("src/test/resources/grant_update_timestamps");
+    private static final DockerImageName LOCALSTACK_IMG =
+        DockerImageName.parse("localstack/localstack:3.1.0");
 
+    @Container
+    static final LocalStackContainer localStack =
+        new LocalStackContainer(LOCALSTACK_IMG)
+            .withClasspathResourceMapping("/policy.properties",
+                "/tmp/test-s3-policy.properties", BindMode.READ_ONLY)
+            .withClasspathResourceMapping("/s3-testgrantupdatets",
+                "/tmp/test-s3-testgrantupdatets", BindMode.READ_ONLY)
+            .withServices(S3);
+
+    @Autowired private S3Template s3Template;
     @Autowired private PassUpdater passUpdater;
 
-    @AfterEach
-    void cleanUp() throws IOException {
-        Files.deleteIfExists(TEST_CSV_PATH);
-        Files.deleteIfExists(GRANT_UPTS_PATH);
+    @DynamicPropertySource
+    static void overrideProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.cloud.aws.region.static", localStack::getRegion);
+        registry.add("spring.cloud.aws.credentials.access-key", localStack::getAccessKey);
+        registry.add("spring.cloud.aws.credentials.secret-key", localStack::getSecretKey);
+        registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpointOverride(S3).toString());
+    }
+
+    @BeforeAll
+    static void beforeAll() throws IOException, InterruptedException {
+        localStack.execInContainer("awslocal", "s3", "mb", "s3://test-bucket");
+        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/test-s3-policy.properties",
+            "s3://test-bucket/s3-policy.properties");
+        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/test-s3-testgrantupdatets",
+            "s3://test-bucket/s3-testgrantupdatets");
     }
 
     @Test
-    public void testRoundTripCvsFile() throws PassCliException, SQLException, IOException {
+    public void testRoundTripCvsFileS3() throws PassCliException, SQLException, IOException {
         // GIVEN
         Policy policy = new Policy();
         policy.setTitle("test policy");
         passClient.createObject(policy);
-
-        // Use data from JHU grant source system and write the CSV
-        Files.createFile(TEST_CSV_PATH);
-        Files.createFile(GRANT_UPTS_PATH);
 
         List<GrantIngestRecord> grantIngestRecordList = getTestIngestRecords();
         doReturn(grantIngestRecordList).when(grantConnector).retrieveUpdates(anyString(), anyString(), anyString(),
@@ -73,24 +107,31 @@ public class GrantLoaderFileRoundTripTest extends AbstractIntegrationTest {
 
         // WHEN
         grantLoaderApp.run("2011-01-01 00:00:00", "01/01/2011",
-            "grant", "pull", "file:./src/test/resources/test-pull.csv", null);
+            "grant", "pull", "s3://test-bucket/test-pull.csv", null);
 
         // THEN
         String expectedContent = Files.readString(Path.of("src/test/resources/expected-csv.csv"));
-        String content = Files.readString(TEST_CSV_PATH);
-        assertEquals(expectedContent, content);
+
+        S3Resource actualTestPullCsv = s3Template.download("test-bucket", "test-pull.csv");
+        try (InputStream inputStream = actualTestPullCsv.getInputStream()) {
+            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            assertEquals(expectedContent, content);
+        }
 
         // WHEN
         // Use CSV file create above and load into PASS
         grantLoaderApp.run("", "01/01/2011", "grant",
-            "load", "file:./src/test/resources/test-pull.csv", null);
+            "load", "s3://test-bucket/test-pull.csv", null);
 
         // THEN
         verifyGrantOne();
         verifyGrantTwo();
 
-        String contentUpTs = Files.readString(GRANT_UPTS_PATH);
-        assertEquals(passUpdater.getLatestUpdate() + "\n", contentUpTs);
+        S3Resource actualTestGrantUpTs = s3Template.download("test-bucket", "s3-testgrantupdatets");
+        try (InputStream inputStream = actualTestGrantUpTs.getInputStream()) {
+            String contentUpTs = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            assertEquals(passUpdater.getLatestUpdate() + "\n", contentUpTs);
+        }
     }
 
     private List<GrantIngestRecord> getTestIngestRecords() {

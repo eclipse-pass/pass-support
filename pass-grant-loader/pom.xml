@@ -275,6 +275,7 @@
                 <ignoredDependencies>
                   <!-- These come from bundled jars -->
                   <ignoredDependency>org.springframework*::</ignoredDependency>
+                  <ignoredDependency>io.awspring.cloud::</ignoredDependency>
                 </ignoredDependencies>
                 <ignoredUsedUndeclaredDependencies>
                   <!-- These come from junit-jupiter, so version is tied to that direct dependency -->
@@ -289,8 +290,6 @@
                   <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
                   <!-- slf4j is the API used in the code, jcl is used by a transitive dep -->
                   <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
-                  <!-- This is used for resources in S3 -->
-                  <ignoredUnusedDeclaredDependency>io.awspring.cloud:spring-cloud-aws-starter-s3:</ignoredUnusedDeclaredDependency>
                   <!-- Deficiency of analyzer bytecode -->
                   <ignoredUnusedDeclaredDependency>org.projectlombok:lombok:</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:</ignoredUnusedDeclaredDependency>
