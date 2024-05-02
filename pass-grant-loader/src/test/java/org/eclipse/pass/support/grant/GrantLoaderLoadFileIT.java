@@ -57,11 +57,12 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         Policy policy = new Policy();
         policy.setTitle("test policy");
         passClient.createObject(policy);
+        Files.createFile(Path.of("src/test/resources/grant_update_timestamps"));
 
         // WHEN
         PassCliException passCliException = assertThrows(PassCliException.class, () -> {
             grantLoaderApp.run("", "01/01/2011", "grant",
-                "load", "src/test/resources/test-load.csv", null);
+                "load", "file:./src/test/resources/test-load.csv", null);
         });
 
         // THEN

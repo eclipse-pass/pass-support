@@ -44,7 +44,8 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest
 @TestPropertySource(properties = {
     "spring.cloud.aws.s3.enabled=true",
-    "pass.policy.prop.path=s3://test-bucket/s3-policy.properties"
+    "pass.policy.prop.path=s3://test-bucket/s3-policy.properties",
+    "pass.grant.update.ts.path=file:./src/test/resources/s3-testgrantupdatets"
 })
 @Testcontainers
 public class PolicyPropertiesS3IT {
@@ -80,7 +81,6 @@ public class PolicyPropertiesS3IT {
     @Test
     public void testLoadRepositoryConfigurations() {
         assertNotNull(policyProperties);
-
         assertEquals(Set.of("s3-1", "s3-2"), policyProperties.stringPropertyNames());
     }
 

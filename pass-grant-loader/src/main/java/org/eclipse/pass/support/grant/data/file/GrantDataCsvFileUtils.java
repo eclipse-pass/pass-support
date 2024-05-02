@@ -15,14 +15,13 @@
  */
 package org.eclipse.pass.support.grant.data.file;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +29,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -39,19 +40,22 @@ public final class GrantDataCsvFileUtils {
 
     /**
      * Reads CSV file containing grant data.
-     * @param grantIngestCsvFile the CSV File
+     * @param grantIngestCsv the CSV Resource
      * @return a list of GrantIngestRecord, each record containing one row of CSV data
      * @throws IOException
      */
-    public static List<GrantIngestRecord> readGrantIngestCsv(File grantIngestCsvFile) throws IOException {
-        try (Reader in = new FileReader(grantIngestCsvFile)) {
+    public static List<GrantIngestRecord> readGrantIngestCsv(Resource grantIngestCsv) throws IOException {
+        try (
+            InputStream inputStream = grantIngestCsv.getInputStream();
+            Reader reader = new InputStreamReader(inputStream)
+        ) {
             CSVFormat csvFormat = CSVFormat.RFC4180.builder()
                 .setHeader(GrantIngestCsvHeaders.class)
                 .setSkipHeaderRecord(true)
                 .setIgnoreSurroundingSpaces(true)
                 .setNullString("")
                 .build();
-            Iterable<CSVRecord> records = csvFormat.parse(in);
+            Iterable<CSVRecord> records = csvFormat.parse(reader);
             List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
             for (CSVRecord record : records) {
                 grantIngestRecords.add(GrantIngestRecord.parse(record));
@@ -63,14 +67,15 @@ public final class GrantDataCsvFileUtils {
     /**
      * Writes CSV file containing grant data.
      * @param grantIngestRecords a list of GrantIngestRecord, each record containing one row of CSV data
-     * @param csvFilePath the Path to the output CSV file
+     * @param grantIngestCsv the CSV Resource
      * @throws IOException
      */
-    public static void writeGrantIngestCsv(List<GrantIngestRecord> grantIngestRecords, Path csvFilePath)
+    public static void writeGrantIngestCsv(List<GrantIngestRecord> grantIngestRecords, Resource grantIngestCsv)
         throws IOException {
         CSVFormat format = CSVFormat.RFC4180.builder().setHeader(GrantIngestCsvHeaders.class).build();
         try (
-            BufferedWriter writer = Files.newBufferedWriter( csvFilePath , StandardCharsets.UTF_8 );
+            OutputStream outputStream = ((WritableResource) grantIngestCsv).getOutputStream();
+            OutputStreamWriter writer = new OutputStreamWriter(outputStream , StandardCharsets.UTF_8 );
             CSVPrinter printer = new CSVPrinter( writer , format );
         ) {
             for (GrantIngestRecord record : grantIngestRecords) {

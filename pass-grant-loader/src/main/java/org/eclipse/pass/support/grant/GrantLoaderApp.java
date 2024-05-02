@@ -19,15 +19,11 @@ import static java.lang.String.format;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_ACTION_NOT_VALID;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_COULD_NOT_APPEND_UPDATE_TIMESTAMP;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_COULD_NOT_OPEN_CONFIGURATION_FILE;
-import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_DATA_FILE_CANNOT_READ;
-import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_HOME_DIRECTORY_NOT_FOUND;
-import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_HOME_DIRECTORY_NOT_READABLE_AND_WRITABLE;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_INVALID_COMMAND_LINE_DATE;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_INVALID_COMMAND_LINE_TIMESTAMP;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_INVALID_TIMESTAMP;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_MODE_NOT_VALID;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_REQUIRED_CONFIGURATION_FILE_MISSING;
-import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_REQUIRED_DATA_FILE_MISSING;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_RESULT_SET_NULL;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_SQL_EXCEPTION;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.verifyDate;
@@ -35,15 +31,16 @@ import static org.eclipse.pass.support.grant.data.DateTimeUtil.verifyDateTimeFor
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.eclipse.pass.support.grant.data.PassUpdater;
@@ -51,6 +48,9 @@ import org.eclipse.pass.support.grant.data.file.GrantDataCsvFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
 import org.springframework.stereotype.Component;
 
 /**
@@ -69,14 +69,12 @@ import org.springframework.stereotype.Component;
 public class GrantLoaderApp {
     private static final Logger LOG = LoggerFactory.getLogger(GrantLoaderApp.class);
 
-    @Value("${app.home}")
-    private String appHome;
-
-    private File updateTimestampsFile;
-    private final String updateTimestampsFileName;
+    @Value("${pass.grant.update.ts.path}")
+    private WritableResource grantUpdateTimestamps;
 
     private final GrantConnector grantConnector;
     private final PassUpdater passUpdater;
+    private final ApplicationContext applicationContext;
 
     /**
      * Constructor.
@@ -84,10 +82,11 @@ public class GrantLoaderApp {
      * @param passUpdater the pass update
      */
     public GrantLoaderApp(GrantConnector grantConnector,
-                          PassUpdater passUpdater) {
+                          PassUpdater passUpdater,
+                          ApplicationContext applicationContext) {
         this.grantConnector = grantConnector;
         this.passUpdater = passUpdater;
-        this.updateTimestampsFileName = "grant_update_timestamps";
+        this.applicationContext = applicationContext;
     }
 
     /**
@@ -103,8 +102,6 @@ public class GrantLoaderApp {
     public void run(String startDate, String awardEndDate, String mode, String action,
                     String dataFileName, String grant) throws PassCliException {
 
-        File dataFile = new File(dataFileName);
-
         //check that we have a good value for mode
         if (!checkMode(mode)) {
             throw processException(format(ERR_MODE_NOT_VALID, mode), null);
@@ -113,28 +110,6 @@ public class GrantLoaderApp {
         //check that we have a good value for action
         if (!action.equals("") && !action.equals("pull") && !action.equals("load")) {
             throw processException(format(ERR_ACTION_NOT_VALID, action), null);
-        }
-
-        //first check that we have the required files
-        File appHomeFile = new File(appHome);
-        if (!appHomeFile.exists()) {
-            throw processException(ERR_HOME_DIRECTORY_NOT_FOUND, null);
-        }
-        if (!appHomeFile.canRead() || !appHomeFile.canWrite()) {
-            throw processException(ERR_HOME_DIRECTORY_NOT_READABLE_AND_WRITABLE, null);
-        }
-
-        updateTimestampsFile = new File(appHome, updateTimestampsFileName);
-
-        //check suitability of our input file
-        if (action.equals("load") || action.equals("pull")) {
-            if (!dataFile.exists()) {
-                throw processException(format(ERR_REQUIRED_DATA_FILE_MISSING, dataFileName), null);
-            } else if (!dataFile.canRead()) {
-                throw processException(format(ERR_DATA_FILE_CANNOT_READ, dataFileName), null);
-            } else if (action.equals("pull") && !dataFile.canWrite()) {
-                throw processException(format(ERR_DATA_FILE_CANNOT_READ, dataFileName), null);
-            }
         }
 
         List<GrantIngestRecord> resultSet;
@@ -173,6 +148,7 @@ public class GrantLoaderApp {
             }
         } else { //just doing a PASS load, must have results set in the data file
             try {
+                Resource dataFile = applicationContext.getResource(dataFileName);
                 resultSet = GrantDataCsvFileUtils.readGrantIngestCsv(dataFile);
             } catch (IOException ex) {
                 throw processException("Error loading CSV data file", ex);
@@ -195,7 +171,7 @@ public class GrantLoaderApp {
             String updateTimestamp = passUpdater.getLatestUpdate();
             if (verifyDateTimeFormat(updateTimestamp)) {
                 try {
-                    appendLineToFile(updateTimestampsFile, passUpdater.getLatestUpdate());
+                    appendToGrantUpdateTimestamps(passUpdater.getLatestUpdate());
                 } catch (IOException e) {
                     throw processException(
                         format(ERR_COULD_NOT_APPEND_UPDATE_TIMESTAMP, passUpdater.getLatestUpdate()), null);
@@ -209,7 +185,8 @@ public class GrantLoaderApp {
             }
         } else { //don't need to update, just write the result set out to the data file
             try {
-                GrantDataCsvFileUtils.writeGrantIngestCsv(resultSet, dataFile.toPath());
+                Resource dataFile = applicationContext.getResource(dataFileName);
+                GrantDataCsvFileUtils.writeGrantIngestCsv(resultSet, dataFile);
             } catch (IOException ex) {
                 throw processException("Error writing CSV data file", ex);
             }
@@ -238,10 +215,15 @@ public class GrantLoaderApp {
      */
     private String getLatestTimestamp() throws PassCliException {
         String lastLine = "";
-        if (!updateTimestampsFile.exists()) {
-            throw processException(format(ERR_REQUIRED_CONFIGURATION_FILE_MISSING, updateTimestampsFileName), null);
+        if (!grantUpdateTimestamps.exists()) {
+            throw processException(format(ERR_REQUIRED_CONFIGURATION_FILE_MISSING,
+                grantUpdateTimestamps.getFilename()), null);
         } else {
-            try (BufferedReader br = new BufferedReader(new FileReader(updateTimestampsFile))) {
+            try (
+                InputStream inputStream = grantUpdateTimestamps.getInputStream();
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader br = new BufferedReader(inputStreamReader)
+            ) {
                 String readLine;
                 while ((readLine = br.readLine()) != null) {
                     lastLine = readLine;
@@ -256,20 +238,25 @@ public class GrantLoaderApp {
 
     /**
      * This method appends the timestamp representing the latest update timestamp of all of the {@code Grant}s being
-     * processed
-     * in this running of the loader
+     * processed in this running of the loader
      *
-     * @param file         - the {@code File} to write to
-     * @param updateString - the timestamp string to append to the {@code File}
+     * @param updateString - the timestamp string to append
      * @throws IOException if the append fails
      */
-    private void appendLineToFile(File file, String updateString) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(
-            new FileOutputStream(file.getCanonicalPath(), true), StandardCharsets.UTF_8);
-        BufferedWriter fbw = new BufferedWriter(writer);
-        fbw.write(updateString);
-        fbw.newLine();
-        fbw.close();
+    private void appendToGrantUpdateTimestamps(String updateString) throws IOException {
+        String content;
+        try (InputStream inputStream = grantUpdateTimestamps.getInputStream()) {
+            content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        content += StringUtils.isNotEmpty(content) ? "\n" + updateString : updateString;
+        try (
+            OutputStream outputStream = grantUpdateTimestamps.getOutputStream();
+            OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+            BufferedWriter fbw = new BufferedWriter(writer)
+        ) {
+            fbw.write(content);
+            fbw.newLine();
+        }
     }
 
     /**
