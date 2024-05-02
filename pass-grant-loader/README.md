@@ -51,7 +51,7 @@ is a spring boot application, so use the standard Spring Boot configuration func
 
 Here is an example using Java system properties `-D`.
 ```
-    java -Dapp.home-/my/home/path -jar jhu-grant-loader-0.6.0-SNAPSHOT.jar -startDateTime "<yyyy-mm-dd hh:mm:ss.m{mm}>" -awardEndDate <MM/dd/yyyy>
+    java -jar jhu-grant-loader-0.6.0-SNAPSHOT.jar -a load file:./grant-data.csv
 ```
 
 ### Arguments
