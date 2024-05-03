@@ -40,7 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.eclipse.pass.support.grant.data.PassUpdater;
@@ -248,7 +247,7 @@ public class GrantLoaderApp {
         try (InputStream inputStream = grantUpdateTimestamps.getInputStream()) {
             content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
-        content += StringUtils.isNotEmpty(content) ? "\n" + updateString : updateString;
+        content += updateString;
         try (
             OutputStream outputStream = grantUpdateTimestamps.getOutputStream();
             OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
