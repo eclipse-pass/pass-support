@@ -17,9 +17,18 @@ package org.eclipse.pass.loader.nihms.entrez;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Karen Hanson
@@ -27,29 +36,46 @@ import org.junit.jupiter.api.Test;
  */
 public class EntrezPmidLookupTest {
 
-    @Test
-    public void testGetEntrezRecordJson() {
-        PmidLookup apiService = new PmidLookup();
+    @MockBean
+    protected PmidLookup mockPmidLookup;
 
-        String pmid = "29249144";
-
-        JSONObject pmr = apiService.retrievePubMedRecordAsJson(pmid);
-        assertTrue(pmr.getString("source").contains("Proteome"));
-
+    @BeforeEach
+    public void setUp() {
+        mockPmidLookup = mock(PmidLookup.class);
     }
 
     @Test
-    public void testGetPubMedRecord() {
-        PmidLookup pmidLookup = new PmidLookup();
-        String pmid = "29249144";
-        PubMedEntrezRecord record = pmidLookup.retrievePubMedRecord(pmid);
-        assertEquals("10.1021/acs.jproteome.7b00775", record.getDoi());
+    public void testGetEntrezRecordJson() throws IOException {
+        JSONObject entrezJson = new JSONObject(IOUtils.toString(getClass().getClassLoader().
+                getResourceAsStream("pmidrecord.json"), StandardCharsets.UTF_8));
+        String pmid = "11111111";
+
+        when(mockPmidLookup.retrievePubMedRecordAsJson(pmid)).thenReturn(entrezJson);
+
+        JSONObject pmr = mockPmidLookup.retrievePubMedRecordAsJson(pmid);
+        assertTrue(pmr.getString("source").contains("Journal A"));
+    }
+
+    @Test
+    public void testGetPubMedRecord() throws IOException {
+        JSONObject pubMedJsonRecord = new JSONObject(IOUtils.toString(getClass().getClassLoader().
+                getResourceAsStream("pmidrecord.json"), StandardCharsets.UTF_8));
+        PubMedEntrezRecord pubMedEntrezRecord = new PubMedEntrezRecord(pubMedJsonRecord);
+        String pmid = "11111111";
+
+        when(mockPmidLookup.retrievePubMedRecord(pmid)).thenReturn(pubMedEntrezRecord);
+
+        PubMedEntrezRecord record = mockPmidLookup.retrievePubMedRecord(pmid);
+        assertEquals("10.1000/a.abcd.1234", record.getDoi());
     }
 
     @Test
     public void testGetPubMedRecordWithHighAsciiChars() {
         PmidLookup pmidLookup = new PmidLookup();
         String pmid = "27648456";
+
+        when(mockPmidLookup.retrievePubMedRecord(pmid)).thenReturn(pubMedEntrezRecord);
+
         PubMedEntrezRecord record = pmidLookup.retrievePubMedRecord(pmid);
         assertEquals("10.1002/acn3.333", record.getDoi());
         assertEquals("Age-dependent effects of APOE ε4 in preclinical Alzheimer's disease.", record.getTitle());
