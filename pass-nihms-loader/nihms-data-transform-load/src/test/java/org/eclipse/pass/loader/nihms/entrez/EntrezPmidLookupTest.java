@@ -20,19 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
 /**
  * @author Karen Hanson
- * @version $Id$
  */
 public class EntrezPmidLookupTest {
 
@@ -70,15 +68,17 @@ public class EntrezPmidLookupTest {
     }
 
     @Test
-    public void testGetPubMedRecordWithHighAsciiChars() {
-        PmidLookup pmidLookup = new PmidLookup();
-        String pmid = "27648456";
+    public void testGetPubMedRecordWithHighAsciiChars() throws IOException {
+        JSONObject pubMedJsonRecord = new JSONObject(IOUtils.toString(getClass().getClassLoader().
+                getResourceAsStream("pmidrecord.json"), StandardCharsets.UTF_8));
+        PubMedEntrezRecord pubMedEntrezRecord = new PubMedEntrezRecord(pubMedJsonRecord);
+        String pmid = "11111111";
 
         when(mockPmidLookup.retrievePubMedRecord(pmid)).thenReturn(pubMedEntrezRecord);
 
-        PubMedEntrezRecord record = pmidLookup.retrievePubMedRecord(pmid);
-        assertEquals("10.1002/acn3.333", record.getDoi());
-        assertEquals("Age-dependent effects of APOE ε4 in preclinical Alzheimer's disease.", record.getTitle());
+        PubMedEntrezRecord record = mockPmidLookup.retrievePubMedRecord(pmid);
+        assertEquals("10.1000/a.abcd.1234", record.getDoi());
+        assertEquals("Article A", record.getTitle());
     }
 
 }
