@@ -33,6 +33,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -54,8 +55,11 @@ public class PmidLookup {
      * delayed responses.
      * https://www.ncbi.nlm.nih.gov/books/NBK25497/
      */
-    private static final String DEFAULT_ENTREZ_PATH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary" +
-                                                      ".fcgi?db=pubmed&retmode=json&rettype=abstract&id=%s";
+    /*private static final String DEFAULT_ENTREZ_PATH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary" +
+                                                      ".fcgi?db=pubmed&retmode=json&rettype=abstract&id=%s";*/
+    @Value("${pmc.entrez.service.url}")
+    private String ENTREZ_PATH;
+
     private static final Long DEFAULT_ENTREZ_TIME_OUT = Long.valueOf("400");
 
     private static final String JSON_ERROR_KEY = "error";
@@ -111,7 +115,7 @@ public class PmidLookup {
      */
     private JSONObject retrieveJsonFromApi(String pmid) {
         JSONObject root;
-        String path = String.format(DEFAULT_ENTREZ_PATH, pmid);
+        String path = String.format(ENTREZ_PATH, pmid);
         try {
             HttpClient client = HttpClientBuilder
                 .create()
