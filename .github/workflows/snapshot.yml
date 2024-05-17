@@ -1,15 +1,14 @@
 name: Publish SNAPSHOT
 
 on:
-  push:
-    branches:
-      - 'main'
-    tags-ignore:
-      - '*'
+  pull_request:
+    types:
+      - closed
   workflow_dispatch:
 
 jobs:
   snapshot:
+    if: github.event.pull_request.merged == true
     uses: eclipse-pass/main/.github/workflows/snapshot.yml@main
     secrets: inherit
     with:
