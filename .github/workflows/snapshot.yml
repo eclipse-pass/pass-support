@@ -8,7 +8,7 @@ on:
 
 jobs:
   snapshot:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     uses: eclipse-pass/main/.github/workflows/snapshot.yml@main
     secrets: inherit
     with:
