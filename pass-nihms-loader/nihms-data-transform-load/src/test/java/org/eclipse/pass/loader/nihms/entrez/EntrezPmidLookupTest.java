@@ -19,8 +19,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -94,7 +94,7 @@ public class EntrezPmidLookupTest {
     @Test
     public void testGetPubMedRecordWithHighAsciiChars() throws IOException {
         String entrez = IOUtils.toString(getClass().getClassLoader().
-                getResourceAsStream("pmid_record_ascii.json"));
+                getResourceAsStream("pmid_record_ascii.json"), StandardCharsets.US_ASCII);
 
         String pmid = "11111111";
 
