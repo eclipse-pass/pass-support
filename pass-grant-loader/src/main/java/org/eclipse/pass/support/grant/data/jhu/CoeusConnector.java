@@ -213,8 +213,8 @@ public class CoeusConnector implements GrantConnector {
 
     private String buildGrantQueryString(String grant) {
         return StringUtils.isEmpty(grant)
-            ? SELECT_GRANT_SQL + "AND A.GRANT_NUMBER IS NOT NULL)"
-            : SELECT_GRANT_SQL + "AND A.GRANT_NUMBER = ?)";
+            ? SELECT_GRANT_SQL + "AND EA.GRANT_NUMBER IS NOT NULL)"
+            : SELECT_GRANT_SQL + "AND EA.GRANT_NUMBER = ?)";
     }
 
     private List<GrantIngestRecord> retrieveFunderUpdates(Set<String> funderIds) throws SQLException {
