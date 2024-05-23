@@ -209,8 +209,8 @@ public class JhuGrantDbConnector implements GrantConnector {
 
     private String buildGrantQueryString(String grant) {
         return StringUtils.isEmpty(grant)
-            ? SELECT_GRANT_SQL + "AND A.SAP_GRANT_NUMBER IS NOT NULL)"
-            : SELECT_GRANT_SQL + "AND A.SAP_GRANT_NUMBER = ?)";
+            ? SELECT_GRANT_SQL + "AND EA.SAP_GRANT_NUMBER IS NOT NULL)"
+            : SELECT_GRANT_SQL + "AND EA.SAP_GRANT_NUMBER = ?)";
     }
 
     private List<GrantIngestRecord> retrieveFunderUpdates(Set<String> funderIds) throws SQLException {
