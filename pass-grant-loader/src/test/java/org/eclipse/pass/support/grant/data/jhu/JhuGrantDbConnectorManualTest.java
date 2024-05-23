@@ -28,7 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Test class for the COEUS connector.  This is strictly a manual test for querying the Coeus database.
+ * Test class for the JHU Grant DB connector.  This is strictly a manual test for querying the database.
  * This test is Disabled, you can enable it and run each query test if needed for validation.
  * <p>
  * In order to run the tests, you must put a connection.properties file with valid url and creds in the
@@ -39,9 +39,9 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest
 @TestPropertySource("classpath:test-application.properties")
 @Disabled
-public class CoeusConnectorManualTest {
+public class JhuGrantDbConnectorManualTest {
 
-    @Autowired private CoeusConnector connector;
+    @Autowired private JhuGrantDbConnector connector;
 
     @Disabled
     @Test
