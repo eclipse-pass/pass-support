@@ -106,12 +106,14 @@ public class CoeusConnector implements GrantConnector {
         "LEFT JOIN COEUS.SWIFT_SPONSOR D ON A.PRIME_SPONSOR_CODE = D.SPONSOR_CODE " +
         "WHERE (B.ABBREVIATED_ROLE = 'P' OR B.ABBREVIATED_ROLE = 'C' " +
         "OR REGEXP_LIKE (UPPER(B.ROLE), '^CO ?-?INVESTIGATOR$')) " +
+        "AND A.PROPOSAL_STATUS = 'Funded' " +
+        "AND A.GRANT_NUMBER IS NOT NULL " +
         "AND EXISTS (" +
         "    select * from COEUS.JHU_FACULTY_FORCE_PROP EA where" +
         "        EA.UPDATE_TIMESTAMP > ?" +
         "        AND TO_DATE(EA.AWARD_END, 'MM/DD/YYYY') >= TO_DATE(?, 'MM/DD/YYYY')" +
-        "        and EA.PROPOSAL_STATUS = 'Funded'" +
-        "        and EA.GRANT_NUMBER = A.GRANT_NUMBER ";
+        "        AND EA.GRANT_NUMBER = A.GRANT_NUMBER" +
+        "        AND EA.PROPOSAL_STATUS = 'Funded' ";
 
     private static final String SELECT_USER_SQL =
         "SELECT " +
