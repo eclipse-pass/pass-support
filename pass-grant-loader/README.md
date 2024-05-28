@@ -36,10 +36,10 @@ policies require.
 
 ### JHU (jhu)
 
-The JHU implementation is used to pull data from the COEUS Oracle database views for the purpose of performing regular
+The JHU implementation is used to pull data from the Grant database views for the purpose of performing regular
 updates. We look at grants which have been updated since a particular time (typically the time of the previous update),
 join this with user and funder information associated with the grant, and then use this information to update the data
-in the PASS backend. The JHU implementation also treats the COEUS database as authoritative for all fields in the
+in the PASS backend. The JHU implementation also treats the Grant database as authoritative for all fields in the
 data. If a grant is being passed in for update, it is assumed that all records for that grant are included in the
 input.
 
