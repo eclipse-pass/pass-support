@@ -158,7 +158,7 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     }
 
     private boolean userNeedsUpdate(User system, User stored) {
-        //first the fields for which COEUS is authoritative
+        //first the fields for which Grant database is authoritative
         if (!Objects.equals(system.getFirstName(), stored.getFirstName())) {
             return true;
         }
@@ -190,15 +190,14 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
     }
 
     /**
-     * Update a Pass User object with new information from COEUS. We check only those fields for which COEUS is
-     * authoritative. Other fields will be managed by other providers (Shibboleth for example). The exceptions are
-     * the localKey, which this application and Shibboleth both rely on; and  email, which this application only
-     * populates
-     * if Shib hasn't done so already.
+     * Update a Pass User object with new information from Grant database.
+     * We check only those fields for which the Grant database is authoritative. Other fields will be managed by
+     * other providers (Shibboleth for example). The exceptions are the localKey, which this application and
+     * Shibboleth both rely on; and  email, which this application only populates if Shib hasn't done so already.
      *
-     * @param system the version of the User as seen in the COEUS system pull
+     * @param system the version of the User as seen in the Grant database system pull
      * @param stored the version of the User as read from Pass
-     * @return the User object which represents the Pass object, with any new information from COEUS merged in
+     * @return the User object which represents the Pass object, with any new information from Grant database merged in
      */
     private User updateUser(User system, User stored) {
         stored.setFirstName(system.getFirstName());

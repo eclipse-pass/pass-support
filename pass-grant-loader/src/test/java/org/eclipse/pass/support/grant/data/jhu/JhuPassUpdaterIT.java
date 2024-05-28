@@ -753,7 +753,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(0, jhuPassUpdater.getStatistics().getCoPisAdded());
 
         // WHEN
-        // JHED ID and Hopkins ID update from coeus
+        // JHED ID and Hopkins ID update from Grant database
         GrantIngestRecord piRecordUpdate = TestUtil.makeGrantIngestRecord(4, 4, "P");
         piRecordUpdate.setPiInstitutionalId("newjdoe1jhed");
 
