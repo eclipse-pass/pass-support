@@ -28,19 +28,18 @@ import org.eclipse.pass.support.client.model.Grant;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+// todo need to add spring support for grant db file
 public class GrantLoaderManualIT {
 
     /**
-     * This is a manual test that can run locally to test loading the COEUS data.
-     * You need to set the system prop APP_HOME to the path of the test/resouces dir.
-     * You also need the connection.properties file in test/resources which contains connection props
-     * for COEUS and the Directory Service.
+     * This is a manual test that can run locally to test loading the grant data.
+     * You also need the grant db connection props in the test-application.properties file.
      * Be careful with the startDateTime to no pull too much data.  Know what the impact is on pulling
      * data before running this test.
      */
     @Disabled
     @Test
-    public void testLoadCoeusFile() {
+    public void testLoadGrantFile() {
         System.setProperty(
                 "APP_HOME",
                 "full_path_to/pass-support/pass-grant-loader/pass-grant-cli/src/test/resources"
