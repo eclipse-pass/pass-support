@@ -226,7 +226,7 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
     }
 
     /**
-     * utility method to produce data as it would look coming from COEUS
+     * utility method to produce data as it would look coming from Grant database
      *
      * @param iteration the iteration of the (multi-award) grant
      * @param user      the user supplied in the record
