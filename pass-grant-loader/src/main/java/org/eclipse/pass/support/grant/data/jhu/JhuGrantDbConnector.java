@@ -266,7 +266,7 @@ public class JhuGrantDbConnector implements GrantConnector {
                 }
             }
         }
-        LOG.info("Retrieved Users result set from COEUS: {} records processed", grantIngestRecords.size());
+        LOG.info("Retrieved Users result set from JHU Grant DB: {} records processed", grantIngestRecords.size());
         return grantIngestRecords;
     }
 
