@@ -57,20 +57,18 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
      */
     @Option(name = "-s", aliases = {"-startDateTime", "--startDateTime"},
             usage = "DateTime to start the query against Grant source system. This will cause " +
-                    "a return of all records updated since this DateTime. Syntax must be yyyy-mm-dd hh:mm:ss.m{mm}. " +
-                    "This value will override the most recent " +
-                    "dateTime listed in the updates file.")
+                "a return of all grants having a record updated since this DateTime. " +
+                "Syntax must be yyyy-mm-dd hh:mm:ss.m{mm}. This value will override the most recent " +
+                "dateTime listed in the updates file.")
     protected static String startDate = "";
-
 
     /**
      * Specifies an award end date for basing the database query
      */
     @Option(name = "-z", aliases = {"-awardEndDate", "--awardEndDate"},
             usage = "Date for the AWARD_END to start the query against Grant source system. This will cause " +
-                    "a return of all records having an AWARD_END after the supplied date. Syntax must be MM/dd/yyyy. " +
-                    "If not specified, the default will be " +
-                    "01/01/2011")
+                "a return of all grants having a record with an AWARD_END after the supplied date. " +
+                "Syntax must be MM/dd/yyyy. If not specified, the default will be 01/01/2011")
     protected static String awardEndDate = "01/01/2011";
 
     /**
@@ -81,11 +79,10 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
      */
     @Option(name = "-a", aliases = {"-action", "--action"},
             usage = "Action to be taken - 'pull' is for Grant source system pull only," +
-                    "'load' is for PASS load only. Either option requires a file path specified as an argument " +
-                    "after all options - an" +
-                    "output file in the case of 'pull', and an input file in the case of 'load'. If no action is " +
-                    "specified, " +
-                    "the data will be pulled from Grant source system and loaded directly into PASS")
+                "'load' is for PASS load only. Either option requires a file path specified as an argument " +
+                "after all options - an output file in the case of 'pull', and an input file in the case of " +
+                "'load'. If no action is specified, the data will be pulled from Grant source system and loaded " +
+                "directly into PASS")
     protected static String action = "";
 
     /**
