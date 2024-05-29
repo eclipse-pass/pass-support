@@ -102,8 +102,6 @@ public class JhuGrantDbConnector implements GrantConnector {
         "WHERE A.inst_proposal = B.inst_proposal " +
         "AND B.employee_id = C.employee_id " +
         "AND STR_TO_DATE(A.AWARD_END, '%m/%d/%Y') >= STR_TO_DATE('01/01/2011', '%m/%d/%Y') "  +
-        // TODO confirm with Bob this is in view sql
-        "AND A.PROPOSAL_STATUS = 'Funded' " +
         "AND A.SAP_GRANT_NUMBER IS NOT NULL " +
         "AND EXISTS (" +
         "    select * from JHU_PASS_AWD_VIEW EA where" +
@@ -123,6 +121,7 @@ public class JhuGrantDbConnector implements GrantConnector {
             "FROM JHU_PERSON_VIEW A, " +
             "JHU_FIBI_IP_INV_VIEW B " +
             "WHERE A.employee_id = B.employee_id " +
+            // todo need reply from Bob on this
             "and A.UPDATE_TIMESTAMP > ?";
 
     private static final String SELECT_FUNDER_SQL =
