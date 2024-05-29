@@ -32,7 +32,7 @@
     <awsspring.version>3.2.1</awsspring.version>
     <args4j.version>2.37</args4j.version>
     <commons.csv.version>1.12.0</commons.csv.version>
-    <ojdbc10.version>19.24.0.0</ojdbc10.version>
+    <mysql.jdbc.version>8.0.33</mysql.jdbc.version>
     <maven-model.version>3.9.9</maven-model.version>
   </properties>
 
@@ -114,9 +114,9 @@
         <artifactId>commons-lang3</artifactId>
       </dependency>
       <dependency>
-        <groupId>com.oracle.database.jdbc</groupId>
-        <artifactId>ojdbc10</artifactId>
-        <version>${ojdbc10.version}</version>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.jdbc.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -293,6 +293,7 @@
                   <ignoredUnusedDeclaredDependency>com.oracle.database.jdbc::</ignoredUnusedDeclaredDependency>
                   <!-- Used by ITs via classpath -->
                   <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>mysql:mysql-connector-java::</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
