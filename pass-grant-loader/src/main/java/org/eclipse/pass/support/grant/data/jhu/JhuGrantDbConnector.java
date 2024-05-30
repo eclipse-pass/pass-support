@@ -101,13 +101,13 @@ public class JhuGrantDbConnector implements GrantConnector {
         "JHU_PERSON_VIEW C " +
         "WHERE A.inst_proposal = B.inst_proposal " +
         "AND B.employee_id = C.employee_id " +
-        "AND STR_TO_DATE(A.AWARD_END, '%m/%d/%Y') >= STR_TO_DATE('01/01/2011', '%m/%d/%Y') "  +
-        "AND A.SAP_GRANT_NUMBER IS NOT NULL " +
+        "AND A.AWARD_END_DATE >= STR_TO_DATE('01/01/2011', '%m/%d/%Y') "  +
+        "AND B.ROLE != 'KP' " +
         "AND EXISTS (" +
         "    select * from JHU_PASS_AWD_VIEW EA where" +
         "        EA.UPDATE_TIMESTAMP > ?" +
         "        and EA.SAP_GRANT_NUMBER = A.SAP_GRANT_NUMBER" +
-        "        AND STR_TO_DATE(EA.AWARD_END_DATE, '%m/%d/%Y') >= STR_TO_DATE(?, '%m/%d/%Y') ";
+        "        AND EA.AWARD_END_DATE >= STR_TO_DATE(?, '%m/%d/%Y') ";
 
     private static final String SELECT_USER_SQL =
         "SELECT " +
@@ -212,7 +212,7 @@ public class JhuGrantDbConnector implements GrantConnector {
 
     private String buildGrantQueryString(String grant) {
         return StringUtils.isEmpty(grant)
-            ? SELECT_GRANT_SQL + "AND EA.SAP_GRANT_NUMBER IS NOT NULL)"
+            ? SELECT_GRANT_SQL + ")"
             : SELECT_GRANT_SQL + "AND EA.SAP_GRANT_NUMBER = ?)";
     }
 
