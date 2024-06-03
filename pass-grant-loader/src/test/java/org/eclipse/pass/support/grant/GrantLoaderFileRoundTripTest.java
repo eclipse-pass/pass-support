@@ -16,18 +16,12 @@
 package org.eclipse.pass.support.grant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
-import java.util.List;
 
 import org.eclipse.pass.support.client.model.Policy;
-import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +44,7 @@ public class GrantLoaderFileRoundTripTest extends AbstractRoundTripTest {
     }
 
     @Test
-    public void testRoundTripCvsFile() throws PassCliException, SQLException, IOException {
+    public void testRoundTripCvsFile() throws PassCliException, IOException {
         // GIVEN
         Policy policy = new Policy();
         policy.setTitle("test policy");
@@ -60,12 +54,8 @@ public class GrantLoaderFileRoundTripTest extends AbstractRoundTripTest {
         Files.createFile(TEST_CSV_PATH);
         Files.createFile(GRANT_UPTS_PATH);
 
-        List<GrantIngestRecord> grantIngestRecordList = getTestIngestRecords();
-        doReturn(grantIngestRecordList).when(grantConnector).retrieveUpdates(anyString(), anyString(), anyString(),
-            any());
-
         // WHEN
-        grantLoaderApp.run("2011-01-01 00:00:00", "01/01/2011",
+        grantLoaderApp.run("2011-01-01 00:00:00", "2011-01-01",
             "grant", "pull", "file:./src/test/resources/test-pull.csv", null);
 
         // THEN
@@ -75,7 +65,7 @@ public class GrantLoaderFileRoundTripTest extends AbstractRoundTripTest {
 
         // WHEN
         // Use CSV file create above and load into PASS
-        grantLoaderApp.run("", "01/01/2011", "grant",
+        grantLoaderApp.run("", "2011-01-01", "grant",
             "load", "file:./src/test/resources/test-pull.csv", null);
 
         // THEN

@@ -27,7 +27,7 @@
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
   </root>
-  <logger name="org.dataconservancy.pass" additivity="false">
+  <logger name="org.eclipse.pass.support.grant" additivity="false">
     <appender-ref ref="STDOUT"/>
   </logger>
 </configuration>

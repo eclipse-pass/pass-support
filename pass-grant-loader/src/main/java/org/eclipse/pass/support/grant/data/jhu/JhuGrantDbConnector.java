@@ -16,14 +16,17 @@
 package org.eclipse.pass.support.grant.data.jhu;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -101,13 +104,12 @@ public class JhuGrantDbConnector implements GrantConnector {
         "JHU_PERSON_VIEW C " +
         "WHERE A.inst_proposal = B.inst_proposal " +
         "AND B.employee_id = C.employee_id " +
-        "AND A.AWARD_END_DATE >= STR_TO_DATE('01/01/2011', '%m/%d/%Y') "  +
-        "AND B.ROLE != 'KP' " +
+        "AND A.AWARD_END_DATE >= '2011-01-01' "  +
         "AND EXISTS (" +
         "    select * from JHU_PASS_AWD_VIEW EA where" +
         "        EA.UPDATE_TIMESTAMP > ?" +
         "        and EA.SAP_GRANT_NUMBER = A.SAP_GRANT_NUMBER" +
-        "        AND EA.AWARD_END_DATE >= STR_TO_DATE(?, '%m/%d/%Y') ";
+        "        AND EA.AWARD_END_DATE >= ? ";
 
     private static final String SELECT_USER_SQL =
         "SELECT " +
@@ -130,6 +132,12 @@ public class JhuGrantDbConnector implements GrantConnector {
             C_DIRECT_FUNDER_LOCAL_KEY + " " +
             "FROM JHU_SPONSOR_VIEW " +
             "WHERE SPONSOR_CODE IN (%s)";
+
+    private final Map<String, String> jhuGrantDbRoleMapping = Map.of(
+        "PI", "P",
+        "Co-PI", "C",
+        "Co-I", "C"
+    );
 
     @Value("${grant.db.url}")
     private String grantDbUrl;
@@ -172,7 +180,8 @@ public class JhuGrantDbConnector implements GrantConnector {
         ) {
             LocalDateTime startLd = LocalDateTime.from(DateTimeUtil.DATE_TIME_FORMATTER.parse(startDate));
             ps.setTimestamp(1, Timestamp.valueOf(startLd));
-            ps.setString(2, awardEndDate);
+            LocalDate awardEndFilter = LocalDate.from(DateTimeUtil.DATE_TIME_FORMATTER.parse(awardEndDate));
+            ps.setDate(2, Date.valueOf(awardEndFilter));
             if (StringUtils.isNotEmpty(grant)) {
                 ps.setString(3, grant);
             }
@@ -198,7 +207,9 @@ public class JhuGrantDbConnector implements GrantConnector {
                     grantIngestRecord.setPiEmployeeId(rs.getString(C_USER_EMPLOYEE_ID));
                     grantIngestRecord.setPiInstitutionalId(rs.getString(C_USER_INSTITUTIONAL_ID));
                     grantIngestRecord.setUpdateTimeStamp(rs.getString(C_UPDATE_TIMESTAMP));
-                    grantIngestRecord.setPiRole(rs.getString(C_ABBREVIATED_ROLE));
+                    grantIngestRecord.setPiRole(
+                        jhuGrantDbRoleMapping.get(rs.getString(C_ABBREVIATED_ROLE))
+                    );
                     LOG.debug("Record processed: {}", grantIngestRecord);
                     if (!grantIngestRecords.contains(grantIngestRecord)) {
                         grantIngestRecords.add(grantIngestRecord);
