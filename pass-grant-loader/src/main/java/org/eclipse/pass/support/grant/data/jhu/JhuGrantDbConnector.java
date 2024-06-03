@@ -136,7 +136,8 @@ public class JhuGrantDbConnector implements GrantConnector {
     private final Map<String, String> jhuGrantDbRoleMapping = Map.of(
         "PI", "P",
         "Co-PI", "C",
-        "Co-I", "C"
+        "Co-I", "C",
+        "KP", "C"
     );
 
     @Value("${grant.db.url}")
