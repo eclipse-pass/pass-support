@@ -61,7 +61,7 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
 
         // WHEN
         PassCliException passCliException = assertThrows(PassCliException.class, () -> {
-            grantLoaderApp.run("", "01/01/2011", "grant",
+            grantLoaderApp.run("", "2011-01-01", "grant",
                 "load", "file:./src/test/resources/test-load.csv", null);
         });
 
