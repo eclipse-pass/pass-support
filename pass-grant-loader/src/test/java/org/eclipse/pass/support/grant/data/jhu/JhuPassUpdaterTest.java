@@ -96,7 +96,7 @@ public class JhuPassUpdaterTest {
         assertEquals("12345678", grant.getAwardNumber());
         assertEquals(AwardStatus.ACTIVE, grant.getAwardStatus());
         assertEquals("johnshopkins.edu:grant:8675309", grant.getLocalKey());
-        Assertions.assertEquals(DateTimeUtil.createZonedDateTime("01/01/2000"), grant.getAwardDate());
+        Assertions.assertEquals(DateTimeUtil.createZonedDateTime("2000-01-01"), grant.getAwardDate());
         assertEquals(DateTimeUtil.createZonedDateTime("2001-01-01"), grant.getStartDate());
         assertEquals(DateTimeUtil.createZonedDateTime("2002-01-01"), grant.getEndDate());
         assertEquals("2018-01-01 00:00:00.0", jhuPassUpdater.getLatestUpdate());//latest
@@ -133,9 +133,9 @@ public class JhuPassUpdaterTest {
         String awardStatus = "Active";
         String localKey = "8675309";
         String projectName = "Moo Project";
-        String awardDate = "01/01/2000";
-        String startDate = "01/01/2001";
-        String endDate = "01/01/2002";
+        String awardDate = "2000-01-01";
+        String startDate = "2001-01-01";
+        String endDate = "2002-01-01";
         String directFunderId = "000029282";
         String directFunderName = "JHU Department of Synergy";
         String primaryFunderId = "8675309";

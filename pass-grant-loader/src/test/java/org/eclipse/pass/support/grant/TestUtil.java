@@ -25,8 +25,8 @@ public class TestUtil {
     public final static String[] grantProjectName =
         {"Stupendous \"Research Project\" I", "Stupendous Research Project II", "Stupendous Research ProjectIII",
             "Stupendous Research ProjectIV", "Stupendous Research ProjectV"};
-    public final static String[] grantAwardDate = {"01/01/1999", "01/01/2001", "01/01/2003", "01/01/2004",
-        "01/01/2005"};
+    public final static String[] grantAwardDate = {"1999-01-01", "2001-01-01", "2003-01-01", "2004-01-01",
+        "2005-01-01"};
     //these appear to ge the same for all awards
     public final static String[] grantStartDate =
         {"2000-07-01 00:00:00", "2001-07-01 00:00:00", "2003-07-01 00:00:00", "2004-07-01 00:00:00",

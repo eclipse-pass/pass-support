@@ -16,9 +16,6 @@
 package org.eclipse.pass.support.grant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 import java.io.IOException;
@@ -26,13 +23,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
-import java.util.List;
 
 import io.awspring.cloud.s3.S3Resource;
 import io.awspring.cloud.s3.S3Template;
 import org.eclipse.pass.support.client.model.Policy;
-import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.eclipse.pass.support.grant.data.PassUpdater;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -88,18 +82,14 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
     }
 
     @Test
-    public void testRoundTripCvsFileS3() throws PassCliException, SQLException, IOException {
+    public void testRoundTripCvsFileS3() throws PassCliException, IOException {
         // GIVEN
         Policy policy = new Policy();
         policy.setTitle("test policy");
         passClient.createObject(policy);
 
-        List<GrantIngestRecord> grantIngestRecordList = getTestIngestRecords();
-        doReturn(grantIngestRecordList).when(grantConnector).retrieveUpdates(anyString(), anyString(), anyString(),
-            any());
-
         // WHEN
-        grantLoaderApp.run("2011-01-01 00:00:00", "01/01/2011",
+        grantLoaderApp.run("2011-01-01 00:00:00", "2011-01-01",
             "grant", "pull", "s3://test-bucket/test-pull.csv", null);
 
         // THEN
@@ -113,7 +103,7 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
 
         // WHEN
         // Use CSV file create above and load into PASS
-        grantLoaderApp.run("", "01/01/2011", "grant",
+        grantLoaderApp.run("", "2011-01-01", "grant",
             "load", "s3://test-bucket/test-pull.csv", null);
 
         // THEN
