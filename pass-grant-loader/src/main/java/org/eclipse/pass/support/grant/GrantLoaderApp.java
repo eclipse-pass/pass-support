@@ -26,7 +26,6 @@ import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_MODE_NOT_VALID
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_REQUIRED_CONFIGURATION_FILE_MISSING;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_RESULT_SET_NULL;
 import static org.eclipse.pass.support.grant.DataLoaderErrors.ERR_SQL_EXCEPTION;
-import static org.eclipse.pass.support.grant.data.DateTimeUtil.verifyDate;
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.verifyDateTimeFormat;
 
 import java.io.BufferedReader;
@@ -132,7 +131,7 @@ public class GrantLoaderApp {
                     }
                 }
                 if (awardEndDate != null) {
-                    if (!verifyDate(awardEndDate)) {
+                    if (!verifyDateTimeFormat(awardEndDate)) {
                         throw processException(format(ERR_INVALID_COMMAND_LINE_DATE, awardEndDate), null);
                     }
                 }

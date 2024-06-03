@@ -68,8 +68,8 @@ public class GrantLoaderCLIRunner implements CommandLineRunner {
     @Option(name = "-z", aliases = {"-awardEndDate", "--awardEndDate"},
             usage = "Date for the AWARD_END to start the query against Grant source system. This will cause " +
                 "a return of all grants having a record with an AWARD_END after the supplied date. " +
-                "Syntax must be MM/dd/yyyy. If not specified, the default will be 01/01/2011")
-    protected static String awardEndDate = "01/01/2011";
+                "Syntax must be yyyy-mm-dd. If not specified, the default will be 2011-01-01")
+    protected static String awardEndDate = "2011-01-01";
 
     /**
      * Specifies an optional action - either "pull" or "load" - to restrict the operation of the application to only
