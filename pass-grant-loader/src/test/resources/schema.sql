@@ -1,0 +1,31 @@
+
+CREATE TABLE IF NOT EXISTS JHU_PASS_AWD_VIEW (
+    INST_PROPOSAL varchar(100) NOT NULL,
+    AWARD_ID varchar(100) NOT NULL,
+    AWARD_STATUS varchar(100),
+    SAP_GRANT_NUMBER varchar(100),
+    TITLE varchar(255),
+    AWARD_DATE date,
+    AWARD_START_DATE date,
+    AWARD_END_DATE date,
+    SPONSOR_CODE varchar(100),
+    SPONSOR_NAME varchar(100),
+    PRIME_SPONSOR_CODE varchar(100),
+    PRIME_SPONSOR_NAME varchar(100),
+    UPDATE_TIMESTAMP timestamp
+);
+
+CREATE TABLE IF NOT EXISTS JHU_FIBI_IP_INV_VIEW (
+    INST_PROPOSAL varchar(100) NOT NULL,
+    EMPLOYEE_ID varchar(100),
+    ROLE varchar(100)
+);
+
+CREATE TABLE IF NOT EXISTS JHU_PERSON_VIEW (
+    EMPLOYEE_ID varchar(100),
+    FIRST_NAME varchar(100) NOT NULL,
+    MIDDLE_NAME varchar(100),
+    LAST_NAME varchar(100),
+    EMAIL_ADDRESS varchar(100),
+    JHED_ID varchar(100)
+);
