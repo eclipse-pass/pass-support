@@ -100,6 +100,16 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>args4j</groupId>
         <artifactId>args4j</artifactId>
         <version>${args4j.version}</version>
@@ -294,6 +304,8 @@
                   <!-- Used by ITs via classpath -->
                   <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>mysql:mysql-connector-java::</ignoredUnusedDeclaredDependency>
+                  <!-- Used in tests by spring boot -->
+                  <ignoredUnusedDeclaredDependency>com.h2database:h2::</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
