@@ -153,7 +153,7 @@ public class DateTimeUtilTest {
         assertEquals(0, dateTime3.getNano());
         assertEquals(ZoneOffset.UTC, dateTime3.getZone());
 
-        String date = "01/30/2018";
+        String date = "2018-01-30";
         dateTime = DateTimeUtil.createZonedDateTime(date);
         assertEquals(2018, dateTime.getYear());
         assertEquals(1, dateTime.getMonthValue());
@@ -182,20 +182,6 @@ public class DateTimeUtilTest {
         });
         assertEquals("Invalid Format for 01/30/2018-03:00.  " +
             "Valid Format is uuuu-MM-dd[ [HH][:mm][:ss][[.SSS][.SS][.S]]]", grantDataException2.getMessage());
-    }
-
-    /**
-     * Test that verifyDate works
-     */
-    @Test
-    void testDateVerify() {
-        String date = "01/01/2011";
-        assertTrue(DateTimeUtil.verifyDate(date));
-
-        date = "02/30/1999";
-        assertFalse(DateTimeUtil.verifyDate(date));
-
-        assertFalse(DateTimeUtil.verifyDate(null));
     }
 
     /**

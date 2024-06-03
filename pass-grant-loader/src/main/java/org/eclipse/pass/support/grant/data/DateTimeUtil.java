@@ -15,14 +15,12 @@
  */
 package org.eclipse.pass.support.grant.data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +36,6 @@ public class DateTimeUtil {
                 .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
                 .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
                 .toFormatter();
-    static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("M/d/uuuu")
-                .withResolverStyle(ResolverStyle.STRICT);
 
     private DateTimeUtil () {
         //never called
@@ -57,10 +52,6 @@ public class DateTimeUtil {
             LocalDateTime localDateTime = LocalDateTime.parse(dateString, DATE_TIME_FORMATTER);
             return localDateTime.atZone(ZoneOffset.UTC);
         }
-        if (verifyDate(dateString)) { //we may have just a date - date format is mm/day/year
-            LocalDate localDate = LocalDate.parse(dateString, DATE_FORMATTER);
-            return localDate.atStartOfDay(ZoneOffset.UTC);
-        }
         if (StringUtils.isNotBlank(dateString)) {
             throw new GrantDataException("Invalid Format for " + dateString +
                 ".  Valid Format is " + DATE_TIME_PATTERN);
@@ -73,28 +64,15 @@ public class DateTimeUtil {
      * validity
      * (for example, "2018-02-31 ... " passes)
      *
-     * @param dateStr the date string to be checked
+     * @param dateTimeStr the datetime string to be checked
      * @return a boolean indicating whether the date matches the required format
      */
-    public static boolean verifyDateTimeFormat(String dateStr) {
-        return checkDateTimeFormat(dateStr, DATE_TIME_FORMATTER);
-    }
-
-    /**
-     * Date must be in the form "mm/dd/yyyy"
-     * @param date the date to verify
-     * @return true if date format is valid, false if not
-     */
-    public static boolean verifyDate(String date) {
-        return checkDateTimeFormat(date, DATE_FORMATTER);
-    }
-
-    private static boolean checkDateTimeFormat(String dateTimeStr, DateTimeFormatter formatter) {
+    public static boolean verifyDateTimeFormat(String dateTimeStr) {
         if (dateTimeStr == null) {
             return false;
         }
         try {
-            formatter.parse(dateTimeStr);
+            DATE_TIME_FORMATTER.parse(dateTimeStr);
         } catch (DateTimeParseException e) {
             return false;
         }
