@@ -49,9 +49,9 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
     private final String[] grantLocalKey = {"10000000", "10000000", "10000000"}; //all the same
     private final String[] grantProjectName =
         {"Awesome Research Project I", "Awesome Research Project II", "Awesome Research Project III"};
-    private final String[] grantAwardDate = {"01/01/1999", "01/01/2001", "01/01/2003"};
-    private final String[] grantStartDate = {"07/01/2000", "07/01/2002", "07/01/2004"};
-    private final String[] grantEndDate = {"06/30/2002", "06/30/2004", "06/30/2006"};
+    private final String[] grantAwardDate = {"1999-01-01", "2001-01-01", "2003-01-01"};
+    private final String[] grantStartDate = {"2000-07-01", "2002-07-01", "2004-07-01"};
+    private final String[] grantEndDate = {"2002-06-30", "2004-06-30", "2006-06-30"};
     private final String[] grantUpdateTimestamp =
         {"2006-03-11 00:00:00.0", "2010-04-05 00:00:00.0", "2015-11-11 00:00:00.0"};
     private final String[] userEmployeeId = {"30000000", "30000001", "30000002"};
