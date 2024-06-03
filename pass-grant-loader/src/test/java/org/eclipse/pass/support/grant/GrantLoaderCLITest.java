@@ -46,7 +46,7 @@ public class GrantLoaderCLITest {
     public void testHarvesterCLI() throws PassCliException {
         // GIVEN/WHEN
         // THEN
-        verify(grantLoaderApp).run(eq("2024-01-01T00:00:00"), eq("01/01/2025"), eq("grant"),
+        verify(grantLoaderApp).run(eq("2024-01-01T00:00:00"), eq("2025-01-01"), eq("grant"),
             eq("pull"), eq("test-pull-file.csv"), eq(null));
     }
 
