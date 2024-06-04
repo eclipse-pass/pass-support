@@ -118,7 +118,7 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
 
         // WHEN - run again to verify grant update timestamps
         String firstLastUpdate = passUpdater.getLatestUpdate();
-        grantLoaderApp.run("", "01/01/2011", "grant",
+        grantLoaderApp.run("", "2011-01-01", "grant",
             "load", "s3://test-bucket/test-pull.csv", null);
 
         S3Resource actualTestGrantUpTs2 = s3Template.download("test-bucket", "s3-testgrantupdatets");

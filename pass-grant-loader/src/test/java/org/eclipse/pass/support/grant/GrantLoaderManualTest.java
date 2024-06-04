@@ -51,7 +51,7 @@ public class GrantLoaderManualTest {
     @Disabled
     @Test
     public void testPullGrantFile() throws PassCliException {
-        grantLoaderApp.run("2023-04-01 00:00:00", "04/01/2023",
+        grantLoaderApp.run("2023-04-01 00:00:00", "2023-04-01",
             "grant", "pull", "file:./src/test/resources/your-file.csv", null);
     }
 
@@ -62,7 +62,7 @@ public class GrantLoaderManualTest {
     @Disabled
     @Test
     public void testLoadGrantFile() throws PassCliException {
-        grantLoaderApp.run("2023-04-01 00:00:00", "04/01/2023",
+        grantLoaderApp.run("2023-04-01 00:00:00", "2023-04-01",
             "grant", "load", "file:./src/test/resources/your-file.csv", null);
     }
 

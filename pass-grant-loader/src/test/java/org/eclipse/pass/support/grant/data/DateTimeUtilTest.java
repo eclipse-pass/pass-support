@@ -176,11 +176,11 @@ public class DateTimeUtilTest {
         assertEquals("Invalid Format for 2018-01-30 23:59:58.0+05:00.  " +
             "Valid Format is uuuu-MM-dd[ [HH][:mm][:ss][[.SSS][.SS][.S]]]", grantDataException.getMessage());
 
-        String date = "01/30/2018-03:00";
+        String date = "2018-03-01-03:00";
         GrantDataException grantDataException2 = assertThrows(GrantDataException.class, () -> {
             DateTimeUtil.createZonedDateTime(date);
         });
-        assertEquals("Invalid Format for 01/30/2018-03:00.  " +
+        assertEquals("Invalid Format for 2018-03-01-03:00.  " +
             "Valid Format is uuuu-MM-dd[ [HH][:mm][:ss][[.SSS][.SS][.S]]]", grantDataException2.getMessage());
     }
 
