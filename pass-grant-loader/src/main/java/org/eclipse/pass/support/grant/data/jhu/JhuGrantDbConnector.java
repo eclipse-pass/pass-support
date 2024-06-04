@@ -175,6 +175,8 @@ public class JhuGrantDbConnector implements GrantConnector {
         String sql = buildGrantQueryString(grant);
         List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
 
+        LOG.info("Retrieving Grants from JHU Grant DB using start date={}, award end date={}", startDate, awardEndDate);
+
         try (
             Connection con = DriverManager.getConnection(grantDbUrl, grantDbUser, grantDbPassword);
             PreparedStatement ps = con.prepareStatement(sql);
@@ -218,7 +220,7 @@ public class JhuGrantDbConnector implements GrantConnector {
                 }
             }
         }
-        LOG.info("Retrieved result set from JHU Grant DB: {} records processed", grantIngestRecords.size());
+        LOG.info("Retrieved Grants result set from JHU Grant DB: {} records processed", grantIngestRecords.size());
         return grantIngestRecords;
     }
 
@@ -249,6 +251,7 @@ public class JhuGrantDbConnector implements GrantConnector {
                 }
             }
         }
+        LOG.info("Retrieved Funders result set from JHU Grant DB: {} records processed", grantIngestRecords.size());
         return grantIngestRecords;
     }
 
