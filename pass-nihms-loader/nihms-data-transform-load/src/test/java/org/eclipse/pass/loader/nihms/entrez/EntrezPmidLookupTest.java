@@ -94,7 +94,7 @@ public class EntrezPmidLookupTest {
     @Test
     public void testGetPubMedRecordWithHighAsciiChars() throws IOException {
         String entrez = IOUtils.toString(getClass().getClassLoader().
-                getResourceAsStream("pmid_record_ascii.json"), StandardCharsets.US_ASCII);
+                getResourceAsStream("pmid_record_ascii.json"), StandardCharsets.UTF_8);
 
         String pmid = "11111111";
 
