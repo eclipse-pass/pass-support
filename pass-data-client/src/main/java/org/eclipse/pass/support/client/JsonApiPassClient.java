@@ -97,6 +97,8 @@ public class JsonApiPassClient implements PassClient {
             client_builder.addInterceptor(new OkHttpBasicAuthInterceptor(user, pass));
         }
 
+        client_builder.addInterceptor(new OkHttpCsrfInterceptor());
+
         client = client_builder.build();
         moshi = create_moshi(false);
 
@@ -176,14 +178,16 @@ public class JsonApiPassClient implements PassClient {
         String url = baseUrl + "data/" + get_json_type(obj.getClass());
         RequestBody body = RequestBody.create(json, JSON_API_MEDIA_TYPE);
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
-                .addHeader("Content-Type", JSON_API_CONTENT_TYPE).post(body).build();
+                .header("Content-Type", JSON_API_CONTENT_TYPE).post(body).build();
 
         try (Response response = client.newCall(request).execute()) {
+            String result = response.body().string();
+
             if (!response.isSuccessful()) {
                 throw new IOException(
-                        "Create failed: " + url + " returned " + response.code() + " " + response.body().string());
+                        "Create failed: " + url + " returned " + response.code() + " " + result);
             }
-            Document<T> result_doc = adapter.fromJson(response.body().string());
+            Document<T> result_doc = adapter.fromJson(result);
             obj.setId(result_doc.requireData().getId());
             setVersionIfNeeded(result_doc, obj);
         }
@@ -204,14 +208,16 @@ public class JsonApiPassClient implements PassClient {
         String url = get_url(obj);
         RequestBody body = RequestBody.create(json, JSON_API_MEDIA_TYPE);
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
-                .addHeader("Content-Type", JSON_API_CONTENT_TYPE).patch(body).build();
+                .header("Content-Type", JSON_API_CONTENT_TYPE).patch(body).build();
 
         try (Response response = client.newCall(request).execute()) {
+            String result = response.body().string();
+
             if (!response.isSuccessful()) {
                 throw new IOException(
-                        "Update failed: " + url + " returned " + response.code() + " " + response.body().string());
+                        "Update failed: " + url + " returned " + response.code() + " " + result);
             }
-            Document<T> result_doc = adapter.fromJson(response.body().string());
+            Document<T> result_doc = adapter.fromJson(result);
             setVersionIfNeeded(result_doc, obj);
         }
     }
@@ -557,7 +563,7 @@ public class JsonApiPassClient implements PassClient {
         HttpUrl url = url_builder.build();
 
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
-                .addHeader("Content-Type", JSON_API_CONTENT_TYPE).get().build();
+                .header("Content-Type", JSON_API_CONTENT_TYPE).get().build();
 
         String body;
         try (Response response = client.newCall(request).execute()) {
@@ -586,10 +592,11 @@ public class JsonApiPassClient implements PassClient {
         String url = get_url(type, id);
 
         Request request = new Request.Builder().url(url).delete().build();
+
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException(
-                        "Delete failed: " + url + " returned " + response.code() + " " + response.body().string());
+                        "Delete failed: " + url + " returned " + response.code());
             }
         }
     }
@@ -620,7 +627,7 @@ public class JsonApiPassClient implements PassClient {
         HttpUrl url = url_builder.build();
 
         Request request = new Request.Builder().url(url).header("Accept", JSON_API_CONTENT_TYPE)
-                .addHeader("Content-Type", JSON_API_CONTENT_TYPE).get().build();
+                .header("Content-Type", JSON_API_CONTENT_TYPE).get().build();
 
         String body;
         try (Response response = client.newCall(request).execute()) {
@@ -700,8 +707,7 @@ public class JsonApiPassClient implements PassClient {
                 .addEncodedPathSegment("file").build();
 
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("file", name, RequestBody.create(data))
-                .build();
+                .addFormDataPart("file", name, RequestBody.create(data)).build();
 
         Request request = new Request.Builder().url(url).post(body).build();
 
@@ -709,8 +715,7 @@ public class JsonApiPassClient implements PassClient {
 
             if (!response.isSuccessful()) {
                 throw new IOException(
-                        "File upload failed: " + url + " returned " + response.code()
-                                + " " + response.body().string());
+                        "File upload failed: " + url + " returned " + response.code());
             }
 
             // Grab the id field
