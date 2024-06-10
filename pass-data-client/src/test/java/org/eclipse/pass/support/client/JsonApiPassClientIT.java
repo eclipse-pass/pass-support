@@ -1,5 +1,6 @@
 package org.eclipse.pass.support.client;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -7,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -17,9 +19,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.CopyStatus;
@@ -45,15 +57,49 @@ import org.eclipse.pass.support.client.model.SubmissionEvent;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.client.model.UserRole;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+@Testcontainers
+@DirtiesContext
 public class JsonApiPassClientIT {
-    private static PassClient client;
+    private static final DockerImageName PASS_CORE_IMG;
 
-    @BeforeAll
-    public static void setup() {
-        client = PassClient.newInstance();
+    static {
+        MavenXpp3Reader reader = new MavenXpp3Reader();
+        try {
+            Model model = reader.read(new FileReader("pom.xml"));
+            String version = model.getParent().getVersion();
+            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:" + version);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        System.setProperty("pass.core.url", "http://localhost:8080");
+        System.setProperty("pass.core.user", "backend");
+        System.setProperty("pass.core.password", "moo");
+    }
+
+    @Container
+    private static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
+        .withCreateContainerCmdModifier(cmd -> {
+            cmd.getHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(8080),
+                    new ExposedPort(8080)));
+        })
+        .withExposedPorts(8080)
+        .waitingFor(Wait.forLogMessage(".*Jetty started on port 8080.*", 1));
+
+    private JsonApiPassClient client;
+
+    @BeforeEach
+    public void setup() {
+        client = (JsonApiPassClient) PassClient.newInstance();
     }
 
     @Test
@@ -762,5 +808,44 @@ public class JsonApiPassClientIT {
 
         File actualFile = client.getObject(File.class, file.getId());
         assertNull(actualFile);
+    }
+
+    @Test
+    public void testConcurrency() throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(4);
+
+        List<Future<?>> results = new ArrayList<Future<?>>();
+        Random rand = new Random();
+
+        for (int i = 0; i < 200; i++) {
+            final int num = i;
+
+            Future<?> result = pool.submit(() -> {
+                User user = new User();
+                user.setFirstName("" + num);
+                user.setLastName(Thread.currentThread().getName());
+
+                assertDoesNotThrow(() -> {
+                    client.createObject(user);
+
+                    Thread.sleep(rand.nextLong(100));
+                    user.setMiddleName("middle");
+                    client.updateObject(user);
+
+                    Thread.sleep(rand.nextLong(100));
+                    client.deleteObject(user);
+                });
+            });
+
+            results.add(result);
+        }
+
+        // Throw assertion failures
+        for (Future<?> f: results) {
+            f.get();
+        }
+
+        pool.shutdown();
+        pool.awaitTermination(5, TimeUnit.MINUTES);
     }
 }
