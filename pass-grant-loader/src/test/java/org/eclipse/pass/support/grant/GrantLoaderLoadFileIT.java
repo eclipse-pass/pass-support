@@ -249,7 +249,15 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals(0, resultGrant4.getTotal());
         assertTrue(ingestRecordErrors.stream().anyMatch(message ->
             message.matches(".*GrantIngestRecord.*grantNumber=777777.*\\sError Message: " +
-                "Invalid Pi Role: PI. Valid \\[P, C, K]")));
+                "Invalid Pi Role: PI. Valid \\[P, C]")));
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:888888"));
+        PassClientResult<Grant> resultGrant8 = passClient.selectObjects(grantSelector);
+        // null pi role, skips row
+        assertEquals(0, resultGrant8.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=888888.*\\sError Message: " +
+                "Required value missing for piRole")));
     }
 
 }

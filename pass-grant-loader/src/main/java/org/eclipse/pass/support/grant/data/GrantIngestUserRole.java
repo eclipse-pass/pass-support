@@ -26,9 +26,5 @@ public enum GrantIngestUserRole {
     /**
      * Co-PI
      */
-    C,
-    /**
-     * K
-     */
-    K
+    C
 }
