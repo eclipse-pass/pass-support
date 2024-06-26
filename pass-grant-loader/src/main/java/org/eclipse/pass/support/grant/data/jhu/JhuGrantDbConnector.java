@@ -105,6 +105,7 @@ public class JhuGrantDbConnector implements GrantConnector {
         "WHERE A.inst_proposal = B.inst_proposal " +
         "AND B.employee_id = C.employee_id " +
         "AND A.AWARD_END_DATE >= '2011-01-01' "  +
+        "AND B.ROLE != 'KP' "  +
         "AND EXISTS (" +
         "    select * from JHU_PASS_AWD_VIEW EA where" +
         "        EA.UPDATE_TIMESTAMP > ?" +
@@ -123,7 +124,6 @@ public class JhuGrantDbConnector implements GrantConnector {
             "FROM JHU_PERSON_VIEW A, " +
             "JHU_FIBI_IP_INV_VIEW B " +
             "WHERE A.employee_id = B.employee_id " +
-            // todo need reply from Bob on this
             "and A.UPDATE_TIMESTAMP > ?";
 
     private static final String SELECT_FUNDER_SQL =
@@ -136,8 +136,7 @@ public class JhuGrantDbConnector implements GrantConnector {
     private final Map<String, String> jhuGrantDbRoleMapping = Map.of(
         "PI", "P",
         "Co-PI", "C",
-        "Co-I", "C",
-        "KP", "C"
+        "Co-I", "C"
     );
 
     @Value("${grant.db.url}")
