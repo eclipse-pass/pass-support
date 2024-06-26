@@ -47,6 +47,11 @@ public class JhuGrantDbConnectorTest {
         assertEquals(2, actualAwardNums.size());
         assertTrue(actualAwardNums.contains("B10000000"));
         assertTrue(actualAwardNums.contains("B10000003"));
+        // Verify KP user is not in result set
+        List<String> actualPiEmails = results.stream().map(GrantIngestRecord::getPiEmail).distinct().toList();
+        assertEquals(2, actualPiEmails.size());
+        assertTrue(actualPiEmails.contains("arecko1@jhu.edu"));
+        assertTrue(actualPiEmails.contains("sclass1@jhu.edu"));
     }
 
     @Test
