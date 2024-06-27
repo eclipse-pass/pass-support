@@ -50,6 +50,11 @@ public class UrlBuilder {
 
     private final Environment environment;
 
+    /**
+     * Constructor for the UrlBuilder. Sets environment either profiles or properties using SpringBoot Configuration.
+     *
+     * @param environment
+     */
     public UrlBuilder(Environment environment) {
         this.environment = environment;
     }

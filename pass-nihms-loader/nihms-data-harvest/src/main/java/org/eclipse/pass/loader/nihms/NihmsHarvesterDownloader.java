@@ -49,6 +49,9 @@ public class NihmsHarvesterDownloader {
 
     /**
      * Initiate harvester with required properties
+     *
+     * @param okHttpClient The OkHttpClient that handles the data extraction from external REST sources.
+     * @param downloadDirectory The directory where the NihmsLoader will download the external data to.
      */
     public NihmsHarvesterDownloader(OkHttpClient okHttpClient,
                                     @Value("${nihmsetl.data.dir}") String downloadDirectory) {
@@ -69,6 +72,13 @@ public class NihmsHarvesterDownloader {
         }
     }
 
+    /**
+     * Handles the downloads of external NIHMS data
+     * @param url The URL from where the data is sourced
+     * @param status The status of the NIHMS data. Can either be: compliant, noncompliant, or inprocess.
+     * @throws IOException This exception is thrown if there is an error persisting data
+     * @throws InterruptedException This exception is thrown If there is a network connection interruption.
+     */
     public void download(URL url, NihmsStatus status) throws IOException, InterruptedException {
         File outputFile = newFile(status);
         LOG.debug("Retrieving: {}", url);
