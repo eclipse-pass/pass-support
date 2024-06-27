@@ -90,13 +90,13 @@
   </dependencies>
 
   <build>
+    <finalName>nihms-data-harvest-cli</finalName>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
           <mainClass>org.eclipse.pass.loader.nihms.NihmsHarvesterCLI</mainClass>
-          <finalName>nihms-data-harvest-cli</finalName>
           <classifier>exec</classifier>
         </configuration>
         <executions>
