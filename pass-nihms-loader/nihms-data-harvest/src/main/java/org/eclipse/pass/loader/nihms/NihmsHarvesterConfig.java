@@ -34,6 +34,11 @@ public class NihmsHarvesterConfig {
     @Value("${nihmsetl.http.read-timeout-ms}")
     private Long nihmsReadTimeoutMs;
 
+    /**
+     * The OkHttpClient that has the connection properties set from the application.properties
+     *
+     * @return OkHttpClient
+     */
     @Bean
     public OkHttpClient okHttpClient() {
         return new OkHttpClient.Builder()
