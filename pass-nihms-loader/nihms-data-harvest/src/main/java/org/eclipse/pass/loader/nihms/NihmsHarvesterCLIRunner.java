@@ -78,6 +78,11 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
 
     private final NihmsHarvester nihmsHarvester;
 
+    /**
+     * Constructor for the NihmsHarvesterCLIRunner
+     *
+     * @param nihmsHarvester Object that is responsible for initiating and managing the data downloads
+     */
     public NihmsHarvesterCLIRunner(NihmsHarvester nihmsHarvester) {
         this.nihmsHarvester = nihmsHarvester;
     }
