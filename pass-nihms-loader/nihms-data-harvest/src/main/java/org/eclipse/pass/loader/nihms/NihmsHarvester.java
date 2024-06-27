@@ -44,6 +44,9 @@ public class NihmsHarvester {
 
     /**
      * Initiate harvester with required properties
+     *
+     * @param urlBuilder object to build the URL that the NihmsHarvester will use to pull data from
+     * @param nihmsHarvesterDownloader downloader object for downloaded the harvested data
      */
     public NihmsHarvester(UrlBuilder urlBuilder,
                           NihmsHarvesterDownloader nihmsHarvesterDownloader) {
