@@ -15,41 +15,96 @@
  */
 package org.eclipse.pass.loader.nihms.entrez;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.pass.loader.nihms.NihmsTransformLoadCLIRunner;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Karen Hanson
- * @version $Id$
  */
+@SpringBootTest
+@TestPropertySource("classpath:test-application.properties")
+@WireMockTest(httpPort = 9911)
 public class EntrezPmidLookupTest {
 
+    @Autowired
+    protected PmidLookup pmidLookup;
+
+    // Needed so tests can run after application starts
+    @MockBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
+
+    @Value("${pmc.entrez.service.url}")
+    private String ENTREZ_PATH;
+
     @Test
-    public void testGetEntrezRecordJson() {
-        PmidLookup apiService = new PmidLookup();
+    public void testGetEntrezRecordJson() throws IOException, URISyntaxException {
+        String entrez = IOUtils.toString(getClass().getClassLoader().
+                getResourceAsStream("pmidrecord.json"), StandardCharsets.UTF_8);
 
-        String pmid = "29249144";
+        String pmid = "11111111";
 
-        JSONObject pmr = apiService.retrievePubMedRecordAsJson(pmid);
-        assertTrue(pmr.getString("source").contains("Proteome"));
+        stubFor(get(urlPathEqualTo("/entrez/eutils/esummary.fcgi"))
+                .withQueryParam("db", WireMock.equalTo("pubmed"))
+                .withQueryParam("retmode", WireMock.equalTo("json"))
+                .withQueryParam("rettype", WireMock.equalTo("abstract"))
+                .withQueryParam("id", WireMock.equalTo(pmid))
+                .willReturn(aResponse().withStatus(200).withBody(entrez)));
 
+        JSONObject pmr = pmidLookup.retrievePubMedRecordAsJson(pmid);
+        assertTrue(pmr.getString("source").contains("Journal A"));
     }
 
     @Test
-    public void testGetPubMedRecord() {
-        PmidLookup pmidLookup = new PmidLookup();
-        String pmid = "29249144";
+    public void testGetPubMedRecord() throws IOException {
+        String entrez = IOUtils.toString(getClass().getClassLoader().
+                getResourceAsStream("pmidrecord.json"), StandardCharsets.UTF_8);
+
+        String pmid = "11111111";
+
+        stubFor(get(urlPathEqualTo("/entrez/eutils/esummary.fcgi"))
+                .withQueryParam("db", WireMock.equalTo("pubmed"))
+                .withQueryParam("retmode", WireMock.equalTo("json"))
+                .withQueryParam("rettype", WireMock.equalTo("abstract"))
+                .withQueryParam("id", WireMock.equalTo(pmid))
+                .willReturn(aResponse().withStatus(200).withBody(entrez)));
+
         PubMedEntrezRecord record = pmidLookup.retrievePubMedRecord(pmid);
-        assertEquals("10.1021/acs.jproteome.7b00775", record.getDoi());
+        assertEquals("10.1000/a.abcd.1234", record.getDoi());
     }
 
     @Test
-    public void testGetPubMedRecordWithHighAsciiChars() {
-        PmidLookup pmidLookup = new PmidLookup();
-        String pmid = "27648456";
+    public void testGetPubMedRecordWithHighAsciiChars() throws IOException {
+        String entrez = IOUtils.toString(getClass().getClassLoader().
+                getResourceAsStream("pmid_record_ascii.json"), StandardCharsets.UTF_8);
+
+        String pmid = "11111111";
+
+        stubFor(get(urlPathEqualTo("/entrez/eutils/esummary.fcgi"))
+                .withQueryParam("db", WireMock.equalTo("pubmed"))
+                .withQueryParam("retmode", WireMock.equalTo("json"))
+                .withQueryParam("rettype", WireMock.equalTo("abstract"))
+                .withQueryParam("id", WireMock.equalTo(pmid))
+                .willReturn(aResponse().withStatus(200).withBody(entrez)));
+
         PubMedEntrezRecord record = pmidLookup.retrievePubMedRecord(pmid);
         assertEquals("10.1002/acn3.333", record.getDoi());
         assertEquals("Age-dependent effects of APOE ε4 in preclinical Alzheimer's disease.", record.getTitle());

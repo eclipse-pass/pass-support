@@ -50,6 +50,12 @@ public class UrlBuilder {
 
     private final Environment environment;
 
+    /**
+     * Constructor for the UrlBuilder. Sets environment either profiles or properties using SpringBoot Configuration.
+     *
+     * @param environment enables the accessing of configuration properties in the UrlBuilder, such as the api schema,
+     *                    api host, and api path.
+     */
     public UrlBuilder(Environment environment) {
         this.environment = environment;
     }

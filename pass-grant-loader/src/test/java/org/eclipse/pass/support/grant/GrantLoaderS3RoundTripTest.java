@@ -123,7 +123,7 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
         S3Resource actualTestGrantUpTs1 = s3Template.download("test-bucket", "s3-testgrantupdatets");
         try (InputStream inputStream = actualTestGrantUpTs1.getInputStream()) {
             String contentUpTs = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            assertEquals(passUpdater.getLatestUpdate() + "\n", contentUpTs);
+            assertEquals(passUpdater.getLatestUpdate() + System.lineSeparator(), contentUpTs);
         }
 
         // WHEN - run again to verify grant update timestamps
@@ -132,7 +132,8 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
             "load", "s3://test-bucket/test-pull.csv", null);
 
         S3Resource actualTestGrantUpTs2 = s3Template.download("test-bucket", "s3-testgrantupdatets");
-        String expectedGrantUpdateTs = firstLastUpdate + "\n" + passUpdater.getLatestUpdate() + "\n";
+        String expectedGrantUpdateTs = firstLastUpdate + System.lineSeparator() + passUpdater.getLatestUpdate()
+                + System.lineSeparator();
         try (InputStream inputStream = actualTestGrantUpTs2.getInputStream()) {
             String contentUpTs = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             assertEquals(expectedGrantUpdateTs, contentUpTs);

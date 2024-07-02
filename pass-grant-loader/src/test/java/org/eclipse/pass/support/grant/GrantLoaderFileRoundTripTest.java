@@ -83,7 +83,7 @@ public class GrantLoaderFileRoundTripTest extends AbstractRoundTripTest {
         verifyGrantTwo();
 
         String contentUpTs = Files.readString(GRANT_UPTS_PATH);
-        assertEquals(passUpdater.getLatestUpdate() + "\n", contentUpTs);
+        assertEquals(passUpdater.getLatestUpdate() + System.lineSeparator(), contentUpTs);
     }
 
 }
