@@ -128,7 +128,8 @@ public interface Transport {
         ftp,
         sftp,
         SWORDv2,
-        filesystem
+        filesystem,
+        devnull
     }
 
     /**
