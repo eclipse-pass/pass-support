@@ -18,25 +18,38 @@ package org.eclipse.pass.deposit.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.deposit.util.async.Condition;
+import org.eclipse.pass.deposit.transport.devnull.DevNullTransport;
+import org.eclipse.pass.deposit.transport.fs.FilesystemTransport;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.Grant;
+import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -50,14 +63,58 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     @Autowired private SubmissionStatusUpdater submissionStatusUpdater;
     @Autowired private DepositProcessor depositProcessor;
+    @Autowired private DepositTaskHelper depositTaskHelper;
+    @SpyBean private FilesystemTransport filesystemTransport;
+    @SpyBean private DevNullTransport devNullTransport;
+
+    @BeforeEach
+    void cleanUp() {
+        ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", Boolean.TRUE);
+    }
 
     @Test
-    public void testSubmissionProcessingFull() throws Exception {
+    void testSubmissionProcessing_Full() throws Exception {
         // GIVEN
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
+        resetGrantProjectName(submission, null);
+
+        // WHEN/THEN
+        testSubmissionProcessor(submission);
+        verify(filesystemTransport, times(3)).open(anyMap());
+        verify(devNullTransport, times(0)).open(anyMap());
+    }
+
+    @Test
+    void testSubmissionProcessing_SkipTestSubmission() throws Exception {
+        // GIVEN
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
+        resetGrantProjectName(submission, DeploymentTestDataService.PASS_E2E_TEST_GRANT);
+
+        // WHEN/THEN
+        testSubmissionProcessor(submission);
+        verify(devNullTransport, times(3)).open(anyMap());
+        verify(filesystemTransport, times(0)).open(anyMap());
+    }
+
+    @Test
+    void testSubmissionProcessing_DontSkipTestSubmission() throws Exception {
+        // GIVEN
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
+        resetGrantProjectName(submission, DeploymentTestDataService.PASS_E2E_TEST_GRANT);
+        ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", Boolean.FALSE);
+
+        // WHEN/THEN
+        testSubmissionProcessor(submission);
+        verify(devNullTransport, times(0)).open(anyMap());
+        verify(filesystemTransport, times(3)).open(anyMap());
+    }
+
+    private void testSubmissionProcessor(Submission submission) throws IOException {
         triggerSubmission(submission);
-        final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
+        final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId(), "grants");
 
         // WHEN
         submissionProcessor.accept(actualSubmission);
@@ -77,34 +134,34 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         Condition<Set<Deposit>> deposits = depositsForSubmission(
             actualSubmission.getId(),
             actualSubmission.getRepositories().size(),
-                (deposit, repo) -> {
-                    LOG.debug("Polling Submission {} for deposit-related resources", actualSubmission.getId());
-                    LOG.debug("  Deposit: {} {}", deposit.getDepositStatus(), deposit.getId());
-                    LOG.debug("  Repository: {} {}", repo.getName(), repo.getId());
+            (deposit, repo) -> {
+                LOG.debug("Polling Submission {} for deposit-related resources", actualSubmission.getId());
+                LOG.debug("  Deposit: {} {}", deposit.getDepositStatus(), deposit.getId());
+                LOG.debug("  Repository: {} {}", repo.getName(), repo.getId());
 
-                    // Transport-dependent part: FilesystemTransport
-                    // .onSuccess(...) sets the correct statuses
+                // Transport-dependent part: FilesystemTransport
+                // .onSuccess(...) sets the correct statuses
 
-                    if (deposit.getRepositoryCopy() == null) {
-                        return false;
-                    }
+                if (deposit.getRepositoryCopy() == null) {
+                    return false;
+                }
 
-                    RepositoryCopy repoCopy;
-                    try {
-                        repoCopy = passClient.getObject(RepositoryCopy.class,
-                            deposit.getRepositoryCopy().getId());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                RepositoryCopy repoCopy;
+                try {
+                    repoCopy = passClient.getObject(RepositoryCopy.class,
+                        deposit.getRepositoryCopy().getId());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
-                    LOG.debug("  RepositoryCopy: {} {} {} {}", repoCopy.getCopyStatus(), repoCopy.getAccessUrl(),
-                        String.join(",", repoCopy.getExternalIds()), repoCopy.getId());
+                LOG.debug("  RepositoryCopy: {} {} {} {}", repoCopy.getCopyStatus(), repoCopy.getAccessUrl(),
+                    String.join(",", repoCopy.getExternalIds()), repoCopy.getId());
 
-                    return DepositStatus.ACCEPTED == deposit.getDepositStatus() &&
-                        CopyStatus.COMPLETE == repoCopy.getCopyStatus() &&
-                        repoCopy.getAccessUrl() != null &&
-                        repoCopy.getExternalIds().size() > 0;
-                });
+                return DepositStatus.ACCEPTED == deposit.getDepositStatus() &&
+                    CopyStatus.COMPLETE == repoCopy.getCopyStatus() &&
+                    repoCopy.getAccessUrl() != null &&
+                    repoCopy.getExternalIds().size() > 0;
+            });
 
         deposits.await();
 
@@ -118,7 +175,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         List<String> repoKeys = resultDeposits.stream()
             .map(deposit -> deposit.getRepository().getRepositoryKey())
-                .toList();
+            .toList();
         List<String> expectedRepoKey = List.of("PubMed Central", "JScholarship", "BagIt");
         assertTrue(repoKeys.size() == expectedRepoKey.size() && repoKeys.containsAll(expectedRepoKey)
             && expectedRepoKey.containsAll(repoKeys));
@@ -126,14 +183,17 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("PubMed Central"))
             .findFirst().get();
         assertTrue(pmcDeposit.getDepositStatusRef().startsWith("nihms-package:nihms-native-2022-05_"));
+        assertEquals(DepositStatus.ACCEPTED, pmcDeposit.getDepositStatus());
         Deposit j10pDeposit = resultDeposits.stream()
             .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("JScholarship"))
             .findFirst().get();
         assertNull(j10pDeposit.getDepositStatusRef());
+        assertEquals(DepositStatus.ACCEPTED, j10pDeposit.getDepositStatus());
         Deposit bagItDeposit = resultDeposits.stream()
             .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("BagIt"))
             .findFirst().get();
         assertNull(bagItDeposit.getDepositStatusRef());
+        assertEquals(DepositStatus.ACCEPTED, bagItDeposit.getDepositStatus());
 
         // WHEN
         submissionStatusUpdater.doUpdate();
@@ -149,6 +209,25 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         // THEN
         final Submission aggrStatusSubmission = passClient.getObject(Submission.class, submission.getId());
         assertEquals(AggregatedDepositStatus.ACCEPTED, aggrStatusSubmission.getAggregatedDepositStatus());
+    }
+
+    private void resetGrantProjectName(Submission submission, String grantProjectName) throws IOException {
+        String resolvedProjectName = resolveProjectName(grantProjectName);
+        Grant grant = submission.getGrants().get(0);
+        grant.setProjectName(resolvedProjectName);
+        passClient.updateObject(grant);
+    }
+
+    private String resolveProjectName(String grantProjectName) throws IOException {
+        if (Objects.isNull(grantProjectName)) {
+            List<PassEntity> entities = new LinkedList<>();
+            try (InputStream is = ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")) {
+                submissionTestUtil.createSubmissionFromJson(is, entities);
+            }
+            return entities.stream().filter(pe -> pe instanceof Grant)
+                .map(pe -> ((Grant) pe).getProjectName()).findFirst().get();
+        }
+        return grantProjectName;
     }
 
 }
