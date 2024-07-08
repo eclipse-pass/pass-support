@@ -51,10 +51,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
     private final String nihmsId1 = "NIHMS987654321";
-    private final String title = "Article A";
-    private final String doi = "10.1000/a.abcd.1234";
-    private final String issue = "3";
-
 
     /**
      * Tests when the publication is completely new and is non-compliant

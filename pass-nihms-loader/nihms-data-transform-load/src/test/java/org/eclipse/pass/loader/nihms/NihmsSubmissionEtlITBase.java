@@ -72,6 +72,10 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 @DirtiesContext
 public abstract class NihmsSubmissionEtlITBase {
+    //including high ascii to test for ascii handling
+    protected final String title = "Article A ε4";
+    protected final String doi = "10.1000/a.abcd.1234";
+    protected final String issue = "3";
 
     static {
         MavenXpp3Reader reader = new MavenXpp3Reader();
