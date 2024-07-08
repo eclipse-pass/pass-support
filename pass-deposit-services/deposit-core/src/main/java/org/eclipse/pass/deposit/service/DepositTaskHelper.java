@@ -39,6 +39,7 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.status.DepositStatusProcessor;
+import org.eclipse.pass.deposit.transport.devnull.DevNullTransport;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -79,6 +80,7 @@ public class DepositTaskHelper {
 
     private final PassClient passClient;
     private final CriticalRepositoryInteraction cri;
+    private final DevNullTransport devNullTransport;
 
     @Value("${pass.deposit.transport.swordv2.sleep-time-ms}")
     private long swordDepositSleepTimeMs;
@@ -89,15 +91,19 @@ public class DepositTaskHelper {
     @Value("${jscholarship.hack.sword.statement.uri-replacement}")
     private String statementUriReplacement;
 
+    @Value("${pass.test.skip.deposits}")
+    private Boolean skipDeploymentTestDeposits;
+
     private final Repositories repositories;
 
     @Autowired
     public DepositTaskHelper(PassClient passClient,
                              CriticalRepositoryInteraction cri,
-                             Repositories repositories) {
+                             Repositories repositories, DevNullTransport devNullTransport) {
         this.passClient = passClient;
         this.cri = cri;
         this.repositories = repositories;
+        this.devNullTransport = devNullTransport;
     }
 
     /**
@@ -122,11 +128,12 @@ public class DepositTaskHelper {
      * @param packager          the Packager for the {@code repo}
      */
     public void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo,
-                              Deposit deposit,
-                              Packager packager) {
+                              Deposit deposit, Packager packager) {
         try {
+            Submission includedSubmission = passClient.getObject(submission, "grants");
             DepositUtil.DepositWorkerContext dc = DepositUtil.toDepositWorkerContext(
-                deposit, submission, depositSubmission, repo, packager);
+                deposit, includedSubmission, depositSubmission, repo, packager, devNullTransport,
+                skipDeploymentTestDeposits);
             DepositTask depositTask = new DepositTask(dc, passClient, cri);
             depositTask.setSwordSleepTimeMs(swordDepositSleepTimeMs);
             depositTask.setPrefixToMatch(statementUriPrefix);
