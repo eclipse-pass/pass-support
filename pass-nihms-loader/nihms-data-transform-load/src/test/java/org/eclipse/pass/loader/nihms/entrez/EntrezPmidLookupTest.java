@@ -89,25 +89,7 @@ public class EntrezPmidLookupTest {
 
         PubMedEntrezRecord record = pmidLookup.retrievePubMedRecord(pmid);
         assertEquals("10.1000/a.abcd.1234", record.getDoi());
+        //test to ensure that it can handle high ascii characters
+        assertEquals("Article A ε4", record.getTitle());
     }
-
-    @Test
-    public void testGetPubMedRecordWithHighAsciiChars() throws IOException {
-        String entrez = IOUtils.toString(getClass().getClassLoader().
-                getResourceAsStream("pmid_record_ascii.json"), StandardCharsets.UTF_8);
-
-        String pmid = "11111111";
-
-        stubFor(get(urlPathEqualTo("/entrez/eutils/esummary.fcgi"))
-                .withQueryParam("db", WireMock.equalTo("pubmed"))
-                .withQueryParam("retmode", WireMock.equalTo("json"))
-                .withQueryParam("rettype", WireMock.equalTo("abstract"))
-                .withQueryParam("id", WireMock.equalTo(pmid))
-                .willReturn(aResponse().withStatus(200).withBody(entrez)));
-
-        PubMedEntrezRecord record = pmidLookup.retrievePubMedRecord(pmid);
-        assertEquals("10.1002/acn3.333", record.getDoi());
-        assertEquals("Age-dependent effects of APOE ε4 in preclinical Alzheimer's disease.", record.getTitle());
-    }
-
 }
