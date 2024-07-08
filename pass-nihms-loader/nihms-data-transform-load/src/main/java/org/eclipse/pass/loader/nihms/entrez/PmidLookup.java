@@ -55,8 +55,6 @@ public class PmidLookup {
      * delayed responses.
      * https://www.ncbi.nlm.nih.gov/books/NBK25497/
      */
-    /*private static final String DEFAULT_ENTREZ_PATH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary" +
-                                                      ".fcgi?db=pubmed&retmode=json&rettype=abstract&id=%s";*/
     @Value("${pmc.entrez.service.url}")
     private String ENTREZ_PATH;
 
