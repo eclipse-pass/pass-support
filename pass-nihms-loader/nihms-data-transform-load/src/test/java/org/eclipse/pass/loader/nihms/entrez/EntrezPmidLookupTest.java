@@ -33,7 +33,6 @@ import org.eclipse.pass.loader.nihms.NihmsTransformLoadCLIRunner;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
@@ -51,9 +50,6 @@ public class EntrezPmidLookupTest {
 
     // Needed so tests can run after application starts
     @MockBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
-
-    @Value("${pmc.entrez.service.url}")
-    private String ENTREZ_PATH;
 
     @Test
     public void testGetEntrezRecordJson() throws IOException, URISyntaxException {
