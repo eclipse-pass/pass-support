@@ -35,6 +35,7 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
+import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
@@ -433,8 +434,9 @@ public class DepositTask {
                                                dc.deposit().getId(), e);
                 }
 
-                try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
-                    TransportResponse tr = transport.send(packageStream, packagerConfig);
+                Transport transport = getTransport(packager, dc);
+                try (TransportSession transportSession = transport.open(packagerConfig)) {
+                    TransportResponse tr = transportSession.send(packageStream, packagerConfig);
                     deposit.setDepositStatus(DepositStatus.SUBMITTED);
                     deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
                     return tr;
@@ -443,6 +445,16 @@ public class DepositTask {
                                                dc.deposit().getId() + ": " + e.getMessage(), e);
                 }
             };
+        }
+
+        static Transport getTransport(Packager packager, DepositWorkerContext dc) {
+            return skipDeploymentTestSubmission(dc) ? dc.getDevNullTransport() : packager.getTransport();
+        }
+
+        static boolean skipDeploymentTestSubmission(DepositWorkerContext dc) {
+            return dc.isSkipDeploymentTestDeposits() && dc.submission().getGrants().stream().anyMatch(
+                grant -> grant.getProjectName().contains(DeploymentTestDataService.PASS_E2E_TEST_GRANT)
+            );
         }
 
         /**
