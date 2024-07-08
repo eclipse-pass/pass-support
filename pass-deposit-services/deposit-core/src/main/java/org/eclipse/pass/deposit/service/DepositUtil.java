@@ -19,6 +19,7 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.model.Packager;
+import org.eclipse.pass.deposit.transport.devnull.DevNullTransport;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -52,13 +53,17 @@ public class DepositUtil {
      */
     public static DepositWorkerContext toDepositWorkerContext(Deposit depositResource, Submission submission,
                                                               DepositSubmission depositSubmission,
-                                                              Repository repository, Packager packager) {
+                                                              Repository repository, Packager packager,
+                                                              DevNullTransport devNullTransport,
+                                                              boolean skipDeploymentTestDeposits) {
         DepositWorkerContext dc = new DepositWorkerContext();
         dc.depositResource = depositResource;
         dc.depositSubmission = depositSubmission;
         dc.repository = repository;
         dc.packager = packager;
         dc.submission = submission;
+        dc.devNullTransport = devNullTransport;
+        dc.skipDeploymentTestDeposits = skipDeploymentTestDeposits;
         return dc;
     }
 
@@ -143,6 +148,8 @@ public class DepositUtil {
         private Packager packager;
         private RepositoryCopy repoCopy;
         private String statusUri;
+        private DevNullTransport devNullTransport;
+        private boolean skipDeploymentTestDeposits;
 
         /**
          * the {@code Deposit} itself
@@ -225,6 +232,14 @@ public class DepositUtil {
 
         public void statusUri(String statusUri) {
             this.statusUri = statusUri;
+        }
+
+        public DevNullTransport getDevNullTransport() {
+            return devNullTransport;
+        }
+
+        public boolean isSkipDeploymentTestDeposits() {
+            return skipDeploymentTestDeposits;
         }
 
         @Override
