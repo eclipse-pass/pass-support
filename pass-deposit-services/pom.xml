@@ -486,6 +486,8 @@
                 <ignoredUsedUndeclaredDependency>com.icegreen:greenmail:</ignoredUsedUndeclaredDependency>
                 <!-- These come from sshd-sftp -->
                 <ignoredUsedUndeclaredDependency>org.apache.sshd:sshd*:</ignoredUsedUndeclaredDependency>
+                <!-- This comes from org.apache.httpcomponents.client5:httpclient5 dep -->
+                <ignoredUsedUndeclaredDependency>org.apache.httpcomponents.core5:httpcore5:</ignoredUsedUndeclaredDependency>
               </ignoredUsedUndeclaredDependencies>
               <ignoredUnusedDeclaredDependencies>
                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
