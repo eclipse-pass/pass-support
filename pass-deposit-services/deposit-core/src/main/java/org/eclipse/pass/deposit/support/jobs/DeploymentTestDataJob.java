@@ -15,7 +15,7 @@
  */
 package org.eclipse.pass.deposit.support.jobs;
 
-import org.eclipse.pass.deposit.service.DeploymentTestDataService;
+import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;

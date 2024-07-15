@@ -1,0 +1,110 @@
+{
+  "_embedded": {
+    "bundles": [
+      {
+        "uuid": "aa-11",
+        "name": "ORIGINAL",
+        "handle": null,
+        "metadata": {
+          "dc.title": [
+            {
+              "value": "ORIGINAL",
+              "language": null,
+              "authority": null,
+              "confidence": -1,
+              "place": 0
+            }
+          ]
+        },
+        "type": "bundle",
+        "_links": {
+          "item": {
+            "href": "https://localhost:9020/server/api/core/bundles/aa-11/item"
+          },
+          "bitstreams": {
+            "href": "https://localhost:9020/server/api/core/bundles/aa-11/bitstreams"
+          },
+          "primaryBitstream": {
+            "href": "https://localhost:9020/server/api/core/bundles/aa-11/primaryBitstream"
+          },
+          "self": {
+            "href": "https://localhost:9020/server/api/core/bundles/aa-11"
+          }
+        }
+      },
+      {
+        "uuid": "bb-22",
+        "name": "LICENSE",
+        "handle": null,
+        "metadata": {
+          "dc.title": [
+            {
+              "value": "LICENSE",
+              "language": null,
+              "authority": null,
+              "confidence": -1,
+              "place": 0
+            }
+          ]
+        },
+        "type": "bundle",
+        "_links": {
+          "item": {
+            "href": "https://localhost:9020/server/api/core/bundles/bb-22/item"
+          },
+          "bitstreams": {
+            "href": "https://localhost:9020/server/api/core/bundles/bb-22/bitstreams"
+          },
+          "primaryBitstream": {
+            "href": "https://localhost:9020/server/api/core/bundles/bb-22/primaryBitstream"
+          },
+          "self": {
+            "href": "https://localhost:9020/server/api/core/bundles/bb-22"
+          }
+        }
+      },
+      {
+        "uuid": "cc-33",
+        "name": "SWORD",
+        "handle": null,
+        "metadata": {
+          "dc.title": [
+            {
+              "value": "SWORD",
+              "language": null,
+              "authority": null,
+              "confidence": -1,
+              "place": 0
+            }
+          ]
+        },
+        "type": "bundle",
+        "_links": {
+          "item": {
+            "href": "https://localhost:9020/server/api/core/bundles/cc-22/item"
+          },
+          "bitstreams": {
+            "href": "https://localhost:9020/server/api/core/bundles/cc-22/bitstreams"
+          },
+          "primaryBitstream": {
+            "href": "https://localhost:9020/server/api/core/bundles/cc-22/primaryBitstream"
+          },
+          "self": {
+            "href": "https://localhost:9020/server/api/core/bundles/cc-22"
+          }
+        }
+      }
+    ]
+  },
+  "page": {
+    "number": 0,
+    "size": 20,
+    "totalPages": 1,
+    "totalElements": 3
+  },
+  "_links": {
+    "self": {
+      "href": "https://localhost:9020/server/api/core/items/12345-aabb/bundles"
+    }
+  }
+}

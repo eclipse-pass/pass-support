@@ -130,7 +130,8 @@ public class DepositTaskHelper {
     public void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo,
                               Deposit deposit, Packager packager) {
         try {
-            Submission includedSubmission = passClient.getObject(submission, "grants");
+            Submission includedSubmission = passClient.getObject(submission,
+                "publication", "repositories", "submitter", "preparers", "grants", "effectivePolicies");
             DepositUtil.DepositWorkerContext dc = DepositUtil.toDepositWorkerContext(
                 deposit, includedSubmission, depositSubmission, repo, packager, devNullTransport,
                 skipDeploymentTestDeposits);

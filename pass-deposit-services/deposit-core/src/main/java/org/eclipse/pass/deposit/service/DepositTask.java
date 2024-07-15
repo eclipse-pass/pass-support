@@ -35,6 +35,7 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
+import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
