@@ -12,7 +12,7 @@
 
   <properties>
     <!-- Properties for dependency versions -->
-    <wiremock-jre8.version>2.35.1</wiremock-jre8.version>
+    <wiremock.version>3.3.1</wiremock.version>
     <!-- Properties for ITs -->
     <pass.core.port>8080</pass.core.port>
     <pass.core.url>http://localhost:8080</pass.core.url>
@@ -64,9 +64,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
-      <version>${wiremock-jre8.version}</version>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-standalone</artifactId>
+      <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
