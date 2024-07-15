@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.deposit.util.async.Condition;
+import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService;
 import org.eclipse.pass.deposit.transport.devnull.DevNullTransport;
 import org.eclipse.pass.deposit.transport.fs.FilesystemTransport;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;

@@ -20,9 +20,9 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.verify;
 
 import org.eclipse.pass.deposit.DepositApp;
-import org.eclipse.pass.deposit.service.DeploymentTestDataService;
 import org.eclipse.pass.deposit.service.DepositUpdater;
 import org.eclipse.pass.deposit.service.SubmissionStatusUpdater;
+import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;

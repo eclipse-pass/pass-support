@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.deposit.service;
+package org.eclipse.pass.deposit.support.deploymenttest;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
@@ -44,9 +45,10 @@ import org.springframework.stereotype.Component;
 public class DeploymentTestDataService {
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentTestDataService.class);
 
-    static final String PASS_E2E_TEST_GRANT = "PASS_E2E_TEST_GRANT";
+    public static final String PASS_E2E_TEST_GRANT = "PASS_E2E_TEST_GRANT";
 
     private final PassClient passClient;
+    private final DspaceDepositService dspaceDepositService;
 
     @Value("${pass.test.data.policy.title}")
     private String testPolicyTitle;
@@ -54,9 +56,16 @@ public class DeploymentTestDataService {
     @Value("${pass.test.data.user.email}")
     private String testUserEmail;
 
+    @Value("${pass.test.skip.deposits}")
+    private Boolean skipDeploymentTestDeposits;
+
+    @Value("${pass.test.dspace.repo.key}")
+    private String dspaceKey;
+
     @Autowired
-    public DeploymentTestDataService(PassClient passClient) {
+    public DeploymentTestDataService(PassClient passClient, DspaceDepositService dspaceDepositService) {
         this.passClient = passClient;
+        this.dspaceDepositService = dspaceDepositService;
     }
 
     public void processTestData() throws IOException {
@@ -65,6 +74,7 @@ public class DeploymentTestDataService {
         grantSelector.setFilter(RSQL.equals("projectName", PASS_E2E_TEST_GRANT));
         List<Grant> testGrants = passClient.streamObjects(grantSelector).toList();
         Grant testGrant = testGrants.isEmpty() ? createTestGrantData() : testGrants.get(0);
+        deleteDepositsInRepoIfNeeded(testGrant);
         deleteTestSubmissions(testGrant);
         LOG.warn("Done running Deployment Test Data Service");
     }
@@ -99,11 +109,52 @@ public class DeploymentTestDataService {
                 testSubmissionEvents.forEach(this::deleteObject);
                 deleteObject(testSubmission);
                 deleteObject(testSubmission.getPublication());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                LOG.error("Error deleting test submission ID=" + testSubmission.getId(), e);
             }
         });
         LOG.warn("Deleted {} Test Submissions", testSubmissions.size());
+    }
+
+    private void deleteDepositsInRepoIfNeeded(Grant testGrant) throws IOException {
+        if (Boolean.FALSE.equals(skipDeploymentTestDeposits)) {
+            LOG.warn("Deleting Test Deposits In Repositories (skipDeploymentTestDeposits=" +
+                skipDeploymentTestDeposits + ")");
+            ZonedDateTime submissionToDate = ZonedDateTime.now().minusHours(1);
+            PassClientSelector<Submission> testSubmissionSelector = new PassClientSelector<>(Submission.class);
+            testSubmissionSelector.setFilter(RSQL.and(
+                RSQL.equals("grants.id",  testGrant.getId()),
+                RSQL.lte("submittedDate", ModelUtil.dateTimeFormatter().format(submissionToDate))
+            ));
+            List<Submission> testSubmissions = passClient.streamObjects(testSubmissionSelector).toList();
+            if (!testSubmissions.isEmpty()) {
+                DspaceDepositService.AuthContext authContext = dspaceDepositService.authenticate();
+                testSubmissions.forEach(testSubmission -> {
+                    try {
+                        PassClientSelector<Deposit> testDepositSelector = new PassClientSelector<>(Deposit.class);
+                        testDepositSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+                        testDepositSelector.setInclude("submission", "repository", "repositoryCopy");
+                        List<Deposit> testDeposits = passClient.streamObjects(testDepositSelector).toList();
+                        testDeposits.forEach(testDeposit -> deleteDepositInRepoIfNeeded(testDeposit, authContext));
+                    } catch (Exception e) {
+                        LOG.error("Error deleting Deposits in Repository for Submission ID=" +
+                            testSubmission.getId(), e);
+                    }
+                });
+            }
+            LOG.warn("Finished Deleting Deposits In Repositories");
+        }
+    }
+
+    private void deleteDepositInRepoIfNeeded(Deposit deposit, DspaceDepositService.AuthContext authContext) {
+        if (isDspaceDeposit(deposit)) {
+            dspaceDepositService.deleteDeposit(deposit, authContext);
+        }
+    }
+
+    private boolean isDspaceDeposit(Deposit deposit) {
+        String repoKey = deposit.getRepository().getRepositoryKey();
+        return Objects.equals(repoKey, dspaceKey);
     }
 
     private void deleteObject(PassEntity entity) {
