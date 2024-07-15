@@ -81,16 +81,16 @@
         "type": "bundle",
         "_links": {
           "item": {
-            "href": "https://localhost:9020/server/api/core/bundles/cc-22/item"
+            "href": "https://localhost:9020/server/api/core/bundles/cc-33/item"
           },
           "bitstreams": {
-            "href": "https://localhost:9020/server/api/core/bundles/cc-22/bitstreams"
+            "href": "https://localhost:9020/server/api/core/bundles/cc-33/bitstreams"
           },
           "primaryBitstream": {
-            "href": "https://localhost:9020/server/api/core/bundles/cc-22/primaryBitstream"
+            "href": "https://localhost:9020/server/api/core/bundles/cc-33/primaryBitstream"
           },
           "self": {
-            "href": "https://localhost:9020/server/api/core/bundles/cc-22"
+            "href": "https://localhost:9020/server/api/core/bundles/cc-33"
           }
         }
       }
