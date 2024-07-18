@@ -99,7 +99,7 @@ public class DspaceDepositService {
         ResponseEntity<Void> csrfResponse = restClient.get()
             .uri("/security/csrf")
             .exchange((request, response) -> new ResponseEntity<>(null, response.getHeaders(), HttpStatus.OK));
-        String xsrfToken = csrfResponse.getHeaders().get("DSPACE-XSRF-TOKEN").get(0);
+        String xsrfToken = getAuthHeaderValue(csrfResponse, "DSPACE-XSRF-TOKEN");
 
         MultiValueMap<String, String> bodyPair = new LinkedMultiValueMap<>();
         bodyPair.add("user",  dspaceUsername);
@@ -112,7 +112,7 @@ public class DspaceDepositService {
             .body(bodyPair)
             .retrieve()
             .toBodilessEntity();
-        String authToken = authResponse.getHeaders().get("Authorization").get(0);
+        String authToken = getAuthHeaderValue(authResponse, "Authorization");
 
         return new AuthContext(xsrfToken, authToken);
     }
@@ -144,6 +144,14 @@ public class DspaceDepositService {
         }
     }
 
+    private String getAuthHeaderValue(ResponseEntity<Void> response, String header) {
+        List<String> values = response.getHeaders().get(header);
+        if (Objects.isNull(values) || values.isEmpty()) {
+            throw new RuntimeException("Auth Header not found: " + header);
+        }
+        return values.get(0);
+    }
+
     private String parseHandleFilter(URI accessUrl) {
         String handleDelim = dspaceApiProtocol + "://" + dspaceServer + "/handle/";
         String[] handleTokens = accessUrl.toString().split(handleDelim);
@@ -163,7 +171,6 @@ public class DspaceDepositService {
             .body(String.class);
         List<Map<String, ?>> searchArray = JsonPath.parse(searchResponse).read("$..indexableObject[?(@.handle)]");
         if (searchArray.size() == 1) {
-            @SuppressWarnings("unchecked")
             Map<String, ?> itemMap = searchArray.get(0);
             String itemName = itemMap.get("name").toString();
             String itemHandle = itemMap.get("handle").toString();
