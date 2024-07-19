@@ -88,7 +88,7 @@ public class DevNullTransport implements Transport {
                                                 rc.getExternalIds().add("devnull-fake-extid-" + repositoryCopy.getId());
                                                 rc.setCopyStatus(CopyStatus.COMPLETE);
                                                 rc.setAccessUrl(
-                                                    URI.create("devnull-fake-url/" + repositoryCopy.getId())
+                                                    URI.create("https://devnull-fake-url/handle/" + repositoryCopy.getId())
                                                 );
                                                 return rc;
                                             }, true);

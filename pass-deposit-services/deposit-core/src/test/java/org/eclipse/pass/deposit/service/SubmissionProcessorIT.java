@@ -81,7 +81,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         resetGrantProjectName(submission, null);
 
         // WHEN/THEN
-        testSubmissionProcessor(submission);
+        testSubmissionProcessor(submission, false);
         verify(filesystemTransport, times(3)).open(anyMap());
         verify(devNullTransport, times(0)).open(anyMap());
     }
@@ -94,7 +94,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         resetGrantProjectName(submission, DeploymentTestDataService.PASS_E2E_TEST_GRANT);
 
         // WHEN/THEN
-        testSubmissionProcessor(submission);
+        testSubmissionProcessor(submission, true);
         verify(devNullTransport, times(3)).open(anyMap());
         verify(filesystemTransport, times(0)).open(anyMap());
     }
@@ -108,12 +108,12 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", Boolean.FALSE);
 
         // WHEN/THEN
-        testSubmissionProcessor(submission);
+        testSubmissionProcessor(submission, false);
         verify(devNullTransport, times(0)).open(anyMap());
         verify(filesystemTransport, times(3)).open(anyMap());
     }
 
-    private void testSubmissionProcessor(Submission submission) throws IOException {
+    private void testSubmissionProcessor(Submission submission, boolean usingDevNull) throws IOException {
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId(), "grants");
 
@@ -185,16 +185,19 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             .findFirst().get();
         assertTrue(pmcDeposit.getDepositStatusRef().startsWith("nihms-package:nihms-native-2022-05_"));
         assertEquals(DepositStatus.ACCEPTED, pmcDeposit.getDepositStatus());
+        verifyAccessUrl(pmcDeposit, usingDevNull);
         Deposit j10pDeposit = resultDeposits.stream()
             .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("JScholarship"))
             .findFirst().get();
         assertNull(j10pDeposit.getDepositStatusRef());
         assertEquals(DepositStatus.ACCEPTED, j10pDeposit.getDepositStatus());
+        verifyAccessUrl(j10pDeposit, usingDevNull);
         Deposit bagItDeposit = resultDeposits.stream()
             .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("BagIt"))
             .findFirst().get();
         assertNull(bagItDeposit.getDepositStatusRef());
         assertEquals(DepositStatus.ACCEPTED, bagItDeposit.getDepositStatus());
+        verifyAccessUrl(bagItDeposit, usingDevNull);
 
         // WHEN
         submissionStatusUpdater.doUpdate();
@@ -210,6 +213,16 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         // THEN
         final Submission aggrStatusSubmission = passClient.getObject(Submission.class, submission.getId());
         assertEquals(AggregatedDepositStatus.ACCEPTED, aggrStatusSubmission.getAggregatedDepositStatus());
+    }
+
+    private void verifyAccessUrl(Deposit deposit, boolean usingDevNull) throws IOException {
+        RepositoryCopy j10pRepoCopy = passClient.getObject(deposit.getRepositoryCopy());
+        String accessUrl = j10pRepoCopy.getAccessUrl().toString();
+        if (usingDevNull) {
+            assertEquals("https://devnull-fake-url/handle/" + j10pRepoCopy.getId(), accessUrl);
+        } else {
+            assertTrue(accessUrl.startsWith("file:"));
+        }
     }
 
     private void resetGrantProjectName(Submission submission, String grantProjectName) throws IOException {
