@@ -219,9 +219,14 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         RepositoryCopy j10pRepoCopy = passClient.getObject(deposit.getRepositoryCopy());
         String accessUrl = j10pRepoCopy.getAccessUrl().toString();
         if (usingDevNull) {
-            assertEquals("https://devnull-fake-url/handle/" + j10pRepoCopy.getId(), accessUrl);
+            String expectedUrl = "https://devnull-fake-url/handle/" + j10pRepoCopy.getId();
+            assertEquals(expectedUrl, accessUrl);
+            assertEquals(1, j10pRepoCopy.getExternalIds().size());
+            assertEquals(expectedUrl, j10pRepoCopy.getExternalIds().get(0));
         } else {
             assertTrue(accessUrl.startsWith("file:"));
+            assertEquals(1, j10pRepoCopy.getExternalIds().size());
+            assertTrue(j10pRepoCopy.getExternalIds().get(0).startsWith("file:"));
         }
     }
 
