@@ -18,11 +18,13 @@ package org.eclipse.pass.deposit.assembler;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.gson.JsonObject;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.springframework.core.io.Resource;
 
 /**
  * A streamable serialized form of a submission package.
@@ -62,6 +64,12 @@ public interface PackageStream {
      * @return package metadata
      */
     Metadata metadata();
+
+    /**
+     * Returns a list of the DepositFileResource.
+     * @return a list of DepositFileResource
+     */
+    List<DepositFileResource> getCustodialContent();
 
     /**
      * Metadata describing the package.

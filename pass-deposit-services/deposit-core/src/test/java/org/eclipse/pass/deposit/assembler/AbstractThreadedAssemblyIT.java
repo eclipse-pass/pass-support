@@ -92,7 +92,7 @@ public abstract class AbstractThreadedAssemblyIT extends AbstractDepositSubmissi
     protected static Logger LOG = LoggerFactory.getLogger(AbstractThreadedAssemblyIT.class);
 
     /**
-     * The factory used to create instances of {@link org.eclipse.pass.deposit.assembler.MetadataBuilder}.
+     * The factory used to create instances of {@link MetadataBuilder}.
      * {@code MetadataBuilder} is used to add or create metadata describing the {@link PackageStream}.  The factory is
      * typically invoked <em>once</em> when building a {@code PackageStream} to create a single instance of
      * {@code MetadataBuilder}.
@@ -100,7 +100,7 @@ public abstract class AbstractThreadedAssemblyIT extends AbstractDepositSubmissi
     protected MetadataBuilderFactory mbf;
 
     /**
-     * The factory used to create instances of {@link org.eclipse.pass.deposit.assembler.ResourceBuilder}.
+     * The factory used to create instances of {@link ResourceBuilder}.
      * {@code ResourceBuilder} is used to add or create metadata describing individual resources in the {@link
      * PackageStream}.  This factory is typically invoked <em>once per resource</em>.  There will be an instance of
      * {@code ResourceBuilder} instantiated for every resource contained in the {@code PackageStream}.
