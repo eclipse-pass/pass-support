@@ -15,6 +15,13 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,15 +36,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService;
 import org.eclipse.pass.deposit.transport.devnull.DevNullTransport;
 import org.eclipse.pass.deposit.transport.fs.FilesystemTransport;
+import org.eclipse.pass.deposit.transport.inveniordm.InvenioRdmTransport;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
+import org.eclipse.pass.support.client.model.File;
 import org.eclipse.pass.support.client.model.Grant;
 import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
@@ -56,8 +67,11 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @TestPropertySource(properties = {
-    "pass.deposit.repository.configuration=classpath:/full-test-repositories.json"
+    "pass.deposit.repository.configuration=classpath:/full-test-repositories.json",
+    "inveniordm.api.token=test-invenio-api-token",
+    "inveniordm.api.baseUrl=http://localhost:9030/api"
 })
+@WireMockTest(httpPort = 9030)
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessorIT.class);
@@ -67,6 +81,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
     @Autowired private DepositTaskHelper depositTaskHelper;
     @SpyBean private FilesystemTransport filesystemTransport;
     @SpyBean private DevNullTransport devNullTransport;
+    @SpyBean private InvenioRdmTransport invenioRdmTransport;
 
     @BeforeEach
     void cleanUp() {
@@ -79,11 +94,14 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
         resetGrantProjectName(submission, null);
+        initInvenioApiStubs();
 
         // WHEN/THEN
         testSubmissionProcessor(submission, false);
         verify(filesystemTransport, times(3)).open(anyMap());
+        verify(invenioRdmTransport, times(1)).open(anyMap());
         verify(devNullTransport, times(0)).open(anyMap());
+        verifyInvenioApiStubs(1);
     }
 
     @Test
@@ -95,8 +113,10 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         // WHEN/THEN
         testSubmissionProcessor(submission, true);
-        verify(devNullTransport, times(3)).open(anyMap());
+        verify(devNullTransport, times(4)).open(anyMap());
         verify(filesystemTransport, times(0)).open(anyMap());
+        verify(invenioRdmTransport, times(0)).open(anyMap());
+        verifyInvenioApiStubs(0);
     }
 
     @Test
@@ -105,12 +125,15 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
         resetGrantProjectName(submission, DeploymentTestDataService.PASS_E2E_TEST_GRANT);
+        initInvenioApiStubs();
         ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", Boolean.FALSE);
 
         // WHEN/THEN
         testSubmissionProcessor(submission, false);
         verify(devNullTransport, times(0)).open(anyMap());
         verify(filesystemTransport, times(3)).open(anyMap());
+        verify(invenioRdmTransport, times(1)).open(anyMap());
+        verifyInvenioApiStubs(1);
     }
 
     private void testSubmissionProcessor(Submission submission, boolean usingDevNull) throws IOException {
@@ -177,7 +200,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         List<String> repoKeys = resultDeposits.stream()
             .map(deposit -> deposit.getRepository().getRepositoryKey())
             .toList();
-        List<String> expectedRepoKey = List.of("PubMed Central", "JScholarship", "BagIt");
+        List<String> expectedRepoKey = List.of("PubMed Central", "JScholarship", "BagIt", "InvenioRDM");
         assertTrue(repoKeys.size() == expectedRepoKey.size() && repoKeys.containsAll(expectedRepoKey)
             && expectedRepoKey.containsAll(repoKeys));
         Deposit pmcDeposit = resultDeposits.stream()
@@ -198,6 +221,10 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         assertNull(bagItDeposit.getDepositStatusRef());
         assertEquals(DepositStatus.ACCEPTED, bagItDeposit.getDepositStatus());
         verifyAccessUrl(bagItDeposit, usingDevNull);
+        Deposit invenioRDMDeposit = resultDeposits.stream()
+            .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("InvenioRDM"))
+            .findFirst().get();
+        assertNull(invenioRDMDeposit.getDepositStatusRef());
 
         // WHEN
         submissionStatusUpdater.doUpdate();
@@ -239,14 +266,64 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private String resolveProjectName(String grantProjectName) throws IOException {
         if (Objects.isNull(grantProjectName)) {
-            List<PassEntity> entities = new LinkedList<>();
-            try (InputStream is = ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")) {
-                submissionTestUtil.createSubmissionFromJson(is, entities);
-            }
+            List<PassEntity> entities = loadSubmissionEntities();
             return entities.stream().filter(pe -> pe instanceof Grant)
-                .map(pe -> ((Grant) pe).getProjectName()).findFirst().get();
+                .map(pe -> ((Grant) pe).getProjectName())
+                .findFirst().get();
         }
         return grantProjectName;
+    }
+
+    private List<String> getFileNames() throws IOException {
+        List<PassEntity> entities = loadSubmissionEntities();
+        return entities.stream()
+            .filter(pe -> pe instanceof File)
+            .map(file -> ((File) file).getName())
+            .toList();
+    }
+
+    private List<PassEntity> loadSubmissionEntities() throws IOException {
+        List<PassEntity> entities = new LinkedList<>();
+        try (InputStream is = ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")) {
+            submissionTestUtil.createSubmissionFromJson(is, entities);
+        }
+        return entities;
+    }
+
+    private void initInvenioApiStubs() throws IOException {
+        String recordsJsonResponse = "{ \"id\": \"test-record-id\", \"links\": " +
+            "{ \"latest_html\": \"http://localhost:9030/records/test-record-id/latest\"} }";
+        stubFor(post("/api/records")
+            .willReturn(ok(recordsJsonResponse)));
+
+        stubFor(post("/api/records/test-record-id/draft/files")
+            .willReturn(ok()));
+
+        List<String> fileNames = getFileNames();
+        fileNames.forEach(fileName -> {
+            stubFor(put("/api/records/test-record-id/draft/files/" + fileName + "/content")
+                .willReturn(ok()));
+            stubFor(post("/api/records/test-record-id/draft/files/" + fileName + "/commit")
+                .willReturn(ok()));
+        });
+
+        stubFor(post("/api/records/test-record-id/draft/actions/publish")
+            .willReturn(ok()));
+    }
+
+    private void verifyInvenioApiStubs(int expectedCount) throws IOException {
+        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/api/records")));
+        List<String> fileNames = getFileNames();
+        WireMock.verify(expectedCount * fileNames.size(), postRequestedFor(
+            urlEqualTo("/api/records/test-record-id/draft/files")));
+        fileNames.forEach(fileName -> {
+            WireMock.verify(expectedCount, putRequestedFor(
+                urlEqualTo("/api/records/test-record-id/draft/files/" + fileName + "/content")));
+            WireMock.verify(expectedCount, postRequestedFor(
+                urlEqualTo("/api/records/test-record-id/draft/files/" + fileName + "/commit")));
+        });
+        WireMock.verify(expectedCount, postRequestedFor(
+            urlEqualTo("/api/records/test-record-id/draft/actions/publish")));
     }
 
 }

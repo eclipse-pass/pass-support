@@ -72,12 +72,10 @@ public class ArchivingPackageStream implements PackageStream {
     protected Map<String, Object> packageOptions;
 
     private final MetadataBuilder metadataBuilder;
-
     private final ExceptionHandlingThreadPoolExecutor executorService;
-
     private final StreamWriter streamWriter;
-
     private final ArchiveOutputStreamFactory archiveOutputStreamFactory;
+    private final DepositSubmission depositSubmission;
 
     public ArchivingPackageStream(DepositSubmission submission,
                                   List<DepositFileResource> custodialContent,
@@ -88,6 +86,7 @@ public class ArchivingPackageStream implements PackageStream {
         this.custodialContent = custodialContent;
         this.metadataBuilder = metadataBuilder;
         this.packageOptions = packageOptions;
+        this.depositSubmission = submission;
         this.executorService = new ExceptionHandlingThreadPoolExecutor(
             getRuntime().availableProcessors(),
             getRuntime().availableProcessors() * 2, 1,
@@ -205,6 +204,21 @@ public class ArchivingPackageStream implements PackageStream {
     @Override
     public Iterator<PackageStream.Resource> resources() {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Unsupported by this implementation, always throws {@code UnsupportedOperationException}.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public List<DepositFileResource> getCustodialContent() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public DepositSubmission getDepositSubmission() {
+        return this.depositSubmission;
     }
 
 }

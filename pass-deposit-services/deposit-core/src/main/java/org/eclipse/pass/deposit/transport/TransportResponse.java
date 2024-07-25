@@ -16,9 +16,8 @@
 
 package org.eclipse.pass.deposit.transport;
 
-import org.eclipse.pass.support.client.model.Deposit;
-import org.eclipse.pass.support.client.model.RepositoryCopy;
-import org.eclipse.pass.support.client.model.Submission;
+import org.eclipse.pass.deposit.service.DepositUtil;
+import org.eclipse.pass.support.client.PassClient;
 
 public interface TransportResponse {
 
@@ -53,11 +52,10 @@ public interface TransportResponse {
      * to record in PASS.
      * </p>
      *
-     * @param submission
-     * @param deposit
-     * @param repositoryCopy
+     * @param depositWorkerContext the worker context of the deposit
+     * @param passClient  the pass client
      */
-    default void onSuccess(Submission submission, Deposit deposit, RepositoryCopy repositoryCopy) {
+    default void onSuccess(DepositUtil.DepositWorkerContext depositWorkerContext, PassClient passClient) {
         // no-op
     }
 

@@ -134,5 +134,16 @@
         "overwrite": "true"
       }
     }
+  },
+  "InvenioRDM": {
+    "assembler": {
+      "specification": "invenioRdm",
+      "beanName": "invenioRdmAssembler"
+    },
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "invenioRdm"
+      }
+    }
   }
 }

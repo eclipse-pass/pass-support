@@ -129,7 +129,8 @@ public interface Transport {
         sftp,
         SWORDv2,
         filesystem,
-        devnull
+        devnull,
+        invenioRdm
     }
 
     /**

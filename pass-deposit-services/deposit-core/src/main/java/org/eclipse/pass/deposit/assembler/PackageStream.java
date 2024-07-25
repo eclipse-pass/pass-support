@@ -24,7 +24,6 @@ import com.google.gson.JsonObject;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
 import org.eclipse.pass.deposit.model.DepositSubmission;
-import org.springframework.core.io.Resource;
 
 /**
  * A streamable serialized form of a submission package.
@@ -64,6 +63,12 @@ public interface PackageStream {
      * @return package metadata
      */
     Metadata metadata();
+
+    /**
+     * Returns the DepositSubmission associated with the Package.
+     * @return the DepositSubmission
+     */
+    DepositSubmission getDepositSubmission();
 
     /**
      * Returns a list of the DepositFileResource.

@@ -30,7 +30,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = FtpBinding.class, name = FtpBinding.PROTO),
     @JsonSubTypes.Type(value = SftpBinding.class, name = SftpBinding.PROTO),
     @JsonSubTypes.Type(value = SwordV2Binding.class, name = SwordV2Binding.PROTO),
-    @JsonSubTypes.Type(value = FilesystemBinding.class, name = FilesystemBinding.PROTO)
+    @JsonSubTypes.Type(value = FilesystemBinding.class, name = FilesystemBinding.PROTO),
+    @JsonSubTypes.Type(value = InvenioRdmBinding.class, name = InvenioRdmBinding.PROTO)
 })
 public abstract class ProtocolBinding {
 
