@@ -39,7 +39,6 @@
 
   <modules>
     <module>deposit-model</module>
-    <module>assembler-api</module>
     <module>deposit-util</module>
     <module>deposit-core</module>
     <module>deposit-cri</module>

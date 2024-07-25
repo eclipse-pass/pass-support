@@ -188,6 +188,11 @@ public class DepositSubmissionMapper {
         DepositMetadata.Person person = new DepositMetadata.Person();
         person.setFullName(fullName);
         person.setType(DepositMetadata.PERSON_TYPE.author);
+        if (fullName.contains(",")) {
+            String[] nameParts = fullName.split(",");
+            person.setFirstName(nameParts[1]);
+            person.setLastName(nameParts[0]);
+        }
         return person;
     }
 

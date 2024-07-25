@@ -219,7 +219,7 @@ public class DepositTask {
             }
         }
 
-        transportResponse.onSuccess(dc.submission(), dc.deposit(), dc.repoCopy());
+        transportResponse.onSuccess(dc, passClient);
     }
 
     public void setPrefixToMatch(String prefixToMatch) {

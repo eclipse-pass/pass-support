@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
@@ -185,6 +186,16 @@ public class PreassembledAssembler implements Assembler {
 
             @Override
             public Iterator<Resource> resources() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public List<DepositFileResource> getCustodialContent() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public DepositSubmission getDepositSubmission() {
                 throw new UnsupportedOperationException();
             }
 

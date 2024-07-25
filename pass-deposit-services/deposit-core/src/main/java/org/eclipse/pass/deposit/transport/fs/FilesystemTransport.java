@@ -32,9 +32,11 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.deposit.service.DepositUtil;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
+import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -142,13 +144,14 @@ public class FilesystemTransport implements Transport {
                  * {@code RepositoryCopy.externalIds} are updated to contain the path to the package file, and the
                  * {@code Deposit.DepositStatus} is updated to {@code ACCEPTED}.
                  *
-                 * @param submission the Submission that resulted in success
-                 * @param deposit the Deposit associated with the Submission
-                 * @param repositoryCopy the RepositoryCopy encapsulating the package file created by this {@code
-                 *                       Transport}
+                 * @param depositWorkerContext the worker context of the deposit
+                 * @param passClient  the pass client
                  */
                 @Override
-                public void onSuccess(Submission submission, Deposit deposit, RepositoryCopy repositoryCopy) {
+                public void onSuccess(DepositUtil.DepositWorkerContext depositWorkerContext, PassClient passClient) {
+                    Submission submission = depositWorkerContext.submission();
+                    Deposit deposit = depositWorkerContext.deposit();
+                    RepositoryCopy repositoryCopy = depositWorkerContext.repoCopy();
                     LOG.trace("Invoking onSuccess for tuple [{} {} {}]",
                               submission.getId(), deposit.getId(), repositoryCopy.getId());
                     CriticalResult<RepositoryCopy, RepositoryCopy> rcCr =
