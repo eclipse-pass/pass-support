@@ -15,6 +15,11 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
+import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -31,6 +36,9 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -102,6 +110,33 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         verify(invenioRdmTransport, times(1)).open(anyMap());
         verify(devNullTransport, times(0)).open(anyMap());
         verifyInvenioApiStubs(1);
+    }
+
+    @Test
+    void testSubmissionProcessing_Full_InvenioExistingRecord() throws Exception {
+        // GIVEN
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
+        resetGrantProjectName(submission, null);
+        initInvenioApiStubs();
+        String searchRecordsJsonResponse = "{ \"hits\": { \"hits\": [{ \"id\": \"existing-record-id\", " +
+            "\"is_published\": \"false\"} ] } }";
+        stubFor(get("/api/user/records?q=metadata.title:%22Specific%20protein%20supplementation%20using%20" +
+            "soya%2C%20casein%20or%20whey%20differentially%20affects%20regional%20gut%20growth%20and%20luminal%20" +
+            "growth%20factor%20bioactivity%20in%20rats%3B%20implications%20for%20the%20treatment%20of%20gut%20" +
+            "injury%20and%20stimulating%20repair%22")
+            .willReturn(ok(searchRecordsJsonResponse)));
+        stubFor(delete("/api/records/existing-record-id/draft")
+            .willReturn(ok()));
+
+        // WHEN/THEN
+        testSubmissionProcessor(submission, false);
+        verify(filesystemTransport, times(3)).open(anyMap());
+        verify(invenioRdmTransport, times(1)).open(anyMap());
+        verify(devNullTransport, times(0)).open(anyMap());
+        verifyInvenioApiStubs(1);
+        WireMock.verify(1, deleteRequestedFor(
+            urlEqualTo("/api/records/existing-record-id/draft")));
     }
 
     @Test
@@ -224,6 +259,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         Deposit invenioRDMDeposit = resultDeposits.stream()
             .filter(deposit -> deposit.getRepository().getRepositoryKey().equals("InvenioRDM"))
             .findFirst().get();
+        assertEquals(DepositStatus.ACCEPTED, invenioRDMDeposit.getDepositStatus());
         assertNull(invenioRDMDeposit.getDepositStatusRef());
 
         // WHEN
@@ -291,8 +327,15 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
     }
 
     private void initInvenioApiStubs() throws IOException {
+        String searchRecordsJsonResponse = "{ \"hits\": { \"hits\": [] } }";
+        stubFor(get("/api/user/records?q=metadata.title:%22Specific%20protein%20supplementation%20using%20" +
+            "soya%2C%20casein%20or%20whey%20differentially%20affects%20regional%20gut%20growth%20and%20luminal%20" +
+            "growth%20factor%20bioactivity%20in%20rats%3B%20implications%20for%20the%20treatment%20of%20gut%20" +
+            "injury%20and%20stimulating%20repair%22")
+            .willReturn(ok(searchRecordsJsonResponse)));
+
         String recordsJsonResponse = "{ \"id\": \"test-record-id\", \"links\": " +
-            "{ \"latest_html\": \"http://localhost:9030/records/test-record-id/latest\"} }";
+            "{ \"self_html\": \"http://localhost:9030/records/test-record-id/latest\"} }";
         stubFor(post("/api/records")
             .willReturn(ok(recordsJsonResponse)));
 
@@ -311,8 +354,16 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             .willReturn(ok()));
     }
 
-    private void verifyInvenioApiStubs(int expectedCount) throws IOException {
-        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/api/records")));
+    private void verifyInvenioApiStubs(int expectedCount) throws IOException, URISyntaxException {
+        WireMock.verify(expectedCount, getRequestedFor(
+            urlEqualTo("/api/user/records?q=metadata.title:%22Specific%20protein%20supplementation%20using%20" +
+                "soya%2C%20casein%20or%20whey%20differentially%20affects%20regional%20gut%20growth%20and%20luminal%20" +
+                "growth%20factor%20bioactivity%20in%20rats%3B%20implications%20for%20the%20treatment%20of%20gut%20" +
+                "injury%20and%20stimulating%20repair%22")));
+        String recordPayload = Files.readString(
+            Paths.get(SubmissionProcessorIT.class.getResource("expectedInvenioRecord.json").toURI()));
+        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/api/records"))
+            .withRequestBody(equalTo(recordPayload)));
         List<String> fileNames = getFileNames();
         WireMock.verify(expectedCount * fileNames.size(), postRequestedFor(
             urlEqualTo("/api/records/test-record-id/draft/files")));

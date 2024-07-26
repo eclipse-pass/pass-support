@@ -25,8 +25,8 @@ import net.minidev.json.JSONObject;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.io.SocketConfig;
@@ -60,7 +60,49 @@ class InvenioRdmSession implements TransportSession {
 
     InvenioRdmSession(String baseServerUrl, String apiToken) {
         this.invenioRdmMetadataMapper = new InvenioRdmMetadataMapper();
-        PoolingHttpClientConnectionManager connectionManager;
+        HttpClientConnectionManager connectionManager = buildConnectionManager(baseServerUrl);
+        final CloseableHttpClient httpClient = HttpClients.custom()
+            .setConnectionManager(connectionManager)
+            .disableCookieManagement()
+            .build();
+        this.restClient = RestClient.builder()
+            .requestFactory(new HttpComponentsClientHttpRequestFactory(httpClient))
+            .baseUrl(baseServerUrl)
+            .defaultHeader("Authorization", "Bearer " + apiToken)
+            .build();
+    }
+
+    @Override
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+        try {
+            DepositSubmission depositSubmission = packageStream.getDepositSubmission();
+            LOG.warn("Processing InvenioRDM Deposit for Submission: {}", depositSubmission.getId());
+            deleteDraftRecordIfNeeded(depositSubmission);
+            JSONObject recordBody = invenioRdmMetadataMapper.toInvenioMetadata(depositSubmission);
+            String recordResponse = createRecordDraft(recordBody.toJSONString());
+            String recordId = JsonPath.parse(recordResponse).read("$.id");
+            String accessUrl = JsonPath.parse(recordResponse).read("$.links.self_html");
+            uploadFiles(packageStream, recordId);
+            publishRecord(recordId);
+            LOG.warn("Completed InvenioRDM Deposit for Submission: {}", depositSubmission.getId());
+            return new InvenioRdmResponse(true, accessUrl);
+        } catch (Exception e) {
+            LOG.error("Error depositing into InvenioRDM", e);
+            return new InvenioRdmResponse(false, null, e);
+        }
+    }
+
+    @Override
+    public boolean closed() {
+        return true;
+    }
+
+    @Override
+    public void close() throws Exception {
+        // no-op resources are closed with try-with-resources
+    }
+
+    private HttpClientConnectionManager buildConnectionManager(String baseServerUrl) {
         try {
             PoolingHttpClientConnectionManagerBuilder connMgrBuilder =
                 PoolingHttpClientConnectionManagerBuilder.create()
@@ -82,46 +124,40 @@ class InvenioRdmSession implements TransportSession {
                     new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
                 connMgrBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
             }
-            connectionManager = connMgrBuilder.build();
+            return connMgrBuilder.build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        final CloseableHttpClient httpClient = HttpClients.custom()
-            .setConnectionManager(connectionManager)
-            .disableCookieManagement()
-            .build();
-        this.restClient = RestClient.builder()
-            .requestFactory(new HttpComponentsClientHttpRequestFactory(httpClient))
-            .baseUrl(baseServerUrl)
-            .defaultHeader("Authorization", "Bearer " + apiToken)
-            .build();
     }
 
-    @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
-        try {
-            DepositSubmission depositSubmission = packageStream.getDepositSubmission();
-            JSONObject recordBody = invenioRdmMetadataMapper.toInvenioMetadata(depositSubmission);
-            String recordResponse = createRecordDraft(recordBody.toJSONString());
-            String recordId = JsonPath.parse(recordResponse).read("$.id");
-            String accessUrl = JsonPath.parse(recordResponse).read("$.links.latest_html");
-            uploadFiles(packageStream, recordId);
-            publishRecord(recordId);
-            return new InvenioRdmResponse(true, accessUrl);
-        } catch (Exception e) {
-            LOG.error("Error depositing into InvenioRDM", e);
-            return new InvenioRdmResponse(false, null, e);
+    private void deleteDraftRecordIfNeeded(DepositSubmission depositSubmission) {
+        String title = depositSubmission.getSubmissionMeta().get("title").getAsString();
+        String searchResponse = restClient.get()
+            .uri("/user/records?q=metadata.title:\"{title}\"", title)
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .body(String.class);
+        List<Map<String, ?>> foundRecords = JsonPath.parse(searchResponse).read("$.hits.hits[*]");
+        if (!foundRecords.isEmpty()) {
+            deleteDraftRecord(foundRecords, title);
         }
     }
 
-    @Override
-    public boolean closed() {
-        return true;
-    }
-
-    @Override
-    public void close() throws Exception {
-        // no-op resources are closed with try-with-resources
+    private void deleteDraftRecord(List<Map<String, ?>> foundRecords, String title) {
+        if (foundRecords.size() > 1) {
+            throw new RuntimeException("Found more than one match in invenioRDM for title=" + title + ", aborting");
+        }
+        Map<String, ?> record = foundRecords.get(0);
+        String recordId = record.get("id").toString();
+        String isPublished = record.get("is_published").toString();
+        if (isPublished.equals("true")) {
+            throw new RuntimeException("Found published record match in invenioRDM for title=" + title + ", aborting");
+        }
+        LOG.warn("Deleting existing invenioRDM draft record: {}", recordId);
+        restClient.delete()
+            .uri("/records/{recordId}/draft", recordId)
+            .retrieve()
+            .body(String.class);
     }
 
     private String createRecordDraft(String recordBodyJson) {
