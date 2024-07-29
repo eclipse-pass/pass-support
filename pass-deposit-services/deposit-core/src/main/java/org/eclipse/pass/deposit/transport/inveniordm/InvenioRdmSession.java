@@ -53,14 +53,13 @@ import org.springframework.web.util.UriUtils;
  */
 class InvenioRdmSession implements TransportSession {
     private static final Logger LOG = LoggerFactory.getLogger(InvenioRdmSession.class);
-    private static final String LOCALHOST_INVENIORDM = "https://127.0.0.1";
 
     private final InvenioRdmMetadataMapper invenioRdmMetadataMapper;
     private final RestClient restClient;
 
-    InvenioRdmSession(String baseServerUrl, String apiToken) {
+    InvenioRdmSession(String baseServerUrl, String apiToken, Boolean verifySslCertificate) {
         this.invenioRdmMetadataMapper = new InvenioRdmMetadataMapper();
-        HttpClientConnectionManager connectionManager = buildConnectionManager(baseServerUrl);
+        HttpClientConnectionManager connectionManager = buildConnectionManager(verifySslCertificate);
         final CloseableHttpClient httpClient = HttpClients.custom()
             .setConnectionManager(connectionManager)
             .disableCookieManagement()
@@ -102,7 +101,7 @@ class InvenioRdmSession implements TransportSession {
         // no-op resources are closed with try-with-resources
     }
 
-    private HttpClientConnectionManager buildConnectionManager(String baseServerUrl) {
+    private HttpClientConnectionManager buildConnectionManager(Boolean verifySslCertificate) {
         try {
             PoolingHttpClientConnectionManagerBuilder connMgrBuilder =
                 PoolingHttpClientConnectionManagerBuilder.create()
@@ -115,7 +114,7 @@ class InvenioRdmSession implements TransportSession {
                         .setTimeToLive(TimeValue.ofMinutes(10))
                         .build());
             // This is needed because localhost invenioRdm runs with self-signed cert
-            if (baseServerUrl.startsWith(LOCALHOST_INVENIORDM)) {
+            if (Boolean.FALSE.equals(verifySslCertificate)) {
                 final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
                 final SSLContext sslContext = SSLContexts.custom()
                     .loadTrustMaterial(null, acceptingTrustStrategy)
