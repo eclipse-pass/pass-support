@@ -78,11 +78,9 @@ class InvenioRdmSession implements TransportSession {
             LOG.warn("Processing InvenioRDM Deposit for Submission: {}", depositSubmission.getId());
             deleteDraftRecordIfNeeded(depositSubmission);
             JSONObject recordBody = invenioRdmMetadataMapper.toInvenioMetadata(depositSubmission);
-            String recordResponse = createRecordDraft(recordBody.toJSONString());
-            String recordId = JsonPath.parse(recordResponse).read("$.id");
-            String accessUrl = JsonPath.parse(recordResponse).read("$.links.self_html");
+            String recordId = createRecordDraft(recordBody.toJSONString());
             uploadFiles(packageStream, recordId);
-            publishRecord(recordId);
+            String accessUrl = publishRecord(recordId);
             LOG.warn("Completed InvenioRDM Deposit for Submission: {}", depositSubmission.getId());
             return new InvenioRdmResponse(true, accessUrl);
         } catch (Exception e) {
@@ -160,20 +158,22 @@ class InvenioRdmSession implements TransportSession {
     }
 
     private String createRecordDraft(String recordBodyJson) {
-        return restClient.post()
+        String recordResponse = restClient.post()
             .uri("/records")
             .contentType(MediaType.APPLICATION_JSON)
             .body(recordBodyJson)
             .retrieve()
             .body(String.class);
+        return JsonPath.parse(recordResponse).read("$.id");
     }
 
-    private void publishRecord(String recordId) {
-        restClient.post()
+    private String publishRecord(String recordId) {
+        String publishResponse = restClient.post()
             .uri("/records/{recordId}/draft/actions/publish", recordId)
             .contentType(MediaType.APPLICATION_JSON)
             .retrieve()
             .body(String.class);
+        return JsonPath.parse(publishResponse).read("$.links.self_html");
     }
 
     private void uploadFiles(PackageStream packageStream, String recordId) {

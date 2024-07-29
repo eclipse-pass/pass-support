@@ -264,10 +264,10 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         assertNull(invenioRDMDeposit.getDepositStatusRef());
         if (!usingDevNull) {
             RepositoryCopy invenioRdmRepoCopy = passClient.getObject(invenioRDMDeposit.getRepositoryCopy());
-            assertEquals(URI.create("http://localhost:9030/records/test-record-id/latest"),
+            assertEquals(URI.create("http://localhost:9030/records/test-record-id"),
                 invenioRdmRepoCopy.getAccessUrl());
             assertEquals(1, invenioRdmRepoCopy.getExternalIds().size());
-            assertEquals("http://localhost:9030/records/test-record-id/latest",
+            assertEquals("http://localhost:9030/records/test-record-id",
                 invenioRdmRepoCopy.getExternalIds().get(0));
         }
 
@@ -344,7 +344,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             .willReturn(ok(searchRecordsJsonResponse)));
 
         String recordsJsonResponse = "{ \"id\": \"test-record-id\", \"links\": " +
-            "{ \"self_html\": \"http://localhost:9030/records/test-record-id/latest\"} }";
+            "{ \"self_html\": \"http://localhost:9030/upload/test-record-id/latest\"} }";
         stubFor(post("/api/records")
             .willReturn(ok(recordsJsonResponse)));
 
@@ -359,8 +359,10 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                 .willReturn(ok()));
         });
 
+        String publishJsonResponse = "{ \"id\": \"test-record-id\", \"links\": " +
+            "{ \"self_html\": \"http://localhost:9030/records/test-record-id\"} }";
         stubFor(post("/api/records/test-record-id/draft/actions/publish")
-            .willReturn(ok()));
+            .willReturn(ok(publishJsonResponse)));
     }
 
     private void verifyInvenioApiStubs(int expectedCount) throws IOException, URISyntaxException {
