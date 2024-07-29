@@ -36,6 +36,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -261,6 +262,14 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             .findFirst().get();
         assertEquals(DepositStatus.ACCEPTED, invenioRDMDeposit.getDepositStatus());
         assertNull(invenioRDMDeposit.getDepositStatusRef());
+        if (!usingDevNull) {
+            RepositoryCopy invenioRdmRepoCopy = passClient.getObject(invenioRDMDeposit.getRepositoryCopy());
+            assertEquals(URI.create("http://localhost:9030/records/test-record-id/latest"),
+                invenioRdmRepoCopy.getAccessUrl());
+            assertEquals(1, invenioRdmRepoCopy.getExternalIds().size());
+            assertEquals("http://localhost:9030/records/test-record-id/latest",
+                invenioRdmRepoCopy.getExternalIds().get(0));
+        }
 
         // WHEN
         submissionStatusUpdater.doUpdate();
@@ -361,7 +370,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                 "growth%20factor%20bioactivity%20in%20rats%3B%20implications%20for%20the%20treatment%20of%20gut%20" +
                 "injury%20and%20stimulating%20repair%22")));
         String recordPayload = Files.readString(
-            Paths.get(SubmissionProcessorIT.class.getResource("expectedInvenioRecord.json").toURI()));
+            Paths.get(SubmissionProcessorIT.class.getResource("expectedInvenioRecordPayload.json").toURI()));
         WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/api/records"))
             .withRequestBody(equalTo(recordPayload)));
         List<String> fileNames = getFileNames();

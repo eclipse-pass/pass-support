@@ -39,11 +39,27 @@ public class InvenioRdmMetadataMapper {
         The following points should be considered in a future iteration if required:
         - See if we can get the Person ORCID value and set it
         - Use the embargo element if supported in PASS
+        - Set funder element
         - Figure out the details of resource_type.id.  We may have to provide a way to set a list of possible values.
             - https://inveniordm.docs.cern.ch/customize/vocabularies/resource_types/
          */
         final DepositMetadata depositMetadata = depositSubmission.getMetadata();
         JSONObject invenioMetadata = new JSONObject();
+        JSONArray creators = mapCreators(depositMetadata);
+        invenioMetadata.put("creators", creators);
+        String title = depositSubmission.getSubmissionMeta().get("title").getAsString();
+        invenioMetadata.put("title", title);
+        String publicationDate = depositMetadata.getJournalMetadata().getPublicationDate();
+        invenioMetadata.put("publication_date", publicationDate);
+        JSONObject resourceType = new JSONObject();
+        resourceType.put("id", "publication-article");
+        invenioMetadata.put("resource_type", resourceType);
+        JSONObject rootInvenioMetadata = new JSONObject();
+        rootInvenioMetadata.put("metadata", invenioMetadata);
+        return rootInvenioMetadata;
+    }
+
+    private JSONArray mapCreators(DepositMetadata depositMetadata) {
         JSONArray creators = new JSONArray();
         depositMetadata.getPersons().forEach(person -> {
             JSONObject invenioPerson = new JSONObject();
@@ -58,16 +74,6 @@ public class InvenioRdmMetadataMapper {
             personOrOrg.put("person_or_org", invenioPerson);
             creators.add(personOrOrg);
         });
-        invenioMetadata.put("creators", creators);
-        String title = depositSubmission.getSubmissionMeta().get("title").getAsString();
-        invenioMetadata.put("title", title);
-        String publicationDate = depositMetadata.getJournalMetadata().getPublicationDate();
-        invenioMetadata.put("publication_date", publicationDate);
-        JSONObject resourceType = new JSONObject();
-        resourceType.put("id", "publication-article");
-        invenioMetadata.put("resource_type", resourceType);
-        JSONObject rootInvenioMetadata = new JSONObject();
-        rootInvenioMetadata.put("metadata", invenioMetadata);
-        return rootInvenioMetadata;
+        return creators;
     }
 }
