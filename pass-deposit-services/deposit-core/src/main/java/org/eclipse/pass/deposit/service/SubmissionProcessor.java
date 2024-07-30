@@ -129,7 +129,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                     try {
                         return passClient.getObject(repo);
                     } catch (IOException e) {
-                        throw new RuntimeException("Failed to retrieve reposigtory: " + repo.getId(), e);
+                        throw new RuntimeException("Failed to retrieve repository: " + repo.getId(), e);
                     }
                 })
                 .filter(repo -> IntegrationType.WEB_LINK != repo.getIntegrationType())
@@ -138,7 +138,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
                         submitDeposit(updatedS, depositSubmission, repo);
                     } catch (Exception e) {
                         depositServiceErrorHandler.handleError(e);
-                        throw e;
                     }
                 });
     }

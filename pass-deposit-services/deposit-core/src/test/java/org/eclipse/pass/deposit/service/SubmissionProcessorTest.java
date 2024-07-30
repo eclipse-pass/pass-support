@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
@@ -37,11 +38,13 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
@@ -62,6 +65,7 @@ import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -74,6 +78,7 @@ public class SubmissionProcessorTest {
     private Registry<Packager> packagerRegistry;
     private CriticalRepositoryInteraction cri;
     private SubmissionProcessor submissionProcessor;
+    private DepositServiceErrorHandler depositServiceErrorHandler;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -83,10 +88,10 @@ public class SubmissionProcessorTest {
         packagerRegistry = mock(Registry.class);
         cri = mock(CriticalRepositoryInteraction.class);
         Repositories repositories = mock(Repositories.class);
-        DepositServiceErrorHandler depositServiceErrorHandler = mock(DepositServiceErrorHandler.class);
         DevNullTransport devNullTransport = mock(DevNullTransport.class);
         DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, cri, repositories, devNullTransport);
         ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", true);
+        depositServiceErrorHandler = mock(DepositServiceErrorHandler.class);
         submissionProcessor =
             new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry,
                 depositTaskHelper, cri, depositServiceErrorHandler);
@@ -358,13 +363,15 @@ public class SubmissionProcessorTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void depositCreationFailure() {
+    public void depositCreationFailure_IsolateDepositExceptionHandling() throws IOException {
         // Set the Repositories on the Submission, and create a DepositSubmission (the Submission mapped to the
         // Deposit Services' model).
 
         Repository repository1 = mock(Repository.class);
         when(repository1.getName()).thenReturn("repo-1-name");
-        List<Repository> repositories = List.of(repository1);
+        Repository repository2 = mock(Repository.class);
+        when(repository2.getName()).thenReturn("repo-2-name");
+        List<Repository> repositories = List.of(repository1, repository2);
         Submission submission = new Submission();
         submission.setId("test-submission-id");
         submission.setRepositories(repositories);
@@ -377,29 +384,42 @@ public class SubmissionProcessorTest {
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
-        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), eq(Submission.class), any(), any(BiPredicate.class), any()))
+            .thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
 
+        // Deposit for repo1 will throw exception
+        when(passClient.getObject(repository1)).thenReturn(repository1);
         RuntimeException expectedCause = new RuntimeException("Error saving Deposit resource.");
-        repositories.forEach(repo -> {
-            try {
-                when(passClient.getObject(repo)).thenReturn(repo);
-                doThrow(expectedCause).when(passClient).createObject(any(Deposit.class));
-                when(packagerRegistry.get(repo.getName())).thenReturn(mock(Packager.class));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        doThrow(expectedCause).when(passClient).createObject(
+            argThat(entity -> entity instanceof  Deposit
+                && ((Deposit) entity).getRepository().getName().equals("repo-1-name"))
+        );
+        when(packagerRegistry.get(repository1.getName())).thenReturn(mock(Packager.class));
 
-        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
-            DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-                submissionProcessor.accept(submission);
-            });
+        // Deposit for repo2 will not throw exception
+        when(passClient.getObject(repository2)).thenReturn(repository2);
+        when(packagerRegistry.get(repository2.getName())).thenReturn(mock(Packager.class));
 
-            assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
-                "Error saving Deposit resource.", exception.getMessage());
-            // Verify no DepositTasks were created
-            assertEquals(0, mockDepositTask.constructed().size());
+        List<DepositUtil.DepositWorkerContext> depositWorkerContexts = new ArrayList<>();
+        try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class,
+            (mock, context) -> {
+                DepositUtil.DepositWorkerContext dc = (DepositUtil.DepositWorkerContext) context.arguments().get(0);
+                depositWorkerContexts.add(dc);
+            })) {
+            submissionProcessor.accept(submission);
+            List<DepositTask> depositTasks = mockDepositTask.constructed();
+            assertEquals(1, depositTasks.size());
         }
+        assertEquals(1, depositWorkerContexts.size());
+        DepositUtil.DepositWorkerContext depositWorkerContext = depositWorkerContexts.get(0);
+        assertEquals("repo-2-name", depositWorkerContext.deposit().getRepository().getName());
+        final ArgumentCaptor<DepositServiceRuntimeException> captor =
+            ArgumentCaptor.forClass(DepositServiceRuntimeException.class);
+        verify(depositServiceErrorHandler, times(1)).handleError(captor.capture());
+        DepositServiceRuntimeException exception = captor.getValue();
+        assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
+            "Error saving Deposit resource.", exception.getMessage());
     }
 
     /**
@@ -430,7 +450,9 @@ public class SubmissionProcessorTest {
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
-        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), eq(Submission.class), any(), any(BiPredicate.class), any()))
+            .thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
 
         repositories.forEach(repo -> {
             try {
@@ -444,20 +466,19 @@ public class SubmissionProcessorTest {
         });
 
         try (MockedConstruction<DepositTask> mockDepositTask = mockConstruction(DepositTask.class)) {
-            DepositServiceRuntimeException exception = assertThrows(DepositServiceRuntimeException.class, () -> {
-                submissionProcessor.accept(submission);
-            });
-
-            assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
-                    "No Packager found for tuple [test-submission-id, null, null]: Missing Packager for Repository " +
-                    "named 'repo-1-name' (key: null)",
-                exception.getMessage());
-            assertEquals(exception.getCause().getClass(), NullPointerException.class);
+            submissionProcessor.accept(submission);
             verify(packagerRegistry).get(any());
             verify(passClient, times(0)).createObject(any(Deposit.class));
             // Verify no DepositTasks were created
             assertEquals(0, mockDepositTask.constructed().size());
         }
+        final ArgumentCaptor<DepositServiceRuntimeException> captor =
+            ArgumentCaptor.forClass(DepositServiceRuntimeException.class);
+        verify(depositServiceErrorHandler, times(1)).handleError(captor.capture());
+        DepositServiceRuntimeException exception = captor.getValue();
+        assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
+            "No Packager found for tuple [test-submission-id, null, null]: Missing Packager for Repository " +
+            "named 'repo-1-name' (key: null)", exception.getMessage());
     }
 
     /* Assure the right repo keys are used for lookup */

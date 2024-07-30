@@ -18,7 +18,6 @@ package org.eclipse.pass.deposit.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -29,7 +28,6 @@ import java.util.Set;
 
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
-import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.service.AbstractDepositIT;
 import org.eclipse.pass.deposit.service.DepositProcessor;
 import org.eclipse.pass.deposit.transport.sword2.Sword2Transport;
@@ -134,7 +132,7 @@ public class DepositTaskIT extends AbstractDepositIT {
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
 
         // WHEN
-        assertThrows(DepositServiceRuntimeException.class, () -> submissionProcessor.accept(actualSubmission));
+        submissionProcessor.accept(actualSubmission);
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
