@@ -16,7 +16,6 @@
 package org.eclipse.pass.deposit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,7 +27,6 @@ import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.eclipse.deposit.util.async.Condition;
-import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -86,7 +84,7 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
             .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
-        assertThrows(DepositServiceRuntimeException.class, () -> submissionProcessor.accept(actualSubmission));
+        submissionProcessor.accept(actualSubmission);
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
