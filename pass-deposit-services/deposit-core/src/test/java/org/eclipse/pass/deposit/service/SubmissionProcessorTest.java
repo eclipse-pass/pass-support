@@ -420,6 +420,8 @@ public class SubmissionProcessorTest {
         DepositServiceRuntimeException exception = captor.getValue();
         assertEquals("Failed to process Deposit for tuple [test-submission-id, null, null]: " +
             "Error saving Deposit resource.", exception.getMessage());
+        Deposit errorDeposit = (Deposit) exception.getResource();
+        assertEquals("repo-1-name", errorDeposit.getRepository().getName());
     }
 
     /**
