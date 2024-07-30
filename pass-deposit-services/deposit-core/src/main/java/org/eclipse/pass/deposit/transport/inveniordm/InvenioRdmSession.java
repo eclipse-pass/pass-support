@@ -45,6 +45,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriUtils;
 
@@ -56,6 +58,7 @@ class InvenioRdmSession implements TransportSession {
 
     private final InvenioRdmMetadataMapper invenioRdmMetadataMapper;
     private final RestClient restClient;
+    private final RetryTemplate retryTemplate;
 
     InvenioRdmSession(String baseServerUrl, String apiToken, Boolean verifySslCertificate) {
         this.invenioRdmMetadataMapper = new InvenioRdmMetadataMapper();
@@ -69,6 +72,11 @@ class InvenioRdmSession implements TransportSession {
             .baseUrl(baseServerUrl)
             .defaultHeader("Authorization", "Bearer " + apiToken)
             .build();
+        this.retryTemplate = RetryTemplate.builder()
+            .maxAttempts(5)
+            .fixedBackoff(3000)
+            .retryOn(HttpServerErrorException.class)
+            .build();
     }
 
     @Override
@@ -81,7 +89,8 @@ class InvenioRdmSession implements TransportSession {
             String recordId = createRecordDraft(recordBody.toJSONString());
             uploadFiles(packageStream, recordId);
             String accessUrl = publishRecord(recordId);
-            LOG.warn("Completed InvenioRDM Deposit for Submission: {}", depositSubmission.getId());
+            LOG.warn("Completed InvenioRDM Deposit for Submission: {}, accessUrl: {}",
+                depositSubmission.getId(), accessUrl);
             return new InvenioRdmResponse(true, accessUrl);
         } catch (Exception e) {
             LOG.error("Error depositing into InvenioRDM", e);
@@ -168,12 +177,16 @@ class InvenioRdmSession implements TransportSession {
     }
 
     private String publishRecord(String recordId) {
-        String publishResponse = restClient.post()
-            .uri("/records/{recordId}/draft/actions/publish", recordId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .body(String.class);
-        return JsonPath.parse(publishResponse).read("$.links.self_html");
+        // This call is wrapped in a retry template because of this inveniordm bug for the publish action:
+        // https://github.com/inveniosoftware/invenio-rdm-records/issues/809
+        return retryTemplate.execute(ctx -> {
+            String publishResponse = restClient.post()
+                .uri("/records/{recordId}/draft/actions/publish", recordId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+            return JsonPath.parse(publishResponse).read("$.links.self_html");
+        });
     }
 
     private void uploadFiles(PackageStream packageStream, String recordId) {
