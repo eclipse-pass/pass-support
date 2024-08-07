@@ -1,0 +1,15 @@
+{
+  "name": "nihms-token-refresh",
+  "version": "1.0",
+  "description": "RAP to refresh NIHMS API token",
+  "type": "module",
+  "scripts": {
+    "refresh-token": "./run.sh"
+  },
+  "devDependencies": {
+    "testcafe": "3.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
