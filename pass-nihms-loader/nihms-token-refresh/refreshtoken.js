@@ -41,9 +41,5 @@ test('Get New NIHMS API Token', async t => {
     }
     const token = partsContent[1];
     const nihmsOutFile = process.env.NIHMS_OUTFILE;
-    try {
-        fs.writeFileSync(nihmsOutFile, token);
-    } catch (err) {
-        console.error(err);
-    }
+    fs.writeFileSync(nihmsOutFile, token);
 });
