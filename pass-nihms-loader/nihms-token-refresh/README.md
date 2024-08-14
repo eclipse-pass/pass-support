@@ -11,7 +11,7 @@ value in the `NIHMS_OUTFILE` file is then set into the parameter store.
 
 There is a Docker image built and pushed named ghcr.io/eclipse-pass/pass-nihms-token-refresh:<version>.
 
-In order tun the token refresh RPA, the following needs to be passed to the docker image as environment variables:
+To run the token refresh RPA, the following needs to be passed to the docker image as environment variables:
 
 `NIHMS_USER` : The ERA Commons login username  
 `NIHMS_PASSWORD` : The ERA Commons login password  
