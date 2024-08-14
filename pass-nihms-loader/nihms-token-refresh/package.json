@@ -4,9 +4,9 @@
   "description": "RAP to refresh NIHMS API token",
   "type": "module",
   "scripts": {
-    "refresh-token": "./run.sh"
+    "refresh-token": "./run_refresh.sh"
   },
-  "devDependencies": {
+  "dependencies": {
     "testcafe": "3.3.0"
   },
   "engines": {

@@ -35,11 +35,15 @@ test('Get New NIHMS API Token', async t => {
         .click(Selector('a').withText('API Token'));
 
     const sectionContent = await Selector('div.section-content').textContent;
-    const partsContent = sectionContent.split('&api-token=');
-    if (partsContent.length < 2) {
-        throw new Error('Unable to find api-token in: ' + sectionContent);
+    const startIndex = sectionContent.indexOf("Token: ");
+    if (startIndex === -1) {
+        throw new Error('Unable to find Token: in: ' + sectionContent);
     }
-    const token = partsContent[1];
+    const endIndex = sectionContent.indexOf(" (expires");
+    if (endIndex === -1) {
+        throw new Error('Unable to find (expires in: ' + sectionContent);
+    }
+    const token = sectionContent.substring(startIndex + 7, endIndex);
     const nihmsOutFile = process.env.NIHMS_OUTFILE;
     fs.writeFileSync(nihmsOutFile, token);
 });
