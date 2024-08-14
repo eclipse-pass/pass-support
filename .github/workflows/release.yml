@@ -17,4 +17,4 @@ jobs:
     with:
       releaseversion: ${{ inputs.releaseversion }}
       nextversion: ${{ inputs.nextversion}}
-      images: ghcr.io/eclipse-pass/deposit-services-core ghcr.io/eclipse-pass/pass-notification-service ghcr.io/eclipse-pass/jhu-grant-loader ghcr.io/eclipse-pass/pass-journal-loader ghcr.io/eclipse-pass/pass-nihms-loader
+      images: ghcr.io/eclipse-pass/deposit-services-core ghcr.io/eclipse-pass/pass-notification-service ghcr.io/eclipse-pass/jhu-grant-loader ghcr.io/eclipse-pass/pass-journal-loader ghcr.io/eclipse-pass/pass-nihms-loader ghcr.io/eclipse-pass/pass-nihms-token-refresh
