@@ -2,7 +2,7 @@ FROM eclipse-temurin:17.0.8_7-jre-jammy
 
 WORKDIR /app
 
-COPY target/pass-journal-loader-nih-exec.jar .
+COPY target/pass-journal-loader-nih-*-exec.jar pass-journal-loader-nih-exec.jar
 COPY entrypoint.sh .
 
 RUN apt update \

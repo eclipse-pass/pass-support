@@ -94,16 +94,17 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>org.eclipse.pass.loader.nihms.NihmsHarvesterCLI</mainClass>
-          <finalName>nihms-data-harvest-cli</finalName>
-          <classifier>exec</classifier>
-        </configuration>
         <executions>
           <execution>
+            <id>repackage</id>
             <goals>
               <goal>repackage</goal>
             </goals>
+            <configuration>
+              <mainClass>org.eclipse.pass.loader.nihms.NihmsHarvesterCLI</mainClass>
+              <classifier>exec</classifier>
+              <attach>false</attach>
+            </configuration>
           </execution>
         </executions>
       </plugin>
