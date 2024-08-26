@@ -2,7 +2,7 @@ FROM eclipse-temurin:17.0.8_7-jre-jammy
 
 WORKDIR /app
 
-COPY target/jhu-grant-loader-exec.jar .
+COPY target/pass-grant-loader-*-exec.jar jhu-grant-loader-exec.jar
 COPY entrypoint.sh .
 
 RUN apt update \

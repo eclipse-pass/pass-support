@@ -31,13 +31,13 @@
                 <resource>
                   <directory>../nihms-data-harvest/target</directory>
                   <includes>
-                    <include>nihms-data-harvest-cli-exec.jar</include>
+                    <include>nihms-data-harvest-*-exec.jar</include>
                   </includes>
                 </resource>
                 <resource>
                   <directory>../nihms-data-transform-load/target</directory>
                   <includes>
-                    <include>nihms-data-transform-load-exec.jar</include>
+                    <include>nihms-data-transform-load-*-exec.jar</include>
                   </includes>
                 </resource>
               </resources>

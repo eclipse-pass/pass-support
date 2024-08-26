@@ -211,16 +211,17 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot-maven-plugin.version}</version>
-                <configuration>
-                    <mainClass>org.eclipse.pass.notification.NotificationApp</mainClass>
-                    <finalName>pass-notification-service</finalName>
-                    <classifier>exec</classifier>
-                </configuration>
                 <executions>
                     <execution>
+                        <id>repackage</id>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
+                        <configuration>
+                            <mainClass>org.eclipse.pass.notification.NotificationApp</mainClass>
+                            <classifier>exec</classifier>
+                            <attach>false</attach>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

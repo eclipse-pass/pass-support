@@ -26,6 +26,7 @@
   </modules>
 
   <properties>
+    <spring-boot-maven-plugin.version>3.2.1</spring-boot-maven-plugin.version>
     <commons.csv.version>1.10.0</commons.csv.version>
     <commons-lang.version>3.14.0</commons-lang.version>
     <logback.version>1.4.14</logback.version>

@@ -2,7 +2,7 @@ FROM eclipse-temurin:17.0.8_7-jre-jammy
 
 WORKDIR /app
 
-COPY target/pass-deposit-service-exec.jar .
+COPY target/deposit-core-*-exec.jar pass-deposit-service-exec.jar
 COPY entrypoint.sh .
 
 RUN apt update \
