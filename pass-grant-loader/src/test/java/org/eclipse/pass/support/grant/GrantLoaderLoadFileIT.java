@@ -61,7 +61,7 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
 
         // WHEN
         PassCliException passCliException = assertThrows(PassCliException.class, () -> {
-            grantLoaderApp.run("", "01/01/2011", "grant",
+            grantLoaderApp.run("", "2011-01-01", "grant",
                 "load", "file:./src/test/resources/test-load.csv", null);
         });
 
@@ -249,7 +249,15 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals(0, resultGrant4.getTotal());
         assertTrue(ingestRecordErrors.stream().anyMatch(message ->
             message.matches(".*GrantIngestRecord.*grantNumber=777777.*\\sError Message: " +
-                "Invalid Pi Role: PI. Valid \\[P, C, K]")));
+                "Invalid Pi Role: PI. Valid \\[P, C]")));
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:888888"));
+        PassClientResult<Grant> resultGrant8 = passClient.selectObjects(grantSelector);
+        // null pi role, skips row
+        assertEquals(0, resultGrant8.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=888888.*\\sError Message: " +
+                "Required value missing for piRole")));
     }
 
 }
