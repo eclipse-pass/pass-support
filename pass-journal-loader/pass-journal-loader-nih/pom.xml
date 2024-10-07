@@ -134,8 +134,8 @@
                 <platform>${docker.platforms}</platform>
 		        <env>
                   <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
-                  <PASS_CORE_BACKEND_USER>${pass.core.user}</PASS_CORE_BACKEND_USER>
-                  <PASS_CORE_BACKEND_PASSWORD>${pass.core.password}</PASS_CORE_BACKEND_PASSWORD>
+                  <PASS_CORE_USER>${pass.core.user}</PASS_CORE_USER>
+                  <PASS_CORE_PASSWORD>${pass.core.password}</PASS_CORE_PASSWORD>
 		        </env>
                 <wait>
                   <http>
