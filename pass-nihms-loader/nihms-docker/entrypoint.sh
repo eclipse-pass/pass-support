@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Execute NIHMS harvest
-java -jar nihms-data-harvest-cli-exec.jar "$@"
+java $PASS_NIHMS_LOADER_JAVA_OPTS -jar nihms-data-harvest-cli-exec.jar "$@"
 
 # Execute NIHMS transform and load into PASS
-java -jar nihms-data-transform-load-exec.jar
+java $PASS_NIHMS_LOADER_JAVA_OPTS -jar nihms-data-transform-load-exec.jar
