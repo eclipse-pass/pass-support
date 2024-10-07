@@ -459,6 +459,7 @@
                 <!-- These come from bundled jars -->
                 <ignoredDependency>org.springframework*::</ignoredDependency>
                 <ignoredDependency>software.amazon.awssdk::</ignoredDependency>
+                <ignoredDependency>io.awspring.cloud::</ignoredDependency>
                 <!-- Comes from outdated sword2 client -->
                 <ignoredDependency>org.apache.abdera::</ignoredDependency>
                 <ignoredDependency>junit:junit:</ignoredDependency>
