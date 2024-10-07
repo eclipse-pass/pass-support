@@ -93,8 +93,8 @@ public abstract class NihmsSubmissionEtlITBase {
     @Container
     protected static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
         .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
-        .withEnv("PASS_CORE_BACKEND_USER", "backend")
-        .withEnv("PASS_CORE_BACKEND_PASSWORD", "backend")
+        .withEnv("PASS_CORE_USER", "backend")
+        .withEnv("PASS_CORE_PASSWORD", "backend")
         .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "backend"))
         .withExposedPorts(8080);
 
