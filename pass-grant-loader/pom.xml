@@ -83,6 +83,10 @@
         </exclusions>
       </dependency>
       <dependency>
+        <groupId>io.awspring.cloud</groupId>
+        <artifactId>spring-cloud-aws-starter-parameter-store</artifactId>
+      </dependency>
+      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
         <scope>test</scope>
@@ -251,7 +255,7 @@
                     <excludes>
                       <exclude>com.squareup.okio:okio:*</exclude>
                       <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:*</exclude>
-                      <!-- TODO try removing -->
+                      <!-- TODO try removing, strange conflict with pass-data-client -->
                       <exclude>org.apache.commons:commons-lang3:*</exclude>
                     </excludes>
                   </dependencyConvergence>
