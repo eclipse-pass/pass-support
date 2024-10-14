@@ -16,6 +16,7 @@ To run the token refresh RPA, the following needs to be passed to the docker ima
 `NIHMS_USER` : The ERA Commons login username  
 `NIHMS_PASSWORD` : The ERA Commons login password  
 `NIHMS_OUTFILE` : The full path to the file to write the new token
+`NIHMS_API_TOKEN_PARAM_NAME` : The name to use for the NIHMS API Token parameter in the parameter store
 
 If you are setting the token into AWS Parameter Store, the script assumes that the needed aws cli authentication are in
 place such as passing the AWS env vars or assumed roles.
