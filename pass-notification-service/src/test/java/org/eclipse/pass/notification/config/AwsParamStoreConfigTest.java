@@ -39,7 +39,15 @@ import org.testcontainers.utility.DockerImageName;
         "spring.cloud.aws.credentials.access-key=noop",
         "spring.cloud.aws.credentials.secret-key=noop",
         "spring.cloud.aws.region.static=us-east-1",
-        "spring.jms.listener.auto-startup=false"
+        "spring.jms.listener.auto-startup=false",
+        "spring.mail.host=${SPRING_MAIL_HOST:test-mail-host}",
+        "spring.mail.port=${SPRING_MAIL_PORT:999}",
+        "spring.mail.username=${SPRING_MAIL_USERNAME:test-mail-user}",
+        "spring.mail.password=${SPRING_MAIL_PASSWORD:test-mail-pw}",
+        "pass.client.url=http://localhost:8080/",
+        "pass.client.user=${PASS_CORE_USER:test}",
+        "pass.client.password=${PASS_CORE_PASSWORD:test-pw}",
+        "pass.app.domain=testing-pass-app-domain",
     })
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Testcontainers
@@ -77,7 +85,7 @@ class AwsParamStoreConfigTest {
     @Test
     public void testLoadPropFromParamStore() {
         String mailHostNameProp = environment.getProperty("spring.mail.host");
-        assertEquals("localhost", mailHostNameProp);
+        assertEquals("test-mail-host", mailHostNameProp);
         String userPwProp = environment.getProperty("spring.mail.password");
         assertEquals("aws-param-store-notif-pw", userPwProp);
         String passClientPwProp = environment.getProperty("pass.client.password");
