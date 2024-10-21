@@ -39,7 +39,10 @@ import org.testcontainers.utility.DockerImageName;
     properties = {
         "spring.cloud.aws.credentials.access-key=noop",
         "spring.cloud.aws.credentials.secret-key=noop",
-        "spring.cloud.aws.region.static=us-east-1"
+        "spring.cloud.aws.region.static=us-east-1",
+        "pass.client.url=http://localhost:8080/",
+        "pass.client.user=${PASS_CORE_USER:test}",
+        "pass.client.password=${PASS_CORE_PASSWORD:test-pw}",
     })
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Testcontainers
@@ -79,7 +82,7 @@ class AwsParamStoreConfigTest {
     @Test
     public void testLoadPropFromParamStore() {
         String clientUrlNameProp = environment.getProperty("pass.client.url");
-        assertEquals("localhost:8080", clientUrlNameProp);
+        assertEquals("http://localhost:8080/", clientUrlNameProp);
         String repoIdProp = environment.getProperty("nihmsetl.repository.id");
         assertEquals("aws-param-store-repo-id", repoIdProp);
         String passClientPwProp = environment.getProperty("pass.client.password");
