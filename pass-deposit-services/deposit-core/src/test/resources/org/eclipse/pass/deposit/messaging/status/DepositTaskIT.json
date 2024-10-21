@@ -18,14 +18,14 @@
       "auth-realms": [
         {
           "mech": "basic",
-          "username": "${dspace.username}",
+          "username": "${dspace.user}",
           "password": "${dspace.password}",
           "url": "${dspace.baseuri}/swordv2"
         }
       ],
       "protocol-binding": {
         "protocol": "SWORDv2",
-        "username": "${dspace.username}",
+        "username": "${dspace.user}",
         "password": "${dspace.password}",
         "server-fqdn": "${dspace.host}",
         "server-port": "${dspace.port}",

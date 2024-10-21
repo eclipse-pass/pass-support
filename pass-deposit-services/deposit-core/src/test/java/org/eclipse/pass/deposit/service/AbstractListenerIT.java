@@ -35,14 +35,16 @@ import org.testcontainers.utility.DockerImageName;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = DepositApp.class)
-@TestPropertySource(properties = {
-    "aws.region=us-east-1",
-    "aws.sqs.endpoint.override=",
-    "spring.jms.listener.auto-startup=true",
-    "spring.cloud.aws.s3.enabled=false",
-    "pass.deposit.queue.submission.name=" + AwsSqsTestConfig.QUEUE_NAME,
-    "pass.deposit.jobs.disabled=true"
-})
+@TestPropertySource(
+    locations = "/test-application.properties",
+    properties = {
+        "aws.region=us-east-1",
+        "aws.sqs.endpoint.override=",
+        "spring.jms.listener.auto-startup=true",
+        "spring.cloud.aws.s3.enabled=false",
+        "pass.deposit.queue.submission.name=" + AwsSqsTestConfig.QUEUE_NAME,
+        "pass.deposit.jobs.disabled=true"
+    })
 @Testcontainers
 @DirtiesContext
 public abstract class AbstractListenerIT {

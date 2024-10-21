@@ -67,12 +67,13 @@ import org.testcontainers.utility.DockerImageName;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = DepositApp.class)
-@TestPropertySource("classpath:test-application.properties")
-@TestPropertySource(properties = {
-    "pass.client.url=http://localhost:8080",
-    "pass.client.user=backend",
-    "pass.client.password=backend"
-})
+@TestPropertySource(
+    locations = "/test-application.properties",
+    properties = {
+        "pass.client.url=http://localhost:8080",
+        "pass.client.user=backend",
+        "pass.client.password=backend"
+    })
 @Testcontainers
 @DirtiesContext
 public abstract class AbstractDepositSubmissionIT {

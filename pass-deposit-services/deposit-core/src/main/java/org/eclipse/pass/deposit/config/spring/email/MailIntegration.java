@@ -22,6 +22,7 @@ import jakarta.mail.Authenticator;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.pass.deposit.service.NihmsReceiveMailService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.MessageChannels;
 import org.springframework.integration.mail.ImapMailReceiver;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
+@ConditionalOnProperty(name = "pass.deposit.nihms.email.enabled")
 @Component
 public class MailIntegration {
 
