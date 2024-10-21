@@ -30,7 +30,14 @@ import org.springframework.test.context.TestPropertySource;
  */
 @SpringBootTest(classes = GrantLoaderCLI.class,
     args = {"--startDateTime=2024-01-01T00:00:00", "-awardEndDate=01/01/2025", "-action=pull", "test-pull-file.csv"})
-@TestPropertySource("classpath:test-application.properties")
+@TestPropertySource(
+    locations = "classpath:test-application.properties",
+    properties = """
+    grant.db.url=test-grant-db-url
+    grant.db.username=test-grant-db-user
+    grant.db.password=test-grant-db-pw
+    """
+)
 public class GrantLoaderCLITest {
 
     @MockBean GrantLoaderApp grantLoaderApp;

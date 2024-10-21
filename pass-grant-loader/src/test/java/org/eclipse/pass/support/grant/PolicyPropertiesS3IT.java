@@ -45,7 +45,13 @@ import org.testcontainers.utility.DockerImageName;
 @TestPropertySource(properties = {
     "spring.cloud.aws.s3.enabled=true",
     "pass.policy.prop.path=s3://test-bucket/s3-policy.properties",
-    "pass.grant.update.ts.path=file:./src/test/resources/s3-testgrantupdatets"
+    "pass.grant.update.ts.path=file:./src/test/resources/s3-testgrantupdatets",
+    "pass.client.url=http://localhost:8080/",
+    "pass.client.user=test",
+    "pass.client.password=test-pw",
+    "grant.db.url=test-grant-db-url",
+    "grant.db.username=test-grant-db-user",
+    "grant.db.password=test-grant-db-pw"
 })
 @Testcontainers
 public class PolicyPropertiesS3IT {

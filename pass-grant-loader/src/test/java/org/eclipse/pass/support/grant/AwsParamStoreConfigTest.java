@@ -42,7 +42,13 @@ import org.testcontainers.utility.DockerImageName;
         "spring.cloud.aws.credentials.secret-key=noop",
         "spring.cloud.aws.region.static=us-east-1",
         "pass.policy.prop.path=file:./src/test/resources/policy.properties",
-        "pass.grant.update.ts.path=file:./src/test/resources/grant_update_timestamps"
+        "pass.grant.update.ts.path=file:./src/test/resources/grant_update_timestamps",
+        "pass.client.url=http://localhost:8080/",
+        "pass.client.user=${PASS_CORE_USER:test}",
+        "pass.client.password=${PASS_CORE_PASSWORD:test-pw}",
+        "grant.db.url=${GRANT_DB_URL:test-grant-db-url}",
+        "grant.db.username=${GRANT_DB_USER:test-grant-db-user}",
+        "grant.db.password=${GRANT_DB_PASSWORD:test-grant-db-pw}"
     })
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Testcontainers
@@ -82,7 +88,7 @@ class AwsParamStoreConfigTest {
     @Test
     public void testLoadPropFromParamStore() {
         String userNameProp = environment.getProperty("grant.db.username");
-        assertEquals("", userNameProp);
+        assertEquals("test-grant-db-user", userNameProp);
         String userPwProp = environment.getProperty("grant.db.password");
         assertEquals("aws-param-store-grant-pw", userPwProp);
         String passClientPwProp = environment.getProperty("pass.client.password");
