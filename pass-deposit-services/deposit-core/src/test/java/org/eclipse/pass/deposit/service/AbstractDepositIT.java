@@ -50,10 +50,13 @@ import org.swordapp.client.SwordIdentifier;
 
 @TestPropertySource(properties = {
     "pass.deposit.repository.configuration=classpath:org/eclipse/pass/deposit/messaging/status/DepositTaskIT.json",
-    "dspace.username=testuser",
-    "dspace.password=testuserpassword",
+    "dspace.host=localhost",
+    "dspace.port=9020",
+    "dspace.user=test-dspace-user",
+    "dspace.password=test-dspace-password",
+    "dspace.server=localhost:9020",
     "dspace.baseuri=http://localhost",
-    "dspace.collection.handle=foobartest"
+    "dspace.collection.handle=foobartest",
 })
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

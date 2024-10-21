@@ -73,13 +73,11 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @TestPropertySource(properties = {
-    "pass.test.data.policy.title=test-policy-title",
-    "pass.test.data.user.email=test-user-email@foo",
-    "dspace.user=test-dspace-user",
-    "dspace.password=test-dspace-password",
-    "dspace.server=localhost:9020",
     "dspace.server.api.protocol=http",
     "dspace.server.api.path=/server/api",
+    "pass.test.data.job.enabled=true",
+    "pass.test.data.policy.title=test-policy-title",
+    "pass.test.data.user.email=test-user-email@foo",
     "pass.test.dspace.repo.key=TestDspace"
 })
 @WireMockTest(httpPort = 9020)

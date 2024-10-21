@@ -34,13 +34,18 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-@SpringBootTest(
-    properties = {
-        "spring.cloud.aws.credentials.access-key=noop",
-        "spring.cloud.aws.credentials.secret-key=noop",
-        "spring.cloud.aws.region.static=us-east-1",
-        "spring.jms.listener.auto-startup=false"
-    })
+@SpringBootTest(properties = """
+    spring.cloud.aws.credentials.access-key=noop
+    spring.cloud.aws.credentials.secret-key=noop
+    spring.cloud.aws.region.static=us-east-1
+    spring.jms.listener.auto-startup=false
+    pass.client.url=http://localhost:8080/
+    pass.client.user=${PASS_CORE_USER:test}
+    pass.client.password=${PASS_CORE_PASSWORD:test-pw}
+    dspace.user=${DSPACE_USER:test@test.edu}
+    dspace.password=${DSPACE_PASSWORD:test-dspace-pw}
+    """
+)
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Testcontainers
 class AwsParamStoreConfigTest {

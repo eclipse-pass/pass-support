@@ -32,16 +32,22 @@ import org.springframework.test.context.TestPropertySource;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @SpringBootTest(classes = DepositApp.class)
-@TestPropertySource("classpath:test-application.properties")
-@TestPropertySource(properties = {
-    "pass.deposit.jobs.disabled=false",
-    "pass.test.data.job.enabled=true",
-    "pass.deposit.jobs.default-interval-ms=1500",
-    "pass.test.data.job.interval-ms=1500",
-    "pass.deposit.jobs.1.init.delay=50",
-    "pass.deposit.jobs.2.init.delay=100",
-    "pass.deposit.jobs.3.init.delay=120"
-})
+@TestPropertySource(
+    locations = "classpath:test-application.properties",
+    properties = {
+        "pass.deposit.jobs.disabled=false",
+        "pass.test.data.job.enabled=true",
+        "pass.deposit.jobs.default-interval-ms=1500",
+        "pass.test.data.job.interval-ms=1500",
+        "pass.deposit.jobs.1.init.delay=50",
+        "pass.deposit.jobs.2.init.delay=100",
+        "pass.deposit.jobs.3.init.delay=120",
+        "dspace.user=test-dspace-user",
+        "dspace.password=test-dspace-password",
+        "dspace.server=localhost:9020",
+        "dspace.server.api.protocol=http",
+        "dspace.server.api.path=/server/api",
+    })
 public class ScheduledJobsTest {
 
     @MockBean private SubmissionStatusUpdater submissionStatusUpdater;

@@ -39,7 +39,9 @@ import org.springframework.test.context.TestPropertySource;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @TestPropertySource(properties = {
-    "pass.deposit.repository.configuration=classpath:/full-test-repositories.json"
+    "pass.deposit.repository.configuration=classpath:/full-test-repositories.json",
+    "inveniordm.api.baseUrl=http://localhost",
+    "inveniordm.api.token=test-token",
 })
 public class DepositUpdaterIT extends AbstractDepositIT {
 

@@ -27,7 +27,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(classes = DepositApp.class)
-@TestPropertySource("classpath:test-application.properties")
+@TestPropertySource(
+    locations = "/test-application.properties",
+    properties = {
+        "dspace.host=test-dspace-host",
+        "dspace.port=test-dspace-port",
+        "pmc.ftp.host=test-ftp-host",
+        "pmc.ftp.port=test-ftp-port",
+    })
 public abstract class AbstractJacksonMappingTest {
 
     @Autowired

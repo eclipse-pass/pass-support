@@ -20,11 +20,13 @@ import java.util.Map;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
+@ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${inveniordm.api.baseUrl}')")
 @Component
 public class InvenioRdmTransport implements Transport {
 

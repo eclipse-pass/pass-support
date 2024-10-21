@@ -43,11 +43,13 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
+@ConditionalOnProperty(name = "pass.deposit.nihms.email.enabled")
 @Service
 public class NihmsReceiveMailService {
     private static final Logger LOG = LoggerFactory.getLogger(NihmsReceiveMailService.class);

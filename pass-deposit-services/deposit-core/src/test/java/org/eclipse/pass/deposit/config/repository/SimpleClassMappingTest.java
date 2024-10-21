@@ -121,8 +121,9 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
         assertEquals("SWORDv2", swordBinding.getProtocol());
         assertEquals("sworduser", swordBinding.getUsername());
         assertEquals("swordpass", swordBinding.getPassword());
-        assertEquals("http://localhost:8181/swordv2/servicedocument", swordBinding.getServiceDocUrl());
-        assertEquals("http://localhost:8181/swordv2/collection/123456789/2",
+        assertEquals("http://test-dspace-host:test-dspace-port/swordv2/servicedocument",
+            swordBinding.getServiceDocUrl());
+        assertEquals("http://test-dspace-host:test-dspace-port/swordv2/collection/123456789/2",
                      swordBinding.getDefaultCollectionUrl());
         assertNull(swordBinding.getOnBehalfOf());
         assertTrue(swordBinding.isDepositReceipt());
@@ -157,8 +158,8 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
         assertEquals("sftp", sftpBinding.getProtocol());
         assertEquals("sftpuser", sftpBinding.getUsername());
         assertEquals("sftppass", sftpBinding.getPassword());
-        assertEquals("localhost", sftpBinding.getServerFqdn());
-        assertEquals("21", sftpBinding.getServerPort());
+        assertEquals("test-ftp-host", sftpBinding.getServerFqdn());
+        assertEquals("test-ftp-port", sftpBinding.getServerPort());
         assertEquals("/logs/upload/%s", sftpBinding.getDefaultDirectory());
     }
 
@@ -169,8 +170,8 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
         assertEquals("ftp", ftpBinding.getProtocol());
         assertEquals("ftpuser", ftpBinding.getUsername());
         assertEquals("ftppass", ftpBinding.getPassword());
-        assertEquals("localhost", ftpBinding.getServerFqdn());
-        assertEquals("21", ftpBinding.getServerPort());
+        assertEquals("test-ftp-host", ftpBinding.getServerFqdn());
+        assertEquals("test-ftp-port", ftpBinding.getServerPort());
         assertEquals("binary", ftpBinding.getDataType());
         assertEquals("stream", ftpBinding.getTransferMode());
         assertTrue(ftpBinding.isUsePasv());
