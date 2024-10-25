@@ -16,21 +16,21 @@ used in development and production infrastructure which rely on Docker and its a
 
 ### Production Configuration Variables
 
-| Environment Variable    | Default Value                                                                  |Description|
-|-------------------------|--------------------------------------------------------------------------------|-----------|
-| `DSPACE_HOST`           | localhost                                                                      |the IP address or host name of the server running the SWORD protocol version 2 endpoint
-| `DSPACE_PORT`           | 8181                                                                           |the TCP port exposing the SWORD protocol version 2 endpoint
-| `FTP_HOST`              | localhost                                                                      |the IP address or  host name of the NIH FTP server
-| `FTP_PORT`              | 21                                                                             |the TCP control port of the NIH FTP server
-| `PASS_DEPOSIT_JOBS_CONCURRENCY` | 2                                                                              |the number of Scheduled jobs that may be run concurrently.
-| `PASS_DEPOSIT_JOBS_DEFAULT_INTERVAL_MS` | 600000                                                                         |the amount of time, in milliseconds, that Scheduled jobs run.
-| `PASS_DEPOSIT_QUEUE_SUBMISSION_NAME` | submission                                                                     |the name of the JMS queue that has messages pertaining to `Submission` resources (used by the `JmsSubmissionProcessor`)
-| `PASS_DEPOSIT_QUEUE_DEPOSIT_NAME` | deposit                                                                        |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
-| `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` | classpath:/repositories.json                                                   |points to a properties file containing the configuration for the transport of custodial content to remote repositories. Values must be [Spring Resource URIs][1]. See below for customizing the repository configuration values.
-| `PASS_DEPOSIT_WORKERS_CONCURRENCY` | 4                                                                              |the number of Deposit Worker threads that can simultaneously run.
-| `PASS_CLIENT_URL`       | localhost:8080                                                                 |the URL used to communicate with the PASS Core API. Normally this variable does not need to be changed (see note below)
-| `PASS_CLIENT_PASSWORD`        | fakepassword                                                                           |the password used for `Basic` HTTP authentication to the PASS Core API
-| `PASS_CLIENT_USER`            | fakeuser                                                                           |the username used for `Basic` HTTP authentication to the PASS Core API
+| Environment Variable                    | Default Value                           |Description|
+|-----------------------------------------|-----------------------------------------|-----------|
+| `DSPACE_HOST`                           |                                         |the IP address or host name of the server running the SWORD protocol version 2 endpoint
+| `DSPACE_PORT`                           |                                         |the TCP port exposing the SWORD protocol version 2 endpoint
+| `FTP_HOST`                              |                                         |the IP address or  host name of the NIH FTP server
+| `FTP_PORT`                              |                                         |the TCP control port of the NIH FTP server
+| `PASS_DEPOSIT_JOBS_CONCURRENCY`         | 2                                       |the number of Scheduled jobs that may be run concurrently.
+| `PASS_DEPOSIT_JOBS_DEFAULT_INTERVAL_MS` | 600000                                  |the amount of time, in milliseconds, that Scheduled jobs run.
+| `PASS_DEPOSIT_QUEUE_SUBMISSION_NAME`    | submission                              |the name of the JMS queue that has messages pertaining to `Submission` resources (used by the `JmsSubmissionProcessor`)
+| `PASS_DEPOSIT_QUEUE_DEPOSIT_NAME`       | deposit                                 |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
+| `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` | classpath:/repositories.json            |points to a properties file containing the configuration for the transport of custodial content to remote repositories. Values must be [Spring Resource URIs][1]. See below for customizing the repository configuration values.
+| `PASS_DEPOSIT_WORKERS_CONCURRENCY`      | 4                                       |the number of Deposit Worker threads that can simultaneously run.
+| `PASS_CORE_URL`                         |                                         |the URL used to communicate with the PASS Core API. Normally this variable does not need to be changed (see note below)
+| `PASS_CORE_PASSWORD`                    |                                         |the password used for `Basic` HTTP authentication to the PASS Core API
+| `PASS_CORE_USER`                        |                                         |the username used for `Basic` HTTP authentication to the PASS Core API
 
 ### Repositories Configuration
 
