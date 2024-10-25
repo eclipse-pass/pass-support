@@ -113,11 +113,11 @@ Supported environment variables (system property analogs) and default values are
 
 - `PASS_NOTIFICATION_QUEUE_EVENT_NAME` (`pass.notification.queue.event.name`): `event`
 - `PASS_NOTIFICATION_MODE` (`pass.notification.mode`): `DEMO`
-- `PASS_CLIENT_URL` (`pass.client.url`): `{PASS_CLIENT_URL:localhost:8080}`
-- `PASS_CLIENT_USER` (`pass.client.user`): `{PASS_CLIENT_USER:fakeuser}`
-- `PASS_CLIENT_PASSWORD` (`pass.client.password`): `${PASS_CLIENT_PASSWORD:fakepassword}`
-- `SPRING_MAIL_HOST` (`spring.mail.host`): `${SPRING_MAIL_HOST:localhost}`
-- `SPRING_MAIL_PORT` (`spring.mail.port`): `${SPRING_MAIL_PORT:587}`
+- `PASS_CORE_URL` (`pass.client.url`): `{PASS_CORE_URL}`
+- `PASS_CORE_USER` (`pass.client.user`): `{PASS_CORE_USER}`
+- `PASS_CORE_PASSWORD` (`pass.client.password`): `${PASS_CORE_PASSWORD}`
+- `SPRING_MAIL_HOST` (`spring.mail.host`): `${SPRING_MAIL_HOST}`
+- `SPRING_MAIL_PORT` (`spring.mail.port`): `${SPRING_MAIL_PORT}`
 - `SPRING_MAIL_USERNAME` (`spring.mail.user`): `{SPRING_MAIL_USERNAME}`
 - `SPRING_MAIL_PASSWORD` (`spring.mail.pass`): `{SPRING_MAIL_PASSWORD}`
 - `SPRING_MAIL_PROTOCOL` (`spring.mail.transport`): `${SPRING_MAIL_PROTOCOL:SMTP}`  
