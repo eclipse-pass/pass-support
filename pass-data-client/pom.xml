@@ -11,7 +11,6 @@
 
   <properties>
     <!-- Properties for dependency versions -->
-    <spring-boot-maven-plugin.version>3.2.1</spring-boot-maven-plugin.version>
     <okhttp.version>4.12.0</okhttp.version>
     <moshi.version>4.12.0</moshi.version>
     <jsonapi-adapters.version>1.1.0</jsonapi-adapters.version>
@@ -79,13 +78,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <version>${spring-boot-maven-plugin.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${testcontainers.version}</version>
@@ -113,13 +105,6 @@
             </goals>
           </execution>
         </executions>
-	      <configuration>
-          <systemPropertyVariables>
-            <pass.core.url>${pass.core.url}</pass.core.url>
-            <pass.core.user>${pass.core.user}</pass.core.user>
-            <pass.core.password>${pass.core.password}</pass.core.password>
-          </systemPropertyVariables>
-        </configuration>
       </plugin>
 
       <plugin>
@@ -167,14 +152,12 @@
                 <!-- These come from testcontainers junit-jupiter -->
                 <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
                 <ignoredUsedUndeclaredDependency>com.github.docker-java::</ignoredUsedUndeclaredDependency>
-                <ignoredUsedUndeclaredDependency>org.springframework:spring-test</ignoredUsedUndeclaredDependency>
               </ignoredUsedUndeclaredDependencies>
               <ignoredUnusedDeclaredDependencies>
                 <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
                 <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic</ignoredUnusedDeclaredDependency>
                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
                 <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
-                <ignoredUnusedDeclaredDependency>org.springframework.boot:spring-boot-starter-test</ignoredUnusedDeclaredDependency>
               </ignoredUnusedDeclaredDependencies>
             </configuration>
           </execution>
