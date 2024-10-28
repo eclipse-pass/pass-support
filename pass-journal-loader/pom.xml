@@ -131,6 +131,9 @@
                 <ignoredUsedUndeclaredDependencies>
                   <!-- These both come from junit-jupiter, so version is tied to that direct dependency -->
                   <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>
+                  <!-- These come from testcontainers junit-jupiter -->
+                  <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
+                  <ignoredUsedUndeclaredDependency>com.github.docker-java::</ignoredUsedUndeclaredDependency>
                 </ignoredUsedUndeclaredDependencies>
                 <ignoredUnusedDeclaredDependencies>
                   <!-- junit-jupiter is a module containing the junit api jars used directly -->

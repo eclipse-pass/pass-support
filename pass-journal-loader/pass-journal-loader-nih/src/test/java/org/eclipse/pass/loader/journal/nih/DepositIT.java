@@ -21,26 +21,70 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.model.Journal;
 import org.eclipse.pass.support.client.model.PmcParticipation;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * @author apb@jhu.edu
  */
+@Testcontainers
 @WireMockTest
 public class DepositIT {
     private final PassClient client = PassClient.newInstance();
+
+    private static final DockerImageName PASS_CORE_IMG;
+
+    static {
+        MavenXpp3Reader reader = new MavenXpp3Reader();
+        try {
+            Model model = reader.read(new FileReader("pom.xml"));
+            String version = model.getParent().getVersion();
+            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:" + version);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        System.setProperty("pass.core.url", "http://localhost:8080");
+        System.setProperty("pass.core.user", "backend");
+        System.setProperty("pass.core.password", "backend");
+    }
+
+    @Container
+    private static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
+        .withCopyFileToContainer(
+            MountableFile.forHostPath("../../pass-core-test-config/"),
+            "/tmp/pass-core-test-config/"
+        )
+        .withEnv("PASS_CORE_JAVA_OPTS", "-Dspring.config.import=file:/tmp/pass-core-test-config/application-test.yml")
+        .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "backend"))
+        .withCreateContainerCmdModifier(cmd -> {
+            cmd.getHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(8080),
+                new ExposedPort(8080)));
+        })
+        .withExposedPorts(8080);
 
     @Test
     public void loadFromFileTest(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
