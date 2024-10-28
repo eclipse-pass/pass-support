@@ -13,11 +13,8 @@
   <properties>
     <!-- Properties for dependency versions -->
     <wiremock.version>3.3.1</wiremock.version>
-    <!-- Properties for ITs -->
-    <pass.core.port>8080</pass.core.port>
-    <pass.core.url>http://localhost:8080</pass.core.url>
-    <pass.core.user>backend</pass.core.user>
-    <pass.core.password>backend</pass.core.password>
+    <testcontainers.version>1.19.4</testcontainers.version>
+    <maven-model.version>3.9.6</maven-model.version>
   </properties>
 
   <dependencies>
@@ -69,6 +66,20 @@
       <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${maven-model.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -94,68 +105,6 @@
       </plugin>
 
       <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>start</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>start</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>stop</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>stop</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>build-after-its</id>
-            <phase>post-integration-test</phase>
-            <configuration>
-              <images>
-                <image>
-                  <name>ghcr.io/eclipse-pass/pass-journal-loader:%v</name>
-                </image>
-              </images>
-            </configuration>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <images>
-            <image>
-              <name>ghcr.io/eclipse-pass/pass-core-main:%v</name>
-              <run>
-                <platform>${docker.platforms}</platform>
-		        <env>
-                  <PASS_CORE_BASE_URL>${pass.core.url}</PASS_CORE_BASE_URL>
-                  <PASS_CORE_USER>${pass.core.user}</PASS_CORE_USER>
-                  <PASS_CORE_PASSWORD>${pass.core.password}</PASS_CORE_PASSWORD>
-		        </env>
-                <wait>
-                  <http>
-                    <url>
-                      ${pass.core.url}/data/grant
-                    </url>
-		            <status>401</status>
-                  </http>
-                  <time>60000</time>
-                </wait>
-                <ports>
-                  <port>${pass.core.port}:${pass.core.port}</port>
-                </ports>
-              </run>
-            </image>
-          </images>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <executions>
@@ -166,13 +115,6 @@
             </goals>
           </execution>
         </executions>
-	      <configuration>
-          <systemPropertyVariables>
-            <pass.core.url>${pass.core.url}</pass.core.url>
-            <pass.core.user>${pass.core.user}</pass.core.user>
-            <pass.core.password>${pass.core.password}</pass.core.password>
-          </systemPropertyVariables>
-        </configuration>
       </plugin>
 
     </plugins>
