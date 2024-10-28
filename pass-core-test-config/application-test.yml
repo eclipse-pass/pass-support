@@ -1,0 +1,75 @@
+elide:
+  baseUrl: http://localhost:8080
+  aggregation-store:
+    enabled: false
+
+PASS_TEST_RESC_PATH: /tmp/pass-core-test-config
+
+spring:
+  application:
+    name: pass-core
+  artemis:
+    embedded:
+      enabled: true
+      queues: pass-submission,pass-deposit,pass-submission-event
+  jpa:
+    hibernate:
+      dialect: 'org.hibernate.dialect.H2Dialect'
+  datasource:
+    url: 'jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE'
+    username: 'sa'
+    password: ''
+    driver-class-name: 'org.h2.Driver'
+  security:
+    saml2:
+      relyingparty:
+        registration:
+          pass:
+            entity-id: https://sp.pass/shibboleth
+            signing:
+              credentials:
+                - private-key-location: file:${PASS_TEST_RESC_PATH}/saml2/sp-key.pem
+                  certificate-location: file:${PASS_TEST_RESC_PATH}/saml2/sp-cert.pem
+            decryption:
+              credentials:
+                - private-key-location: file:${PASS_TEST_RESC_PATH}/saml2/sp-key.pem
+                  certificate-location: file:${PASS_TEST_RESC_PATH}/saml2/sp-cert.pem
+            acs:
+              location: "{baseUrl}/login/saml2/sso/{registrationId}"
+            assertingparty:
+              metadata-uri: file:${PASS_TEST_RESC_PATH}/saml2/idp-metadata.xml
+    user:
+      name: backend
+      password: backend
+
+server:
+  port: 8080
+  shutdown: graceful
+
+logging:
+  file:
+    path: ${java.io.tmpdir}/pass-core
+
+aws:
+  sqs:
+    endpoint-override: ${AWS_SQS_ENDPOINT_OVERRIDE:}
+
+pass:
+  csp: ${PASS_CORE_APP_CSP:default-src 'self';}
+  jms:
+    queue:
+      submission: pass-submission
+      deposit: pass-deposit
+      submission-event: pass-submission-event
+    sqs: false
+    embed: true
+  default-login-success-url: /app/
+  login-processing-path: /login/saml2/sso/pass
+  logout-delete-cookies: JSESSIONID /
+  logout-success-url: /login
+  policy:
+    institution: johnshopkins.edu
+    institutional_policy_title: "Johns Hopkins University (JHU) Open Access Policy"
+    institutional_repository_name: JScholarship
+  usertoken:
+    key:
