@@ -1,3 +1,18 @@
+/*
+ * Copyright 2024 Johns Hopkins University
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.eclipse.pass.support.client;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -27,6 +42,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
@@ -59,15 +76,15 @@ import org.eclipse.pass.support.client.model.User;
 import org.eclipse.pass.support.client.model.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.annotation.DirtiesContext;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 @Testcontainers
-@DirtiesContext
 public class JsonApiPassClientIT {
     private static final DockerImageName PASS_CORE_IMG;
 
@@ -83,11 +100,19 @@ public class JsonApiPassClientIT {
 
         System.setProperty("pass.core.url", "http://localhost:8080");
         System.setProperty("pass.core.user", "backend");
-        System.setProperty("pass.core.password", "moo");
+        System.setProperty("pass.core.password", "backend");
+
+        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.WARN);
     }
 
     @Container
     private static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
+        .withCopyFileToContainer(
+            MountableFile.forHostPath("../pass-core-test-config/"),
+            "/tmp/pass-core-test-config/"
+        )
+        .withEnv("PASS_CORE_JAVA_OPTS", "-Dspring.config.import=file:/tmp/pass-core-test-config/application-test.yml")
         .withCreateContainerCmdModifier(cmd -> {
             cmd.getHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(8080),
                     new ExposedPort(8080)));

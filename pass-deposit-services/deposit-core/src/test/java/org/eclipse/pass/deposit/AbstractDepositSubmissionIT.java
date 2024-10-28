@@ -59,6 +59,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Provides convenience methods for depositing Submissions in PASS.
@@ -93,9 +94,11 @@ public abstract class AbstractDepositSubmissionIT {
 
     @Container
     protected static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
-        .withEnv("PASS_CORE_BASE_URL", "http://localhost:8080")
-        .withEnv("PASS_CORE_USER", "backend")
-        .withEnv("PASS_CORE_PASSWORD", "backend")
+        .withCopyFileToContainer(
+            MountableFile.forHostPath("../../pass-core-test-config/"),
+            "/tmp/pass-core-test-config/"
+        )
+        .withEnv("PASS_CORE_JAVA_OPTS", "-Dspring.config.import=file:/tmp/pass-core-test-config/application-test.yml")
         .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "backend"))
         .withExposedPorts(8080);
 
