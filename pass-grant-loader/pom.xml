@@ -173,6 +173,12 @@
         <version>${maven-model.version}</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>org.eclipse.pass</groupId>
+        <artifactId>pass-core-test-config</artifactId>
+        <version>${project.version}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
 
   <build>
@@ -299,6 +305,8 @@
                   <ignoredUnusedDeclaredDependency>org.projectlombok:lombok:</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>com.oracle.database.jdbc::</ignoredUnusedDeclaredDependency>
+                  <!-- Used by ITs via classpath -->
+                  <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>

@@ -65,7 +65,7 @@ import org.testcontainers.utility.MountableFile;
 @TestPropertySource(properties = {
     "pass.client.url=http://localhost:8080",
     "pass.client.user=backend",
-    "pass.client.password=backend"
+    "pass.client.password=moo"
 })
 @Testcontainers
 @DirtiesContext
@@ -90,11 +90,16 @@ public class NotificationServiceIT extends AbstractNotificationSpringIntegration
     @Container
     static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
         .withCopyFileToContainer(
-            MountableFile.forHostPath("../pass-core-test-config/"),
-            "/tmp/pass-core-test-config/"
+            MountableFile.forClasspathResource("/saml2/"),
+            "/tmp/saml2/"
         )
-        .withEnv("PASS_CORE_JAVA_OPTS", "-Dspring.config.import=file:/tmp/pass-core-test-config/application-test.yml")
-        .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "backend"))
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("/application-test.yml"),
+            "/tmp/application-test.yml"
+        )
+        .withEnv("PASS_SAML_PATH", "file:/tmp/")
+        .withEnv("PASS_CORE_JAVA_OPTS", "-Dspring.config.import=file:/tmp/application-test.yml")
+        .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "moo"))
         .withExposedPorts(8080);
 
     @RegisterExtension
