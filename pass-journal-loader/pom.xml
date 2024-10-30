@@ -138,6 +138,8 @@
                 <ignoredUnusedDeclaredDependencies>
                   <!-- junit-jupiter is a module containing the junit api jars used directly -->
                   <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter:</ignoredUnusedDeclaredDependency>
+                  <!-- Used by ITs via classpath -->
+                  <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>

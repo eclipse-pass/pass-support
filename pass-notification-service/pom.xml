@@ -221,6 +221,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.eclipse.pass</groupId>
+            <artifactId>pass-core-test-config</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -359,6 +366,8 @@
                             <ignoredUnusedDeclaredDependencies>
                                 <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
                                 <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
+                                <!-- Used by ITs via classpath -->
+                                <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

@@ -37,11 +37,6 @@
         <junit.jupiter.version>5.10.1</junit.jupiter.version>
         <mockito.version>5.10.0</mockito.version>
         <wiremock.version>3.3.1</wiremock.version>
-        <!-- Properties for integration tests -->
-        <pass.core.port>8080</pass.core.port>
-        <pass.core.url>http://localhost:8080</pass.core.url>
-        <pass.core.user>backend</pass.core.user>
-        <pass.core.password>backend</pass.core.password>
     </properties>
 
     <dependencyManagement>
@@ -218,6 +213,8 @@
                                 <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
                                 <!-- slf4j is the API used in the code, jcl is used by a transitive dep -->
                                 <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
+                                <!-- Used by ITs via classpath -->
+                                <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                             <ignoredNonTestScopedDependencies>
                                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
