@@ -53,7 +53,7 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 class AwsParamStoreConfigTest {
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:3.1.0");
+        DockerImageName.parse("localstack/localstack:3.8.1");
 
     @Container
     private static final LocalStackContainer localStack = new LocalStackContainer(LOCALSTACK_IMG).withServices(SSM);

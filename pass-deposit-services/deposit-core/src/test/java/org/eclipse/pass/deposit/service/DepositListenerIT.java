@@ -23,9 +23,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import javax.json.Json;
 
 import jakarta.jms.TextMessage;
+import jakarta.json.Json;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

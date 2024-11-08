@@ -41,6 +41,12 @@ public class MailIntegration {
     @Value("${pass.deposit.nihms.email.delay}")
     private Integer nihmsEmailDelay;
 
+    @Value("${nihms.mail.host}")
+    private String nihmsImapHost;
+
+    @Value("${pass.deposit.nihms.email.ssl.checkserveridentity}")
+    private String sslCheckServerIdentity;
+
     private final NihmsReceiveMailService nihmsReceiveMailService;
 
     public MailIntegration(NihmsReceiveMailService nihmsReceiveMailService) {
@@ -64,6 +70,20 @@ public class MailIntegration {
             .channel(MessageChannels.direct().datatype(MimeMessage.class))
             .handle(message -> nihmsReceiveMailService.handleReceivedMail((MimeMessage) message.getPayload()))
             .get();
+    }
+
+    Properties getImapDefaultProperties() {
+        Properties javaMailProperties = new Properties();
+        javaMailProperties.setProperty("mail.imaps.ssl.enable", "true");
+        javaMailProperties.setProperty("mail.imaps.ssl.trust", nihmsImapHost);
+        javaMailProperties.setProperty("mail.imaps.ssl.checkserveridentity", sslCheckServerIdentity);
+        javaMailProperties.setProperty("mail.imaps.starttls.enable", "true");
+        javaMailProperties.setProperty("mail.imaps.auth.login.disable", "true");
+        javaMailProperties.setProperty("mail.imaps.auth.plain.disable", "true");
+        javaMailProperties.setProperty("mail.imaps.connectiontimeout", "60000");
+        javaMailProperties.setProperty("mail.imaps.timeout", "90000");
+        javaMailProperties.setProperty("mail.imaps.writetimeout", "90000");
+        return javaMailProperties;
     }
 
 }

@@ -16,20 +16,14 @@
 package org.eclipse.pass.loader.nihms.entrez;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +43,10 @@ public class PmidLookup {
 
     private static final Logger LOG = LoggerFactory.getLogger(PmidLookup.class);
 
+    private static final Long DEFAULT_ENTREZ_TIME_OUT = Long.valueOf("400");
+    private static final String JSON_ERROR_KEY = "error";
+    private static final String JSON_RESULT_KEY = "result";
+
     /**
      * The default Entrez path does not include an API path. This property can be overridden with a System Property
      * Note that as of May 2018, Entrez supports 3 requests per second without an API key, above this will result in
@@ -58,10 +56,15 @@ public class PmidLookup {
     @Value("${pmc.entrez.service.url}")
     private String ENTREZ_PATH;
 
-    private static final Long DEFAULT_ENTREZ_TIME_OUT = Long.valueOf("400");
+    private final OkHttpClient okHttpClient;
 
-    private static final String JSON_ERROR_KEY = "error";
-    private static final String JSON_RESULT_KEY = "result";
+    public PmidLookup(@Value("${pmid.lookup.connect-timeout-ms}") Long pmidLookupConnectTimeoutMs,
+                      @Value("${pmid.lookup.read-timeout-ms}") Long pmidLookupReadTimeoutMs) {
+        this.okHttpClient = new OkHttpClient.Builder()
+            .connectTimeout(pmidLookupConnectTimeoutMs, TimeUnit.MILLISECONDS)
+            .readTimeout(pmidLookupReadTimeoutMs, TimeUnit.MILLISECONDS)
+            .build();
+    }
 
     /**
      * Retrieve PubMedRecord object for PMID record from NIH's Entrez API service.
@@ -116,33 +119,27 @@ public class PmidLookup {
         JSONObject root;
         String path = String.format(ENTREZ_PATH, pmid);
         try {
-            HttpClient client = HttpClientBuilder
-                .create()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                .setCookieSpec(CookieSpecs.STANDARD).build())
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
-                .build();
-            HttpGet httpget = new HttpGet(new URI(path));
-            HttpResponse response = client.execute(httpget);
-            HttpEntity entity = response.getEntity();
-
-            if (entity != null) {
-                String result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-                root = walkToJsonRoot(result, pmid);
-
-                if (root.has(JSON_ERROR_KEY)) {
-                    //if there is an error key, something went wrong. Log error and return null.
-                    String error = root.getString(JSON_ERROR_KEY);
-                    LOG.warn("Could not retrieve PMID {} from Entrez. Error: {}", pmid, error);
-                    root = null;
+            Request request = new Request.Builder().url(path).get().build();
+            try (Response response = okHttpClient.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Pmid Lookup failed: " + path + ": response=" + response.code());
                 }
-            } else {
-                LOG.warn("Could not retrieve PMID {} from Entrez. Returned empty value.", pmid);
-                root = null;
+                ResponseBody responseBody = response.body();
+                String responseBodyStr = Objects.isNull(responseBody) ? "" : responseBody.string();
+                if (StringUtils.isBlank(responseBodyStr)) {
+                    LOG.warn("Could not retrieve PMID {} from Entrez. Returned empty value.", pmid);
+                    root = null;
+                } else {
+                    root = walkToJsonRoot(responseBodyStr, pmid);
+                    if (root.has(JSON_ERROR_KEY)) {
+                        //if there is an error key, something went wrong. Log error and return null.
+                        String error = root.getString(JSON_ERROR_KEY);
+                        LOG.warn("Could not retrieve PMID {} from Entrez. Error: {}", pmid, error);
+                        root = null;
+                    }
+                }
             }
 
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Could not convert convert path to URL: " + path, e);
         } catch (IllegalStateException | IOException e) {
             LOG.warn("Could not retrieve PMID {} from Entrez. Error: {}", pmid, e);
             throw new RuntimeException("Error while retrieving content from Entrez at URL: " + path, e);

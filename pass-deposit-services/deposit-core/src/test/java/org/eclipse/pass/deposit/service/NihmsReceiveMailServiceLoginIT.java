@@ -28,6 +28,7 @@ import org.springframework.test.context.TestPropertySource;
     "pass.deposit.nihms.email.enabled=true",
     "pass.deposit.nihms.email.delay=2000",
     "pass.deposit.nihms.email.from=test-from-2@localhost,test-from@localhost",
+    "pass.deposit.nihms.email.ssl.checkserveridentity=false",
     "nihms.mail.host=localhost",
     "nihms.mail.port=3993",
     "nihms.mail.username=testnihms@localhost",
