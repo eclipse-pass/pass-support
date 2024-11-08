@@ -22,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
 import java.net.URI;
-import javax.json.Json;
 
 import jakarta.jms.TextMessage;
+import jakarta.json.Json;
 import org.eclipse.pass.notification.AbstractNotificationSpringIntegrationTest;
 import org.eclipse.pass.notification.model.SubmissionEventMessage;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ import org.testcontainers.utility.DockerImageName;
 public class SubmissionEventListenerIT extends AbstractNotificationSpringIntegrationTest {
 
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:2.1.0");
+        DockerImageName.parse("localstack/localstack:3.8.1");
 
     @Container
     static final LocalStackContainer LOCALSTACK_CONTAINER =

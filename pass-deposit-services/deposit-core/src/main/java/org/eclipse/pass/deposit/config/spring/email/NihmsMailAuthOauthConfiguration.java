@@ -61,16 +61,8 @@ public class NihmsMailAuthOauthConfiguration {
     }
 
     private Properties getImapOauthProperties() {
-        Properties javaMailProperties = new Properties();
-        javaMailProperties.setProperty("mail.imaps.ssl.enable", "true");
-        javaMailProperties.setProperty("mail.imaps.ssl.trust", nihmsImapHost);
-        javaMailProperties.setProperty("mail.imaps.sasl.enable", "true");
+        Properties javaMailProperties = mailIntegration.getImapDefaultProperties();
         javaMailProperties.setProperty("mail.imaps.sasl.mechanisms", "XOAUTH2");
-        javaMailProperties.setProperty("mail.imaps.auth.login.disable", "true");
-        javaMailProperties.setProperty("mail.imaps.auth.plain.disable", "true");
-        javaMailProperties.setProperty("mail.imaps.connectiontimeout", "60000");
-        javaMailProperties.setProperty("mail.imaps.timeout", "90000");
-        javaMailProperties.setProperty("mail.imaps.writetimeout", "90000");
         return javaMailProperties;
     }
 

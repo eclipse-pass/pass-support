@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
@@ -63,8 +64,8 @@ public class FailedDepositRetryTest {
         deposit1.setRepository(repository);
         Submission submission = new Submission();
         deposit1.setSubmission(submission);
-        when(passClient.getObject(same(deposit1), any())).thenReturn(deposit1);
-        when(passClient.getObject(same(submission), any())).thenReturn(submission);
+        when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
+        when(passClient.getObject(same(submission), any(String[].class))).thenReturn(submission);
         when(packagerRegistry.get(any())).thenReturn(packager);
         DepositSubmission depositSubmission = new DepositSubmission();
         DepositFile depositFile1 = new DepositFile();
@@ -85,7 +86,7 @@ public class FailedDepositRetryTest {
 
         ArgumentCaptor<String[]> argument = ArgumentCaptor.forClass(String[].class);
         verify(passClient).getObject(same(deposit1), argument.capture());
-        assertIterableEquals(List.of("submission", "repository"), argument.getAllValues());
+        assertIterableEquals(List.of("submission", "repository"), Arrays.asList(argument.getAllValues().get(0)));
     }
 
     @SuppressWarnings("unchecked")
@@ -103,7 +104,7 @@ public class FailedDepositRetryTest {
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
         deposit1.setSubmission(new Submission());
-        when(passClient.getObject(same(deposit1), any())).thenReturn(deposit1);
+        when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
         when(packagerRegistry.get(any())).thenReturn(null);
 
         // WHEN
@@ -114,7 +115,7 @@ public class FailedDepositRetryTest {
 
         ArgumentCaptor<String[]> argument = ArgumentCaptor.forClass(String[].class);
         verify(passClient).getObject(same(deposit1), argument.capture());
-        assertIterableEquals(List.of("submission", "repository"), argument.getAllValues());
+        assertIterableEquals(List.of("submission", "repository"), Arrays.asList(argument.getAllValues().get(0)));
     }
 
     @SuppressWarnings("unchecked")
@@ -133,7 +134,7 @@ public class FailedDepositRetryTest {
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
         deposit1.setSubmission(new Submission());
-        when(passClient.getObject(same(deposit1), any())).thenReturn(deposit1);
+        when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
         when(packagerRegistry.get(any())).thenReturn(packager);
         doThrow(new IOException("Testing depositsubmission error"))
             .when(depositSubmissionModelBuilder).build(any());
@@ -146,7 +147,7 @@ public class FailedDepositRetryTest {
 
         ArgumentCaptor<String[]> argument = ArgumentCaptor.forClass(String[].class);
         verify(passClient).getObject(same(deposit1), argument.capture());
-        assertIterableEquals(List.of("submission", "repository"), argument.getAllValues());
+        assertIterableEquals(List.of("submission", "repository"), Arrays.asList(argument.getAllValues().get(0)));
     }
 
     @SuppressWarnings("unchecked")
@@ -165,7 +166,7 @@ public class FailedDepositRetryTest {
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
         deposit1.setSubmission(new Submission());
-        when(passClient.getObject(same(deposit1), any())).thenReturn(deposit1);
+        when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
         when(packagerRegistry.get(any())).thenReturn(packager);
         when(depositSubmissionModelBuilder.build(any())).thenReturn(new DepositSubmission());
 
@@ -177,7 +178,7 @@ public class FailedDepositRetryTest {
 
         ArgumentCaptor<String[]> argument = ArgumentCaptor.forClass(String[].class);
         verify(passClient).getObject(same(deposit1), argument.capture());
-        assertIterableEquals(List.of("submission", "repository"), argument.getAllValues());
+        assertIterableEquals(List.of("submission", "repository"), Arrays.asList(argument.getAllValues().get(0)));
     }
 
     @SuppressWarnings("unchecked")
@@ -196,7 +197,7 @@ public class FailedDepositRetryTest {
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
         deposit1.setSubmission(new Submission());
-        when(passClient.getObject(same(deposit1), any())).thenReturn(deposit1);
+        when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
         when(packagerRegistry.get(any())).thenReturn(packager);
         DepositSubmission depositSubmission = new DepositSubmission();
         DepositFile depositFile1 = new DepositFile();
@@ -214,7 +215,7 @@ public class FailedDepositRetryTest {
 
         ArgumentCaptor<String[]> argument = ArgumentCaptor.forClass(String[].class);
         verify(passClient).getObject(same(deposit1), argument.capture());
-        assertIterableEquals(List.of("submission", "repository"), argument.getAllValues());
+        assertIterableEquals(List.of("submission", "repository"), Arrays.asList(argument.getAllValues().get(0)));
     }
 
 }
