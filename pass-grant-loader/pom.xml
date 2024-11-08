@@ -32,7 +32,6 @@
     <args4j.version>2.37</args4j.version>
     <commons.csv.version>1.12.0</commons.csv.version>
     <ojdbc10.version>19.24.0.0</ojdbc10.version>
-    <mockito-inline.version>5.2.0</mockito-inline.version>
     <maven-model.version>3.9.9</maven-model.version>
   </properties>
 
