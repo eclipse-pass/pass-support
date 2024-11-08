@@ -417,8 +417,9 @@
                 <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
                 <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
                 <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
-                <!-- slf4j is the API used in the code, log4j is used by a transitive dep -->
+                <!-- slf4j is the API used in the code, log4j/jcl is used by a transitive dep -->
                 <ignoredUnusedDeclaredDependency>org.slf4j:log4j-over-slf4j:</ignoredUnusedDeclaredDependency>
+                <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
                 <!-- mockito-inline is needed to mock final classes -->
                 <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:</ignoredUnusedDeclaredDependency>
                 <ignoredUnusedDeclaredDependency>io.awspring.cloud:spring-cloud-aws-starter-s3:</ignoredUnusedDeclaredDependency>
