@@ -166,6 +166,7 @@
                                 <ignoredNonTestScopedDependency>org.junit.jupiter:junit-jupiter-api:</ignoredNonTestScopedDependency>
                                 <!-- Needed for when data-transform jar is created -->
                                 <ignoredNonTestScopedDependency>org.json:json:</ignoredNonTestScopedDependency>
+                                <ignoredNonTestScopedDependency>commons-io:commons-io:</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
