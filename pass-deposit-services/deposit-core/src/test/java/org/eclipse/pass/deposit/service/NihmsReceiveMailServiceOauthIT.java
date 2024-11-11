@@ -17,14 +17,12 @@ package org.eclipse.pass.deposit.service;
 
 import org.eclipse.pass.deposit.DepositApp;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @SpringBootTest(classes = DepositApp.class)
-@Import(OauthTestConfig.class)
 @TestPropertySource("classpath:test-application.properties")
 @TestPropertySource(properties = {
     "nihms.email.oauth.test.it=true",

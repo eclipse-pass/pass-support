@@ -63,6 +63,7 @@ public class NihmsMailAuthOauthConfiguration {
     private Properties getImapOauthProperties() {
         Properties javaMailProperties = mailIntegration.getImapDefaultProperties();
         javaMailProperties.setProperty("mail.imaps.sasl.mechanisms", "XOAUTH2");
+        javaMailProperties.setProperty("mail.imaps.auth.xoauth2.disable", "false");
         return javaMailProperties;
     }
 
