@@ -40,14 +40,15 @@ import org.springframework.test.context.TestPropertySource;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @SpringBootTest(classes = DepositApp.class)
-@TestPropertySource("classpath:test-application.properties")
-@TestPropertySource(properties = {
-    "pass.deposit.nihms.email.auth=MS_EXCHANGE_OAUTH2",
-    "nihms.mail.username=testnihms-oauth@localhost",
-    "nihms.mail.tenant.id=test-tenant",
-    "nihms.mail.client.id=test-client-id",
-    "nihms.mail.client.secret=test-client-id"
-})
+@TestPropertySource(
+    locations = "/test-application.properties",
+    properties = {
+        "pass.deposit.nihms.email.auth=MS_EXCHANGE_OAUTH2",
+        "nihms.mail.username=testnihms-oauth@localhost",
+        "nihms.mail.tenant.id=test-tenant",
+        "nihms.mail.client.id=test-client-id",
+        "nihms.mail.client.secret=test-client-id"
+    })
 public class Oauth2ExchangeMailAuthenticatorTest {
 
     @Autowired private Oauth2ExchangeMailAuthenticator oauth2ExchangeMailAuthenticator;
