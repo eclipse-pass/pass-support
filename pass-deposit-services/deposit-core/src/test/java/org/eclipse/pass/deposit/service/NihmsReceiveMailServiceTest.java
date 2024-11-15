@@ -58,6 +58,7 @@ import org.mockito.Captor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -76,6 +77,7 @@ import org.springframework.test.context.TestPropertySource;
         "nihms.mail.username=testnihms@localhost",
         "nihms.mail.password=testnihmspassword"
     })
+@DirtiesContext
 public class NihmsReceiveMailServiceTest {
 
     @RegisterExtension
