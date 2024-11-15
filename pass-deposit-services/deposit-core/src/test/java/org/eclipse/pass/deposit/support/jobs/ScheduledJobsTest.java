@@ -26,6 +26,7 @@ import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -48,6 +49,7 @@ import org.springframework.test.context.TestPropertySource;
         "dspace.server.api.protocol=http",
         "dspace.server.api.path=/server/api",
     })
+@DirtiesContext
 public class ScheduledJobsTest {
 
     @MockBean private SubmissionStatusUpdater submissionStatusUpdater;
