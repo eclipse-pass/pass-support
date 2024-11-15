@@ -39,6 +39,7 @@ import org.testcontainers.utility.DockerImageName;
     spring.cloud.aws.credentials.secret-key=noop
     spring.cloud.aws.region.static=us-east-1
     spring.jms.listener.auto-startup=false
+    pass.deposit.jobs.disabled=true
     pass.client.url=http://localhost:8080/
     pass.client.user=${PASS_CORE_USER:test}
     pass.client.password=${PASS_CORE_PASSWORD:test-pw}
