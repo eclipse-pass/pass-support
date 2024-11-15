@@ -304,7 +304,6 @@
             <execution>
               <goals>
                 <goal>jar</goal>
-                <goal>test-jar</goal>
               </goals>
             </execution>
           </executions>
@@ -323,11 +322,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
       </plugin>
 
       <plugin>
