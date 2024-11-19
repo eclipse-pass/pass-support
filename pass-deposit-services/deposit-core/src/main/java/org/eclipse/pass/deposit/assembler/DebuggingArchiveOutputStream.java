@@ -28,11 +28,11 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
+public class DebuggingArchiveOutputStream extends ArchiveOutputStream<ArchiveEntry> {
 
-    private ArchiveOutputStream delegate;
+    private ArchiveOutputStream<ArchiveEntry> delegate;
 
-    public DebuggingArchiveOutputStream(ArchiveOutputStream delegate) {
+    public DebuggingArchiveOutputStream(ArchiveOutputStream<ArchiveEntry> delegate) {
         this.delegate = delegate;
     }
 
@@ -76,21 +76,6 @@ public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
     @Override
     public void write(int b) throws IOException {
         delegate.write(b);
-    }
-
-//    @Override
-//    protected void count(int written) {
-//        delegate.count(written);
-//    }
-//
-//    @Override
-//    protected void count(long written) {
-//        delegate.count(written);
-//    }
-
-    @Override
-    public int getCount() {
-        return delegate.getCount();
     }
 
     @Override

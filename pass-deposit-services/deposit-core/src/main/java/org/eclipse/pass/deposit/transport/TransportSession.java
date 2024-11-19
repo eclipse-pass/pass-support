@@ -16,6 +16,7 @@
 
 package org.eclipse.pass.deposit.transport;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.pass.deposit.assembler.PackageStream;
@@ -49,5 +50,7 @@ public interface TransportSession extends AutoCloseable {
     TransportResponse send(PackageStream packageStream, Map<String, String> metadata);
 
     boolean closed();
+
+    void close() throws IOException;
 
 }

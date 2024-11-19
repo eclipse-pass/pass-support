@@ -193,7 +193,7 @@ public class FilesystemTransport implements Transport {
         }
 
         @Override
-        public void close() throws Exception {
+        public void close() throws IOException {
             // no-op
         }
 

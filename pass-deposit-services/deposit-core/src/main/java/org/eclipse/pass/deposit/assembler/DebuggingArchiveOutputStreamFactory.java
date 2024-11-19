@@ -18,6 +18,7 @@ package org.eclipse.pass.deposit.assembler;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 
 /**
@@ -29,8 +30,10 @@ public class DebuggingArchiveOutputStreamFactory extends DefaultArchiveOutputStr
         super(packageOptions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public ArchiveOutputStream newInstance(Map<String, Object> packageOptions, OutputStream toWrap) {
-        return new DebuggingArchiveOutputStream(super.newInstance(packageOptions, toWrap));
+    public <O extends ArchiveOutputStream<? extends ArchiveEntry>> O newInstance(Map<String, Object> packageOptions,
+                                                                                 OutputStream toWrap) {
+        return (O) new DebuggingArchiveOutputStream(super.newInstance(packageOptions, toWrap));
     }
 }

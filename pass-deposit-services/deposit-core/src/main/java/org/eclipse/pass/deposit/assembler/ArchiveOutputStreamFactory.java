@@ -18,6 +18,7 @@ package org.eclipse.pass.deposit.assembler;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 
 /**
@@ -37,6 +38,7 @@ public interface ArchiveOutputStreamFactory {
      * @param toWrap         the output stream to be wrapped by the returned {@code ArchiveOutputStream}
      * @return the configured {@code ArchiveOutputStream} ready for writing
      */
-    ArchiveOutputStream newInstance(Map<String, Object> packageOptions, OutputStream toWrap);
+    <O extends ArchiveOutputStream<? extends ArchiveEntry>> O newInstance(Map<String, Object> packageOptions,
+                                                                          OutputStream toWrap);
 
 }

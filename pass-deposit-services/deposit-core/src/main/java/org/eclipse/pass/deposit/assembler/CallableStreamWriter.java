@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.springframework.core.io.Resource;
@@ -36,7 +37,7 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
 
     private StreamWriter delegate;
 
-    private ArchiveOutputStream archiveOut;
+    private ArchiveOutputStream<ArchiveEntry> archiveOut;
 
     private List<DepositFileResource> custodialFiles;
 
@@ -55,7 +56,7 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
      * @param custodialFiles
      */
     CallableStreamWriter(StreamWriter delegate,
-                         ArchiveOutputStream archiveOut,
+                         ArchiveOutputStream<ArchiveEntry> archiveOut,
                          List<DepositFileResource> custodialFiles) {
         this.delegate = delegate;
         this.archiveOut = archiveOut;
@@ -73,7 +74,8 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
     }
 
     @Override
-    public void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream archiveOut) throws IOException {
+    public void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream<ArchiveEntry> archiveOut)
+        throws IOException {
         if (alreadyStarted.getAndSet(true) == Boolean.FALSE) {
             delegate.start(custodialFiles, archiveOut);
         } else {
@@ -98,7 +100,7 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         if (alreadyClosed.getAndSet(true) == Boolean.FALSE) {
             delegate.close();
         } else {

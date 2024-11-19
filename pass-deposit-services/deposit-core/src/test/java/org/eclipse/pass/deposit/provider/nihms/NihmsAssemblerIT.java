@@ -187,12 +187,13 @@ public class NihmsAssemblerIT extends AbstractAssemblerIT {
     @Test
     public void testPackageManifest() throws Exception {
         int lineCount = 0;
-        LineIterator lines = FileUtils.lineIterator(manifest);
         List<String> entries = new ArrayList<>();
-        while (lines.hasNext()) {
-            String line = lines.nextLine();
-            entries.add(line);
-            new ManifestLine(manifest, line, lineCount++).assertAll();
+        try (LineIterator lines = FileUtils.lineIterator(manifest)) {
+            while (lines.hasNext()) {
+                String line = lines.next();
+                entries.add(line);
+                new ManifestLine(manifest, line, lineCount++).assertAll();
+            }
         }
         assertEquals(submission.getFiles().size() + 1, lineCount);
 

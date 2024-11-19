@@ -92,8 +92,10 @@ public interface PackageVerifier {
      * @param packageFileMapper maps the custodial file in the package back to the DepositFile in the
      *                          submission
      */
+    // TODO Replace deprecated DirectoryWalker
+    @SuppressWarnings("deprecation")
     default void verifyCustodialFiles(DepositSubmission submission, File packageDir, FileFilter custodialFilter,
-                                      BiFunction<File, File, DepositFile> packageFileMapper) throws Exception {
+                                      BiFunction<File, File, DepositFile> packageFileMapper) {
 
         List<File> supplementalFiles = new ArrayList<>();
         List<File> custodialFiles = new ArrayList<>();
@@ -108,7 +110,7 @@ public interface PackageVerifier {
             }
 
             @Override
-            protected void handleFile(File file, int depth, Collection ignored) throws IOException {
+            protected void handleFile(File file, int depth, Collection<File> ignored) {
                 if (custodialFilter.accept(file)) {
                     custodialFiles.add(file);
                     DepositFile depositFile = packageFileMapper.andThen(df -> {

@@ -79,6 +79,7 @@ public class SubmissionTestUtil {
         passClient.updateObject(submission);
     }
 
+    @SuppressWarnings("unchecked")
     public Submission createSubmissionFromJson(InputStream is, List<PassEntity> entities) {
         Submission submission = null;
         try {

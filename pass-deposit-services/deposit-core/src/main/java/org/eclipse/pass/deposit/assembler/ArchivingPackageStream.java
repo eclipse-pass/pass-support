@@ -29,6 +29,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Archive;
 import org.eclipse.pass.deposit.model.DepositSubmission;
@@ -130,7 +131,7 @@ public class ArchivingPackageStream implements PackageStream {
 
         // Wrap the output stream in an ArchiveOutputStream
         // we support zip, tar and tar.gz so far
-        ArchiveOutputStream archiveOut = archiveOutputStreamFactory.newInstance(packageOptions, pipedOut);
+        ArchiveOutputStream<ArchiveEntry> archiveOut = archiveOutputStreamFactory.newInstance(packageOptions, pipedOut);
 
         // Set on the writer, and used to report any exceptions caught by the writer to the reader.  That way a full
         // stack trace of the exception will be reported when it is encountered by the reader

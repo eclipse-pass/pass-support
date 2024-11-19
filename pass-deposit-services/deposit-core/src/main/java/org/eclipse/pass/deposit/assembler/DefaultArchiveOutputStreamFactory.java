@@ -18,6 +18,7 @@ package org.eclipse.pass.deposit.assembler;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -40,21 +41,22 @@ public class DefaultArchiveOutputStreamFactory implements ArchiveOutputStreamFac
         this.packageOptions = packageOptions;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public ArchiveOutputStream newInstance(Map<String, Object> packageOptions, OutputStream toWrap) {
-        // Wrap the output stream in an ArchiveOutputStream
-        // we support zip, tar and tar.gz so far
-        ArchiveOutputStream archiveOut;
+    public <O extends ArchiveOutputStream<? extends ArchiveEntry>> O newInstance(Map<String, Object> packageOptions,
+                                                                                 OutputStream toWrap) {
 
         if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE) ==
             PackageOptions.Archive.OPTS.TAR) {
             try {
+                TarArchiveOutputStream tarArchiveOutputStream;
                 if (packageOptions.getOrDefault(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.NONE)
                     == PackageOptions.Compression.OPTS.GZIP) {
-                    archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(toWrap));
+                    tarArchiveOutputStream = new TarArchiveOutputStream(new GzipCompressorOutputStream(toWrap));
                 } else {
-                    archiveOut = new TarArchiveOutputStream(toWrap);
+                    tarArchiveOutputStream = new TarArchiveOutputStream(toWrap);
                 }
+                return (O) tarArchiveOutputStream;
             } catch (Exception e) {
                 throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, PackageOptions.Archive.OPTS.TAR,
                     e.getMessage()), e);
@@ -62,7 +64,8 @@ public class DefaultArchiveOutputStreamFactory implements ArchiveOutputStreamFac
         } else if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.OPTS.NONE) ==
             PackageOptions.Archive.OPTS.ZIP) {
             try {
-                archiveOut = new ZipArchiveOutputStream(toWrap);
+                ZipArchiveOutputStream zipArchiveOutputStream = new ZipArchiveOutputStream(toWrap);
+                return (O) zipArchiveOutputStream;
             } catch (Exception e) {
                 throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, PackageOptions.Archive.OPTS.ZIP,
                     e.getMessage()), e);
@@ -70,8 +73,6 @@ public class DefaultArchiveOutputStreamFactory implements ArchiveOutputStreamFac
         } else {
             throw new RuntimeException(ERR_NO_ARCHIVE_FORMAT);
         }
-
-        return archiveOut;
     }
 
 }

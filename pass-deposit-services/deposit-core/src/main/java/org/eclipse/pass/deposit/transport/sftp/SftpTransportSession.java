@@ -148,7 +148,7 @@ class SftpTransportSession implements TransportSession {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         // no-op resources are closed with try-with-resources
     }
 }

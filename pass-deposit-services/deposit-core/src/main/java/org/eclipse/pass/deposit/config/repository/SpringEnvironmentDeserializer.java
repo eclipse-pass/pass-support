@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import org.springframework.core.env.Environment;
 
 public class SpringEnvironmentDeserializer extends StringDeserializer {
+    private static final long serialVersionUID = 1L;
 
     private Environment env;
 

@@ -100,6 +100,7 @@ public abstract class AbstractDepositIT extends AbstractSubmissionIT {
 
     }
 
+    @SuppressWarnings("unchecked")
     protected void mockSword() throws Exception {
         ServiceDocument mockServiceDoc = mock(ServiceDocument.class);
         SWORDWorkspace mockSwordWorkspace = mock(SWORDWorkspace.class);
@@ -126,11 +127,11 @@ public abstract class AbstractDepositIT extends AbstractSubmissionIT {
         when(mockResource.getInputStream()).thenReturn(mock(InputStream.class));
         doReturn(mockResource).when(resourceResolver).resolve(any(), any());
 
-        Document mockParserDoc = mock(Document.class);
+        Document<Feed> mockParserDoc = (Document<Feed>) mock(Document.class);
         when(mockParserDoc.getRoot()).thenReturn(mock(Feed.class));
         Category category = mock(Category.class);
         when(category.getTerm()).thenReturn("http://dspace.org/state/archived");
-        when(((Feed) mockParserDoc.getRoot()).getCategories(any())).thenReturn(List.of(category));
+        when((mockParserDoc.getRoot()).getCategories(any())).thenReturn(List.of(category));
         doReturn(mockParserDoc).when(mockParser).parse(any(InputStream.class));
     }
 
