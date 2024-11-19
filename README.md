@@ -1,4 +1,4 @@
-# PASS Support
+# PASS Support ![Pass Support](https://github.com/eclipse-pass/pass-support/actions/workflows/snapshot.yml/badge.svg)
 
 PASS Support contains ancillary components that assist in the submission process and is composed of the Data Loaders, 
 Notification Services, and Deposit Services. The Data Loaders handle data ingestion from external systems like PubMed 
