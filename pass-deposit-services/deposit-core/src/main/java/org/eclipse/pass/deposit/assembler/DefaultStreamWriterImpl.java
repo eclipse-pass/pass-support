@@ -48,7 +48,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     private final List<DepositFileResource> packageFiles;
     private final ResourceBuilderFactory rbf;
     private final DepositSubmission submission;
-    protected ArchiveOutputStream archiveOut;
+    protected ArchiveOutputStream<ArchiveEntry> archiveOut;
     protected Map<String, Object> packageOptions;
     protected PackageProvider packageProvider;
 
@@ -75,7 +75,8 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     }
 
     @Override
-    public void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream archiveOut) throws IOException {
+    public void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream<ArchiveEntry> archiveOut)
+        throws IOException {
         this.archiveOut = archiveOut;
         List<PackageStream.Resource> assembledResources = new ArrayList<>();
 
@@ -118,7 +119,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         archiveOut.close();
     }
 
@@ -215,7 +216,8 @@ public class DefaultStreamWriterImpl implements StreamWriter {
      * @param archiveEntryIn the bytes to be written
      * @throws IOException if there is an error encountered writing the bytes
      */
-    private void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn)
+    private void writeResource(ArchiveOutputStream<ArchiveEntry> archiveOut, ArchiveEntry archiveEntry,
+                               InputStream archiveEntryIn)
         throws IOException {
         archiveOut.putArchiveEntry(archiveEntry);
         int bytesWritten = IOUtils.copy(archiveEntryIn, archiveOut);

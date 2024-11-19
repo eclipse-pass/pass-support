@@ -94,7 +94,7 @@ public class FtpUtil {
      * @param clientCommand the command to perform
      * @throws RuntimeException if the command throw a checked exception
      */
-    static void performSilently(ExceptionThrowingVoidCommand clientCommand) {
+    static <T> void performSilently(ExceptionThrowingVoidCommand<T> clientCommand) {
         try {
             clientCommand.perform();
         } catch (Exception e) {

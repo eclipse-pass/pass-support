@@ -72,6 +72,7 @@ public class DepositTestUtil {
      * @return the directory that the package file was extracted to
      * @throws IOException if an error occurs opening the file or extracting its contents
      */
+    @SuppressWarnings("unchecked")
     public static File openArchive(File packageFile, Archive.OPTS archive, Compression.OPTS compression)
         throws IOException {
         File tmpDir = tmpDir();
@@ -79,15 +80,15 @@ public class DepositTestUtil {
         LOG.debug(">>>> Extracting {} to {} ...", packageFile, tmpDir);
 
         try (InputStream packageFileIn = Files.newInputStream(packageFile.toPath())) {
-            ArchiveInputStream zipIn = null;
+            ArchiveInputStream<?> zipIn;
             if (archive.equals(Archive.OPTS.TAR)) {
-                if (compression.equals(Compression.OPTS.GZIP)) {
-                    zipIn = new TarArchiveInputStream(new GzipCompressorInputStream(packageFileIn));
-                } else {
-                    zipIn = new TarArchiveInputStream(packageFileIn);
-                }
+                zipIn = compression.equals(Compression.OPTS.GZIP)
+                    ? new TarArchiveInputStream(new GzipCompressorInputStream(packageFileIn))
+                    : new TarArchiveInputStream(packageFileIn);
             } else if (archive.equals(Archive.OPTS.ZIP)) {
                 zipIn = new ZipArchiveInputStream(packageFileIn);
+            } else {
+                throw new IllegalArgumentException("Unsupported archive type: " + archive);
             }
 
             ArchiveEntry entry;

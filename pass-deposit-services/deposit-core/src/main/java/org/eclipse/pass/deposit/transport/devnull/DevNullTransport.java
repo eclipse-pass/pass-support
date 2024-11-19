@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.transport.devnull;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
@@ -120,7 +121,7 @@ public class DevNullTransport implements Transport {
         }
 
         @Override
-        public void close() throws Exception {
+        public void close() throws IOException {
             // no-op
         }
 

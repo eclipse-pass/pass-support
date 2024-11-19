@@ -24,7 +24,7 @@ import java.security.MessageDigest;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.MessageDigestCalculatingInputStream;
+import org.apache.commons.io.input.MessageDigestInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -218,8 +218,10 @@ public class EncodingClassPathResourceTest {
                                        String expectedUrlPath, String expectedChecksum) throws Exception {
         try (InputStream in = underTest.getInputStream()) {
             assertNotNull(in);
-            try (MessageDigestCalculatingInputStream digestIn = new MessageDigestCalculatingInputStream(in, "SHA-1")) {
-                IOUtils.copy(digestIn, new NullOutputStream());
+            MessageDigestInputStream.Builder builder = MessageDigestInputStream.builder()
+                .setInputStream(in).setMessageDigest("SHA-1");
+            try (MessageDigestInputStream digestIn = builder.get()) {
+                IOUtils.copy(digestIn, NullOutputStream.INSTANCE);
                 MessageDigest md = digestIn.getMessageDigest();
                 assertEquals(expectedChecksum, Hex.encodeHexString(md.digest()));
             }

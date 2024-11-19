@@ -24,6 +24,7 @@ import org.eclipse.pass.support.client.model.PassEntity;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class RemedialDepositException extends DepositServiceRuntimeException {
+    private static final long serialVersionUID = 1L;
 
     public RemedialDepositException(PassEntity resource) {
         super(resource);

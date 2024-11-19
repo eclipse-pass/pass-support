@@ -137,7 +137,7 @@ public class FtpTransportSession implements TransportSession {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         LOG.debug("Closing {}@{}...",
                   this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
         if (transfer != null && !transfer.isDone()) {

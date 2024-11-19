@@ -192,7 +192,7 @@ public class Sword2TransportSession implements TransportSession {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         if (this.closed()) {
             return;
         }

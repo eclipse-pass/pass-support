@@ -91,7 +91,7 @@ public class DepositSubmissionMapper {
         // Prepare for Metadata
         DepositMetadata metadata = new DepositMetadata();
         submission.setMetadata(metadata);
-        submission.setSubmissionMeta(new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonObject());
+        submission.setSubmissionMeta(JsonParser.parseString(submissionEntity.getMetadata()).getAsJsonObject());
         DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
         metadata.setManuscriptMetadata(manuscript);
         DepositMetadata.Article article = new DepositMetadata.Article();
@@ -328,7 +328,7 @@ public class DepositSubmissionMapper {
      * @param metadataStr
      */
     void processMetadata(DepositMetadata depositMetadata, String metadataStr) {
-        JsonObject json = new JsonParser().parse(metadataStr).getAsJsonObject();
+        JsonObject json = JsonParser.parseString(metadataStr).getAsJsonObject();
         processCommonMetadata(depositMetadata, json);
         processPmcMetadata(depositMetadata, json);
         processCrossrefMetadata(depositMetadata, json);

@@ -18,6 +18,7 @@ package org.eclipse.pass.deposit.assembler;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.springframework.core.io.Resource;
@@ -45,7 +46,8 @@ interface StreamWriter extends AutoCloseable {
      * @param archiveOut     the {@code OutputStream} to be written to
      * @throws IOException if there are any errors encountered initializing state
      */
-    void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream archiveOut) throws IOException;
+    void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream<ArchiveEntry> archiveOut)
+        throws IOException;
 
     /**
      * Writes the {@code Resource} and returns metadata describing the {@code custodialFile}.
@@ -70,4 +72,5 @@ interface StreamWriter extends AutoCloseable {
      */
     void finish(DepositSubmission submission, List<PackageStream.Resource> custodialResources) throws IOException;
 
+    void close() throws IOException;
 }

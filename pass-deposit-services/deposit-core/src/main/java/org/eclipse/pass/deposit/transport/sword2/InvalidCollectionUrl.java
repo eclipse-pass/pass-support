@@ -21,6 +21,7 @@ package org.eclipse.pass.deposit.transport.sword2;
  * For example, when the Collection URL is no present in the SWORD service document.
  */
 class InvalidCollectionUrl extends RuntimeException {
+    private static final long serialVersionUID = 1L;
 
     InvalidCollectionUrl(String message) {
         super(message);

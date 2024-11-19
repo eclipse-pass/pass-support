@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.transport.inveniordm;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +105,7 @@ class InvenioRdmSession implements TransportSession {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         // no-op resources are closed with try-with-resources
     }
 

@@ -25,7 +25,6 @@ import java.net.URLEncoder;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -47,17 +46,15 @@ public class EncodingClassPathResource extends ClassPathResource {
 
     private String decodedPath;
 
-    @Nullable
     private ClassLoader classLoader;
 
-    @Nullable
     private Class<?> clazz;
 
     public EncodingClassPathResource(String encodedPath) {
         this(encodedPath, (ClassLoader) null);
     }
 
-    public EncodingClassPathResource(String encodedPath, @Nullable ClassLoader classLoader) {
+    public EncodingClassPathResource(String encodedPath, ClassLoader classLoader) {
         super(encodedPath, classLoader);
         this.classLoader = (classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader());
         this.encodedPath = StringUtils.cleanPath(encodedPath);
@@ -67,7 +64,7 @@ public class EncodingClassPathResource extends ClassPathResource {
         this.decodedPath = decodePath(this.encodedPath);
     }
 
-    public EncodingClassPathResource(String encodedPath, @Nullable Class<?> clazz) {
+    public EncodingClassPathResource(String encodedPath, Class<?> clazz) {
         super(encodedPath, clazz);
         this.clazz = clazz;
         this.encodedPath = StringUtils.cleanPath(encodedPath);
@@ -83,7 +80,6 @@ public class EncodingClassPathResource extends ClassPathResource {
      *
      * @return the URL which
      */
-    @Nullable
     @Override
     protected URL resolveURL() {
         if (this.clazz != null) {
@@ -118,7 +114,6 @@ public class EncodingClassPathResource extends ClassPathResource {
                 new EncodingClassPathResource(pathToUse, this.classLoader));
     }
 
-    @Nullable
     @Override
     public String getFilename() {
         return StringUtils.getFilename(this.encodedPath);

@@ -100,7 +100,10 @@ public class AssemblerSupportTest {
     public void testResetStreamWhenMarkSupported() throws IOException {
         Detector spy = spy(detector);
         CharSequence cs = "Hello, world!";
-        CharSequenceInputStream markSupportedIn = new CharSequenceInputStream(cs, UTF_8);
+        CharSequenceInputStream markSupportedIn = CharSequenceInputStream.builder()
+            .setCharSequence(cs)
+            .setCharset(UTF_8)
+            .get();
 
         MediaType result = AssemblerSupport.detectMediaType(markSupportedIn, spy);
 

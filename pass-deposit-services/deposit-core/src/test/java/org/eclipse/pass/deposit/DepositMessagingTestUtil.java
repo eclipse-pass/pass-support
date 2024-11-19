@@ -181,6 +181,7 @@ public class DepositMessagingTestUtil {
      * @return
      */
     @SafeVarargs
+    @SuppressWarnings( "varargs" )
     public static <T extends Enum<T>> T random(Class<T> clazz, T... excludes) {
         Predicate<String> excludesPredicate =
             (statusName) -> Stream.of(excludes).anyMatch(toExclude -> toExclude.name().equals(statusName));

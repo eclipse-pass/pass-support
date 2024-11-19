@@ -22,6 +22,7 @@ import org.swordapp.client.SWORDError;
  * Wraps a {@link SWORDError} for the purpose of providing a non-null response to {@link Throwable#getMessage()}.
  */
 class SwordErrorMessageWrapper extends Exception {
+    private static final long serialVersionUID = 1L;
 
     private SWORDError wrapped;
 
