@@ -7,9 +7,16 @@ standardized format within PASS. Deposit Services is responsible for the managin
 submissions to downstream repositories such as PubMed Central and institutional repositories. Notification Services 
 provide alerts and updates to relevant stakeholders based on submission workflows and events.
 
-You can find further documentation and details about the [Data Loaders](https://docs.eclipse-pass.org/developer-documentation/data-loaders),
-[Deposit Services](https://docs.eclipse-pass.org/developer-documentation/deposit-service), and [Notification Services](https://docs.eclipse-pass.org/developer-documentation/notification-service)
-on the [full documentation site](https://docs.eclipse-pass.org). A full list of all the Eclipse PASS projects can also 
-be found in the PASS Main repository [README](https://github.com/eclipse-pass/main/blob/main/README.md).
+A full list of all the Eclipse PASS projects can be found in the PASS Main repository [README](https://github.com/eclipse-pass/main).
 
+# Guides
+
+* [Data Loaders](https://docs.eclipse-pass.org/developer-documentation/data-loaders)
+* [Deposit Services](https://docs.eclipse-pass.org/developer-documentation/deposit-service)
+* [Notification Services](https://docs.eclipse-pass.org/developer-documentation/notification-service)
+* [PASS Documentation](https://docs.eclipse-pass.org/)
+
+# License
+
+PASS Core is Open Source software released under the [Apache 2.0 license](LICENSE).
 
