@@ -2,7 +2,7 @@
 
 PASS Support contains ancillary components that assist in the submission process and is composed of the Data Loaders, 
 Notification Services, and Deposit Services. The Data Loaders handle data ingestion from external systems like PubMed 
-Central, NIH, FIBI (JHU Grant Management System), transforming grant, journal, and manuscript submission data into a 
+Central, NIH, Grant Management Systems, transforming grant, journal, and manuscript submission data into a 
 standardized format within PASS. Deposit Services is responsible for the managing, packaging, and transfer of these 
 submissions to downstream repositories such as PubMed Central and institutional repositories. Notification Services 
 provide alerts and updates to relevant stakeholders based on submission workflows and events.
