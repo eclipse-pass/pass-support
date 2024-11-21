@@ -27,29 +27,12 @@
   <artifactId>deposit-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Deposit Services Parent Project</name>
-  <description>Responsible for the transfer of custody to downstream repositories</description>
-  <url>https://github.com/OA-PASS/deposit-services</url>
-  <licenses>
-    <license>
-      <name>The Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-    </license>
-  </licenses>
-
   <modules>
     <module>deposit-model</module>
     <module>deposit-util</module>
     <module>deposit-core</module>
     <module>deposit-cri</module>
   </modules>
-
-  <scm>
-    <connection>scm:git:https://github.com/eclipse-pass/pass-deposit-services.git</connection>
-    <developerConnection>scm:git:https://github.com/eclipse-pass/pass-deposit-services.git</developerConnection>
-    <url>https://github.com/eclipse-pass/pass-deposit-services</url>
-    <tag>HEAD</tag>
-  </scm>
 
   <properties>
     <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>

@@ -25,6 +25,7 @@
   </parent>
 
   <artifactId>pass-grant-loader</artifactId>
+  <description>PASS Grant Data Loader</description>
 
   <properties>
     <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>
@@ -217,6 +218,7 @@
                 <mainClass>org.eclipse.pass.support.grant.GrantLoaderCLI</mainClass>
                 <classifier>exec</classifier>
                 <attach>false</attach>
+                <includeTools>false</includeTools>
               </configuration>
             </execution>
           </executions>
@@ -287,6 +289,11 @@
               </configuration>
             </execution>
           </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.cyclonedx</groupId>
+          <artifactId>cyclonedx-maven-plugin</artifactId>
         </plugin>
 
       </plugins>

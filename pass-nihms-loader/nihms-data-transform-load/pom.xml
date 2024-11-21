@@ -11,6 +11,7 @@
   <artifactId>nihms-data-transform-load</artifactId>
 
   <name>NIHMS Data Transform/Load</name>
+  <description>PASS NIHMS Transform/Load Data Loader</description>
 
   <properties>
     <wiremock-version>3.9.2</wiremock-version>
@@ -178,9 +179,15 @@
               <mainClass>org.eclipse.pass.loader.nihms.NihmsTransformLoadCLI</mainClass>
               <classifier>exec</classifier>
               <attach>false</attach>
+              <includeTools>false</includeTools>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

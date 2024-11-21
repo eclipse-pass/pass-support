@@ -11,6 +11,7 @@
   <artifactId>nihms-data-harvest</artifactId>
 
   <name>NIHMS Data Harvester</name>
+  <description>PASS NIHMS Harvester Data Loader</description>
 
   <dependencies>
 
@@ -134,9 +135,15 @@
               <mainClass>org.eclipse.pass.loader.nihms.NihmsHarvesterCLI</mainClass>
               <classifier>exec</classifier>
               <attach>false</attach>
+              <includeTools>false</includeTools>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
