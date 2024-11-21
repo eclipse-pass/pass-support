@@ -11,16 +11,6 @@
   <artifactId>pass-journal-loader</artifactId>
   <packaging>pom</packaging>
 
-  <name>Eclipse-PASS Journal Loader</name>
-  <description>Tool for populating journal objects in the PASS repository</description>
-  <url>https://github.com/eclipse-pass/pass-journal-loader</url>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-    </license>
-  </licenses>
-
   <modules>
     <module>pass-journal-loader-nih</module>
   </modules>

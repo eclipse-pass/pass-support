@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>pass-data-client</artifactId>
+  <description>PASS Data Client</description>
 
   <properties>
     <!-- Properties for dependency versions -->
@@ -175,6 +176,11 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

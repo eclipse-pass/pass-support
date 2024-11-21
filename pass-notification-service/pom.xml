@@ -24,22 +24,7 @@
     </parent>
 
     <artifactId>pass-notification-service</artifactId>
-
-    <developers>
-        <developer>
-            <name>Elliot Metsger</name>
-            <email>emetsger@jhu.edu</email>
-            <organization>Johns Hopkins University, Sheridan Libraries, Digital Research and Curation Center</organization>
-            <organizationUrl>https://www.library.jhu.edu/library-departments/digital-research-curation-center/</organizationUrl>
-        </developer>
-    </developers>
-
-    <scm>
-        <connection>scm:git:https://github.com/eclipse-pass/notification-services.git</connection>
-        <developerConnection>scm:git:https://github.com/eclipse-pass/notification-services.git</developerConnection>
-        <url>https://github.com/eclipse-pass/notification-services</url>
-        <tag>HEAD</tag>
-    </scm>
+    <description>PASS Notification Services</description>
 
     <properties>
         <!-- Properties for dependency versions -->
@@ -238,6 +223,7 @@
                             <mainClass>org.eclipse.pass.notification.NotificationApp</mainClass>
                             <classifier>exec</classifier>
                             <attach>false</attach>
+                            <includeTools>false</includeTools>
                         </configuration>
                     </execution>
                 </executions>
@@ -363,6 +349,11 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
