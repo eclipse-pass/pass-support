@@ -20,6 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.pass.deposit.support.dspace.DspaceDepositService;
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;

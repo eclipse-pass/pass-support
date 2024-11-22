@@ -21,6 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.patch;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -78,7 +79,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 @TestPropertySource(properties = {
     "pass.deposit.repository.configuration=classpath:/full-test-repositories.json",
     "inveniordm.api.token=test-invenio-api-token",
-    "inveniordm.api.baseUrl=http://localhost:9030/api"
+    "inveniordm.api.baseUrl=http://localhost:9030/api",
+    "dspace.server=localhost:9030",
+    "dspace.api.url=http://localhost:9030/dspace/api",
+    "dspace.website.url=http://localhost:9030/dspace/website",
+    "dspace.collection.handle=collectionhandle"
 })
 @WireMockTest(httpPort = 9030)
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
@@ -104,6 +109,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
         resetGrantProjectName(submission, null);
         initInvenioApiStubs();
+        initDSpaceApiStubs();
 
         // WHEN/THEN
         testSubmissionProcessor(submission, false);
@@ -120,6 +126,8 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
         resetGrantProjectName(submission, null);
         initInvenioApiStubs();
+        initDSpaceApiStubs();
+
         String searchRecordsJsonResponse = "{ \"hits\": { \"hits\": [{ \"id\": \"existing-record-id\", " +
             "\"is_published\": \"false\"} ] } }";
         stubFor(get("/api/user/records?q=metadata.title:%22Specific%20protein%20supplementation%20using%20" +
@@ -149,7 +157,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         // WHEN/THEN
         testSubmissionProcessor(submission, true);
-        verify(devNullTransport, times(4)).open(anyMap());
+        verify(devNullTransport, times(5)).open(anyMap());
         verify(filesystemTransport, times(0)).open(anyMap());
         verify(invenioRdmTransport, times(0)).open(anyMap());
         verifyInvenioApiStubs(0);
@@ -162,6 +170,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
         resetGrantProjectName(submission, DeploymentTestDataService.PASS_E2E_TEST_GRANT);
         initInvenioApiStubs();
+        initDSpaceApiStubs();
         ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", Boolean.FALSE);
 
         // WHEN/THEN
@@ -236,7 +245,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         List<String> repoKeys = resultDeposits.stream()
             .map(deposit -> deposit.getRepository().getRepositoryKey())
             .toList();
-        List<String> expectedRepoKey = List.of("PubMed Central", "JScholarship", "BagIt", "InvenioRDM");
+        List<String> expectedRepoKey = List.of("PubMed Central", "JScholarship", "BagIt", "InvenioRDM", "DSpace");
         assertTrue(repoKeys.size() == expectedRepoKey.size() && repoKeys.containsAll(expectedRepoKey)
             && expectedRepoKey.containsAll(repoKeys));
         Deposit pmcDeposit = resultDeposits.stream()
@@ -363,6 +372,41 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             "{ \"self_html\": \"http://localhost:9030/records/test-record-id\"} }";
         stubFor(post("/api/records/test-record-id/draft/actions/publish")
             .willReturn(ok(publishJsonResponse)));
+    }
+
+    private void initDSpaceApiStubs() throws IOException {
+        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
+                withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
+        stubFor(post("/dspace/api/authn/login").willReturn(WireMock.ok().withHeader("Authorization", "authtoken")));
+
+        String searchJson = "{\n"
+                + "  \"_embedded\": {\n"
+                + "    \"searchResult\": {\n"
+                + "      \"_embedded\": {\n"
+                + "        \"objects\": [\n"
+                + "          {\n"
+                + "            \"_embedded\": {\n"
+                + "              \"indexableObject\": {\n"
+                + "                \"handle\": \"collectionhandle\",\n"
+                + "                \"uuid\": \"collectionuuid\"\n"
+                + "              }\n"
+                + "            }\n"
+                + "          }\n"
+                + "        ]\n"
+                + "      }\n"
+                + "    }\n"
+                + "  }\n"
+                + "}\n";
+        stubFor(get("/dspace/api/discover/search/objects?query=handle:collectionhandle")
+                .willReturn(ok(searchJson)));
+
+        stubFor(post("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")
+                .willReturn(WireMock.ok("{\"_embedded\": {\"workspaceitems\": [{\"id\": 1,"
+                        + "\"_embedded\": {\"item\": {\"uuid\": \"uuid\"}}}]}}")));
+
+        stubFor(patch("/dspace/api/submission/workspaceitems/1").willReturn(WireMock.ok()));
+
+        stubFor(post("/dspace/api/workflow/workflowitems").willReturn(WireMock.ok()));
     }
 
     private void verifyInvenioApiStubs(int expectedCount) throws IOException, URISyntaxException {
