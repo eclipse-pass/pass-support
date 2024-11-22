@@ -45,9 +45,9 @@ import org.springframework.test.context.TestPropertySource;
         "pass.deposit.jobs.3.init.delay=120",
         "dspace.user=test-dspace-user",
         "dspace.password=test-dspace-password",
+        "dspace.port=9020",
         "dspace.server=localhost:9020",
-        "dspace.server.api.protocol=http",
-        "dspace.server.api.path=/server/api",
+        "dspace.server.api.path=http://localhost/server/api",
     })
 @DirtiesContext
 public class ScheduledJobsTest {

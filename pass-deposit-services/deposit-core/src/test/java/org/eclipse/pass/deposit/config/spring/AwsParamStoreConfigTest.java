@@ -45,6 +45,10 @@ import org.testcontainers.utility.DockerImageName;
     pass.client.password=${PASS_CORE_PASSWORD:test-pw}
     dspace.user=${DSPACE_USER:test@test.edu}
     dspace.password=${DSPACE_PASSWORD:test-dspace-pw}
+    dspace.server=localhost:8000
+    dspace.api.url=http://localhost:8000/api
+    dspace.website.url=http://localhost:8000/website
+    dspace.collection.handle=1234/1
     """
 )
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)

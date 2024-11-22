@@ -130,7 +130,8 @@ public interface Transport {
         SWORDv2,
         filesystem,
         devnull,
-        invenioRdm
+        invenioRdm,
+        DSpace
     }
 
     /**
