@@ -79,10 +79,9 @@ public class DSpaceMetadataMapper {
             metadata.add(add_array("traditionalpageone", "dc.identifier.citation", citation));
         }
 
-        // TODO: Must format YYYY-MM-DD
-        // Required by DSpace
-        String publicationDate = journalMd.getPublicationDate();
-        metadata.add(add_array("traditionalpageone", "dc.date.issued", publicationDate));
+        // Required by DSpace as ISO 8601 local date
+        metadata.add(add_array("traditionalpageone", "dc.date.issued", journalMd.getPublicationDate().
+                format(DateTimeFormatter.ISO_LOCAL_DATE)));
 
         // Add non-submitters as authors
         // TODO This is different from before
@@ -171,8 +170,9 @@ public class DSpaceMetadataMapper {
 
         // Attach a <dc:identifier:citation> if not empty
         // publication date - after a single space, in parens, followed by "."
-        if (journalMd != null && journalMd.getPublicationDate() != null && !journalMd.getPublicationDate().isEmpty()) {
-            citationBldr.append(" (" + journalMd.getPublicationDate() + ").");
+        if (journalMd != null && journalMd.getPublicationDate() != null) {
+            citationBldr.append(" (" + journalMd.getPublicationDate().
+                    format(DateTimeFormatter.ISO_LOCAL_DATE) + ").");
         }
         // article title - after single space, in double quotes with "." inside
         if (articleMd != null && articleMd.getTitle() != null && !articleMd.getTitle().isEmpty()) {
