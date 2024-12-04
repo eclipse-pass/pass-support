@@ -42,6 +42,9 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DSpaceMetadataMapper {
+    // Section of workspace item form to add metadata
+    private static final String SECTION = "traditionalpageone";
+
     @Value("${dspace.field.embargo.lift}")
     private String dspaceFieldEmbargoLift;
 
@@ -59,45 +62,44 @@ public class DSpaceMetadataMapper {
         String title = manuscriptMd.getTitle();
 
         // Required by DSpace
-        metadata.add(add_array("traditionalpageone", "dc.title", title));
+        metadata.add(add_array(SECTION, "dc.title", title));
 
         if (journalMd != null && journalMd.getPublisherName() != null) {
-            metadata.add(add_array("traditionalpageone", "dc.publisher", journalMd.getPublisherName()));
+            metadata.add(add_array(SECTION, "dc.publisher", journalMd.getPublisherName()));
         }
 
         if (articleMd.getDoi() != null) {
-            metadata.add(add_array("traditionalpageone", "dc.identifier.doi", articleMd.getDoi().toString()));
+            metadata.add(add_array(SECTION, "dc.identifier.doi", articleMd.getDoi().toString()));
         }
 
         if (manuscriptMd.getMsAbstract() != null) {
-            metadata.add(add_array("traditionalpageone", "dc.description.abstract", manuscriptMd.getMsAbstract()));
+            metadata.add(add_array(SECTION, "dc.description.abstract", manuscriptMd.getMsAbstract()));
         }
 
         String citation = createCitation(submission);
 
         if (!citation.isEmpty()) {
-            metadata.add(add_array("traditionalpageone", "dc.identifier.citation", citation));
+            metadata.add(add_array(SECTION, "dc.identifier.citation", citation));
         }
 
         // Required by DSpace as ISO 8601 local date
-        metadata.add(add_array("traditionalpageone", "dc.date.issued", journalMd.getPublicationDate().
+        metadata.add(add_array(SECTION, "dc.date.issued", journalMd.getPublicationDate().
                 format(DateTimeFormatter.ISO_LOCAL_DATE)));
 
         // Add non-submitters as authors
-        // TODO This is different from before
         String[] authors = depositMd.getPersons().stream().filter(
                 p -> p.getType() != DepositMetadata.PERSON_TYPE.submitter).
                 map(Person::getName).toArray(String[]::new);
 
-        metadata.add(add_array("traditionalpageone", "dc.contributor.author", authors));
+        metadata.add(add_array(SECTION, "dc.contributor.author", authors));
 
         ZonedDateTime embargoLiftDate = articleMd.getEmbargoLiftDate();
 
         if (embargoLiftDate != null) {
             String liftDate = embargoLiftDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-            metadata.add(add_array("traditionalpageone", dspaceFieldEmbargoLift, liftDate));
-            metadata.add(add_array("traditionalpageone", dspaceFieldEmbargoTerms, liftDate));
+            metadata.add(add_array(SECTION, dspaceFieldEmbargoLift, liftDate));
+            metadata.add(add_array(SECTION, dspaceFieldEmbargoTerms, liftDate));
         }
 
         // Required by DSpace

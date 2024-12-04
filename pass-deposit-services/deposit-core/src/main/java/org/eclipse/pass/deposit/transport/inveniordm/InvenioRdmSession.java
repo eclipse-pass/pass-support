@@ -39,6 +39,7 @@ import org.eclipse.pass.deposit.assembler.DepositFileResource;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.provider.inveniordm.InvenioRdmMetadataMapper;
+import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.slf4j.Logger;
@@ -81,7 +82,7 @@ class InvenioRdmSession implements TransportSession {
     }
 
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, DepositWorkerContext dc) {
         try {
             DepositSubmission depositSubmission = packageStream.getDepositSubmission();
             LOG.warn("Processing InvenioRDM Deposit for Submission: {}", depositSubmission.getId());

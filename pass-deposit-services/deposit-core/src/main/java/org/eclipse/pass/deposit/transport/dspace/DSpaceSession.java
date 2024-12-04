@@ -21,10 +21,12 @@ import com.jayway.jsonpath.JsonPath;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper;
+import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.support.dspace.DspaceDepositService;
 import org.eclipse.pass.deposit.support.dspace.DspaceDepositService.AuthContext;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
+import org.eclipse.pass.support.client.PassClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,14 +40,17 @@ class DSpaceSession implements TransportSession {
 
     private final DspaceDepositService dspaceDepositService;
     private final DSpaceMetadataMapper dspaceMetadataMapper;
+    private final PassClient passClient;
 
-    public DSpaceSession(DspaceDepositService dspaceDepositService, DSpaceMetadataMapper dspaceMetadataMapper) {
+    public DSpaceSession(DspaceDepositService dspaceDepositService, DSpaceMetadataMapper dspaceMetadataMapper,
+            PassClient passClient) {
         this.dspaceDepositService = dspaceDepositService;
         this.dspaceMetadataMapper = dspaceMetadataMapper;
+        this.passClient = passClient;
     }
 
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, DepositWorkerContext dc) {
         try {
             DepositSubmission depositSubmission = packageStream.getDepositSubmission();
 

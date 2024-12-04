@@ -192,7 +192,7 @@ public class DepositTaskTest {
         when(stream.metadata()).thenReturn(metadata);
         when(packager.getTransport()).thenReturn(transport);
         when(transport.open(anyMap())).thenReturn(session);
-        when(session.send(eq(stream), any())).thenReturn(tr);
+        when(session.send(eq(stream), any(), any())).thenReturn(tr);
 
         when(depositContext.packager()).thenReturn(packager);
 

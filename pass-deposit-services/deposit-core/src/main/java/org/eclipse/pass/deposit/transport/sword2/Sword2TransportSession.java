@@ -29,6 +29,7 @@ import java.util.Map;
 import com.google.gson.JsonElement;
 import org.eclipse.pass.deposit.assembler.PackageOptions.Checksum;
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.slf4j.Logger;
@@ -104,6 +105,7 @@ public class Sword2TransportSession implements TransportSession {
      *
      * @param packageStream {@inheritDoc}
      * @param metadata      {@inheritDoc}
+     * @param dc            {@inheritDoc}
      * @return {@inheritDoc}
      * @throws IllegalStateException if this session has been {@link #close() closed}
      * @see
@@ -111,7 +113,7 @@ public class Sword2TransportSession implements TransportSession {
      *     SWORD v2 Profile</a>
      */
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, DepositWorkerContext dc) {
         if (closed) {
             throw new IllegalStateException("SWORDv2 transport session has been closed.");
         }
