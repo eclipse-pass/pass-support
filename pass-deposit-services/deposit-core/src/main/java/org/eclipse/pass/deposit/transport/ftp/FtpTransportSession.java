@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class FtpTransportSession implements TransportSession {
     }
 
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, DepositWorkerContext dc) {
 
         PackageStream.Metadata streamMetadata = packageStream.metadata();
 

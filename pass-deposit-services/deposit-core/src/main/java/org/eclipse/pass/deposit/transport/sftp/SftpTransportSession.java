@@ -42,6 +42,7 @@ import org.apache.sshd.sftp.common.SftpConstants;
 import org.apache.sshd.sftp.common.SftpException;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 
@@ -57,7 +58,7 @@ class SftpTransportSession implements TransportSession {
     }
 
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, DepositWorkerContext dc) {
         PackageStream.Metadata streamMetadata = packageStream.metadata();
         String fileName = streamMetadata.name();
 
