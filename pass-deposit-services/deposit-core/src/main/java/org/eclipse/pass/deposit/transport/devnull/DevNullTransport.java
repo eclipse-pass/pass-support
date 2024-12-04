@@ -23,6 +23,7 @@ import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.service.DepositUtil;
+import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
@@ -66,7 +67,8 @@ public class DevNullTransport implements Transport {
     class DevNullTransportSession implements TransportSession {
 
         @Override
-        public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+        public TransportResponse send(PackageStream packageStream, Map<String, String> metadata,
+                DepositWorkerContext dc) {
             // no-op, just return successful response
             return new TransportResponse() {
                 @Override

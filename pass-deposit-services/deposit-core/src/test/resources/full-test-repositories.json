@@ -145,5 +145,16 @@
         "protocol": "invenioRdm"
       }
     }
+  },
+  "DSpace": {
+    "assembler": {
+      "specification": "DSpace",
+      "beanName": "DSpaceAssembler"
+    },
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "DSpace"
+      }
+    }
   }
 }

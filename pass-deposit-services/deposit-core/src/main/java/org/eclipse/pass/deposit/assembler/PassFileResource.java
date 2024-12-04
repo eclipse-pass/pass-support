@@ -29,10 +29,12 @@ public class PassFileResource extends AbstractResource {
 
     private final PassClient passClient;
     private final String passFileId;
+    private final String filename;
 
-    public PassFileResource(PassClient passClient, String passFileId) {
+    public PassFileResource(PassClient passClient, String passFileId, String filename) {
         this.passClient = passClient;
         this.passFileId = passFileId;
+        this.filename = filename;
     }
 
     @Override
@@ -53,5 +55,10 @@ public class PassFileResource extends AbstractResource {
     @Override
     public String getDescription() {
         return "PassFileResource File ID: " + passFileId;
+    }
+
+    @Override
+    public String getFilename() {
+        return filename;
     }
 }

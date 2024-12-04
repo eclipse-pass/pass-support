@@ -223,5 +223,4 @@ public class DepositConfig {
     ExceptionHandlingThreadPoolExecutor executorService() {
         return new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
     }
-
 }

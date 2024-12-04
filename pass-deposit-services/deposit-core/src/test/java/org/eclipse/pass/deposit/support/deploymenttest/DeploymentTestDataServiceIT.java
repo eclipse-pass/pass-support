@@ -44,6 +44,7 @@ import java.util.List;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.pass.deposit.service.AbstractDepositIT;
+import org.eclipse.pass.deposit.support.dspace.DspaceDepositService;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
@@ -73,8 +74,9 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @TestPropertySource(properties = {
-    "dspace.server.api.protocol=http",
-    "dspace.server.api.path=/server/api",
+    "dspace.server=localhost:9020",
+    "dspace.api.url=http://localhost:9020/server/api",
+    "dspace.website.url=http://localhost:9020/website",
     "pass.test.data.job.enabled=true",
     "pass.test.data.policy.title=test-policy-title",
     "pass.test.data.user.email=test-user-email@foo",
