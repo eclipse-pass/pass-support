@@ -54,7 +54,7 @@ import org.swordapp.client.ServiceDocument;
  *     <dd>A URL to the SWORD version 2 service document</dd>
  *     <dt>{@link Sword2TransportHints#SWORD_COLLECTION_URL}</dt>
  *     <dd>A URL to the SWORD version 2 collection that packages will be deposited to upon
- *         {@link Sword2TransportSession#send(PackageStream, Map) send}</dd>
+ *         {@link Sword2TransportSession#send(PackageStream, Map, DepositWorkerContext) send}</dd>
  *     <dt><em>Optional:</em> {@link Sword2TransportHints#SWORD_ON_BEHALF_OF_USER}</dt>
  *     <dd>The username this session is being opened for</dd>
  *     <dt><em>Optional:</em> {@link Sword2TransportHints#SWORD_CLIENT_USER_AGENT}</dt>

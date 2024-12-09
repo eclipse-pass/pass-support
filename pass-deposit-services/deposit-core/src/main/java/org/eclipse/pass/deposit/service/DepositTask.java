@@ -437,7 +437,7 @@ public class DepositTask {
 
                 Transport transport = getTransport(packager, dc);
                 try (TransportSession transportSession = transport.open(packagerConfig)) {
-                    TransportResponse tr = transportSession.send(packageStream, packagerConfig);
+                    TransportResponse tr = transportSession.send(packageStream, packagerConfig, dc);
                     deposit.setDepositStatus(DepositStatus.SUBMITTED);
                     deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
                     return tr;
