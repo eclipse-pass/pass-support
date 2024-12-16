@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
+import org.eclipse.pass.support.client.model.Deposit;
 
 /**
  * Represents an open connection, or the promise of a successful connection, with a service or system that will accept
@@ -45,10 +46,10 @@ public interface TransportSession extends AutoCloseable {
      *
      * @param packageStream the package and package metadata
      * @param metadata      transport-related metadata, or any "extra" package metadata
-     * @param dc            information about PASS objects
+     * @param deposit       deposit representation
      * @return a response indicating success or failure of the transfer
      */
-    TransportResponse send(PackageStream packageStream, Map<String, String> metadata, DepositWorkerContext dc);
+    TransportResponse send(PackageStream packageStream, Map<String, String> metadata, Deposit deposit);
 
     boolean closed();
 

@@ -402,7 +402,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         stubFor(post("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")
                 .willReturn(WireMock.ok("{\"_embedded\": {\"workspaceitems\": [{\"id\": 1,"
-                        + "\"_embedded\": {\"item\": {\"uuid\": \"uuid\"}}}]}}")));
+                        + "\"_embedded\": {\"item\": {\"uuid\": \"uuid\", \"metadata\": {}}}}]}}")));
 
         stubFor(patch("/dspace/api/submission/workspaceitems/1").willReturn(WireMock.ok()));
 

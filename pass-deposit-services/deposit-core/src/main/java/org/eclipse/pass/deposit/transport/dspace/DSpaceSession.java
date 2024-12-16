@@ -17,16 +17,17 @@ package org.eclipse.pass.deposit.transport.dspace;
 
 import java.util.Map;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper;
-import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.deposit.support.dspace.DspaceDepositService;
 import org.eclipse.pass.deposit.support.dspace.DspaceDepositService.AuthContext;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,38 +51,64 @@ class DSpaceSession implements TransportSession {
     }
 
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, DepositWorkerContext dc) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, Deposit deposit) {
         try {
             DepositSubmission depositSubmission = packageStream.getDepositSubmission();
 
-            LOG.warn("Processing Dspace Deposit for Submission: {}", depositSubmission.getId());
+            LOG.info("Processing Dspace Deposit for Submission: {}", depositSubmission.getId());
 
             AuthContext authContext = dspaceDepositService.authenticate();
 
-            String patchJson = dspaceMetadataMapper.patchWorkspaceItem(depositSubmission);
-            String workspaceItemJson = dspaceDepositService.createWorkspaceItem(
-                    packageStream.getCustodialContent(), authContext);
+            // Create WorkspaceItem if it does not already exist
 
-            LOG.debug("Created WorkspaceItem: {}", workspaceItemJson);
+            int workspaceItemId = -1;
+            DocumentContext workspaceItemContext = null;
 
-            // TODO Set workspace item id on Deposit.depositStatusRef so can check if it already exists.
-            // TODO Then check metadata to see if it needs to be patched.
+            try {
+                workspaceItemId = Integer.parseInt(deposit.getDepositStatusRef());
+            } catch (NumberFormatException e) {}
 
-            int workspaceItemId = JsonPath.parse(workspaceItemJson).read("$._embedded.workspaceitems[0].id");
-            String itemUuid = JsonPath.parse(workspaceItemJson).read(
-                    "$._embedded.workspaceitems[0]._embedded.item.uuid");
+            if (workspaceItemId == -1) {
+                workspaceItemContext = JsonPath.parse(dspaceDepositService.createWorkspaceItem(
+                        packageStream.getCustodialContent(), authContext));
+                workspaceItemId = workspaceItemContext.read("$._embedded.workspaceitems[0].id");
 
-            LOG.debug("Patching WorkspaceItem to add metadata {}", patchJson);
-            dspaceDepositService.patchWorkspaceItem(workspaceItemId, patchJson, authContext);
+                // Use the deposit status ref to mark that the workspace item was created
+                deposit.setDepositStatusRef(String.valueOf(workspaceItemId));
+
+                // TODO what about packageStream.metadata() package ref, it will overwrite?
+
+                passClient.updateObject(deposit);
+
+                LOG.debug("Created WorkspaceItem: {}", workspaceItemId);
+            } else {
+                LOG.info("DSpace WorkspaceItem already exists for Submission: {}", depositSubmission.getId());
+
+                workspaceItemContext = JsonPath.parse(dspaceDepositService.getWorkspaceItem(workspaceItemId, authContext));
+            }
+
+            // Check metadata to see if it needs to be patched.
+
+            Map<String, Object> itemMetadata = workspaceItemContext.read("$._embedded.workspaceitems[0]._embedded.item.metadata");
+
+            if (itemMetadata.size() == 0) {
+                String patchJson = dspaceMetadataMapper.patchWorkspaceItem(depositSubmission);
+
+                LOG.debug("Patching WorkspaceItem to add metadata {}", patchJson);
+                dspaceDepositService.patchWorkspaceItem(workspaceItemId, patchJson, authContext);
+            }
 
             LOG.debug("Creating WorkflowItem for WorkspaceItem {}", workspaceItemId);
             dspaceDepositService.createWorkflowItem(workspaceItemId, authContext);
 
+            // Item which should be published
+            String itemUuid = workspaceItemContext.read("$._embedded.workspaceitems[0]._embedded.item.uuid");
             String accessUrl = dspaceDepositService.createAccessUrlFromItemUuid(itemUuid);
 
             // TODO 422 indicates validation errors. Should mark the deposit as failed and not retry.
+            // TODO Message to user
 
-            LOG.warn("Completed DSpace Deposit for Submission: {}, accessUrl: {}",
+            LOG.info("Completed DSpace Deposit for Submission: {}, accessUrl: {}",
                     depositSubmission.getId(), accessUrl);
             return new DspaceResponse(true, accessUrl);
         } catch (Exception e) {

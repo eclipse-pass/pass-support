@@ -306,4 +306,15 @@ public class DspaceDepositService {
             .body(workspaceItemUrl)
             .retrieve().toBodilessEntity();
     }
+
+    public String getWorkspaceItem(int workspaceItemId, AuthContext authContext) {
+        String json = restClient.get()
+                .uri("/submission/workspaceitems/{workspaceItemId}", workspaceItemId)
+                .header("Authorization", authContext.authToken())
+                .header("X-XSRF-TOKEN", authContext.xsrfToken())
+                .header("Cookie", "DSPACE-XSRF-COOKIE=" + authContext.xsrfToken())
+                .retrieve().body(String.class);
+
+        return json;
+    }
 }
