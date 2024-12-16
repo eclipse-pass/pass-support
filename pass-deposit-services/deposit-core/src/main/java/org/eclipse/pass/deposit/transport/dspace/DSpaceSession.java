@@ -66,7 +66,9 @@ class DSpaceSession implements TransportSession {
 
             try {
                 workspaceItemId = Integer.parseInt(deposit.getDepositStatusRef());
-            } catch (NumberFormatException e) {}
+            } catch (NumberFormatException e) {
+                workspaceItemId = -1;
+            }
 
             if (workspaceItemId == -1) {
                 workspaceItemContext = JsonPath.parse(dspaceDepositService.createWorkspaceItem(
@@ -84,12 +86,14 @@ class DSpaceSession implements TransportSession {
             } else {
                 LOG.info("DSpace WorkspaceItem already exists for Submission: {}", depositSubmission.getId());
 
-                workspaceItemContext = JsonPath.parse(dspaceDepositService.getWorkspaceItem(workspaceItemId, authContext));
+                workspaceItemContext = JsonPath.parse(dspaceDepositService.
+                        getWorkspaceItem(workspaceItemId, authContext));
             }
 
             // Check metadata to see if it needs to be patched.
 
-            Map<String, Object> itemMetadata = workspaceItemContext.read("$._embedded.workspaceitems[0]._embedded.item.metadata");
+            Map<String, Object> itemMetadata = workspaceItemContext.
+                    read("$._embedded.workspaceitems[0]._embedded.item.metadata");
 
             if (itemMetadata.size() == 0) {
                 String patchJson = dspaceMetadataMapper.patchWorkspaceItem(depositSubmission);

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.pass.deposit.assembler.PackageStream;
-import org.eclipse.pass.deposit.service.DepositUtil.DepositWorkerContext;
 import org.eclipse.pass.support.client.model.Deposit;
 
 /**

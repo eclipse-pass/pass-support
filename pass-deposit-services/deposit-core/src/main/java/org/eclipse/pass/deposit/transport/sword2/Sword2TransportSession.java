@@ -104,7 +104,7 @@ public class Sword2TransportSession implements TransportSession {
      *
      * @param packageStream {@inheritDoc}
      * @param metadata      {@inheritDoc}
-     * @param dc            {@inheritDoc}
+     * @param passDeposit   {@inheritDoc}
      * @return {@inheritDoc}
      * @throws IllegalStateException if this session has been {@link #close() closed}
      * @see
