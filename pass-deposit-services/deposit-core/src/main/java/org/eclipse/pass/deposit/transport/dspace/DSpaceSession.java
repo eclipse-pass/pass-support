@@ -77,9 +77,6 @@ class DSpaceSession implements TransportSession {
 
                 // Use the deposit status ref to mark that the workspace item was created
                 deposit.setDepositStatusRef(String.valueOf(workspaceItemId));
-
-                // TODO what about packageStream.metadata() package ref, it will overwrite?
-
                 passClient.updateObject(deposit);
 
                 LOG.debug("Created WorkspaceItem: {}", workspaceItemId);

@@ -439,7 +439,11 @@ public class DepositTask {
                 try (TransportSession transportSession = transport.open(packagerConfig)) {
                     TransportResponse tr = transportSession.send(packageStream, packagerConfig, deposit);
                     deposit.setDepositStatus(DepositStatus.SUBMITTED);
-                    deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
+
+                    // Only set deposit status ref if not already set during transport
+                    if (deposit.getDepositStatus() == null) {
+                        deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
+                    }
                     return tr;
                 } catch (Exception e) {
                     throw new RuntimeException("Error closing transport session for deposit " +
