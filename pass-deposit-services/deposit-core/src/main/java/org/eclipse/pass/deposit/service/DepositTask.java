@@ -441,7 +441,7 @@ public class DepositTask {
                     deposit.setDepositStatus(DepositStatus.SUBMITTED);
 
                     // Only set deposit status ref if not already set during transport
-                    if (deposit.getDepositStatus() == null) {
+                    if (deposit.getDepositStatusRef() == null) {
                         deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
                     }
                     return tr;
