@@ -21,6 +21,7 @@ import java.util.Objects;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
 import jakarta.mail.Part;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -31,7 +32,7 @@ public class MailUtil {
 
     static String getHtmlText(Part part) throws MessagingException, IOException {
         if (part.isMimeType("text/html")) {
-            return part.getContent().toString();
+            return cleanseContent(part.getContent().toString());
         }
 
         if (part.isMimeType("multipart/alternative")) {
@@ -40,7 +41,7 @@ public class MailUtil {
             for (int i = 0; i < count; i++) {
                 Part bodyPart = multipart.getBodyPart(i);
                 if (bodyPart.isMimeType("text/html")) {
-                    return bodyPart.getContent().toString();
+                    return cleanseContent(bodyPart.getContent().toString());
                 } else if (bodyPart.isMimeType("multipart/*")) {
                     return getHtmlText(bodyPart);
                 }
@@ -52,11 +53,15 @@ public class MailUtil {
                 Part bodyPart = multipart.getBodyPart(i);
                 String content = getHtmlText(bodyPart);
                 if (Objects.nonNull(content)) {
-                    return content;
+                    return cleanseContent(content);
                 }
             }
         }
 
         return null;
+    }
+
+    private static String cleanseContent(String content) {
+        return StringUtils.normalizeSpace(content);
     }
 }
