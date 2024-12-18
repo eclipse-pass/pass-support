@@ -31,6 +31,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.deposit.provider.nihms.NihmsAssembler;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -99,14 +100,15 @@ public class NihmsReceiveMailService {
             }
             LOG.warn("Email is from Nihms");
             String content = getHtmlText(receivedMessage);
-            LOG.warn("Nihms Email content:" + content);
+            String cleansedContent = StringUtils.normalizeSpace(content);
+            LOG.warn("Nihms Email content:" + cleansedContent);
             if (Objects.isNull(content)) {
                 LOG.error("No HTML content found in nihms email: " + receivedMessage.getSubject());
                 return;
             }
-            Elements messageElements = getMessageElements(content);
+            Elements messageElements = getMessageElements(cleansedContent);
             if (messageElements.isEmpty()) {
-                LOG.error("No messages found in nihms email: " + content);
+                LOG.error("No messages found in nihms email: " + cleansedContent);
                 return;
             }
             processMessages(messageElements);
