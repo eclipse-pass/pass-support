@@ -22,6 +22,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.patch;
+import static com.github.tomakehurst.wiremock.client.WireMock.patchRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -117,6 +118,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         verify(invenioRdmTransport, times(1)).open(anyMap());
         verify(devNullTransport, times(0)).open(anyMap());
         verifyInvenioApiStubs(1);
+        verifyDSpaceApiStubs(1);
     }
 
     @Test
@@ -144,6 +146,8 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         verify(invenioRdmTransport, times(1)).open(anyMap());
         verify(devNullTransport, times(0)).open(anyMap());
         verifyInvenioApiStubs(1);
+        verifyDSpaceApiStubs(1);
+
         WireMock.verify(1, deleteRequestedFor(
             urlEqualTo("/api/records/existing-record-id/draft")));
     }
@@ -161,6 +165,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         verify(filesystemTransport, times(0)).open(anyMap());
         verify(invenioRdmTransport, times(0)).open(anyMap());
         verifyInvenioApiStubs(0);
+        verifyDSpaceApiStubs(0);
     }
 
     @Test
@@ -179,6 +184,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         verify(filesystemTransport, times(3)).open(anyMap());
         verify(invenioRdmTransport, times(1)).open(anyMap());
         verifyInvenioApiStubs(1);
+        verifyDSpaceApiStubs(1);
     }
 
     private void testSubmissionProcessor(Submission submission, boolean usingDevNull) throws IOException {
@@ -374,6 +380,29 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             .willReturn(ok(publishJsonResponse)));
     }
 
+    private void verifyInvenioApiStubs(int expectedCount) throws IOException, URISyntaxException {
+        WireMock.verify(expectedCount, getRequestedFor(
+            urlEqualTo("/api/user/records?q=metadata.title:%22Specific%20protein%20supplementation%20using%20" +
+                "soya%2C%20casein%20or%20whey%20differentially%20affects%20regional%20gut%20growth%20and%20luminal%20" +
+                "growth%20factor%20bioactivity%20in%20rats%3B%20implications%20for%20the%20treatment%20of%20gut%20" +
+                "injury%20and%20stimulating%20repair%22")));
+        String recordPayload = Files.readString(
+            Paths.get(SubmissionProcessorIT.class.getResource("expectedInvenioRecordPayload.json").toURI()));
+        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/api/records"))
+            .withRequestBody(equalTo(recordPayload)));
+        List<String> fileNames = getFileNames();
+        WireMock.verify(expectedCount * fileNames.size(), postRequestedFor(
+            urlEqualTo("/api/records/test-record-id/draft/files")));
+        fileNames.forEach(fileName -> {
+            WireMock.verify(expectedCount, putRequestedFor(
+                urlEqualTo("/api/records/test-record-id/draft/files/" + fileName + "/content")));
+            WireMock.verify(expectedCount, postRequestedFor(
+                urlEqualTo("/api/records/test-record-id/draft/files/" + fileName + "/commit")));
+        });
+        WireMock.verify(expectedCount, postRequestedFor(
+            urlEqualTo("/api/records/test-record-id/draft/actions/publish")));
+    }
+
     private void initDSpaceApiStubs() throws IOException {
         stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
                 withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
@@ -409,27 +438,12 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         stubFor(post("/dspace/api/workflow/workflowitems").willReturn(WireMock.ok()));
     }
 
-    private void verifyInvenioApiStubs(int expectedCount) throws IOException, URISyntaxException {
-        WireMock.verify(expectedCount, getRequestedFor(
-            urlEqualTo("/api/user/records?q=metadata.title:%22Specific%20protein%20supplementation%20using%20" +
-                "soya%2C%20casein%20or%20whey%20differentially%20affects%20regional%20gut%20growth%20and%20luminal%20" +
-                "growth%20factor%20bioactivity%20in%20rats%3B%20implications%20for%20the%20treatment%20of%20gut%20" +
-                "injury%20and%20stimulating%20repair%22")));
-        String recordPayload = Files.readString(
-            Paths.get(SubmissionProcessorIT.class.getResource("expectedInvenioRecordPayload.json").toURI()));
-        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/api/records"))
-            .withRequestBody(equalTo(recordPayload)));
-        List<String> fileNames = getFileNames();
-        WireMock.verify(expectedCount * fileNames.size(), postRequestedFor(
-            urlEqualTo("/api/records/test-record-id/draft/files")));
-        fileNames.forEach(fileName -> {
-            WireMock.verify(expectedCount, putRequestedFor(
-                urlEqualTo("/api/records/test-record-id/draft/files/" + fileName + "/content")));
-            WireMock.verify(expectedCount, postRequestedFor(
-                urlEqualTo("/api/records/test-record-id/draft/files/" + fileName + "/commit")));
-        });
-        WireMock.verify(expectedCount, postRequestedFor(
-            urlEqualTo("/api/records/test-record-id/draft/actions/publish")));
+    private void verifyDSpaceApiStubs(int expectedCount) throws IOException {
+        WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/dspace/api/security/csrf")));
+        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/authn/login")));
+        WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/dspace/api/discover/search/objects?query=handle:collectionhandle")));
+        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")));
+        WireMock.verify(expectedCount, patchRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems/1")));
+        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/workflow/workflowitems")));
     }
-
 }
