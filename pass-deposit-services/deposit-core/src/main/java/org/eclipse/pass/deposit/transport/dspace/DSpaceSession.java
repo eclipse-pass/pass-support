@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
  * Finally a workflow item is created referencing the workspace item in order to trigger submission.
  */
 class DSpaceSession implements TransportSession {
+    private static final String DEPOSIT_STATUS_REF_PREFIX = "wsi:";
     private static final Logger LOG = LoggerFactory.getLogger(DSpaceSession.class);
 
     private final DspaceDepositService dspaceDepositService;
@@ -65,9 +66,12 @@ class DSpaceSession implements TransportSession {
             DocumentContext workspaceItemContext = null;
 
             try {
-                workspaceItemId = Integer.parseInt(deposit.getDepositStatusRef());
+                String ref = deposit.getDepositStatusRef();
+
+                if (ref != null && ref.startsWith(DEPOSIT_STATUS_REF_PREFIX)) {
+                    workspaceItemId = Integer.parseInt(ref.substring(DEPOSIT_STATUS_REF_PREFIX.length()));
+                }
             } catch (NumberFormatException e) {
-                workspaceItemId = -1;
             }
 
             if (workspaceItemId == -1) {
@@ -76,7 +80,7 @@ class DSpaceSession implements TransportSession {
                 workspaceItemId = workspaceItemContext.read("$._embedded.workspaceitems[0].id");
 
                 // Use the deposit status ref to mark that the workspace item was created
-                deposit.setDepositStatusRef(String.valueOf(workspaceItemId));
+                deposit.setDepositStatusRef(DEPOSIT_STATUS_REF_PREFIX + workspaceItemId);
                 passClient.updateObject(deposit);
 
                 LOG.debug("Created WorkspaceItem: {}", workspaceItemId);
