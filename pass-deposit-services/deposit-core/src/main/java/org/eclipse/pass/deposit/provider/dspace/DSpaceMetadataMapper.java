@@ -30,26 +30,32 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * dc.title for the Manuscript
- * dc.publisher for the publisher name
- * dc.identifier.citation for the Manuscript
- * dc.identifier.doi for the DOI
- * dc.contributor for each non-submitter associated with the Manuscript
- * dc.description.abstract for the Manuscript
- * dc.date.issued for the publication date
- * DSPACE_FIELD_EMBARGO_LIFT   Date that the embargo is lifted
- * DSPACE_FIELD_EMBARGO_TERMS  Date that the embargo is lifted
+ * DSpace metadata fields set:
+ * <ul>
+ * <li>dc.title for the Manuscript
+ * <li>dc.publisher for the publisher name
+ * <li>dc.identifier.citation for the Manuscript
+ * <li>dc.identifier.doi for the DOI
+ * <li>dc.contributor for each non-submitter associated with the Manuscript
+ * <li>dc.description.abstract for the Manuscript
+ * <li>dc.date.issued for the publication date
+ * <li>DSPACE_FIELD_EMBARGO_LIFT   Date that the embargo is lifted
+ * <li>DSPACE_FIELD_EMBARGO_TERMS  Date that the embargo is lifted
+ * </ul>
  */
 @Component
 public class DSpaceMetadataMapper {
     // Section of workspace item form to add metadata
     private static final String SECTION = "traditionalpageone";
 
-    @Value("${dspace.field.embargo.lift}")
-    private String dspaceFieldEmbargoLift;
+    private final String dspaceFieldEmbargoLift;
+    private final String dspaceFieldEmbargoTerms;
 
-    @Value("${dspace.field.embargo.terms}")
-    private String dspaceFieldEmbargoTerms;
+    public DSpaceMetadataMapper(@Value("${dspace.field.embargo.lift}") String dspaceFieldEmbargoLift,
+            @Value("${dspace.field.embargo.terms}") String dspaceFieldEmbargoTerms) {
+        this.dspaceFieldEmbargoLift = dspaceFieldEmbargoLift;
+        this.dspaceFieldEmbargoTerms = dspaceFieldEmbargoTerms;
+    }
 
     public String patchWorkspaceItem(DepositSubmission submission) {
         DepositMetadata depositMd = submission.getMetadata();
@@ -59,10 +65,8 @@ public class DSpaceMetadataMapper {
 
         JSONArray metadata = new JSONArray();
 
-        String title = manuscriptMd.getTitle();
-
         // Required by DSpace
-        metadata.add(add_array(SECTION, "dc.title", title));
+        metadata.add(add_array(SECTION, "dc.title", manuscriptMd.getTitle()));
 
         if (journalMd != null && journalMd.getPublisherName() != null) {
             metadata.add(add_array(SECTION, "dc.publisher", journalMd.getPublisherName()));
@@ -140,7 +144,7 @@ public class DSpaceMetadataMapper {
         return obj;
     }
 
-    // TODO Could we use citation in CrossRef metadata?
+    // TODO Could we use citation from CrossRef metadata?
     private String createCitation(DepositSubmission submission) {
         DepositMetadata submissionMd = submission.getMetadata();
         DepositMetadata.Article articleMd = submissionMd.getArticleMetadata();

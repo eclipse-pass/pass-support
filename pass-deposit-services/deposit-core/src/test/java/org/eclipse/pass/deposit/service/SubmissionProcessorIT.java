@@ -441,8 +441,10 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
     private void verifyDSpaceApiStubs(int expectedCount) throws IOException {
         WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/dspace/api/security/csrf")));
         WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/authn/login")));
-        WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/dspace/api/discover/search/objects?query=handle:collectionhandle")));
-        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")));
+        WireMock.verify(expectedCount, getRequestedFor(
+                urlEqualTo("/dspace/api/discover/search/objects?query=handle:collectionhandle")));
+        WireMock.verify(expectedCount, postRequestedFor(
+                urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")));
         WireMock.verify(expectedCount, patchRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems/1")));
         WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/workflow/workflowitems")));
     }

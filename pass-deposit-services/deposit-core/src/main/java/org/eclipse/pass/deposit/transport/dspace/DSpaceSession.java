@@ -72,6 +72,7 @@ class DSpaceSession implements TransportSession {
                     workspaceItemId = Integer.parseInt(ref.substring(DEPOSIT_STATUS_REF_PREFIX.length()));
                 }
             } catch (NumberFormatException e) {
+                // nop
             }
 
             if (workspaceItemId == -1) {
