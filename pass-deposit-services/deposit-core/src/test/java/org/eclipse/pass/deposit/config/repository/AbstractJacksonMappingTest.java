@@ -30,8 +30,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(
     locations = "/test-application.properties",
     properties = {
-        "dspace.host=test-dspace-host",
-        "dspace.port=test-dspace-port",
+        "dspace.server=test-dspace-host:8000",
         "pmc.ftp.host=test-ftp-host",
         "pmc.ftp.port=test-ftp-port",
     })
