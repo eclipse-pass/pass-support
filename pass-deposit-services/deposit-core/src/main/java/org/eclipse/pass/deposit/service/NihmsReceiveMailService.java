@@ -77,18 +77,18 @@ public class NihmsReceiveMailService {
     }
 
     private final List<Pattern> depositFailurePatterns = List.of(
-        Pattern.compile("package id=(.*) failed because.*", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("package id=(.*) was not submitted.*", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("package id=(.*) is corrupt.*", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("package id=(.*) was already used for Manuscript.*submission not created.*",
+        Pattern.compile("package id=(\\S{1,75}) failed because.*", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("package id=(\\S{1,75}) was not submitted.*", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("package id=(\\S{1,75}) is corrupt.*", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("package id=(\\S{1,75}) was already used for Manuscript.*submission not created.*",
             Pattern.CASE_INSENSITIVE),
-        Pattern.compile("package id=(.*) for Manuscript.*submitted with the following problem.*",
+        Pattern.compile("package id=(\\S{1,75}) for Manuscript.*submitted with the following problem.*",
             Pattern.CASE_INSENSITIVE),
-        Pattern.compile("package id=(.*) contains unrecognized.*", Pattern.CASE_INSENSITIVE)
+        Pattern.compile("package id=(\\S{1,75}) contains unrecognized.*", Pattern.CASE_INSENSITIVE)
     );
 
     private final Pattern depositSuccessPattern =
-        Pattern.compile("package id=(.*) for Manuscript ID (.*) was submitted successfully.*",
+        Pattern.compile("package id=(\\S{1,75}) for Manuscript ID (\\S{1,25}) was submitted successfully.*",
             Pattern.CASE_INSENSITIVE);
 
     public void handleReceivedMail(MimeMessage receivedMessage) {
