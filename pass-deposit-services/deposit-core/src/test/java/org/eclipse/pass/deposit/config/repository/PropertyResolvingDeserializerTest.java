@@ -30,7 +30,7 @@ public class PropertyResolvingDeserializerTest extends AbstractJacksonMappingTes
             RepositoryConfig.class);
         assertEquals(SwordV2Binding.PROTO, config.getTransportConfig().getProtocolBinding().getProtocol());
         SwordV2Binding swordV2Binding = (SwordV2Binding) config.getTransportConfig().getProtocolBinding();
-        assertTrue(swordV2Binding.getDefaultCollectionUrl().contains("http://test-dspace-host:test-dspace-port"));
+        assertTrue(swordV2Binding.getDefaultCollectionUrl().contains("http://test-dspace-host:8000"));
     }
 
     @Test
@@ -39,6 +39,6 @@ public class PropertyResolvingDeserializerTest extends AbstractJacksonMappingTes
             RepositoryConfig.class);
         assertTrue(config.getTransportConfig().getProtocolBinding().getProtocol().equals(SwordV2Binding.PROTO));
         SwordV2Binding swordV2Binding = (SwordV2Binding) config.getTransportConfig().getProtocolBinding();
-        assertFalse(swordV2Binding.getDefaultCollectionUrl().contains("${dspace.host}"));
+        assertFalse(swordV2Binding.getDefaultCollectionUrl().contains("${dspace.server}"));
     }
 }
