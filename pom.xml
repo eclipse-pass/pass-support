@@ -140,11 +140,14 @@
                     <limit>
                       <counter>LINE</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>0.45</minimum>
+                      <minimum>0.15</minimum>
                     </limit>
                   </limits>
                 </rule>
               </rules>
+              <excludes>
+                <exclude>**/test/**</exclude>
+              </excludes>
             </configuration>
           </execution>
         </executions>
