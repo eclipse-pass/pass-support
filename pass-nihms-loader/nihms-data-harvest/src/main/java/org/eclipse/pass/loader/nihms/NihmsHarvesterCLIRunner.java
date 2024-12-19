@@ -23,6 +23,8 @@ import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +35,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class NihmsHarvesterCLIRunner implements CommandLineRunner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NihmsHarvesterCLIRunner.class);
 
     /**
      * Request for help/usage documentation
@@ -96,7 +100,6 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
             /* Handle general options such as help, version */
             if (this.help) {
                 parser.printUsage(System.err);
-                System.err.println();
                 System.exit(0);
             }
 
@@ -121,16 +124,10 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
             nihmsHarvester.harvest(statusesToProcess, harvestPeriodMonths);
 
         } catch (CmdLineException e) {
-            /**
-             * This is an error in command line args, just print out usage data
-             * and description of the error.
-             */
-            System.err.println(e.getMessage());
             parser.printUsage(System.err);
             System.exit(1);
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println(e.getMessage());
+            LOG.error("Error running Nihms Harvester", e);
             System.exit(1);
         }
     }

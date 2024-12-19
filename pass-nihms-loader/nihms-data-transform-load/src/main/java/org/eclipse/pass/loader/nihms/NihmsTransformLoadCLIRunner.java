@@ -22,6 +22,8 @@ import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,9 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class NihmsTransformLoadCLIRunner implements CommandLineRunner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NihmsTransformLoadCLIRunner.class);
+
     /**
      * Request for help/usage documentation
      */
@@ -77,7 +82,6 @@ public class NihmsTransformLoadCLIRunner implements CommandLineRunner {
             /* Handle general options such as help, version */
             if (this.help) {
                 parser.printUsage(System.err);
-                System.err.println();
                 System.exit(0);
             }
 
@@ -97,20 +101,11 @@ public class NihmsTransformLoadCLIRunner implements CommandLineRunner {
             nihmsTransformLoadService.transformAndLoadFiles(statusesToProcess);
 
         } catch (CmdLineException e) {
-            /**
-             * This is an error in command line args, just print out usage data
-             * and description of the error.
-             */
-            System.err.println(e.getMessage());
             parser.printUsage(System.err);
-            System.err.println();
             System.exit(1);
-
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println(e.getMessage());
+            LOG.error("Error running Nihms Transform and Load", e);
             System.exit(1);
-
         }
     }
 }
