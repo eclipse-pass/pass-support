@@ -145,9 +145,6 @@
                   </limits>
                 </rule>
               </rules>
-              <excludes>
-                <exclude>**/test/**</exclude>
-              </excludes>
             </configuration>
           </execution>
         </executions>
