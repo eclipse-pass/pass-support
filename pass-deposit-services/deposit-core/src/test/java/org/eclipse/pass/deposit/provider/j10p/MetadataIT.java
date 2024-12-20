@@ -51,7 +51,7 @@ public class MetadataIT extends AbstractDepositSubmissionIT {
         "    },\n    {\n      \"author\": \"Mary Beth Lacey\"\n    }\n  ],\n  \"agreements\": {\n    " +
         "\"JScholarship\": \"Text removed.\"\n  },\n  \"title\": \"My Test Article\",\n  \"journal-title\": " +
         "\"Nature Communications\",\n  \"issns\": [\n    {\n      \"issn\": \"2041-1723\",\n      \"pubType\": " +
-        "\"Print\"\n    }\n  ],\n  \"publisher\": \"Elsevier\",\n  \"publicationDate\": \"Fall 2016\",\n  " +
+        "\"Print\"\n    }\n  ],\n  \"publisher\": \"Elsevier\",\n  \"publicationDate\": \"2001-03-05\",\n  " +
         "\"abstract\": \"Abstract text\",\n  \"journal-NLMTA-ID\": \"Nat Commun\",\n  \"agent_information\": " +
         "{\n    \"name\": \"Chrome\",\n    \"version\": \"69\"\n  }\n}";
 
@@ -61,7 +61,7 @@ public class MetadataIT extends AbstractDepositSubmissionIT {
         "\"JScholarship\": \"Text removed.\"\n  },\n  \"title\": \"My Test Article\",\n  \"journal-title\": " +
         "\"Nature Communications\",\n  \"issns\": [\n    {\n      \"issn\": \"2041-1723\",\n      " +
         "\"pubType\": \"Print\"\n    }\n  ],\n  \"publisher\": \"Elsevier\",\n  \"publicationDate\": " +
-        "\"Fall 2016\",\n  \"abstract\": \"Abstract text\",\n  \"journal-NLMTA-ID\": \"Nat Commun\",\n  " +
+        "\"2020-05-06\",\n  \"abstract\": \"Abstract text\",\n  \"journal-NLMTA-ID\": \"Nat Commun\",\n  " +
         "\"agent_information\": {\n    \"name\": \"Chrome\",\n    \"version\": \"69\"\n  }\n}";
 
     @Autowired private SubmissionTestUtil submissionTestUtil;
@@ -96,7 +96,7 @@ public class MetadataIT extends AbstractDepositSubmissionIT {
 
         // In citation, list up to three authors.  Take publication date from "common" if not in "crossref".
         assertNotNull(qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_BIBLIOCITATION).item(0).getTextContent());
-        assertEquals("Christine Cagney, Mary Beth Lacey. (Fall 2016). \"My Test Article.\" Nature Communications.",
+        assertEquals("Christine Cagney, Mary Beth Lacey. (2001-03-05). \"My Test Article.\" Nature Communications.",
                      qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_BIBLIOCITATION).item(0).getTextContent());
     }
 
@@ -116,7 +116,7 @@ public class MetadataIT extends AbstractDepositSubmissionIT {
         // Publication date in "crossref" has precedence over one in "common".
         assertNotNull(qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_BIBLIOCITATION).item(0).getTextContent());
         assertEquals(
-            "Christine Cagney, Mary Beth Lacey, David Michael Starsky, et al. (Fall 2016). \"My Test Article.\" " +
+            "Christine Cagney, Mary Beth Lacey, David Michael Starsky, et al. (2020-05-06). \"My Test Article.\" " +
             "Nature Communications.",
             qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_BIBLIOCITATION).item(0).getTextContent());
     }

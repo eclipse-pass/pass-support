@@ -20,10 +20,10 @@ import static org.eclipse.pass.deposit.model.JournalPublicationType.parseTypeDes
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -73,8 +73,8 @@ public class DepositSubmissionMapper {
     private static final String AUTHORS_KEY = "authors";
     private static final String AUTHOR_KEY = "author";
     private static final String PUB_TYPE_KEY = "pubType";
-    private static final String EMBARGO_END_DATE_PATTERN = "yyyy-MM-dd";
     private static final String NLMTA_KEY = "journal-NLMTA-ID";
+    private static final String DEFAULT_DATE_TIME_ZONE = "America/New_York";
 
     /**
      * Creates a DepositSubmission by walking the tree of PassEntity objects, starting with the Submission entity,
@@ -267,7 +267,7 @@ public class DepositSubmissionMapper {
             .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
 
         getStringProperty(submissionData, PUBLICATION_DATE_KEY)
-            .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
+            .ifPresent(date -> metadata.getJournalMetadata().setPublicationDate(parseDate(date)));
 
         getArrayProperty(submissionData, ISSNS).ifPresent(issns -> {
             issns.forEach(issnObjAsStr -> {
@@ -290,17 +290,27 @@ public class DepositSubmissionMapper {
 
         getStringProperty(submissionData, EMBARGO_END_DATE_KEY).ifPresent(endDate -> {
             try {
-                // TODO - Resolve inconsistent date/date-time formats in metadata and deposit data model
-                // TODO - Fix assumption of local timezone
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(EMBARGO_END_DATE_PATTERN);
-                LocalDateTime localEndDate = LocalDate.parse(endDate, formatter).atStartOfDay();
-                ZonedDateTime zonedEndDate = localEndDate.atZone(ZoneId.of("America/New_York"));
-                metadata.getArticleMetadata().setEmbargoLiftDate(zonedEndDate);
-            } catch (Exception e) {
+                metadata.getArticleMetadata().setEmbargoLiftDate(parseDate(endDate));
+            } catch (DateTimeParseException e) {
                 throw new DepositServiceRuntimeException(
-                    String.format("Data file contained an invalid Date: '%s'.", endDate), e);
+                        String.format("Data file contained an invalid Date: '%s'.", endDate), e);
             }
         });
+    }
+
+    // Parse an ISO 8601 date with or without a time zone
+    public ZonedDateTime parseDate(String date) {
+        try {
+            return ZonedDateTime.parse(date, DateTimeFormatter.ISO_DATE);
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay()
+                        .atZone(ZoneId.of(DEFAULT_DATE_TIME_ZONE));
+            } catch (DateTimeParseException e2) {
+                throw new DepositServiceRuntimeException(
+                        String.format("Metadata contained an invalid Date: '%s'.", date), e2);
+            }
+        }
     }
 
     private void processCrossrefMetadata(DepositMetadata metadata, JsonObject submissionData) {
