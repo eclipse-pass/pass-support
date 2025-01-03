@@ -56,11 +56,12 @@
 
   <modules>
     <module>pass-data-client</module>
-    <module>pass-journal-loader</module>
+    <module>pass-deposit-services</module>
     <module>pass-grant-loader</module>
+    <module>pass-journal-loader</module>
     <module>pass-nihms-loader</module>
     <module>pass-notification-service</module>
-    <module>pass-deposit-services</module>
+    <module>jacoco-aggregate-report</module>
   </modules>
 
   <scm>
@@ -118,20 +119,6 @@
             <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>report</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>report-aggregate</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report-aggregate</goal>
             </goals>
           </execution>
         </executions>
