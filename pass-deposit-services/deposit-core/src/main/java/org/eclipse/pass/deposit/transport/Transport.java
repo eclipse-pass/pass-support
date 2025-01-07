@@ -125,7 +125,6 @@ public interface Transport {
     enum PROTOCOL {
         http,
         https,
-        ftp,
         sftp,
         SWORDv2,
         filesystem,

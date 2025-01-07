@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     include = JsonTypeInfo.As.PROPERTY,
     property = "protocol")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = FtpBinding.class, name = FtpBinding.PROTO),
     @JsonSubTypes.Type(value = SftpBinding.class, name = SftpBinding.PROTO),
     @JsonSubTypes.Type(value = SwordV2Binding.class, name = SwordV2Binding.PROTO),
     @JsonSubTypes.Type(value = FilesystemBinding.class, name = FilesystemBinding.PROTO),

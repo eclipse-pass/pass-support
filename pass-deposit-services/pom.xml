@@ -37,11 +37,9 @@
   <properties>
     <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>
     <awsspring.version>3.2.1</awsspring.version>
-    <commons-net.version>3.11.1</commons-net.version>
     <commons-compress.version>1.27.1</commons-compress.version>
     <commons-io.version>2.17.0</commons-io.version>
     <okhttp.version>4.12.0</okhttp.version>
-    <guava.version>33.3.1-jre</guava.version>
     <xmlunit.version>2.10.0</xmlunit.version>
     <commons-codec.version>1.17.1</commons-codec.version>
     <sword2-client.version>0.9.3</sword2-client.version>
@@ -98,12 +96,6 @@
       </dependency>
 
       <dependency>
-        <groupId>commons-net</groupId>
-        <artifactId>commons-net</artifactId>
-        <version>${commons-net.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
         <version>${commons-compress.version}</version>
@@ -113,12 +105,6 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
       </dependency>
 
       <dependency>

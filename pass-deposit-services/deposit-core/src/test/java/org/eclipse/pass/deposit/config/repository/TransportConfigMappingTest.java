@@ -43,14 +43,6 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
                                                                  "\n" +
                                                                  "    }";
 
-    private static final String MINIMAL_FTP_TRANSPORT_CONFIG = "" +
-                                                               "{\n" +
-                                                               "      \"protocol-binding\": {\n" +
-                                                               "        \"protocol\": \"ftp\"\n" +
-                                                               "      }\n" +
-                                                               "\n" +
-                                                               "    }";
-
     private static final String MINIMAL_SFTP_TRANSPORT_CONFIG = "" +
         "{\n" +
         "      \"protocol-binding\": {\n" +
@@ -146,19 +138,6 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
         TransportConfig config = repositoriesMapper.readValue(MINIMAL_SWORD_TRANSPORT_CONFIG, TransportConfig.class);
 
         assertRoundTrip(config, TransportConfig.class);
-    }
-
-    @Test
-    public void mapMinimalFtpTransportConfig() throws IOException {
-        TransportConfig config = repositoriesMapper.readValue(MINIMAL_FTP_TRANSPORT_CONFIG, TransportConfig.class);
-
-        assertNull(config.getAuthRealms());
-        assertNotNull(config.getProtocolBinding());
-        assertTrue(config.getProtocolBinding() instanceof FtpBinding);
-
-        FtpBinding binding = (FtpBinding) config.getProtocolBinding();
-
-        assertEquals(FtpBinding.PROTO, binding.getProtocol());
     }
 
     @Test
