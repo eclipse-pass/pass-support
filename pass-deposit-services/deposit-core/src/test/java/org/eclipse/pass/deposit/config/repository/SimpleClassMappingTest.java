@@ -49,19 +49,6 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
                                                      "        \"user-agent\": \"pass-deposit/x.y.z\"\n" +
                                                      "      }";
 
-    private static final String FTP_BINDING_JSON = "" +
-                                                   "{\n" +
-                                                   "        \"protocol\": \"ftp\",\n" +
-                                                   "        \"username\": \"ftpuser\",\n" +
-                                                   "        \"password\": \"ftppass\",\n" +
-                                                   "        \"server-fqdn\": \"${pmc.ftp.host}\",\n" +
-                                                   "        \"server-port\": \"${pmc.ftp.port}\",\n" +
-                                                   "        \"data-type\": \"binary\",\n" +
-                                                   "        \"transfer-mode\": \"stream\",\n" +
-                                                   "        \"use-pasv\": true,\n" +
-                                                   "        \"default-directory\": \"/logs/upload/%s\"\n" +
-                                                   "      }";
-
     private static final String SFTP_BINDING_JSON = "" +
         "{\n" +
         "        \"protocol\": \"sftp\",\n" +
@@ -161,43 +148,6 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
         assertEquals("test-ftp-host", sftpBinding.getServerFqdn());
         assertEquals("test-ftp-port", sftpBinding.getServerPort());
         assertEquals("/logs/upload/%s", sftpBinding.getDefaultDirectory());
-    }
-
-    @Test
-    public void mapFtpBinding() throws IOException {
-        FtpBinding ftpBinding = repositoriesMapper.readValue(FTP_BINDING_JSON, FtpBinding.class);
-
-        assertEquals("ftp", ftpBinding.getProtocol());
-        assertEquals("ftpuser", ftpBinding.getUsername());
-        assertEquals("ftppass", ftpBinding.getPassword());
-        assertEquals("test-ftp-host", ftpBinding.getServerFqdn());
-        assertEquals("test-ftp-port", ftpBinding.getServerPort());
-        assertEquals("binary", ftpBinding.getDataType());
-        assertEquals("stream", ftpBinding.getTransferMode());
-        assertTrue(ftpBinding.isUsePasv());
-        assertEquals("/logs/upload/%s", ftpBinding.getDefaultDirectory());
-    }
-
-    @Test
-    public void mapFtpBindingFromJavaRoundTrip() throws IOException {
-        FtpBinding ftpBinding = new FtpBinding();
-        ftpBinding.setUsername("ftpuser");
-        ftpBinding.setPassword("ftppass");
-        ftpBinding.setServerFqdn("192.168.99.100");
-        ftpBinding.setServerPort("21");
-        ftpBinding.setDataType("binary");
-        ftpBinding.setTransferMode("stream");
-        ftpBinding.setUsePasv(true);
-        ftpBinding.setDefaultDirectory("/logs/upload/%s");
-
-        assertRoundTrip(ftpBinding, FtpBinding.class);
-    }
-
-    @Test
-    public void mapFtpBindingFromJsonRoundTrip() throws IOException {
-        FtpBinding ftpBinding = repositoriesMapper.readValue(FTP_BINDING_JSON, FtpBinding.class);
-
-        assertRoundTrip(ftpBinding, FtpBinding.class);
     }
 
     @Test

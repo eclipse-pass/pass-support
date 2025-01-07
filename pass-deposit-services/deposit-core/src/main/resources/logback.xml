@@ -50,13 +50,6 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
-  <!-- DEBUG level will show FTP session opening and closing, TRACE will log more details of a session. -->
-
-  <logger name="org.eclipse.pass.deposit.transport.ftp" additivity="false"
-          level="{org.eclipse.pass.deposit.transport.ftp.level:-INFO}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-
   <!-- DEBUG level will show logs for sword client requests/responses. -->
   <logger name="org.swordapp.client" additivity="false" level="${org.swordapp.client:-WARN}">
     <appender-ref ref="STDERR"/>
