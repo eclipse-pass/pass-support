@@ -22,6 +22,11 @@ RUN chmod +x entrypoint.sh \
     && chmod +x run_refresh.sh \
     && chmod +x set_aws_param_store.sh \
     && npm install \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -g 1432 passntrgroup \
+    && useradd -m -u 1532 -g passntrgroup passntruser \
+    && chown -R passntruser:passntrgroup /app
+
+USER passntruser
 
 ENTRYPOINT ["./entrypoint.sh"]
