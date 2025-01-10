@@ -1,14 +1,16 @@
 FROM --platform=linux/amd64 node:20
 
-RUN apt-get update; apt-get clean
-RUN apt-get --no-install-recommends install -y xvfb
-RUN curl https://dl-ssl.google.com/linux/linux_signing_key.pub -so - | apt-key add - \
-    && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
-RUN apt-get update && apt-get --no-install-recommends -y install google-chrome-stable
-
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -so "awscliv2.zip" && \
-    unzip awscliv2.zip && \
-	./aws/install
+RUN apt-get update \
+    && apt-get --no-install-recommends install -y xauth \
+    && apt-get --no-install-recommends install -y xvfb \
+    && curl https://dl-ssl.google.com/linux/linux_signing_key.pub -so - | apt-key add - \
+    && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get --no-install-recommends -y install google-chrome-stable \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -so "awscliv2.zip" \
+    && unzip awscliv2.zip \
+	&& ./aws/install \
+    && apt-get clean
 
 WORKDIR /app
 
