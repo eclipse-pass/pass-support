@@ -1,4 +1,4 @@
-# PASS Support ![Pass Support](https://github.com/eclipse-pass/pass-support/actions/workflows/snapshot.yml/badge.svg)
+# PASS Support ![Pass Support](https://github.com/eclipse-pass/pass-support/actions/workflows/snapshot.yml/badge.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=eclipse-pass_pass-support&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=eclipse-pass_pass-support)
 
 PASS Support contains ancillary components that assist in the submission process and is composed of the Data Loaders, 
 Notification Services, and Deposit Services. The Data Loaders handle data ingestion from external systems like PubMed 
