@@ -48,6 +48,7 @@ public class DeploymentTestDataService {
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentTestDataService.class);
 
     public static final String PASS_E2E_TEST_GRANT = "PASS_E2E_TEST_GRANT";
+    public static final String SUBMISSION_ID = "submission.id";
 
     private final PassClient passClient;
     private final DspaceDepositService dspaceDepositService;
@@ -94,7 +95,7 @@ public class DeploymentTestDataService {
         testSubmissions.forEach(testSubmission -> {
             try {
                 PassClientSelector<Deposit> testDepositSelector = new PassClientSelector<>(Deposit.class);
-                testDepositSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+                testDepositSelector.setFilter(RSQL.equals(SUBMISSION_ID, testSubmission.getId()));
                 testDepositSelector.setInclude("repositoryCopy");
                 List<Deposit> testDeposits = passClient.streamObjects(testDepositSelector).toList();
                 testDeposits.forEach(testDeposit -> {
@@ -102,11 +103,11 @@ public class DeploymentTestDataService {
                     deleteObject(testDeposit.getRepositoryCopy());
                 });
                 PassClientSelector<File> testFileSelector = new PassClientSelector<>(File.class);
-                testFileSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+                testFileSelector.setFilter(RSQL.equals(SUBMISSION_ID, testSubmission.getId()));
                 List<File> testFiles = passClient.streamObjects(testFileSelector).toList();
                 testFiles.forEach(this::deleteFile);
                 PassClientSelector<SubmissionEvent> subEventSelector = new PassClientSelector<>(SubmissionEvent.class);
-                subEventSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+                subEventSelector.setFilter(RSQL.equals(SUBMISSION_ID, testSubmission.getId()));
                 List<SubmissionEvent> testSubmissionEvents = passClient.streamObjects(subEventSelector).toList();
                 testSubmissionEvents.forEach(this::deleteObject);
                 deleteObject(testSubmission);
@@ -120,8 +121,8 @@ public class DeploymentTestDataService {
 
     private void deleteDepositsInRepoIfNeeded(Grant testGrant) throws IOException {
         if (Boolean.FALSE.equals(skipDeploymentTestDeposits)) {
-            LOG.warn("Deleting Test Deposits In Repositories (skipDeploymentTestDeposits=" +
-                skipDeploymentTestDeposits + ")");
+            LOG.warn("Deleting Test Deposits In Repositories (skipDeploymentTestDeposits={})",
+                skipDeploymentTestDeposits);
             ZonedDateTime submissionToDate = ZonedDateTime.now().minusHours(1);
             PassClientSelector<Submission> testSubmissionSelector = new PassClientSelector<>(Submission.class);
             testSubmissionSelector.setFilter(RSQL.and(
@@ -134,7 +135,7 @@ public class DeploymentTestDataService {
                 testSubmissions.forEach(testSubmission -> {
                     try {
                         PassClientSelector<Deposit> testDepositSelector = new PassClientSelector<>(Deposit.class);
-                        testDepositSelector.setFilter(RSQL.equals("submission.id", testSubmission.getId()));
+                        testDepositSelector.setFilter(RSQL.equals(SUBMISSION_ID, testSubmission.getId()));
                         testDepositSelector.setInclude("submission", "repository", "repositoryCopy");
                         List<Deposit> testDeposits = passClient.streamObjects(testDepositSelector).toList();
                         testDeposits.forEach(testDeposit -> deleteDepositInRepoIfNeeded(testDeposit, authContext));
@@ -161,7 +162,9 @@ public class DeploymentTestDataService {
 
     private void deleteObject(PassEntity entity) {
         try {
-            passClient.deleteObject(entity);
+            if (Objects.nonNull(entity)) {
+                passClient.deleteObject(entity);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
