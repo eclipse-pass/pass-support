@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
@@ -48,14 +49,17 @@ public class FailedDepositRetry {
     private final DepositSubmissionModelBuilder depositSubmissionModelBuilder;
     private final DepositTaskHelper depositTaskHelper;
     private final Registry<Packager> packagerRegistry;
+    private final DepositServiceErrorHandler depositServiceErrorHandler;
 
     public FailedDepositRetry(PassClient passClient, DepositTaskHelper depositTaskHelper,
                               Registry<Packager> packagerRegistry,
-                              DepositSubmissionModelBuilder depositSubmissionModelBuilder) {
+                              DepositSubmissionModelBuilder depositSubmissionModelBuilder,
+                              DepositServiceErrorHandler depositServiceErrorHandler) {
         this.passClient = passClient;
         this.depositTaskHelper = depositTaskHelper;
         this.packagerRegistry = packagerRegistry;
         this.depositSubmissionModelBuilder = depositSubmissionModelBuilder;
+        this.depositServiceErrorHandler = depositServiceErrorHandler;
     }
 
     public void retryFailedDeposit(Deposit failedDeposit) {
@@ -94,6 +98,7 @@ public class FailedDepositRetry {
 
         } catch (Exception e) {
             LOG.warn(FAILED_TO_PROCESS, failedDeposit.getId(), e.getMessage(), e);
+            depositServiceErrorHandler.handleError(e);
         }
     }
 

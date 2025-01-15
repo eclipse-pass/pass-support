@@ -66,7 +66,9 @@ public class SubmissionTestUtil {
         resultDeposits.getObjects().forEach(deposit -> {
             try {
                 passClient.deleteObject(deposit);
-                passClient.deleteObject(deposit.getRepositoryCopy());
+                if (Objects.nonNull(deposit.getRepositoryCopy())) {
+                    passClient.deleteObject(deposit.getRepositoryCopy());
+                }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -114,13 +116,8 @@ public class SubmissionTestUtil {
             return submission;
 
         } catch (Exception e) {
-            // TODO re-throw?
-            System.out.println("Error building Submission from stream.");
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
-        entities.clear();
-        return null;
     }
 
     private Submission createEntitiesInPass(List<PassEntity> entities) {
@@ -132,8 +129,8 @@ public class SubmissionTestUtil {
             }
         });
 
-        return entities.stream().filter(entity -> entity instanceof Submission)
-            .map(passEntity -> (Submission) passEntity)
+        return entities.stream().filter(Submission.class::isInstance)
+            .map(Submission.class::cast)
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Submission not found"));
     }
