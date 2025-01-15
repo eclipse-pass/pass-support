@@ -81,7 +81,7 @@ import org.springframework.test.util.ReflectionTestUtils;
     "pass.test.dspace.repo.key=TestDspace"
 })
 @WireMockTest(httpPort = 9020)
-public class DeploymentTestDataServiceIT extends AbstractDepositIT {
+class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
     @Autowired private DeploymentTestDataService deploymentTestDataService;
     @SpyBean private DspaceDepositService dspaceDepositService;
@@ -147,7 +147,7 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     }
 
     @Test
-    public void testProcessTestData_TestGrantDataCreatedIfNotExist() throws Exception {
+    void testProcessTestData_TestGrantDataCreatedIfNotExist() throws Exception {
         // WHEN
         deploymentTestDataService.processTestData();
 
@@ -166,7 +166,7 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     }
 
     @Test
-    public void testProcessTestData_DoesNotTestGrantDataCreatedIfExist() throws Exception {
+    void testProcessTestData_DoesNotTestGrantDataCreatedIfExist() throws Exception {
         // GIVEN
         Grant testGrant = new Grant();
         testGrant.setProjectName(PASS_E2E_TEST_GRANT);
@@ -190,13 +190,13 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
     }
 
     @Test
-    public void testProcessTestData_DeleteTestSubmissionsForTestGrant() throws Exception {
+    void testProcessTestData_DeleteTestSubmissionsForTestGrant() throws Exception {
         // GIVEN
         Grant testGrant = new Grant();
         testGrant.setProjectName(PASS_E2E_TEST_GRANT);
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
-        initSubmissionAndDeposits(testGrant);
+        initSubmissionAndDeposits(testGrant, false);
         initDspaceApiStubs("Test-Title");
         ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
 
@@ -211,23 +211,48 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
             any(DspaceDepositService.AuthContext.class));
-        verifyDspaceApiStubs(1);
+        verifyDspaceApiStubs(1, 1);
     }
 
     @Test
-    public void testProcessTestData_DoesNotDeleteTestSubmissionsForOtherGrant() throws Exception {
+    void testProcessTestData_DeleteTestSubmissionsWithNullRepoCopy() throws Exception {
+        // GIVEN
+        Grant testGrant = new Grant();
+        testGrant.setProjectName(PASS_E2E_TEST_GRANT);
+        testGrant.setAwardStatus(AwardStatus.ACTIVE);
+        passClient.createObject(testGrant);
+        initSubmissionAndDeposits(testGrant, true);
+        initDspaceApiStubs("Test-Title");
+        ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
+
+        // WHEN
+        deploymentTestDataService.processTestData();
+
+        // THEN
+        verifyTestGrantDeleted();
+        verify(dspaceDepositService, times(1)).deleteDeposit(
+            argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
+            any(DspaceDepositService.AuthContext.class));
+        verify(dspaceDepositService, times(0)).deleteDeposit(
+            argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
+            any(DspaceDepositService.AuthContext.class));
+        verifyDspaceApiStubs(0, 1);
+    }
+
+    @Test
+    void testProcessTestData_DoesNotDeleteTestSubmissionsForOtherGrant() throws Exception {
         // GIVEN
         Grant deploymentGrant = new Grant();
         deploymentGrant.setProjectName(PASS_E2E_TEST_GRANT);
         deploymentGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(deploymentGrant);
-        initSubmissionAndDeposits(deploymentGrant);
+        initSubmissionAndDeposits(deploymentGrant, false);
 
         Grant testOtherGrant = new Grant();
         testOtherGrant.setProjectName("Some Other Grant");
         testOtherGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testOtherGrant);
-        Submission testOtherSubmission = initSubmissionAndDeposits(testOtherGrant);
+        Submission testOtherSubmission = initSubmissionAndDeposits(testOtherGrant, false);
         initDspaceApiStubs("Test-Title");
         ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
 
@@ -287,17 +312,17 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
             any(DspaceDepositService.AuthContext.class));
-        verifyDspaceApiStubs(1);
+        verifyDspaceApiStubs(1, 1);
     }
 
     @Test
-    public void testProcessTestData_DoesNotDeleteDspaceDepositIfSkip() throws Exception {
+    void testProcessTestData_DoesNotDeleteDspaceDepositIfSkip() throws Exception {
         // GIVEN
         Grant testGrant = new Grant();
         testGrant.setProjectName(PASS_E2E_TEST_GRANT);
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
-        initSubmissionAndDeposits(testGrant);
+        initSubmissionAndDeposits(testGrant, false);
         initDspaceApiStubs("Test-Title");
 
         // WHEN
@@ -311,17 +336,17 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
             any(DspaceDepositService.AuthContext.class));
-        verifyDspaceApiStubs(0);
+        verifyDspaceApiStubs(0, 0);
     }
 
     @Test
-    public void testProcessTestData_DoesNotDeleteDspaceDepositIfNameMismatch() throws Exception {
+    void testProcessTestData_DoesNotDeleteDspaceDepositIfNameMismatch() throws Exception {
         // GIVEN
         Grant testGrant = new Grant();
         testGrant.setProjectName(PASS_E2E_TEST_GRANT);
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
-        initSubmissionAndDeposits(testGrant);
+        initSubmissionAndDeposits(testGrant, false);
         initDspaceApiStubs("Test-Title-Mismatch");
         ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
 
@@ -347,7 +372,7 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         WireMock.verify(0, deleteRequestedFor(urlEqualTo("/server/api/core/items/12345-aabb")));
     }
 
-    private Submission initSubmissionAndDeposits(Grant testGrant) throws Exception {
+    private Submission initSubmissionAndDeposits(Grant testGrant, boolean skipRepoCopy) throws Exception {
         Submission submission = new Submission();
         submission.setMetadata(
             "{\"issns\":[{\"issn\":\"1234\",\"pubType\":\"Print\"}],\"journal-title\":\"Test-Journal\"," +
@@ -372,31 +397,35 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         publication.setTitle("test-publication");
         passClient.createObject(publication);
 
-        RepositoryCopy repositoryCopyDspace = new RepositoryCopy();
-        repositoryCopyDspace.setRepository(repositoryDspace);
-        repositoryCopyDspace.setPublication(publication);
-        repositoryCopyDspace.setAccessUrl(URI.create("http://localhost:9020/handle/a.1234/abcd"));
-        passClient.createObject(repositoryCopyDspace);
-
-        RepositoryCopy repositoryCopyNihms = new RepositoryCopy();
-        repositoryCopyNihms.setRepository(repositoryNihms);
-        repositoryCopyNihms.setPublication(publication);
-        repositoryCopyDspace.setAccessUrl(URI.create("http://foobar/nihms-fake"));
-        passClient.createObject(repositoryCopyNihms);
-
         Deposit dspaceDeposit = new Deposit();
         dspaceDeposit.setSubmission(submission);
         dspaceDeposit.setDepositStatus(DepositStatus.SUBMITTED);
-        dspaceDeposit.setRepositoryCopy(repositoryCopyDspace);
         dspaceDeposit.setRepository(repositoryDspace);
         passClient.createObject(dspaceDeposit);
 
         Deposit nihmsDeposit = new Deposit();
         nihmsDeposit.setSubmission(submission);
         nihmsDeposit.setDepositStatus(DepositStatus.SUBMITTED);
-        nihmsDeposit.setRepositoryCopy(repositoryCopyNihms);
         nihmsDeposit.setRepository(repositoryNihms);
         passClient.createObject(nihmsDeposit);
+
+        if (!skipRepoCopy) {
+            RepositoryCopy repositoryCopyDspace = new RepositoryCopy();
+            repositoryCopyDspace.setRepository(repositoryDspace);
+            repositoryCopyDspace.setPublication(publication);
+            repositoryCopyDspace.setAccessUrl(URI.create("http://localhost:9020/handle/a.1234/abcd"));
+            passClient.createObject(repositoryCopyDspace);
+            dspaceDeposit.setRepositoryCopy(repositoryCopyDspace);
+            passClient.updateObject(dspaceDeposit);
+
+            RepositoryCopy repositoryCopyNihms = new RepositoryCopy();
+            repositoryCopyNihms.setRepository(repositoryNihms);
+            repositoryCopyNihms.setPublication(publication);
+            repositoryCopyDspace.setAccessUrl(URI.create("http://foobar/nihms-fake"));
+            passClient.createObject(repositoryCopyNihms);
+            nihmsDeposit.setRepositoryCopy(repositoryCopyNihms);
+            passClient.updateObject(nihmsDeposit);
+        }
 
         submission.setPublication(publication);
         passClient.updateObject(submission);
@@ -404,9 +433,9 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
         File file = new File();
         String data = "Test data file";
         file.setName("test_data_file.txt");
-        URI data_uri = passClient.uploadBinary(file.getName(), data.getBytes(StandardCharsets.UTF_8));
-        assertNotNull(data_uri);
-        file.setUri(data_uri);
+        URI dataUri = passClient.uploadBinary(file.getName(), data.getBytes(StandardCharsets.UTF_8));
+        assertNotNull(dataUri);
+        file.setUri(dataUri);
         file.setSubmission(submission);
         passClient.createObject(file);
 
@@ -479,9 +508,9 @@ public class DeploymentTestDataServiceIT extends AbstractDepositIT {
             .willReturn(ok()));
     }
 
-    private void verifyDspaceApiStubs(int expectedCount) {
-        WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/server/api/security/csrf")));
-        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/server/api/authn/login")));
+    private void verifyDspaceApiStubs(int expectedCount, int expectedAuthCount) {
+        WireMock.verify(expectedAuthCount, getRequestedFor(urlEqualTo("/server/api/security/csrf")));
+        WireMock.verify(expectedAuthCount, postRequestedFor(urlEqualTo("/server/api/authn/login")));
         WireMock.verify(expectedCount, getRequestedFor(
             urlEqualTo("/server/api/discover/search/objects?query=handle:a.1234%2Fabcd&dsoType=item")));
         WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/server/api/core/items/12345-aabb/bundles")));

@@ -51,6 +51,11 @@ import org.springframework.web.client.RestClient;
 public class DspaceDepositService {
     private static final Logger LOG = LoggerFactory.getLogger(DspaceDepositService.class);
 
+    public static final String X_XSRF_TOKEN = "X-XSRF-TOKEN";
+    public static final String COOKIE = "Cookie";
+    public static final String DSPACE_XSRF_COOKIE = "DSPACE-XSRF-COOKIE=";
+    public static final String AUTHORIZATION = "Authorization";
+
     private final RestClient restClient;
 
     @Value("${dspace.user}")
@@ -109,12 +114,12 @@ public class DspaceDepositService {
         ResponseEntity<Void> authResponse = restClient.post()
             .uri("/authn/login")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .header("X-XSRF-TOKEN", xsrfToken)
-            .header("Cookie", "DSPACE-XSRF-COOKIE=" + xsrfToken)
+            .header(X_XSRF_TOKEN, xsrfToken)
+            .header(COOKIE, DSPACE_XSRF_COOKIE + xsrfToken)
             .body(bodyPair)
             .retrieve()
             .toBodilessEntity();
-        String authToken = getAuthHeaderValue(authResponse, "Authorization");
+        String authToken = getAuthHeaderValue(authResponse, AUTHORIZATION);
 
         return new AuthContext(xsrfToken, authToken);
     }
@@ -125,7 +130,9 @@ public class DspaceDepositService {
      */
     void deleteDeposit(Deposit deposit, AuthContext authContext) {
         LOG.warn("Deleting Test Deposit In Dspace (PASS Deposit ID={})", deposit.getId());
-        URI accessUrl = deposit.getRepositoryCopy().getAccessUrl();
+        URI accessUrl = Objects.nonNull(deposit.getRepositoryCopy())
+            ? deposit.getRepositoryCopy().getAccessUrl()
+            : null;
         LOG.warn("Deposit accessUrl={}", accessUrl);
         if (Objects.nonNull(accessUrl)) {
             String handleValue = parseHandleFilter(accessUrl);
@@ -168,7 +175,7 @@ public class DspaceDepositService {
         String searchResponse = restClient.get()
             .uri("/discover/search/objects?query=handle:{handleValue}&dsoType=item", handleValue)
             .accept(MediaType.APPLICATION_JSON)
-            .header("Authorization", authContext.authToken())
+            .header(AUTHORIZATION, authContext.authToken())
             .retrieve()
             .body(String.class);
         List<Map<String, ?>> searchArray = JsonPath.parse(searchResponse).read("$..indexableObject[?(@.handle)]");
@@ -195,7 +202,7 @@ public class DspaceDepositService {
         String bundlesResponse = restClient.get()
             .uri("/core/items/{itemUuid}/bundles", itemUuid)
             .accept(MediaType.APPLICATION_JSON)
-            .header("Authorization", authContext.authToken())
+            .header(AUTHORIZATION, authContext.authToken())
             .retrieve()
             .body(String.class);
         return JsonPath.parse(bundlesResponse).read("$..bundles[*].uuid");
@@ -206,9 +213,9 @@ public class DspaceDepositService {
         restClient.delete()
             .uri("/core/bundles/{bundleUuid}", bundleUuid)
             .accept(MediaType.APPLICATION_JSON)
-            .header("Authorization", authContext.authToken())
-            .header("X-XSRF-TOKEN", authContext.xsrfToken())
-            .header("Cookie", "DSPACE-XSRF-COOKIE=" + authContext.xsrfToken())
+            .header(AUTHORIZATION, authContext.authToken())
+            .header(X_XSRF_TOKEN, authContext.xsrfToken())
+            .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
             .retrieve()
             .toBodilessEntity();
         LOG.warn("Deleted bundle UUID={}", bundleUuid);
@@ -219,9 +226,9 @@ public class DspaceDepositService {
         restClient.delete()
             .uri("/core/items/{itemUuid}", itemUuid)
             .accept(MediaType.APPLICATION_JSON)
-            .header("Authorization", authContext.authToken())
-            .header("X-XSRF-TOKEN", authContext.xsrfToken())
-            .header("Cookie", "DSPACE-XSRF-COOKIE=" + authContext.xsrfToken())
+            .header(AUTHORIZATION, authContext.authToken())
+            .header(X_XSRF_TOKEN, authContext.xsrfToken())
+            .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
             .retrieve()
             .toBodilessEntity();
         LOG.warn("Deleted item UUID={}", itemUuid);
