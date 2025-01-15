@@ -399,7 +399,6 @@
         <artifactId>maven-help-plugin</artifactId>
         <version>3.4.0</version>
       </plugin>
-
     </plugins>
   </build>
 </project>
