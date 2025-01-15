@@ -16,9 +16,9 @@
 package org.eclipse.pass.deposit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
@@ -40,12 +40,12 @@ import org.swordapp.client.SWORDError;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-public class FailedDepositRetryIT extends AbstractDepositIT {
+class FailedDepositRetryIT extends AbstractDepositIT {
 
     @Autowired private DepositUpdater depositUpdater;
 
     @Test
-    public void testFailedDepositRetry() throws Exception {
+    void testFailedDepositRetry_SuccessOnRetry() throws Exception {
         // GIVEN
         Submission submission = initFailedSubmissionDeposit();
         mockSword();
@@ -68,10 +68,34 @@ public class FailedDepositRetryIT extends AbstractDepositIT {
         RepositoryCopy popRepoCopy = passClient.getObject(updatedDeposit.getRepositoryCopy(),
             "repository", "publication");
         updatedDeposit.setRepositoryCopy(popRepoCopy);
-        verify(passClient).updateObject(eq(updatedDeposit));
+        verify(passClient).updateObject(updatedDeposit);
         assertEquals(submission.getPublication().getId(), popRepoCopy.getPublication().getId());
         assertEquals(1, submission.getRepositories().size());
         assertEquals(submission.getRepositories().get(0).getId(), popRepoCopy.getRepository().getId());
+    }
+
+    @Test
+    void testFailedDepositRetry_FailOnRetry() throws Exception {
+        // GIVEN
+        Submission submission = initFailedSubmissionDeposit();
+
+        // WHEN
+        try {
+            depositUpdater.doUpdate();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // THEN
+        Condition<Set<Deposit>> actualDeposits = depositsForSubmission(submission.getId(), 1,
+            (deposit, repo) -> true);
+        assertTrue(actualDeposits.awaitAndVerify(deposits -> deposits.size() == 1 &&
+            DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
+
+        Deposit actualDeposit = actualDeposits.getResult().iterator().next();
+        Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
+        assertNull(updatedDeposit.getRepositoryCopy());
+        verify(passClient).updateObject(updatedDeposit);
     }
 
     private Submission initFailedSubmissionDeposit() throws Exception {

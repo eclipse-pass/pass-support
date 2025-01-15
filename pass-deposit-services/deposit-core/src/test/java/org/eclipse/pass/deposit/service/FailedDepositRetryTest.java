@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.pass.deposit.DepositApp;
+import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
@@ -40,11 +42,19 @@ import org.eclipse.pass.support.client.model.Repository;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-public class FailedDepositRetryTest {
+@SpringBootTest(classes = DepositApp.class)
+@TestPropertySource("/test-application.properties")
+class FailedDepositRetryTest {
+
+    @Autowired
+    private DepositServiceErrorHandler depositServiceErrorHandler;
 
     @SuppressWarnings("unchecked")
     @Test
@@ -56,18 +66,20 @@ public class FailedDepositRetryTest {
         final Packager packager = mock(Packager.class);
         final DepositSubmissionModelBuilder depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         final FailedDepositRetry failedDepositRetry = new FailedDepositRetry(passClient, depositTaskHelper,
-            packagerRegistry, depositSubmissionModelBuilder);
+            packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
         deposit1.setDepositStatus(DepositStatus.FAILED);
         Repository repository = new Repository();
         deposit1.setRepository(repository);
         Submission submission = new Submission();
+        submission.setId("sub-1");
         deposit1.setSubmission(submission);
         when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
         when(passClient.getObject(same(submission), any(String[].class))).thenReturn(submission);
         when(packagerRegistry.get(any())).thenReturn(packager);
         DepositSubmission depositSubmission = new DepositSubmission();
+        depositSubmission.setId(deposit1.getId());
         DepositFile depositFile1 = new DepositFile();
         depositFile1.setName("file1");
         depositFile1.setLocation("filelocation1");
@@ -98,13 +110,16 @@ public class FailedDepositRetryTest {
         final Registry<Packager> packagerRegistry = mock(Registry.class);
         final DepositSubmissionModelBuilder depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         final FailedDepositRetry failedDepositRetry = new FailedDepositRetry(passClient, depositTaskHelper,
-            packagerRegistry, depositSubmissionModelBuilder);
+            packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
-        deposit1.setSubmission(new Submission());
+        Submission submission = new Submission();
+        submission.setId("sub-1");
+        deposit1.setSubmission(submission);
         when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
+        when(passClient.getObject(same(submission), any(String[].class))).thenReturn(submission);
         when(packagerRegistry.get(any())).thenReturn(null);
 
         // WHEN
@@ -128,13 +143,16 @@ public class FailedDepositRetryTest {
         final Packager packager = mock(Packager.class);
         final DepositSubmissionModelBuilder depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         final FailedDepositRetry failedDepositRetry = new FailedDepositRetry(passClient, depositTaskHelper,
-            packagerRegistry, depositSubmissionModelBuilder);
+            packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
-        deposit1.setSubmission(new Submission());
+        Submission submission = new Submission();
+        submission.setId("sub-1");
+        deposit1.setSubmission(submission);
         when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
+        when(passClient.getObject(same(submission), any(String[].class))).thenReturn(submission);
         when(packagerRegistry.get(any())).thenReturn(packager);
         doThrow(new IOException("Testing depositsubmission error"))
             .when(depositSubmissionModelBuilder).build(any());
@@ -160,15 +178,20 @@ public class FailedDepositRetryTest {
         final Packager packager = mock(Packager.class);
         final DepositSubmissionModelBuilder depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         final FailedDepositRetry failedDepositRetry = new FailedDepositRetry(passClient, depositTaskHelper,
-            packagerRegistry, depositSubmissionModelBuilder);
+            packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
-        deposit1.setSubmission(new Submission());
+        Submission submission = new Submission();
+        submission.setId("sub-1");
+        deposit1.setSubmission(submission);
         when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
+        when(passClient.getObject(same(submission), any(String[].class))).thenReturn(submission);
         when(packagerRegistry.get(any())).thenReturn(packager);
-        when(depositSubmissionModelBuilder.build(any())).thenReturn(new DepositSubmission());
+        DepositSubmission depositSubmission = new DepositSubmission();
+        depositSubmission.setId(deposit1.getId());
+        when(depositSubmissionModelBuilder.build(any())).thenReturn(depositSubmission);
 
         // WHEN
         failedDepositRetry.retryFailedDeposit(deposit1);
@@ -191,15 +214,19 @@ public class FailedDepositRetryTest {
         final Packager packager = mock(Packager.class);
         final DepositSubmissionModelBuilder depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         final FailedDepositRetry failedDepositRetry = new FailedDepositRetry(passClient, depositTaskHelper,
-            packagerRegistry, depositSubmissionModelBuilder);
+            packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
         deposit1.setDepositStatus(DepositStatus.FAILED);
         deposit1.setRepository(new Repository());
-        deposit1.setSubmission(new Submission());
+        Submission submission = new Submission();
+        submission.setId("sub-1");
+        deposit1.setSubmission(submission);
         when(passClient.getObject(same(deposit1), any(String[].class))).thenReturn(deposit1);
+        when(passClient.getObject(same(submission), any(String[].class))).thenReturn(submission);
         when(packagerRegistry.get(any())).thenReturn(packager);
         DepositSubmission depositSubmission = new DepositSubmission();
+        depositSubmission.setId(deposit1.getId());
         DepositFile depositFile1 = new DepositFile();
         depositFile1.setName("file1");
         DepositFile depositFile2 = new DepositFile();
