@@ -34,6 +34,8 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.swordapp.client.SWORDCollection;
 import org.swordapp.client.SWORDError;
 
@@ -78,6 +80,32 @@ class FailedDepositRetryIT extends AbstractDepositIT {
     void testFailedDepositRetry_FailOnRetry() throws Exception {
         // GIVEN
         Submission submission = initFailedSubmissionDeposit();
+
+        // WHEN
+        try {
+            depositUpdater.doUpdate();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // THEN
+        Condition<Set<Deposit>> actualDeposits = depositsForSubmission(submission.getId(), 1,
+            (deposit, repo) -> true);
+        assertTrue(actualDeposits.awaitAndVerify(deposits -> deposits.size() == 1 &&
+            DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
+
+        Deposit actualDeposit = actualDeposits.getResult().iterator().next();
+        Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
+        assertNull(updatedDeposit.getRepositoryCopy());
+        verify(passClient).updateObject(updatedDeposit);
+    }
+
+    @Test
+    @DirtiesContext
+    void testFailedDepositRetry_NoFailRetryIfDisabled() throws Exception {
+        // GIVEN
+        Submission submission = initFailedSubmissionDeposit();
+        ReflectionTestUtils.setField(depositUpdater, "retryFailedDepositsEnabled", false);
 
         // WHEN
         try {
