@@ -49,6 +49,9 @@ public class DepositUpdater {
     @Value("${pass.status.update.window.days}")
     private long updateWindowDays;
 
+    @Value("${pass.deposit.retry.failed.enabled}")
+    private Boolean retryFailedDepositsEnabled;
+
     @Autowired
     public DepositUpdater(PassClient passClient, DepositTaskHelper depositHelper,
                           FailedDepositRetry failedDepositRetry, Repositories repositories) {
@@ -66,6 +69,10 @@ public class DepositUpdater {
     }
 
     private void retryFailedDeposits(ZonedDateTime submissionFromDate) throws IOException {
+        if (Boolean.FALSE.equals(retryFailedDepositsEnabled)) {
+            LOG.warn("Failed Deposit Retry is Disabled.");
+            return;
+        }
         PassClientSelector<Deposit> failedDepositsSelector = new PassClientSelector<>(Deposit.class);
         failedDepositsSelector.setFilter(
             RSQL.and(
@@ -74,7 +81,7 @@ public class DepositUpdater {
             )
         );
         List<Deposit> failedDeposits = passClient.streamObjects(failedDepositsSelector).toList();
-        LOG.warn("Failed Deposit Count for updating: " + failedDeposits.size());
+        LOG.warn("Failed Deposit Count for updating: {}", failedDeposits.size());
         failedDeposits.forEach(deposit -> {
             try {
                 LOG.info("Retrying FAILED Deposit for {}", deposit.getId());
@@ -98,7 +105,7 @@ public class DepositUpdater {
             )
         );
         List<Deposit> submittedDeposits = passClient.streamObjects(submittedDepositsSelector).toList();
-        LOG.warn("Deposit Count for updating: " + submittedDeposits.size());
+        LOG.warn("Deposit Count for updating: {}", submittedDeposits.size());
         submittedDeposits.forEach(deposit -> {
             try {
                 LOG.info("Updating Deposit.depositStatus for {}", deposit.getId());
