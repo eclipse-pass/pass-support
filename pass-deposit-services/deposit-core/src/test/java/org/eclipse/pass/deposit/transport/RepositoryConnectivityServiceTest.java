@@ -81,9 +81,9 @@ class RepositoryConnectivityServiceTest {
     }
 
     @Test
-    void verifyConnectByURL_Fail500Response() {
+    void verifyConnectByURL_Fail502Response() {
         // GIVEN
-        stubFor(get("/test/connection").willReturn(aResponse().withStatus(500)));
+        stubFor(get("/test/connection").willReturn(aResponse().withStatus(502)));
 
         // WHEN
         boolean result = repositoryConnectivityService.verifyConnectByURL("http://localhost:9030/test/connection");

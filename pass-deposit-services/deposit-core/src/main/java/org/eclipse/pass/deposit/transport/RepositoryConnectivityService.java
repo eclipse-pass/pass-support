@@ -28,6 +28,7 @@ import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**
@@ -50,7 +51,7 @@ public class RepositoryConnectivityService {
     }
 
     /**
-     * Verify connection to URL and response code is not 5xx.
+     * Verify connection to URL and response code is less than BAD_GATEWAY (502).
      * @param url the url to verify connectivity
      * @return true if passed, false if not
      */
@@ -60,7 +61,7 @@ public class RepositoryConnectivityService {
         Call call = httpClient.newCall(request);
         try (Response response = call.execute()) {
             int responseCode = response.code();
-            return responseCode < 500;
+            return responseCode < HttpStatus.BAD_GATEWAY.value();
         } catch (Exception e) {
             LOG.error("Error connecting to Transport URL.", e);
             return false;
