@@ -74,7 +74,7 @@ public class DepositServiceErrorHandler implements ErrorHandler {
             }
 
             if (dsException.getResource().getClass() == Submission.class) {
-                LOG.error("Unrecoverable error, marking Deposit {} as FAILED",
+                LOG.error("Unrecoverable error, marking Submission {} as FAILED",
                     dsException.getResource().getId(), dsException);
                 DepositUtil.markSubmissionFailed(dsException.getResource().getId(), cri);
             }
