@@ -39,7 +39,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-public class DepositUpdaterTest {
+class DepositUpdaterTest {
 
     @SuppressWarnings("unchecked")
     @Test
@@ -64,7 +64,7 @@ public class DepositUpdaterTest {
         deposit2.setRepository(repository);
         when(passClient.streamObjects(any())).thenAnswer(input -> {
             PassClientSelector<Deposit> selector = input.getArgument(0);
-            if (selector.getFilter().contains("depositStatus=='failed'")) {
+            if (selector.getFilter().contains("depositStatus=='retry'")) {
                 return Stream.of();
             }
             if (selector.getFilter().contains("depositStatus=='submitted'")) {
@@ -83,7 +83,7 @@ public class DepositUpdaterTest {
         ArgumentCaptor<PassClientSelector<Deposit>> argument = ArgumentCaptor.forClass(PassClientSelector.class);
         verify(passClient, times(2)).streamObjects(argument.capture());
         assertTrue(argument.getAllValues().get(0).getFilter().startsWith(
-            "(depositStatus=='failed';submission.submittedDate>="));
+            "(depositStatus=='retry';submission.submittedDate>="));
         assertTrue(argument.getAllValues().get(1).getFilter().startsWith(
             "(depositStatus=='submitted';submission.submittedDate>="));
     }

@@ -76,7 +76,7 @@ public class DepositUpdater {
         PassClientSelector<Deposit> failedDepositsSelector = new PassClientSelector<>(Deposit.class);
         failedDepositsSelector.setFilter(
             RSQL.and(
-                RSQL.equals("depositStatus", DepositStatus.FAILED.getValue()),
+                RSQL.equals("depositStatus", DepositStatus.RETRY.getValue()),
                 RSQL.gte("submission.submittedDate", ModelUtil.dateTimeFormatter().format(submissionFromDate))
             )
         );

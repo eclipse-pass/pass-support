@@ -31,8 +31,9 @@ public class DepositStatusTest {
         return Stream.of(
             Arguments.of(DepositStatus.ACCEPTED, true),
             Arguments.of(DepositStatus.REJECTED, true),
-            Arguments.of(DepositStatus.FAILED, false),
+            Arguments.of(DepositStatus.FAILED, true),
             Arguments.of(DepositStatus.SUBMITTED, false),
+            Arguments.of(DepositStatus.RETRY, false),
             Arguments.of(null, false)
         );
     }

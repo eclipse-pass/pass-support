@@ -20,9 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
@@ -30,6 +32,7 @@ import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.service.AbstractDepositIT;
 import org.eclipse.pass.deposit.service.DepositProcessor;
+import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.transport.sword2.Sword2Transport;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -38,6 +41,7 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.swordapp.client.SWORDCollection;
 import org.swordapp.client.SWORDError;
@@ -62,7 +66,7 @@ import org.swordapp.client.SWORDError;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 // the repository configuration json pollutes the context
-public class DepositTaskIT extends AbstractDepositIT {
+class DepositTaskIT extends AbstractDepositIT {
 
     /**
      * Pre-built package missing a file specified in the METS.xml
@@ -74,14 +78,16 @@ public class DepositTaskIT extends AbstractDepositIT {
     @SpyBean(name = "errorHandler") private DepositServiceErrorHandler errorHandler;
     @SpyBean private DepositStatusProcessor depositStatusProcessor;
     @SpyBean private Sword2Transport sword2Transport;
+    @MockBean private RepositoryConnectivityService repositoryConnectivityService;
 
     /**
      * A submission with a valid package should result in success.
      */
     @Test
-    public void testDepositTask() throws Exception {
+    void testDepositTask() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
+        when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
         mockSword();
 
         triggerSubmission(submission);
@@ -121,9 +127,10 @@ public class DepositTaskIT extends AbstractDepositIT {
     }
 
     @Test
-    public void testDepositError() throws Exception {
+    void testDepositError_FailedState() throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
+        when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
         mockSword();
         doThrow(new SWORDError(400, "Testing deposit error"))
             .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
@@ -144,6 +151,34 @@ public class DepositTaskIT extends AbstractDepositIT {
 
         verify(errorHandler).handleError(throwableCaptor.capture());
         assertTrue(throwableCaptor.getValue().getCause().getMessage().contains("Testing deposit error"));
+    }
+
+    @Test
+    void testDepositError_RetryState() throws Exception {
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample2")));
+        when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(false);
+        mockSword();
+
+        triggerSubmission(submission);
+        final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
+
+        // WHEN
+        submissionProcessor.accept(actualSubmission);
+
+        Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
+            deposit.getDepositStatusRef() == null);
+        assertTrue(c.awaitAndVerify(deposits -> {
+            Deposit deposit = deposits.iterator().next();
+            return deposits.size() == 1 && DepositStatus.RETRY == deposit.getDepositStatus();
+        }));
+        Set<Deposit> deposits = c.getResult();
+        assertNull(deposits.iterator().next().getDepositStatusRef());
+
+        verify(errorHandler).handleError(throwableCaptor.capture());
+        assertTrue(throwableCaptor.getValue().getCause().getMessage()
+            .contains("Transport connectivity failed for deposit"));
+        verifyNoInteractions(mockSwordClient);
     }
 
 }

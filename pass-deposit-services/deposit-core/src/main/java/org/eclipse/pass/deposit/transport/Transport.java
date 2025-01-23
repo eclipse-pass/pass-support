@@ -156,4 +156,11 @@ public interface Transport {
      */
     TransportSession open(Map<String, String> hints);
 
+    /**
+     * Checks the transport to ensure a connection can be made to the target repository.
+     * @param hints transport implementation configuration hints
+     * @return true if the connection to the repository succeeds, false if it fails
+     */
+    boolean checkConnectivity(Map<String, String> hints);
+
 }

@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit.transport.inveniordm;
 
 import java.util.Map;
 
+import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,12 @@ public class InvenioRdmTransport implements Transport {
     @Value("${inveniordm.api.verifySslCertificate}")
     private Boolean verifySslCertificate;
 
+    private final RepositoryConnectivityService repositoryConnectivityService;
+
+    public InvenioRdmTransport(RepositoryConnectivityService repositoryConnectivityService) {
+        this.repositoryConnectivityService = repositoryConnectivityService;
+    }
+
     @Override
     public PROTOCOL protocol() {
         return PROTOCOL.invenioRdm;
@@ -47,6 +54,11 @@ public class InvenioRdmTransport implements Transport {
     @Override
     public TransportSession open(Map<String, String> hints) {
         return new InvenioRdmSession(invenioBaseUrl,  invenioApiToken, verifySslCertificate);
+    }
+
+    @Override
+    public boolean checkConnectivity(Map<String, String> hints)  {
+        return repositoryConnectivityService.verifyConnectByURL(invenioBaseUrl);
     }
 
 }

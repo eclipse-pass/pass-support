@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,7 @@ import org.swordapp.client.SWORDClient;
 import org.swordapp.client.SWORDClientException;
 import org.swordapp.client.ServiceDocument;
 
-public class Sword2TransportTest {
+class Sword2TransportTest {
 
     private static final String SERVICE_DOC_URL = "http://localhost:8080/swordv2/servicedocument";
 
@@ -75,22 +76,23 @@ public class Sword2TransportTest {
         ServiceDocument serviceDocument = mock(ServiceDocument.class);
         swordClient = mock(SWORDClient.class);
         Sword2ClientFactory clientFactory = mock(Sword2ClientFactory.class);
+        RepositoryConnectivityService repositoryConnectivityService = mock(RepositoryConnectivityService.class);
 
         when(swordClient.getServiceDocument(any(), any())).thenReturn(serviceDocument);
         when(clientFactory.newInstance(anyMap())).thenReturn(swordClient);
 
-        underTest = new Sword2Transport(clientFactory);
+        underTest = new Sword2Transport(clientFactory, repositoryConnectivityService);
     }
 
     @Test
-    public void testNullFactory() {
+    void testNullFactory() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new Sword2Transport(null);
+            new Sword2Transport(null, null);
         });
     }
 
     @Test
-    public void testOpenMissingAuthUsernameKey() {
+    void testOpenMissingAuthUsernameKey() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             underTest.open(removeKey(Transport.TRANSPORT_USERNAME, TRANSPORT_HINTS));
         });
@@ -99,7 +101,7 @@ public class Sword2TransportTest {
     }
 
     @Test
-    public void testOpenMissingAuthPasswordKey() {
+    void testOpenMissingAuthPasswordKey() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             underTest.open(removeKey(Transport.TRANSPORT_PASSWORD, TRANSPORT_HINTS));
         });
@@ -108,7 +110,7 @@ public class Sword2TransportTest {
     }
 
     @Test
-    public void testOpenMissingAuthModeKey() {
+    void testOpenMissingAuthModeKey() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             underTest.open(removeKey(Transport.TRANSPORT_AUTHMODE, TRANSPORT_HINTS));
         });
@@ -116,7 +118,7 @@ public class Sword2TransportTest {
     }
 
     @Test
-    public void testOpenUnsupportedAuthMode() {
+    void testOpenUnsupportedAuthMode() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             underTest.open(replaceKey(Transport.TRANSPORT_AUTHMODE, "fooAuthMode", TRANSPORT_HINTS));
         });
@@ -124,7 +126,7 @@ public class Sword2TransportTest {
     }
 
     @Test
-    public void testOpenAuthenticationCredentials() throws Exception {
+    void testOpenAuthenticationCredentials() throws Exception {
         Sword2TransportSession session = underTest.open(TRANSPORT_HINTS);
         assertNotNull(session.getAuthCreds());
         AuthCredentials authCredentials = session.getAuthCreds();
@@ -135,7 +137,7 @@ public class Sword2TransportTest {
     }
 
     @Test
-    public void testGetServiceDocumentThrowsRuntimeException() throws Exception {
+    void testGetServiceDocumentThrowsRuntimeException() throws Exception {
         when(swordClient.getServiceDocument(any(), any())).thenThrow(new RuntimeException());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> {
@@ -147,7 +149,7 @@ public class Sword2TransportTest {
     }
 
     @Test
-    public void testGetServiceDocumentThrowsSWORDClientException() throws Exception {
+    void testGetServiceDocumentThrowsSWORDClientException() throws Exception {
         when(swordClient.getServiceDocument(any(), any())).thenThrow(mock(SWORDClientException.class));
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> {
@@ -157,7 +159,7 @@ public class Sword2TransportTest {
     }
 
     @Test
-    public void testGetServiceDocumentThrowsProtocolViolationException() throws Exception {
+    void testGetServiceDocumentThrowsProtocolViolationException() throws Exception {
         when(swordClient.getServiceDocument(any(), any())).thenThrow(mock(ProtocolViolationException.class));
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> {

@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit.transport.sftp;
 
 import java.util.Map;
 
+import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,12 @@ public class SftpTransport implements Transport {
 
     public static final String SFTP_BASE_DIRECTORY = "deposit.transport.protocol.sftp.basedir";
 
+    private final RepositoryConnectivityService repositoryConnectivityService;
+
+    public SftpTransport(RepositoryConnectivityService repositoryConnectivityService) {
+        this.repositoryConnectivityService = repositoryConnectivityService;
+    }
+
     @Override
     public PROTOCOL protocol() {
         return PROTOCOL.sftp;
@@ -37,5 +44,12 @@ public class SftpTransport implements Transport {
     @Override
     public TransportSession open(Map<String, String> hints) {
         return new SftpTransportSession(hints);
+    }
+
+    @Override
+    public boolean checkConnectivity(Map<String, String> hints) {
+        String serverName = hints.get(TRANSPORT_SERVER_FQDN);
+        String serverPort = hints.get(TRANSPORT_SERVER_PORT);
+        return repositoryConnectivityService.verifyConnect(serverName, Integer.parseInt(serverPort));
     }
 }

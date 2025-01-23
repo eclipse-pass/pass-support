@@ -47,6 +47,7 @@ import org.apache.sshd.sftp.client.impl.DefaultSftpClientFactory;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
 import org.junit.jupiter.api.AfterAll;
@@ -96,8 +97,9 @@ public class SftpTest {
         when(stream.metadata()).thenReturn(streamMetadata);
         when(streamMetadata.name()).thenReturn(testFileName);
         when(stream.open()).thenReturn(content);
+        RepositoryConnectivityService connectivityService = mock(RepositoryConnectivityService.class);
 
-        SftpTransport sftpTransport = new SftpTransport();
+        SftpTransport sftpTransport = new SftpTransport(connectivityService);
         TransportSession transportSession = sftpTransport.open(hints);
 
         // WHEN
@@ -125,8 +127,9 @@ public class SftpTest {
         when(stream.metadata()).thenReturn(streamMetadata);
         when(streamMetadata.name()).thenReturn(testFileName);
         when(stream.open()).thenReturn(content);
+        RepositoryConnectivityService connectivityService = mock(RepositoryConnectivityService.class);
 
-        SftpTransport sftpTransport = new SftpTransport();
+        SftpTransport sftpTransport = new SftpTransport(connectivityService);
         TransportSession transportSession = sftpTransport.open(hints);
 
         // WHEN

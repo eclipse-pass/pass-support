@@ -69,7 +69,7 @@ class FailedDepositRetryTest {
             packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
-        deposit1.setDepositStatus(DepositStatus.FAILED);
+        deposit1.setDepositStatus(DepositStatus.RETRY);
         Repository repository = new Repository();
         deposit1.setRepository(repository);
         Submission submission = new Submission();
@@ -113,7 +113,7 @@ class FailedDepositRetryTest {
             packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
-        deposit1.setDepositStatus(DepositStatus.FAILED);
+        deposit1.setDepositStatus(DepositStatus.RETRY);
         deposit1.setRepository(new Repository());
         Submission submission = new Submission();
         submission.setId("sub-1");
@@ -146,7 +146,7 @@ class FailedDepositRetryTest {
             packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
-        deposit1.setDepositStatus(DepositStatus.FAILED);
+        deposit1.setDepositStatus(DepositStatus.RETRY);
         deposit1.setRepository(new Repository());
         Submission submission = new Submission();
         submission.setId("sub-1");
@@ -181,7 +181,7 @@ class FailedDepositRetryTest {
             packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
-        deposit1.setDepositStatus(DepositStatus.FAILED);
+        deposit1.setDepositStatus(DepositStatus.RETRY);
         deposit1.setRepository(new Repository());
         Submission submission = new Submission();
         submission.setId("sub-1");
@@ -217,7 +217,7 @@ class FailedDepositRetryTest {
             packagerRegistry, depositSubmissionModelBuilder, depositServiceErrorHandler);
         Deposit deposit1 = new Deposit();
         deposit1.setId("dp-1");
-        deposit1.setDepositStatus(DepositStatus.FAILED);
+        deposit1.setDepositStatus(DepositStatus.RETRY);
         deposit1.setRepository(new Repository());
         Submission submission = new Submission();
         submission.setId("sub-1");

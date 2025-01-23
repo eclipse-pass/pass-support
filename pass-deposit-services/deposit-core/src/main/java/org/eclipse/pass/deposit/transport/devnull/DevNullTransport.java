@@ -127,4 +127,9 @@ public class DevNullTransport implements Transport {
 
     }
 
+    @Override
+    public boolean checkConnectivity(Map<String, String> hints) {
+        return true;
+    }
+
 }
