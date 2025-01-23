@@ -20,6 +20,11 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -42,11 +47,13 @@ public class RepositoryConnectivityService {
     private final OkHttpClient httpClient;
 
     public RepositoryConnectivityService(
-        @Value("${pass.repo.verify.connect.timeout.ms}") int repoConnectTimeoutMillis
-    ) {
+        @Value("${pass.repo.verify.connect.timeout.ms}") int repoConnectTimeoutMillis,
+        @Value("${inveniordm.api.verifySslCertificate}") Boolean verifySslCertificate
+    ) throws NoSuchAlgorithmException, KeyManagementException {
         this.repoConnectTimeoutMillis = repoConnectTimeoutMillis;
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.connectTimeout(repoConnectTimeoutMillis, MILLISECONDS);
+        ignoreSSLCertsForLocalTestingIfNeeded(builder, verifySslCertificate);
         httpClient = builder.build();
     }
 
@@ -81,6 +88,38 @@ public class RepositoryConnectivityService {
         } catch (IOException e) {
             LOG.error("Repository is not currently reachable. Host={}, Port={}", host, port, e);
             return false;
+        }
+    }
+
+    /**
+     * This is needed for local testing for repos that use self-signed certs like inveniordm.
+     * <b>This should not be used in a live deployed environment, only for local testing</b>
+     * @param builder a builder
+     * @param verifySslCertificate verify or not
+     * @throws NoSuchAlgorithmException if algo is missing
+     * @throws KeyManagementException is problem with key
+     */
+    private void ignoreSSLCertsForLocalTestingIfNeeded(OkHttpClient.Builder builder, Boolean verifySslCertificate)
+        throws NoSuchAlgorithmException, KeyManagementException {
+        if (Boolean.FALSE.equals(verifySslCertificate)) {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
+
+                    @Override
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new java.security.cert.X509Certificate[]{};
+                    }
+                }
+            };
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            builder.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0]);
+            builder.hostnameVerifier((hostname, session) -> true);
         }
     }
 }
