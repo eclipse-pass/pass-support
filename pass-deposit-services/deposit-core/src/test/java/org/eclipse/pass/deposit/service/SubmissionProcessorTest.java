@@ -91,6 +91,7 @@ public class SubmissionProcessorTest {
         DevNullTransport devNullTransport = mock(DevNullTransport.class);
         DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, cri, repositories, devNullTransport);
         ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", true);
+        ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", true);
         depositServiceErrorHandler = mock(DepositServiceErrorHandler.class);
         submissionProcessor =
             new SubmissionProcessor(passClient, depositSubmissionModelBuilder, packagerRegistry,

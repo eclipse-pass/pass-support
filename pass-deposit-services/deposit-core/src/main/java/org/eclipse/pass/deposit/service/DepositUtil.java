@@ -54,8 +54,7 @@ public class DepositUtil {
     public static DepositWorkerContext toDepositWorkerContext(Deposit depositResource, Submission submission,
                                                               DepositSubmission depositSubmission,
                                                               Repository repository, Packager packager,
-                                                              DevNullTransport devNullTransport,
-                                                              boolean skipDeploymentTestDeposits) {
+                                                              DevNullTransport devNullTransport) {
         DepositWorkerContext dc = new DepositWorkerContext();
         dc.depositResource = depositResource;
         dc.depositSubmission = depositSubmission;
@@ -63,7 +62,6 @@ public class DepositUtil {
         dc.packager = packager;
         dc.submission = submission;
         dc.devNullTransport = devNullTransport;
-        dc.skipDeploymentTestDeposits = skipDeploymentTestDeposits;
         return dc;
     }
 
@@ -151,6 +149,7 @@ public class DepositUtil {
         private String statusUri;
         private DevNullTransport devNullTransport;
         private boolean skipDeploymentTestDeposits;
+        private boolean retryFailedDepositsEnabled;
 
         /**
          * the {@code Deposit} itself
@@ -241,6 +240,18 @@ public class DepositUtil {
 
         public boolean isSkipDeploymentTestDeposits() {
             return skipDeploymentTestDeposits;
+        }
+
+        public void setSkipDeploymentTestDeposits(boolean skipDeploymentTestDeposits) {
+            this.skipDeploymentTestDeposits = skipDeploymentTestDeposits;
+        }
+
+        public boolean isRetryFailedDepositsEnabled() {
+            return retryFailedDepositsEnabled;
+        }
+
+        public void setRetryFailedDepositsEnabled(boolean retryFailedDepositsEnabled) {
+            this.retryFailedDepositsEnabled = retryFailedDepositsEnabled;
         }
 
         @Override
