@@ -126,7 +126,7 @@ class Sword2TransportTest {
     }
 
     @Test
-    void testOpenAuthenticationCredentials() throws Exception {
+    void testOpenAuthenticationCredentials() {
         Sword2TransportSession session = underTest.open(TRANSPORT_HINTS);
         assertNotNull(session.getAuthCreds());
         AuthCredentials authCredentials = session.getAuthCreds();
