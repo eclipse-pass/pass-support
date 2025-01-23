@@ -15,9 +15,11 @@
  */
 package org.eclipse.pass.deposit;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.service.DepositUtil;
 import org.eclipse.pass.support.client.model.Deposit;
+import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,12 +64,18 @@ public class DepositServiceErrorHandler implements ErrorHandler {
 
         if (dsException.getResource() != null) {
             if (dsException.getResource().getClass() == Deposit.class) {
-                LOG.error("Unrecoverable error, marking {} as FAILED", dsException.getResource().getId(), dsException);
-                DepositUtil.markDepositFailed(dsException.getResource().getId(), cri);
+                DepositStatus depositStatus =
+                    ExceptionUtils.indexOfThrowable(dsException, TransportConnectionException.class) != -1
+                        ? DepositStatus.RETRY
+                        : DepositStatus.FAILED;
+                LOG.error("Unrecoverable error, marking Deposit {} as {}",
+                    dsException.getResource().getId(), depositStatus, dsException);
+                DepositUtil.markDepositFailureStatus(dsException.getResource().getId(), depositStatus, cri);
             }
 
             if (dsException.getResource().getClass() == Submission.class) {
-                LOG.error("Unrecoverable error, marking {} as FAILED", dsException.getResource().getId(), dsException);
+                LOG.error("Unrecoverable error, marking Deposit {} as FAILED",
+                    dsException.getResource().getId(), dsException);
                 DepositUtil.markSubmissionFailed(dsException.getResource().getId(), cri);
             }
 

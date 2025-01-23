@@ -20,8 +20,8 @@ import static org.eclipse.pass.deposit.transport.sword2.Sword2TransportHints.SWO
 import java.util.Map;
 
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.transport.Transport;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.swordapp.client.AuthCredentials;
 import org.swordapp.client.SWORDClient;
@@ -70,14 +70,16 @@ public class Sword2Transport implements Transport {
 
     static final String MISSING_REQUIRED_HINT = "Missing required transport hint '%s'";
 
-    private Sword2ClientFactory clientFactory;
+    private final Sword2ClientFactory clientFactory;
+    private final RepositoryConnectivityService repositoryConnectivityService;
 
-    @Autowired
-    public Sword2Transport(Sword2ClientFactory clientFactory) {
+    public Sword2Transport(Sword2ClientFactory clientFactory,
+                           RepositoryConnectivityService repositoryConnectivityService) {
         if (clientFactory == null) {
             throw new IllegalArgumentException("SWORD client factory must not be null.");
         }
         this.clientFactory = clientFactory;
+        this.repositoryConnectivityService = repositoryConnectivityService;
     }
 
     @Override
@@ -135,6 +137,12 @@ public class Sword2Transport implements Transport {
         }
 
         return new Sword2TransportSession(client, serviceDocument, authCreds);
+    }
+
+    @Override
+    public boolean checkConnectivity(Map<String, String> hints) {
+        String serviceDocUrl = getServiceDocUrl(hints);
+        return repositoryConnectivityService.verifyConnectByURL(serviceDocUrl);
     }
 
     /**

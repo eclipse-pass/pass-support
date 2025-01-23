@@ -68,13 +68,13 @@ public class DepositMessagingTestUtil {
      * Supplies a random terminal DepositStatus
      */
     public static Supplier<DepositStatus> randomTerminalDepositStatus =
-        () -> randomDepositStatusExcept(DepositStatus.SUBMITTED, DepositStatus.FAILED);
+        () -> randomDepositStatusExcept(DepositStatus.SUBMITTED, DepositStatus.RETRY);
 
     /**
      * Supplies a random intermediate DepositStatus
      */
     public static Supplier<DepositStatus> randomIntermediateDepositStatus =
-        () -> randomDepositStatusExcept(DepositStatus.REJECTED, DepositStatus.ACCEPTED);
+        () -> randomDepositStatusExcept(DepositStatus.REJECTED, DepositStatus.ACCEPTED, DepositStatus.FAILED);
 
     /**
      * Generates a random {@link SubmissionStatus}

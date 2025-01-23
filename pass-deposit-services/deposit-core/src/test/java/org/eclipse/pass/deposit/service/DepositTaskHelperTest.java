@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DepositTaskHelperTest {
+class DepositTaskHelperTest {
     private PassClient passClient;
     private Deposit deposit;
 
@@ -73,12 +73,12 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncPreconditionSuccess() {
+    void depositCriFuncPreconditionSuccess() {
         String repoKey = randomId();
         String repoCopyId = randomId();
 
         when(deposit.getDepositStatus()).thenReturn(
-            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED, DepositStatus.FAILED));
         when(deposit.getDepositStatusRef()).thenReturn(randomId());
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
         when(deposit.getRepositoryCopy()).thenReturn(new RepositoryCopy(repoCopyId));
@@ -90,7 +90,7 @@ public class DepositTaskHelperTest {
      * When a Deposit has a terminal status, the precondition should fail
      */
     @Test
-    public void depositCriFuncPreconditionFailTerminalStatus() {
+    void depositCriFuncPreconditionFailTerminalStatus() {
         when(deposit.getDepositStatus()).thenReturn(DepositStatus.ACCEPTED);
 
         // don't need any other mocking, because the test for status comes first.
@@ -107,9 +107,9 @@ public class DepositTaskHelperTest {
      * When the deposit has an intermediate status but a null deposit status ref, the precondition should fail
      */
     @Test
-    public void depositCriFuncPreconditionFailDepositStatusRef() {
+    void depositCriFuncPreconditionFailDepositStatusRef() {
         when(deposit.getDepositStatus()).thenReturn(
-            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED, DepositStatus.FAILED));
 
         // don't need any other mocking, because null is returned by default for the status uri
         // use Mockito.verify to insure this
@@ -128,10 +128,10 @@ public class DepositTaskHelperTest {
      * precondition should fail.
      */
     @Test
-    public void depositCriFuncPreconditionFailRepository() {
+    void depositCriFuncPreconditionFailRepository() {
         String statusRef = randomId();
         when(deposit.getDepositStatus()).thenReturn(
-            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED, DepositStatus.FAILED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef);
 
         assertFalse(DepositStatusCriFunc.precondition().test(deposit));
@@ -154,11 +154,11 @@ public class DepositTaskHelperTest {
      * but the RepositoryCopy String is null, the precondition should fail
      */
     @Test
-    public void depositCriFuncPreconditionFailNullRepoCopyUri() {
+    void depositCriFuncPreconditionFailNullRepoCopyUri() {
         String statusRef = randomId();
         String repoKey = randomId();
         when(deposit.getDepositStatus()).thenReturn(
-            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED, DepositStatus.FAILED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef);
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
 
@@ -186,11 +186,11 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncPreconditionFailNullRepoCopy() {
+    void depositCriFuncPreconditionFailNullRepoCopy() {
         String statusRef = randomId();
         String repoKey = randomId();
         when(deposit.getDepositStatus()).thenReturn(
-            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED, DepositStatus.FAILED));
         when(deposit.getDepositStatusRef()).thenReturn(statusRef);
         when(deposit.getRepository()).thenReturn(new Repository(repoKey));
 
@@ -208,7 +208,7 @@ public class DepositTaskHelperTest {
     }
 
     @Test
-    public void depositCriFuncPostconditionSuccess() {
+    void depositCriFuncPostconditionSuccess() {
         RepositoryCopy repoCopy = mock(RepositoryCopy.class);
         when(deposit.getRepositoryCopy()).thenReturn(repoCopy);
 
@@ -216,7 +216,7 @@ public class DepositTaskHelperTest {
     }
 
     @Test
-    public void depositCriFuncPostconditionFailure() {
+    void depositCriFuncPostconditionFailure() {
         when(deposit.getRepositoryCopy()).thenReturn(null);
 
         assertFalse(DepositStatusCriFunc.postcondition().test(deposit, deposit));
@@ -229,20 +229,20 @@ public class DepositTaskHelperTest {
      * non-null.
      */
     @Test
-    public void depositCriFuncPostconditionFailNullRepoCopy() {
+    void depositCriFuncPostconditionFailNullRepoCopy() {
         Deposit testResult = new Deposit();
         assertFalse(DepositStatusCriFunc.postcondition().test(deposit, testResult));
         verifyNoInteractions(deposit);
     }
 
     @Test
-    public void depositCriFuncCriticalSuccessAccepted() {
+    void depositCriFuncCriticalSuccessAccepted() {
         Deposit testDeposit = new Deposit();
         testDepositCriFuncCriticalForStatus(DepositStatus.ACCEPTED, testDeposit, passClient);
     }
 
     @Test
-    public void depositCriFuncCriticalSuccessRejected() throws IOException {
+    void depositCriFuncCriticalSuccessRejected() throws IOException {
         Deposit testDeposit = new Deposit();
         testDepositCriFuncCriticalForStatus(DepositStatus.REJECTED, testDeposit, passClient);
     }
@@ -253,8 +253,9 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncCriticalSuccessIntermediate() {
-        DepositStatus statusProcessorResult = randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED);
+    void depositCriFuncCriticalSuccessIntermediate() {
+        DepositStatus statusProcessorResult = randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED,
+            DepositStatus.FAILED);
 
         String repoKey = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
@@ -273,7 +274,7 @@ public class DepositTaskHelperTest {
      * @throws IOException
      */
     @Test
-    public void depositCriFuncCriticalDepositStatusProcessorProducesNullStatus() {
+    void depositCriFuncCriticalDepositStatusProcessorProducesNullStatus() {
         String repoKey = randomId();
         DepositStatusProcessor statusProcessor = mock(DepositStatusProcessor.class);
         newRepositoryWithKey(repoKey);

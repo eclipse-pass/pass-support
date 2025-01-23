@@ -54,7 +54,7 @@ import org.swordapp.client.SwordIdentifier;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DepositTaskTest {
+class DepositTaskTest {
 
     private DepositUtil.DepositWorkerContext dc;
     private PassClient passClient;
@@ -70,7 +70,7 @@ public class DepositTaskTest {
     }
 
     @Test
-    public void j10sStatementUrlHack() throws Exception {
+    void j10sStatementUrlHack() throws Exception {
         String prefix = "http://moo";
         String replacement = "http://foo";
 
@@ -97,7 +97,7 @@ public class DepositTaskTest {
     }
 
     @Test
-    public void j10sStatementUrlHackWithNullValues() throws Exception {
+    void j10sStatementUrlHackWithNullValues() throws Exception {
         String prefix = "http://moo";
         String replacement = null;
 
@@ -124,7 +124,7 @@ public class DepositTaskTest {
     }
 
     @Test
-    public void j10sStatementUrlHackWithNonMatchingValues() throws Exception {
+    void j10sStatementUrlHackWithNonMatchingValues() throws Exception {
         String href = "http://baz";
         String prefix = "http://moo";
         String replacement = "http://foo";
@@ -191,6 +191,7 @@ public class DepositTaskTest {
         when(assembler.assemble(any(), anyMap())).thenReturn(stream);
         when(stream.metadata()).thenReturn(metadata);
         when(packager.getTransport()).thenReturn(transport);
+        when(transport.checkConnectivity(anyMap())).thenReturn(true);
         when(transport.open(anyMap())).thenReturn(session);
         when(session.send(eq(stream), any())).thenReturn(tr);
 

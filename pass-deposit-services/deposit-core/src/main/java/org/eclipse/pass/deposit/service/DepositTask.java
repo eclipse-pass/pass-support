@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
+import org.eclipse.pass.deposit.TransportConnectionException;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
@@ -436,6 +437,10 @@ public class DepositTask {
                 }
 
                 Transport transport = getTransport(packager, dc);
+                if (!transport.checkConnectivity(packagerConfig)) {
+                    throw new TransportConnectionException("Transport connectivity failed for deposit " +
+                        dc.deposit().getId(), dc.deposit());
+                }
                 try (TransportSession transportSession = transport.open(packagerConfig)) {
                     TransportResponse tr = transportSession.send(packageStream, packagerConfig);
                     deposit.setDepositStatus(DepositStatus.SUBMITTED);

@@ -114,24 +114,25 @@ public class DepositUtil {
      * @param cri        the critical repository interaction
      * @return true if the {@code Deposit} was marked {@code FAILED}
      */
-    public static boolean markDepositFailed(String depositId, CriticalRepositoryInteraction cri) {
+    public static boolean markDepositFailureStatus(String depositId, DepositStatus depositStatus,
+                                                   CriticalRepositoryInteraction cri) {
         CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(
                 depositId, Deposit.class,
                 (deposit) -> !DepositStatus.isTerminalStatus(deposit.getDepositStatus()),
-                (deposit) -> deposit.getDepositStatus() == DepositStatus.FAILED,
+                (deposit) -> deposit.getDepositStatus() == depositStatus,
                 (deposit) -> {
-                    deposit.setDepositStatus(DepositStatus.FAILED);
+                    deposit.setDepositStatus(depositStatus);
                     return deposit;
                 });
 
         if (!updateResult.success()) {
-            LOG.debug("Updating status of {} to {} failed: {}", depositId, DepositStatus.FAILED,
+            LOG.debug("Updating status of {} to {} failed: {}", depositId, depositStatus,
                       updateResult.throwable()
                                   .isPresent() ? updateResult.throwable().get()
                                                              .getMessage() : "(missing Throwable cause)",
                       updateResult.throwable().get());
         } else {
-            LOG.debug("Marked {} as FAILED.", depositId);
+            LOG.debug("Marked {} as {}.", depositId, depositStatus);
         }
 
         return updateResult.success();

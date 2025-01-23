@@ -199,6 +199,11 @@ public class FilesystemTransport implements Transport {
 
     }
 
+    @Override
+    public boolean checkConnectivity(Map<String, String> hints) {
+        return true;
+    }
+
     private void verifySuccess(PassEntity entity, CriticalResult<?, ?> result) {
         if (!result.success()) {
             if (result.throwable().isPresent()) {
