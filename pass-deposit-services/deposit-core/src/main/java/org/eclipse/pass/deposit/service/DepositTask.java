@@ -437,7 +437,7 @@ public class DepositTask {
                 }
 
                 Transport transport = getTransport(packager, dc);
-                if (!transport.checkConnectivity(packagerConfig)) {
+                if (dc.isRetryFailedDepositsEnabled() && !transport.checkConnectivity(packagerConfig)) {
                     throw new TransportConnectionException("Transport connectivity failed for deposit " +
                         dc.deposit().getId(), dc.deposit());
                 }

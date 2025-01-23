@@ -94,6 +94,9 @@ public class DepositTaskHelper {
     @Value("${pass.test.skip.deposits}")
     private Boolean skipDeploymentTestDeposits;
 
+    @Value("${pass.deposit.retry.failed.enabled}")
+    private Boolean retryFailedDepositsEnabled;
+
     private final Repositories repositories;
 
     @Autowired
@@ -133,8 +136,9 @@ public class DepositTaskHelper {
             Submission includedSubmission = passClient.getObject(submission,
                 "publication", "repositories", "submitter", "preparers", "grants", "effectivePolicies");
             DepositUtil.DepositWorkerContext dc = DepositUtil.toDepositWorkerContext(
-                deposit, includedSubmission, depositSubmission, repo, packager, devNullTransport,
-                skipDeploymentTestDeposits);
+                deposit, includedSubmission, depositSubmission, repo, packager, devNullTransport);
+            dc.setSkipDeploymentTestDeposits(skipDeploymentTestDeposits);
+            dc.setRetryFailedDepositsEnabled(retryFailedDepositsEnabled);
             DepositTask depositTask = new DepositTask(dc, passClient, cri);
             depositTask.setSwordSleepTimeMs(swordDepositSleepTimeMs);
             depositTask.setPrefixToMatch(statementUriPrefix);

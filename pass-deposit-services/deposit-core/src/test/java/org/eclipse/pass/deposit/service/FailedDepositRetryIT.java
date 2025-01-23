@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,12 +51,13 @@ import org.swordapp.client.SWORDError;
 class FailedDepositRetryIT extends AbstractDepositIT {
 
     @Autowired private DepositUpdater depositUpdater;
+    @Autowired private DepositTaskHelper depositTaskHelper;
     @MockBean private RepositoryConnectivityService repositoryConnectivityService;
 
     @Test
     void testFailedDepositRetry_SuccessOnRetry() throws Exception {
         // GIVEN
-        Submission submission = initFailedSubmissionDeposit();
+        Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
         mockSword();
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
 
@@ -77,7 +79,8 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         RepositoryCopy popRepoCopy = passClient.getObject(updatedDeposit.getRepositoryCopy(),
             "repository", "publication");
         updatedDeposit.setRepositoryCopy(popRepoCopy);
-        verify(passClient).updateObject(updatedDeposit);
+        verify(passClient, times(3)).updateObject(
+            argThat(deposit -> deposit.getId().equals(actualDeposit.getId())));
         assertEquals(submission.getPublication().getId(), popRepoCopy.getPublication().getId());
         assertEquals(1, submission.getRepositories().size());
         assertEquals(submission.getRepositories().get(0).getId(), popRepoCopy.getRepository().getId());
@@ -86,7 +89,7 @@ class FailedDepositRetryIT extends AbstractDepositIT {
     @Test
     void testFailedDepositRetry_FailOnRetry() throws Exception {
         // GIVEN
-        Submission submission = initFailedSubmissionDeposit();
+        Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
         mockSword();
         doThrow(new SWORDError(400, "Testing deposit error"))
@@ -108,13 +111,14 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         Deposit actualDeposit = actualDeposits.getResult().iterator().next();
         Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
         assertNull(updatedDeposit.getRepositoryCopy());
-        verify(passClient).updateObject(updatedDeposit);
+        verify(passClient, times(3)).updateObject(
+            argThat(deposit -> deposit.getId().equals(actualDeposit.getId())));
     }
 
     @Test
     void testFailedDepositRetry_FailOnRetryConnectivity() throws Exception {
         // GIVEN
-        Submission submission = initFailedSubmissionDeposit();
+        Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
 
         // WHEN
         try {
@@ -132,16 +136,18 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         Deposit actualDeposit = actualDeposits.getResult().iterator().next();
         Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
         assertNull(updatedDeposit.getRepositoryCopy());
-        verify(passClient, times(2)).updateObject(updatedDeposit);
+        verify(passClient, times(2)).updateObject(
+            argThat(deposit -> deposit.getId().equals(actualDeposit.getId())));
     }
 
     @Test
     @DirtiesContext
-    void testFailedDepositRetry_NoFailRetryIfDisabled() throws Exception {
+    void testFailedDepositRetry_NoFailRetryIfDisabledAfterDeposit() throws Exception {
         // GIVEN
-        Submission submission = initFailedSubmissionDeposit();
+        Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
         mockSword();
         ReflectionTestUtils.setField(depositUpdater, "retryFailedDepositsEnabled", false);
+        ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", false);
 
         // WHEN
         try {
@@ -159,10 +165,42 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         Deposit actualDeposit = actualDeposits.getResult().iterator().next();
         Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
         assertNull(updatedDeposit.getRepositoryCopy());
-        verify(passClient).updateObject(updatedDeposit);
+        verify(passClient, times(1)).updateObject(
+            argThat(deposit -> deposit.getId().equals(actualDeposit.getId())));
     }
 
-    private Submission initFailedSubmissionDeposit() throws Exception {
+    @Test
+    @DirtiesContext
+    void testFailedDepositRetry_NoFailRetryIfDisabledBeforeDeposit() throws Exception {
+        // GIVEN
+        ReflectionTestUtils.setField(depositUpdater, "retryFailedDepositsEnabled", false);
+        ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", false);
+        mockSword();
+        doThrow(new SWORDError(400, "Testing deposit error"))
+            .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+        Submission submission = initFailedSubmissionDeposit(DepositStatus.FAILED);
+
+        // WHEN
+        try {
+            depositUpdater.doUpdate();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // THEN
+        Condition<Set<Deposit>> actualDeposits = depositsForSubmission(submission.getId(), 1,
+            (deposit, repo) -> true);
+        assertTrue(actualDeposits.awaitAndVerify(deposits -> deposits.size() == 1 &&
+            DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
+
+        Deposit actualDeposit = actualDeposits.getResult().iterator().next();
+        Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
+        assertNull(updatedDeposit.getRepositoryCopy());
+        verify(passClient, times(2)).updateObject(
+            argThat(deposit -> deposit.getId().equals(actualDeposit.getId())));
+    }
+
+    private Submission initFailedSubmissionDeposit(DepositStatus depositStatus) throws Exception {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
         submission.setSubmittedDate(ZonedDateTime.now());
@@ -174,7 +212,7 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
             deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-            DepositStatus.RETRY == deposits.iterator().next()
+            depositStatus == deposits.iterator().next()
                 .getDepositStatus()));
         return actualSubmission;
     }

@@ -32,6 +32,7 @@ import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.service.AbstractDepositIT;
 import org.eclipse.pass.deposit.service.DepositProcessor;
+import org.eclipse.pass.deposit.service.DepositTaskHelper;
 import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.transport.sword2.Sword2Transport;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
@@ -43,6 +44,8 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.swordapp.client.SWORDCollection;
 import org.swordapp.client.SWORDError;
 
@@ -74,6 +77,7 @@ class DepositTaskIT extends AbstractDepositIT {
     private final ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
 
     @Autowired private DepositProcessor depositProcessor;
+    @Autowired private DepositTaskHelper depositTaskHelper;
 
     @SpyBean(name = "errorHandler") private DepositServiceErrorHandler errorHandler;
     @SpyBean private DepositStatusProcessor depositStatusProcessor;
@@ -179,6 +183,38 @@ class DepositTaskIT extends AbstractDepositIT {
         assertTrue(throwableCaptor.getValue().getCause().getMessage()
             .contains("Transport connectivity failed for deposit"));
         verifyNoInteractions(mockSwordClient);
+    }
+
+    @Test
+    @DirtiesContext
+    void testDepositError_NoRetryStateIfDisabled() throws Exception {
+        ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", false);
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample2")));
+        when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(false);
+        mockSword();
+        doThrow(new SWORDError(400, "Testing deposit error"))
+            .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+
+        triggerSubmission(submission);
+        final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
+
+        // WHEN
+        submissionProcessor.accept(actualSubmission);
+
+        Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
+            deposit.getDepositStatusRef() == null);
+        assertTrue(c.awaitAndVerify(deposits -> {
+            Deposit deposit = deposits.iterator().next();
+            return deposits.size() == 1 && DepositStatus.FAILED == deposit.getDepositStatus();
+        }));
+        Set<Deposit> deposits = c.getResult();
+        assertNull(deposits.iterator().next().getDepositStatusRef());
+
+        verify(errorHandler).handleError(throwableCaptor.capture());
+        assertTrue(throwableCaptor.getValue().getCause().getMessage().contains("Testing deposit error"));
+        verify(sword2Transport).open(any());
+        verify(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
     }
 
 }
