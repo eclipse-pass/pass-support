@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import javax.net.ssl.SSLContext;
 
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONObject;
@@ -28,11 +27,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.io.SocketConfig;
-import org.apache.hc.core5.ssl.SSLContexts;
-import org.apache.hc.core5.ssl.TrustStrategy;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 import org.eclipse.pass.deposit.assembler.DepositFileResource;
@@ -61,9 +56,9 @@ class InvenioRdmSession implements TransportSession {
     private final RestClient restClient;
     private final RetryTemplate retryTemplate;
 
-    InvenioRdmSession(String baseServerUrl, String apiToken, Boolean verifySslCertificate) {
+    InvenioRdmSession(String baseServerUrl, String apiToken) {
         this.invenioRdmMetadataMapper = new InvenioRdmMetadataMapper();
-        HttpClientConnectionManager connectionManager = buildConnectionManager(verifySslCertificate);
+        HttpClientConnectionManager connectionManager = buildConnectionManager();
         final CloseableHttpClient httpClient = HttpClients.custom()
             .setConnectionManager(connectionManager)
             .disableCookieManagement()
@@ -109,7 +104,7 @@ class InvenioRdmSession implements TransportSession {
         // no-op resources are closed with try-with-resources
     }
 
-    private HttpClientConnectionManager buildConnectionManager(Boolean verifySslCertificate) {
+    private HttpClientConnectionManager buildConnectionManager() {
         try {
             PoolingHttpClientConnectionManagerBuilder connMgrBuilder =
                 PoolingHttpClientConnectionManagerBuilder.create()
@@ -121,16 +116,6 @@ class InvenioRdmSession implements TransportSession {
                         .setConnectTimeout(Timeout.ofMinutes(1))
                         .setTimeToLive(TimeValue.ofMinutes(10))
                         .build());
-            // This is needed because localhost invenioRdm runs with self-signed cert
-            if (Boolean.FALSE.equals(verifySslCertificate)) {
-                final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
-                final SSLContext sslContext = SSLContexts.custom()
-                    .loadTrustMaterial(null, acceptingTrustStrategy)
-                    .build();
-                final SSLConnectionSocketFactory sslConnectionSocketFactory =
-                    new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-                connMgrBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
-            }
             return connMgrBuilder.build();
         } catch (Exception e) {
             throw new RuntimeException(e);
