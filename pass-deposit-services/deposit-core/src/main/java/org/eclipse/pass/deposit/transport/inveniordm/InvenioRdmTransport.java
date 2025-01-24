@@ -37,9 +37,6 @@ public class InvenioRdmTransport implements Transport {
     @Value("${inveniordm.api.token}")
     private String invenioApiToken;
 
-    @Value("${inveniordm.api.verifySslCertificate}")
-    private Boolean verifySslCertificate;
-
     private final RepositoryConnectivityService repositoryConnectivityService;
 
     public InvenioRdmTransport(RepositoryConnectivityService repositoryConnectivityService) {
@@ -53,7 +50,7 @@ public class InvenioRdmTransport implements Transport {
 
     @Override
     public TransportSession open(Map<String, String> hints) {
-        return new InvenioRdmSession(invenioBaseUrl,  invenioApiToken, verifySslCertificate);
+        return new InvenioRdmSession(invenioBaseUrl,  invenioApiToken);
     }
 
     @Override
