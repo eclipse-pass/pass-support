@@ -201,9 +201,30 @@
         <artifactId>joda-time</artifactId>
         <version>${joda-time.version}</version>
       </dependency>
-
+      <!-- The following are transitive deps with convergence issues. -->
+      <!-- These should all be checked whenever deps are upgraded. -->
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jsoup</groupId>
+        <artifactId>jsoup</artifactId>
+        <version>1.18.1</version>
+      </dependency>
+      <dependency>
+        <groupId>xerces</groupId>
+        <artifactId>xercesImpl</artifactId>
+        <version>2.12.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>wstx-asl</artifactId>
+        <version>3.2.9</version>
+      </dependency>
+      <!-- End of transitive deps with convergence issues. -->
     </dependencies>
-
   </dependencyManagement>
 
   <build>
@@ -307,18 +328,7 @@
             </goals>
             <configuration>
               <rules>
-                <dependencyConvergence>
-                  <excludes>
-                    <!-- Transitive deps from sword2-client-->
-                    <exclude>xerces:xercesImpl:</exclude>
-                    <exclude>org.codehaus.woodstox:wstx-asl:</exclude>
-                    <exclude>org.jsoup:jsoup:</exclude>
-                    <!-- Transitive deps from pass-data-client -->
-                    <exclude>com.squareup.okio:okio:</exclude>
-                    <exclude>org.ow2.asm:asm:</exclude>
-                    <exclude>com.google.errorprone:error_prone_annotations:</exclude>
-                  </excludes>
-                </dependencyConvergence>
+                <dependencyConvergence/>
               </rules>
             </configuration>
           </execution>

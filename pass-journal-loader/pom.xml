@@ -94,12 +94,7 @@
               </goals>
               <configuration>
                 <rules>
-                  <dependencyConvergence>
-                    <excludes>
-                      <exclude>com.squareup.okio:okio:</exclude>
-                      <exclude>org.jetbrains.kotlin:kotlin-stdlib*:</exclude>
-                    </excludes>
-                  </dependencyConvergence>
+                  <dependencyConvergence/>
                 </rules>
               </configuration>
             </execution>
