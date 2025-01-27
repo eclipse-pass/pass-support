@@ -235,14 +235,7 @@
               </goals>
               <configuration>
                 <rules>
-                  <dependencyConvergence>
-                    <excludes>
-                      <exclude>com.squareup.okio:okio:*</exclude>
-                      <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:*</exclude>
-                      <!-- TODO try removing, strange conflict with pass-data-client -->
-                      <exclude>org.apache.commons:commons-lang3:*</exclude>
-                    </excludes>
-                  </dependencyConvergence>
+                  <dependencyConvergence/>
                 </rules>
               </configuration>
             </execution>

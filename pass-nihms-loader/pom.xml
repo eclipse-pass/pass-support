@@ -68,6 +68,12 @@
                 <version>${okhttp.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda-time.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -112,16 +118,7 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <dependencyConvergence>
-                                    <excludes>
-                                        <!-- Transitive deps -->
-                                        <exclude>commons-io:commons-io:</exclude>
-                                        <exclude>com.squareup.okio:okio:</exclude>
-                                        <exclude>org.jetbrains.kotlin:kotlin-stdlib*:</exclude>
-                                        <!-- Omitted from handy uri transitive dep -->
-                                        <exclude>joda-time:joda-time:2.10.2</exclude>
-                                    </excludes>
-                                </dependencyConvergence>
+                                <dependencyConvergence/>
                             </rules>
                         </configuration>
                     </execution>

@@ -24,6 +24,24 @@
     <maven-model.version>3.9.9</maven-model.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <!-- The following are transitive deps with convergence issues. -->
+      <!-- These should all be checked whenever deps are upgraded. -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <!-- End of transitive deps with convergence issues. -->
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>com.markomilos.jsonapi</groupId>
@@ -40,13 +58,11 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
     </dependency>
 
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
     </dependency>
 
     <dependency>
@@ -126,13 +142,7 @@
             </goals>
             <configuration>
               <rules>
-                <dependencyConvergence>
-                  <excludes>
-                    <exclude>com.squareup.okio:okio:*</exclude>
-                    <exclude>org.jetbrains.kotlin:kotlin-stdlib-jdk8:*</exclude>
-                    <exclude>org.slf4j:slf4j-api:*</exclude>
-                  </excludes>
-                </dependencyConvergence>
+                <dependencyConvergence/>
               </rules>
             </configuration>
           </execution>
