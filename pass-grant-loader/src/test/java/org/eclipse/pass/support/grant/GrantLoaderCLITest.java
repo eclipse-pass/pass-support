@@ -29,7 +29,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @SpringBootTest(classes = GrantLoaderCLI.class,
-    args = {"--startDateTime=2024-01-01T00:00:00", "-awardEndDate=01/01/2025", "-action=pull", "test-pull-file.csv"})
+    args = {"--startDateTime=2024-01-01T00:00:00", "-awardEndDate=2025-01-01", "-action=pull", "test-pull-file.csv"})
 @TestPropertySource(
     locations = "classpath:test-application.properties",
     properties = """
