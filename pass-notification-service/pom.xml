@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.eclipse.pass</groupId>
         <artifactId>pass-support</artifactId>
-        <version>1.14.0-SNAPSHOT</version>
+        <version>1.14.0</version>
     </parent>
 
     <artifactId>pass-notification-service</artifactId>
