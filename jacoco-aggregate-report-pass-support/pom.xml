@@ -9,7 +9,7 @@
         <version>1.14.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jacoco-aggregate-report</artifactId>
+    <artifactId>jacoco-aggregate-report-pass-support</artifactId>
 
     <properties>
     </properties>
