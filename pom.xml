@@ -61,7 +61,7 @@
     <module>pass-journal-loader</module>
     <module>pass-nihms-loader</module>
     <module>pass-notification-service</module>
-    <module>jacoco-aggregate-report</module>
+    <module>jacoco-aggregate-report-pass-support</module>
   </modules>
 
   <scm>
