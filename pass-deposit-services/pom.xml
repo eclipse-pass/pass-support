@@ -93,6 +93,12 @@
         <artifactId>spring-boot-starter-test</artifactId>
         <version>${spring-boot-maven-plugin.version}</version>
         <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
