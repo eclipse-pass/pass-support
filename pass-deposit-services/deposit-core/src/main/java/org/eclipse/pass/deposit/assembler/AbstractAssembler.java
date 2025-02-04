@@ -233,7 +233,7 @@ public abstract class AbstractAssembler implements Assembler {
                 } else if (Objects.nonNull(dfr.getDepositFile().getPassFileId())) {
                     String passFileId = dfr.getDepositFile().getPassFileId();
                     LOG.trace("Returning PassFileResource for Pass File {}", passFileId);
-                    delegateResource = new PassFileResource(passClient, passFileId);
+                    delegateResource = new PassFileResource(passClient, passFileId, dfr.getDepositFile().getName());
                 } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX) ||
                            location.startsWith(JAR_PREFIX)) {
                     try {
