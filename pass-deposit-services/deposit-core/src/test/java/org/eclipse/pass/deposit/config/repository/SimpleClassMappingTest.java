@@ -40,10 +40,10 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
                                                      "        \"protocol\": \"SWORDv2\",\n" +
                                                      "        \"username\": \"sworduser\",\n" +
                                                      "        \"password\": \"swordpass\",\n" +
-                                                     "        \"service-doc\": \"http://${dspace.host}:${dspace" +
-                                                     ".port}/swordv2/servicedocument\",\n" +
-                                                     "        \"default-collection\": \"http://${dspace" +
-                                                     ".host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
+                                                     "        \"service-doc\": \"http://${dspace.server}" +
+                                                     "/swordv2/servicedocument\",\n" +
+                                                     "        \"default-collection\": \"http://${dspace.server}" +
+                                                     "/swordv2/collection/123456789/2\",\n" +
                                                      "        \"on-behalf-of\": null,\n" +
                                                      "        \"deposit-receipt\": true,\n" +
                                                      "        \"user-agent\": \"pass-deposit/x.y.z\"\n" +
@@ -108,9 +108,9 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
         assertEquals("SWORDv2", swordBinding.getProtocol());
         assertEquals("sworduser", swordBinding.getUsername());
         assertEquals("swordpass", swordBinding.getPassword());
-        assertEquals("http://test-dspace-host:test-dspace-port/swordv2/servicedocument",
+        assertEquals("http://test-dspace-host:8000/swordv2/servicedocument",
             swordBinding.getServiceDocUrl());
-        assertEquals("http://test-dspace-host:test-dspace-port/swordv2/collection/123456789/2",
+        assertEquals("http://test-dspace-host:8000/swordv2/collection/123456789/2",
                      swordBinding.getDefaultCollectionUrl());
         assertNull(swordBinding.getOnBehalfOf());
         assertTrue(swordBinding.isDepositReceipt());

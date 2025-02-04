@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.pass.deposit.support.deploymenttest;
+package org.eclipse.pass.deposit.support.dspace;
 
 import java.net.URI;
 import java.util.List;
@@ -29,11 +29,13 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.eclipse.pass.deposit.assembler.DepositFileResource;
+import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,17 +48,21 @@ import org.springframework.web.client.RestClient;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-@ConditionalOnProperty(name = "pass.test.data.job.enabled")
 @Service
-public class DspaceDepositService {
-    private static final Logger LOG = LoggerFactory.getLogger(DspaceDepositService.class);
-
-    public static final String X_XSRF_TOKEN = "X-XSRF-TOKEN";
-    public static final String COOKIE = "Cookie";
-    public static final String DSPACE_XSRF_COOKIE = "DSPACE-XSRF-COOKIE=";
-    public static final String AUTHORIZATION = "Authorization";
+public class DSpaceDepositService {
+    private static final Logger LOG = LoggerFactory.getLogger(DSpaceDepositService.class);
+    private static final String X_XSRF_TOKEN = "X-XSRF-TOKEN";
+    private static final String COOKIE = "Cookie";
+    private static final String DSPACE_XSRF_COOKIE = "DSPACE-XSRF-COOKIE=";
+    private static final String AUTHORIZATION = "Authorization";
 
     private final RestClient restClient;
+
+    @Value("${dspace.api.url}")
+    private String dspaceApiUrl;
+
+    @Value("${dspace.website.url}")
+    private String dspaceWebsiteUrl;
 
     @Value("${dspace.user}")
     private String dspaceUsername;
@@ -64,17 +70,15 @@ public class DspaceDepositService {
     @Value("${dspace.password}")
     private String dspacePassword;
 
-    @Value("${dspace.server}")
-    private String dspaceServer;
+    @Value("${dspace.collection.handle}")
+    private String dspaceCollectionHandle;
 
-    @Value("${dspace.server.api.protocol}")
-    private String dspaceApiProtocol;
+    @Autowired
+    private RepositoryConnectivityService repositoryConnectivityService;
 
-    protected record AuthContext(String xsrfToken, String authToken){}
+    public record AuthContext(String xsrfToken, String authToken){}
 
-    public DspaceDepositService(@Value("${dspace.server.api.protocol}") String dspaceApiProtocol,
-                                @Value("${dspace.server}") String dspaceServer,
-                                @Value("${dspace.server.api.path}") String dspaceApiPath) {
+    public DSpaceDepositService(@Value("${dspace.api.url}") String dspaceApiUrl) {
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
             .setDefaultSocketConfig(SocketConfig.custom()
                 .setSoTimeout(Timeout.ofMinutes(1))
@@ -89,9 +93,10 @@ public class DspaceDepositService {
             .setConnectionManager(connectionManager)
             .disableCookieManagement()
             .build();
+
         this.restClient = RestClient.builder()
             .requestFactory(new HttpComponentsClientHttpRequestFactory(httpClient))
-            .baseUrl(dspaceApiProtocol + "://" + dspaceServer + dspaceApiPath)
+            .baseUrl(dspaceApiUrl)
             .build();
     }
 
@@ -100,7 +105,7 @@ public class DspaceDepositService {
      * authentication docs.
      * @return an AuthContext containing authToken and xsrfToken
      */
-    AuthContext authenticate() {
+    public AuthContext authenticate() {
         // Using exchange is needed for this call because dspace returns 404, but the response headers has the
         // csrf token header DSPACE-XSRF-TOKEN
         ResponseEntity<Void> csrfResponse = restClient.get()
@@ -119,7 +124,7 @@ public class DspaceDepositService {
             .body(bodyPair)
             .retrieve()
             .toBodilessEntity();
-        String authToken = getAuthHeaderValue(authResponse, AUTHORIZATION);
+        String authToken = getAuthHeaderValue(authResponse, "Authorization");
 
         return new AuthContext(xsrfToken, authToken);
     }
@@ -128,11 +133,11 @@ public class DspaceDepositService {
      * Deletes the deposit in the remote repository.
      * @param deposit contains deposit info to do the delete
      */
-    void deleteDeposit(Deposit deposit, AuthContext authContext) {
+    public void deleteDeposit(Deposit deposit, AuthContext authContext) {
         LOG.warn("Deleting Test Deposit In Dspace (PASS Deposit ID={})", deposit.getId());
         URI accessUrl = Objects.nonNull(deposit.getRepositoryCopy())
-            ? deposit.getRepositoryCopy().getAccessUrl()
-            : null;
+                ? deposit.getRepositoryCopy().getAccessUrl()
+                : null;
         LOG.warn("Deposit accessUrl={}", accessUrl);
         if (Objects.nonNull(accessUrl)) {
             String handleValue = parseHandleFilter(accessUrl);
@@ -162,12 +167,20 @@ public class DspaceDepositService {
     }
 
     private String parseHandleFilter(URI accessUrl) {
-        String handleDelim = dspaceApiProtocol + "://" + dspaceServer + "/handle/";
-        String[] handleTokens = accessUrl.toString().split(handleDelim);
-        if (handleTokens.length != 2) {
+        String path = accessUrl.getPath();
+
+        String mark = "/handle/";
+        int start = path.indexOf(mark);
+
+        if (start == -1) {
             throw new RuntimeException("Unable to determine dspace item handle for " + accessUrl);
         }
-        return handleTokens[1];
+
+        return path.substring(start + mark.length());
+    }
+
+    public String createAccessUrlFromItemUuid(String itemUuid) {
+        return dspaceWebsiteUrl + "/items/" + itemUuid;
     }
 
     private String findItemUuid(String handleValue, AuthContext authContext, String submissionTitle) {
@@ -232,5 +245,89 @@ public class DspaceDepositService {
             .retrieve()
             .toBodilessEntity();
         LOG.warn("Deleted item UUID={}", itemUuid);
+    }
+
+    public String getUuidForHandle(String handle, AuthContext authContext) {
+        LOG.debug("Search Dspace for object with handle={}", handle);
+
+        String searchResponse = restClient.get()
+            .uri("/discover/search/objects?query=handle:{handleValue}", handle)
+            .accept(MediaType.APPLICATION_JSON)
+            .header(AUTHORIZATION, authContext.authToken())
+            .retrieve()
+            .body(String.class);
+
+        List<Map<String, ?>> searchArray = JsonPath.parse(searchResponse).read("$..indexableObject[?(@.handle)]");
+
+        if (searchArray.size() == 1) {
+            Map<String, ?> itemMap = searchArray.get(0);
+            String uuid = itemMap.get("uuid").toString();
+
+            LOG.debug("Found object UUID={} with handle={}", uuid, handle);
+
+            return uuid;
+        }
+
+        throw new RuntimeException("Unable to find object with handle: " + handle);
+    }
+
+    public String createWorkspaceItem(List<DepositFileResource> files, AuthContext authContext) {
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+        for (DepositFileResource res: files) {
+            body.add("file", res.getResource());
+        }
+
+        String uuid = getUuidForHandle(dspaceCollectionHandle, authContext);
+
+        String json = restClient.post()
+            .uri("/submission/workspaceitems?owningCollection={collectionUuid}", uuid)
+            .header(AUTHORIZATION, authContext.authToken())
+            .header(X_XSRF_TOKEN, authContext.xsrfToken())
+            .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
+            .body(body)
+            .retrieve().body(String.class);
+
+        return json;
+    }
+
+    public void patchWorkspaceItem(int workspaceItemId, String patch, AuthContext authContext) {
+        restClient.patch()
+            .uri("/submission/workspaceitems/{workspaceItemId}", workspaceItemId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(AUTHORIZATION, authContext.authToken())
+            .header(X_XSRF_TOKEN, authContext.xsrfToken())
+            .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
+            .body(patch)
+            .retrieve().toBodilessEntity();
+    }
+
+    public void createWorkflowItem(int workspaceItemId, AuthContext authContext) {
+        String workspaceItemUrl = dspaceApiUrl + "/submission/workspaceitems/" + workspaceItemId;
+
+        restClient.post()
+            .uri("/workflow/workflowitems")
+            .header("Content-Type", "text/uri-list")
+            .header(AUTHORIZATION, authContext.authToken())
+            .header(X_XSRF_TOKEN, authContext.xsrfToken())
+            .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
+            .body(workspaceItemUrl)
+            .retrieve().toBodilessEntity();
+    }
+
+    public String getWorkspaceItem(int workspaceItemId, AuthContext authContext) {
+        String json = restClient.get()
+                .uri("/submission/workspaceitems/{workspaceItemId}", workspaceItemId)
+                .header(AUTHORIZATION, authContext.authToken())
+                .header(X_XSRF_TOKEN, authContext.xsrfToken())
+                .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
+                .retrieve().body(String.class);
+
+        return json;
+    }
+
+    public boolean verifyConnectivity() {
+        URI uri = URI.create(dspaceApiUrl);
+        return repositoryConnectivityService.verifyConnect(uri.getHost(), uri.getPort());
     }
 }

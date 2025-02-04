@@ -96,10 +96,10 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
                                                         "        \"protocol\": \"SWORDv2\",\n" +
                                                         "        \"username\": \"sworduser\",\n" +
                                                         "        \"password\": \"swordpass\",\n" +
-                                                        "        \"service-doc\": \"http://${dspace.host}:${dspace" +
-                                                        ".port}/swordv2/servicedocument\",\n" +
-                                                        "        \"default-collection\": \"http://${dspace" +
-                                                        ".host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
+                                                        "        \"service-doc\": \"http://${dspace.server}" +
+                                                        "/swordv2/servicedocument\",\n" +
+                                                        "        \"default-collection\": \"http://${dspace.server}" +
+                                                        "/swordv2/collection/123456789/2\",\n" +
                                                         "        \"on-behalf-of\": null,\n" +
                                                         "        \"deposit-receipt\": true,\n" +
                                                         "        \"user-agent\": \"pass-deposit/x.y.z\",\n" +

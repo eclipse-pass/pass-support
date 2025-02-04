@@ -104,8 +104,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -119,10 +117,6 @@ public class DspaceMetadataDomWriterTest {
 
     @TempDir
     private Path tempDir;
-
-    private List<Resource> custodialContent = Arrays.asList(
-        new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
-        new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg"));
 
     private final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
@@ -229,7 +223,7 @@ public class DspaceMetadataDomWriterTest {
         when(journal.getJournalTitle()).thenReturn("American Journal of XYZ Research");
         when(journal.getJournalId()).thenReturn("Am J of XYZ Res");
         when(journal.getPublisherName()).thenReturn("Super Publisher");
-        when(journal.getPublicationDate()).thenReturn("2018-09-12");
+        when(journal.getPublicationDate()).thenReturn(ZonedDateTime.now());
 
         underTest.addResource(r);
         underTest.addSubmission(submission);
@@ -296,8 +290,6 @@ public class DspaceMetadataDomWriterTest {
         String type = "text/plain";
         String checksumMd5Val = "abcdef12345";
         String checksumMd5 = Checksum.OPTS.MD5.name();
-        String checksumShaVal = "123456abcdef";
-        String checksumSha = Checksum.OPTS.SHA256.name();
 
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
         when(checksum.algorithm()).thenReturn(Checksum.OPTS.MD5);
@@ -448,8 +440,7 @@ public class DspaceMetadataDomWriterTest {
         DepositMetadata.Journal jMd = mock(DepositMetadata.Journal.class);
         String publisherName = "Big Publisher";
         when(jMd.getPublisherName()).thenReturn(publisherName);
-        String publicationDate = "1/9/1919";
-        when(jMd.getPublicationDate()).thenReturn(publicationDate);
+        when(jMd.getPublicationDate()).thenReturn(ZonedDateTime.now());
 
         DepositMetadata md = mock(DepositMetadata.class);
         when(md.getArticleMetadata()).thenReturn(artMd);

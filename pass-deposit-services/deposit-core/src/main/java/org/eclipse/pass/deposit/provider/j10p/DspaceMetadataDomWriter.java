@@ -49,14 +49,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import au.edu.apsr.mtk.base.AmdSec;
 import au.edu.apsr.mtk.base.Constants;
 import au.edu.apsr.mtk.base.Div;
 import au.edu.apsr.mtk.base.DmdSec;
@@ -70,11 +68,11 @@ import au.edu.apsr.mtk.base.METSException;
 import au.edu.apsr.mtk.base.METSWrapper;
 import au.edu.apsr.mtk.base.MdSec;
 import au.edu.apsr.mtk.base.MdWrap;
-import au.edu.apsr.mtk.base.SourceMD;
 import au.edu.apsr.mtk.base.StructMap;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.model.DepositMetadata;
 import org.eclipse.pass.deposit.model.DepositSubmission;
+import org.eclipse.pass.deposit.provider.util.CitationUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -104,8 +102,6 @@ public class DspaceMetadataDomWriter {
     private DocumentBuilderFactory dbf;
 
     private METS mets;
-
-    private int authorIndex;
 
     DspaceMetadataDomWriter(DocumentBuilderFactory dbf) {
         try {
@@ -409,7 +405,6 @@ public class DspaceMetadataDomWriter {
         // Attach a <dc:contributor> for each Person associated with the submission to the Manuscript metadata
         DepositMetadata nimsMd = submission.getMetadata();
         DepositMetadata.Manuscript manuscriptMd = nimsMd.getManuscriptMetadata();
-        DepositMetadata.Article articleMd = nimsMd.getArticleMetadata();
         DepositMetadata.Journal journalMd = nimsMd.getJournalMetadata();
 
         // Attach a <dc:title> for the Manuscript title
@@ -435,11 +430,7 @@ public class DspaceMetadataDomWriter {
             record.appendChild(publisher);
         }
 
-        // Begin building citation string
-        StringBuilder citationBldr = new StringBuilder();
-
-        // Attach a <dc:contributor> for each author of the manuscript and add authorIndex to citation
-        authorIndex = 0;
+        // Attach a <dc:contributor> for each author of the manuscript
         nimsMd.getPersons().forEach(p -> {
             // Only include authorIndex, PIs and CoPIs as contributors
             if (p.getType() != DepositMetadata.PERSON_TYPE.submitter) {
@@ -447,56 +438,18 @@ public class DspaceMetadataDomWriter {
                 contributor.setTextContent(p.getName());
                 record.appendChild(contributor);
             }
-
-            if (p.getType() == DepositMetadata.PERSON_TYPE.author) {
-                // Citation: For author 0, add name.  For authorIndex 1 and 2, add comma then name.
-                // For author 3, add comma and "et al".  For later authorIndex, do nothing.
-                if (authorIndex == 0) {
-                    citationBldr.append(p.getReversedName());
-                } else if (authorIndex <= 2) {
-                    citationBldr.append(", " + p.getReversedName());
-                } else if (authorIndex == 3) {
-                    citationBldr.append(", et al");
-                }
-                authorIndex++;
-            }
         });
-        if (authorIndex == 0) {
+
+        if (nimsMd.getPersons().stream().filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.author).count() == 0) {
             throw new RuntimeException("No authors found in the manuscript metadata!");
         }
-        // Add period at end of author list in citation
-        citationBldr.append(".");
 
-        // Attach a <dc:identifier:citation> if not empty
-        // publication date - after a single space, in parens, followed by "."
-        if (journalMd != null && journalMd.getPublicationDate() != null && !journalMd.getPublicationDate().isEmpty()) {
-            citationBldr.append(" (" + journalMd.getPublicationDate() + ").");
-        }
-        // article title - after single space, in double quotes with "." inside
-        if (articleMd != null && articleMd.getTitle() != null && !articleMd.getTitle().isEmpty()) {
-            citationBldr.append(" \"" + articleMd.getTitle() + ".\"");
-        }
-        // journal title - after single space, followed by "."
-        if (journalMd != null && journalMd.getJournalTitle() != null && !journalMd.getJournalTitle().isEmpty()) {
-            citationBldr.append(" " + journalMd.getJournalTitle() + ".");
-        }
-        // volume - after single space
-        if (articleMd != null && articleMd.getVolume() != null && !articleMd.getVolume().isEmpty()) {
-            citationBldr.append(" " + articleMd.getVolume());
-        }
-        // issue - after single space, inside parens, followed by "."
-        if (articleMd != null && articleMd.getIssue() != null && !articleMd.getIssue().isEmpty()) {
-            citationBldr.append(" (" + articleMd.getIssue() + ").");
-        }
-        // DOI - after single space, followed by "."
-        if (articleMd != null && articleMd.getDoi() != null) {
-            citationBldr.append(" " + articleMd.getDoi().toString() + ".");
-        }
+        String citation = CitationUtil.createCitation(submission);
 
-        if (!citationBldr.toString().isEmpty()) {
-            Element citation = dcDocument.createElementNS(DCTERMS_NS, asQname(DCTERMS_NS, DCT_BIBLIOCITATION));
-            citation.setTextContent(citationBldr.toString());
-            record.appendChild(citation);
+        if (!citation.isEmpty()) {
+            Element el = dcDocument.createElementNS(DCTERMS_NS, asQname(DCTERMS_NS, DCT_BIBLIOCITATION));
+            el.setTextContent(citation);
+            record.appendChild(el);
         }
 
         return record;
@@ -654,47 +607,6 @@ public class DspaceMetadataDomWriter {
         mets.setFileSec(fs);
         fs.setID(mintId());
         return fs;
-    }
-
-    private SourceMD getSourceMd(String id) throws METSException {
-        if (id == null) {
-            return createSourceMd();
-        }
-
-        Optional<AmdSec> amdSec = mets
-            .getAmdSecs()
-            .stream()
-            .filter(candidateAmdSec -> candidateAmdSec.getSourceMD(id) != null)
-            .findAny();
-
-        if (amdSec.isPresent()) {
-            return amdSec.get().getSourceMD(id);
-        }
-
-        throw new RuntimeException("SourceMD with id '" + id + "' not found.");
-    }
-
-    private SourceMD createSourceMd() throws METSException {
-        AmdSec amdSec = getAmdSec();
-        SourceMD sourceMD = amdSec.newSourceMD();
-        sourceMD.setID(mintId());
-        amdSec.addSourceMD(sourceMD);
-        return sourceMD;
-    }
-
-    private AmdSec getAmdSec() throws METSException {
-        if (mets.getAmdSecs() == null || mets.getAmdSecs().isEmpty()) {
-            return createAmdSec();
-        }
-
-        return mets.getAmdSecs().get(0);
-    }
-
-    private AmdSec createAmdSec() throws METSException {
-        AmdSec as = mets.newAmdSec();
-        mets.addAmdSec(as);
-        as.setID(mintId());
-        return as;
     }
 
     /**

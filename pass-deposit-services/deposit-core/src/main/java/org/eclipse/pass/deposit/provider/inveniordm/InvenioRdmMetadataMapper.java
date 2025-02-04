@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.provider.inveniordm;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 import net.minidev.json.JSONArray;
@@ -49,8 +50,9 @@ public class InvenioRdmMetadataMapper {
         invenioMetadata.put("creators", creators);
         String title = depositSubmission.getSubmissionMeta().get("title").getAsString();
         invenioMetadata.put("title", title);
-        String publicationDate = depositMetadata.getJournalMetadata().getPublicationDate();
-        invenioMetadata.put("publication_date", publicationDate);
+
+        invenioMetadata.put("publication_date", depositMetadata.getJournalMetadata().
+                getPublicationDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
         JSONObject resourceType = new JSONObject();
         resourceType.put("id", "publication-article");
         invenioMetadata.put("resource_type", resourceType);
