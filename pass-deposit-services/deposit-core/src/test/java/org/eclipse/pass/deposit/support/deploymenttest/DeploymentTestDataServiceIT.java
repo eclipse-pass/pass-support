@@ -44,6 +44,7 @@ import java.util.List;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.eclipse.pass.deposit.service.AbstractDepositIT;
+import org.eclipse.pass.deposit.support.dspace.DSpaceDepositService;
 import org.eclipse.pass.support.client.PassClientSelector;
 import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
@@ -73,8 +74,9 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 @TestPropertySource(properties = {
-    "dspace.server.api.protocol=http",
-    "dspace.server.api.path=/server/api",
+    "dspace.server=localhost:9020",
+    "dspace.api.url=http://localhost:9020/server/api",
+    "dspace.website.url=http://localhost:9020/website",
     "pass.test.data.job.enabled=true",
     "pass.test.data.policy.title=test-policy-title",
     "pass.test.data.user.email=test-user-email@foo",
@@ -84,7 +86,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
     @Autowired private DeploymentTestDataService deploymentTestDataService;
-    @SpyBean private DspaceDepositService dspaceDepositService;
+    @SpyBean private DSpaceDepositService dspaceDepositService;
 
     @BeforeEach
     public void initPolicyAndUser() throws IOException {
@@ -207,10 +209,10 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         verifyTestGrantDeleted();
         verify(dspaceDepositService, times(1)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verifyDspaceApiStubs(1, 1);
     }
 
@@ -232,10 +234,10 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         verifyTestGrantDeleted();
         verify(dspaceDepositService, times(1)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verifyDspaceApiStubs(0, 1);
     }
 
@@ -308,10 +310,10 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
         verify(dspaceDepositService, times(1)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verifyDspaceApiStubs(1, 1);
     }
 
@@ -332,10 +334,10 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         verifyTestGrantDeleted();
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verifyDspaceApiStubs(0, 0);
     }
 
@@ -357,10 +359,10 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         verifyTestGrantDeleted();
         verify(dspaceDepositService, times(1)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         verify(dspaceDepositService, times(0)).deleteDeposit(
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
-            any(DspaceDepositService.AuthContext.class));
+            any(DSpaceDepositService.AuthContext.class));
         WireMock.verify(1, getRequestedFor(urlEqualTo("/server/api/security/csrf")));
         WireMock.verify(1, postRequestedFor(urlEqualTo("/server/api/authn/login")));
         WireMock.verify(1, getRequestedFor(

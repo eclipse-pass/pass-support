@@ -20,6 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.pass.deposit.support.dspace.DSpaceDepositService;
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -51,7 +52,7 @@ public class DeploymentTestDataService {
     public static final String SUBMISSION_ID = "submission.id";
 
     private final PassClient passClient;
-    private final DspaceDepositService dspaceDepositService;
+    private final DSpaceDepositService dspaceDepositService;
 
     @Value("${pass.test.data.policy.title}")
     private String testPolicyTitle;
@@ -66,7 +67,7 @@ public class DeploymentTestDataService {
     private String dspaceKey;
 
     @Autowired
-    public DeploymentTestDataService(PassClient passClient, DspaceDepositService dspaceDepositService) {
+    public DeploymentTestDataService(PassClient passClient, DSpaceDepositService dspaceDepositService) {
         this.passClient = passClient;
         this.dspaceDepositService = dspaceDepositService;
     }
@@ -131,7 +132,7 @@ public class DeploymentTestDataService {
             ));
             List<Submission> testSubmissions = passClient.streamObjects(testSubmissionSelector).toList();
             if (!testSubmissions.isEmpty()) {
-                DspaceDepositService.AuthContext authContext = dspaceDepositService.authenticate();
+                DSpaceDepositService.AuthContext authContext = dspaceDepositService.authenticate();
                 testSubmissions.forEach(testSubmission -> {
                     try {
                         PassClientSelector<Deposit> testDepositSelector = new PassClientSelector<>(Deposit.class);
@@ -149,7 +150,7 @@ public class DeploymentTestDataService {
         }
     }
 
-    private void deleteDepositInRepoIfNeeded(Deposit deposit, DspaceDepositService.AuthContext authContext) {
+    private void deleteDepositInRepoIfNeeded(Deposit deposit, DSpaceDepositService.AuthContext authContext) {
         if (isDspaceDeposit(deposit)) {
             dspaceDepositService.deleteDeposit(deposit, authContext);
         }

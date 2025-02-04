@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.pass.deposit.assembler.PackageStream;
+import org.eclipse.pass.support.client.model.Deposit;
 
 /**
  * Represents an open connection, or the promise of a successful connection, with a service or system that will accept
@@ -33,7 +34,6 @@ import org.eclipse.pass.deposit.assembler.PackageStream;
  * </p>
  */
 public interface TransportSession extends AutoCloseable {
-
     /**
      * Transfer the bytes of the supplied package to the remote system.  Metadata can be optionally supplied which may
      * help the underlying transport correctly configure itself for the transfer.
@@ -45,12 +45,14 @@ public interface TransportSession extends AutoCloseable {
      *
      * @param packageStream the package and package metadata
      * @param metadata      transport-related metadata, or any "extra" package metadata
+     * @param deposit       deposit representation
      * @return a response indicating success or failure of the transfer
      */
-    TransportResponse send(PackageStream packageStream, Map<String, String> metadata);
+    TransportResponse send(PackageStream packageStream, Map<String, String> metadata, Deposit deposit);
 
     boolean closed();
 
+    @Override
     void close() throws IOException;
 
 }

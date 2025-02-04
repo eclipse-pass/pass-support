@@ -237,7 +237,7 @@ public class DepositMetadata {
         /**
          * Date of publication
          */
-        public String publicationDate;
+        public ZonedDateTime publicationDate;
 
         /**
          * ISSN mapped to journal publication type
@@ -302,14 +302,14 @@ public class DepositMetadata {
         /**
          * @return {@link #publicationDate}
          */
-        public String getPublicationDate() {
+        public ZonedDateTime getPublicationDate() {
             return publicationDate;
         }
 
         /**
          * @param publicationDate {@link #publicationDate}
          */
-        public void setPublicationDate(String publicationDate) {
+        public void setPublicationDate(ZonedDateTime publicationDate) {
             this.publicationDate = publicationDate;
         }
 
