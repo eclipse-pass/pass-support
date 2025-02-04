@@ -291,8 +291,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
     static Collection<String> getLookupKeys(Repository repo) {
         final List<String> keys = new ArrayList<>();
 
-        ofNullable(repo.getName()).ifPresent(keys::add);
         ofNullable(repo.getRepositoryKey()).ifPresent(keys::add);
+        ofNullable(repo.getName()).ifPresent(keys::add);
         ofNullable(repo.getId()).map(Object::toString).ifPresent(keys::add);
 
         return keys;
