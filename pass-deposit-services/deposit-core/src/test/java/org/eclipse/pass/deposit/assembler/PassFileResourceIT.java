@@ -41,7 +41,7 @@ public class PassFileResourceIT extends AbstractDepositSubmissionIT {
         file.setUri(fileUri);
         passClient.createObject(file);
 
-        PassFileResource passFileResource = new PassFileResource(passClient, file.getId());
+        PassFileResource passFileResource = new PassFileResource(passClient, file.getId(), file.getName());
 
         // WHEN
         InputStream inputStream = passFileResource.getInputStream();
