@@ -1,5 +1,7 @@
 package org.eclipse.pass.deposit.provider.dspace;
 
+import static org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper.SECTION_ONE;
+import static org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper.SECTION_TWO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
@@ -76,23 +78,23 @@ public class DSpaceMetadataMapperTest {
 
         DocumentContext jsonContext = JsonPath.parse(json);
 
-        checkValue(jsonContext, "dc.title", manuscript.getTitle());
-        checkValue(jsonContext, "dc.identifier.doi", article.getDoi().toString());
-        checkValue(jsonContext, "dc.description.abstract", manuscript.getMsAbstract());
-        checkValue(jsonContext, "dc.publisher", journal.getPublisherName());
-        checkValue(jsonContext, "dc.identifier.citation",
+        checkValue(jsonContext, SECTION_ONE, "dc.title", manuscript.getTitle());
+        checkValue(jsonContext, SECTION_ONE, "dc.identifier.doi", article.getDoi().toString());
+        checkValue(jsonContext, SECTION_TWO, "dc.description.abstract", manuscript.getMsAbstract());
+        checkValue(jsonContext, SECTION_ONE, "dc.publisher", journal.getPublisherName());
+        checkValue(jsonContext, SECTION_ONE, "dc.identifier.citation",
                 "Person, P1 One, Person, P2 Two. (2024-12-19). journal title. 2 (1). 10.1016/j.iheduc.2015.08.004.");
-        checkValue(jsonContext, "dc.contributor.author", "P1 Person", "P2 Person");
-        checkValue(jsonContext, "dc.date.issued",
+        checkValue(jsonContext, SECTION_ONE, "dc.contributor.author", "P1 Person", "P2 Person");
+        checkValue(jsonContext, SECTION_ONE, "dc.date.issued",
                 journal.getPublicationDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        checkValue(jsonContext, "test.embargo.lift",
+        checkValue(jsonContext, SECTION_ONE, "test.embargo.lift",
                 article.getEmbargoLiftDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        checkValue(jsonContext, "test.embargo.terms",
+        checkValue(jsonContext, SECTION_ONE, "test.embargo.terms",
                 article.getEmbargoLiftDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
     }
 
-    private void checkValue(DocumentContext context, String key, String... expected) {
-        String path = "$[?(@.path == '/sections/traditionalpageone/" + key + "')].value[*].value";
+    private void checkValue(DocumentContext context, String section, String key, String... expected) {
+        String path = "$[?(@.path == '/sections/" + section + "/" + key + "')].value[*].value";
 
         List<String> values = context.read(path);
 
@@ -121,8 +123,8 @@ public class DSpaceMetadataMapperTest {
 
         DocumentContext jsonContext = JsonPath.parse(json);
 
-        checkValue(jsonContext, "dc.title", manuscript.getTitle());
-        checkValue(jsonContext, "dc.date.issued",
+        checkValue(jsonContext, SECTION_ONE, "dc.title", manuscript.getTitle());
+        checkValue(jsonContext, SECTION_ONE, "dc.date.issued",
                 journal.getPublicationDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
     }
 }

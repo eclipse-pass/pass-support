@@ -47,7 +47,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DSpaceMetadataMapper {
     // Section of workspace item form to add metadata
-    private static final String SECTION = "traditionalpageone";
+    static final String SECTION_ONE = "traditionalpageone";
+    static final String SECTION_TWO = "traditionalpagetwo";
 
     private final String dspaceFieldEmbargoLift;
     private final String dspaceFieldEmbargoTerms;
@@ -67,28 +68,28 @@ public class DSpaceMetadataMapper {
         JSONArray metadata = new JSONArray();
 
         // Required by DSpace
-        metadata.add(add_array(SECTION, "dc.title", manuscriptMd.getTitle()));
+        metadata.add(add_array(SECTION_ONE, "dc.title", manuscriptMd.getTitle()));
 
         if (journalMd != null && journalMd.getPublisherName() != null) {
-            metadata.add(add_array(SECTION, "dc.publisher", journalMd.getPublisherName()));
+            metadata.add(add_array(SECTION_ONE, "dc.publisher", journalMd.getPublisherName()));
         }
 
         if (articleMd.getDoi() != null) {
-            metadata.add(add_array(SECTION, "dc.identifier.doi", articleMd.getDoi().toString()));
+            metadata.add(add_array(SECTION_ONE, "dc.identifier.doi", articleMd.getDoi().toString()));
         }
 
         if (manuscriptMd.getMsAbstract() != null) {
-            metadata.add(add_array(SECTION, "dc.description.abstract", manuscriptMd.getMsAbstract()));
+            metadata.add(add_array(SECTION_TWO, "dc.description.abstract", manuscriptMd.getMsAbstract()));
         }
 
         String citation = CitationUtil.createCitation(submission);
 
         if (!citation.isEmpty()) {
-            metadata.add(add_array(SECTION, "dc.identifier.citation", citation));
+            metadata.add(add_array(SECTION_ONE, "dc.identifier.citation", citation));
         }
 
         // Required by DSpace as ISO 8601 local date
-        metadata.add(add_array(SECTION, "dc.date.issued", journalMd.getPublicationDate().
+        metadata.add(add_array(SECTION_ONE, "dc.date.issued", journalMd.getPublicationDate().
                 format(DateTimeFormatter.ISO_LOCAL_DATE)));
 
         // Add non-submitters as authors
@@ -96,15 +97,15 @@ public class DSpaceMetadataMapper {
                 p -> p.getType() != DepositMetadata.PERSON_TYPE.submitter).
                 map(Person::getName).toArray(String[]::new);
 
-        metadata.add(add_array(SECTION, "dc.contributor.author", authors));
+        metadata.add(add_array(SECTION_ONE, "dc.contributor.author", authors));
 
         ZonedDateTime embargoLiftDate = articleMd.getEmbargoLiftDate();
 
         if (embargoLiftDate != null) {
             String liftDate = embargoLiftDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-            metadata.add(add_array(SECTION, dspaceFieldEmbargoLift, liftDate));
-            metadata.add(add_array(SECTION, dspaceFieldEmbargoTerms, liftDate));
+            metadata.add(add_array(SECTION_ONE, dspaceFieldEmbargoLift, liftDate));
+            metadata.add(add_array(SECTION_ONE, dspaceFieldEmbargoTerms, liftDate));
         }
 
         // Required by DSpace
