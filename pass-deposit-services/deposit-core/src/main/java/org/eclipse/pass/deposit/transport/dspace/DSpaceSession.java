@@ -97,7 +97,7 @@ class DSpaceSession implements TransportSession {
             Map<String, Object> itemMetadata = workspaceItemContext.
                     read("$._embedded.workspaceitems[0]._embedded.item.metadata");
 
-            if (itemMetadata.size() == 0) {
+            if (!itemMetadata.containsKey("dc.title")) {
                 String patchJson = dspaceMetadataMapper.patchWorkspaceItem(depositSubmission);
 
                 LOG.debug("Patching WorkspaceItem to add metadata {}", patchJson);
