@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,7 @@ import org.springframework.web.client.RestClient;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
+@ConditionalOnProperty(name = "dspace.api.url")
 @Service
 public class DSpaceDepositService {
     private static final Logger LOG = LoggerFactory.getLogger(DSpaceDepositService.class);
@@ -124,7 +126,7 @@ public class DSpaceDepositService {
             .body(bodyPair)
             .retrieve()
             .toBodilessEntity();
-        String authToken = getAuthHeaderValue(authResponse, "Authorization");
+        String authToken = getAuthHeaderValue(authResponse, AUTHORIZATION);
 
         return new AuthContext(xsrfToken, authToken);
     }
@@ -327,7 +329,7 @@ public class DSpaceDepositService {
     }
 
     public boolean verifyConnectivity() {
-        URI uri = URI.create(dspaceApiUrl);
-        return repositoryConnectivityService.verifyConnect(uri.getHost(), uri.getPort());
+        // The base API URL is a valid service endpoint
+        return repositoryConnectivityService.verifyConnectByURL(dspaceApiUrl);
     }
 }
