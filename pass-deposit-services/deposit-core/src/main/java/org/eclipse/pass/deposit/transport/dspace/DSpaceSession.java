@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Johns Hopkins University
+ * Copyright 2025 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ class DSpaceSession implements TransportSession {
                     workspaceItemId = Integer.parseInt(ref.substring(DEPOSIT_STATUS_REF_PREFIX.length()));
                 }
             } catch (NumberFormatException e) {
-                // nop
+                LOG.warn("Unable to parse status ref for Submission: {}", depositSubmission.getId());
             }
 
             if (workspaceItemId == -1) {

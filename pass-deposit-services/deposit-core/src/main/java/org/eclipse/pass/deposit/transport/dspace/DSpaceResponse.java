@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Johns Hopkins University
+ * Copyright 2025 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,6 @@ import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.RepositoryCopy;
 
-/**
- * @author Russ Poetker (rpoetke1@jh.edu)
- */
 class DSpaceResponse implements TransportResponse {
     private final boolean success;
     private final Throwable throwable;
