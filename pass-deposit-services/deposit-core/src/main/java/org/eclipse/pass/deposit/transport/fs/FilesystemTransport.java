@@ -109,8 +109,7 @@ public class FilesystemTransport implements Transport {
     class FilesystemTransportSession implements TransportSession {
 
         @Override
-        public TransportResponse send(PackageStream packageStream, Map<String, String> metadata,
-                Deposit deposit) {
+        public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
             String filename = packageStream.metadata().name();
             AtomicReference<Exception> transportException = new AtomicReference<>();
 

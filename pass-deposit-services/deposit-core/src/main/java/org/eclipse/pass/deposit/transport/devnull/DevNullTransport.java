@@ -66,8 +66,7 @@ public class DevNullTransport implements Transport {
     class DevNullTransportSession implements TransportSession {
 
         @Override
-        public TransportResponse send(PackageStream packageStream, Map<String, String> metadata,
-                Deposit deposit) {
+        public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
             // no-op, just return successful response
             return new TransportResponse() {
                 @Override

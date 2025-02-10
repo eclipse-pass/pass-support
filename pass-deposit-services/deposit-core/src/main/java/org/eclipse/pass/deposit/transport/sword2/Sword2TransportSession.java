@@ -104,7 +104,6 @@ public class Sword2TransportSession implements TransportSession {
      *
      * @param packageStream {@inheritDoc}
      * @param metadata      {@inheritDoc}
-     * @param passDeposit   {@inheritDoc}
      * @return {@inheritDoc}
      * @throws IllegalStateException if this session has been {@link #close() closed}
      * @see
@@ -112,8 +111,7 @@ public class Sword2TransportSession implements TransportSession {
      *     SWORD v2 Profile</a>
      */
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata,
-            org.eclipse.pass.support.client.model.Deposit passDeposit) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
         if (closed) {
             throw new IllegalStateException("SWORDv2 transport session has been closed.");
         }

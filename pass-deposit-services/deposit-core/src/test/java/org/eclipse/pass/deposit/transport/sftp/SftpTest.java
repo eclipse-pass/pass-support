@@ -103,7 +103,7 @@ public class SftpTest {
         TransportSession transportSession = sftpTransport.open(hints);
 
         // WHEN
-        TransportResponse transportResponse = transportSession.send(stream, new HashMap<>(), null);
+        TransportResponse transportResponse = transportSession.send(stream, new HashMap<>());
 
         // THEN
         assertTrue(transportResponse.success());
@@ -134,7 +134,7 @@ public class SftpTest {
 
         // WHEN
         DepositServiceRuntimeException ex = assertThrows(DepositServiceRuntimeException.class, () -> {
-            transportSession.send(stream, new HashMap<>(), null);
+            transportSession.send(stream, new HashMap<>());
         });
 
         // THEN
