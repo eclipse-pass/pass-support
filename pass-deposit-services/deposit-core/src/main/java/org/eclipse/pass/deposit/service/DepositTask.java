@@ -442,13 +442,9 @@ public class DepositTask {
                         dc.deposit().getId(), dc.deposit());
                 }
                 try (TransportSession transportSession = transport.open(packagerConfig)) {
-                    TransportResponse tr = transportSession.send(packageStream, packagerConfig, deposit);
+                    TransportResponse tr = transportSession.send(packageStream, packagerConfig);
                     deposit.setDepositStatus(DepositStatus.SUBMITTED);
-
-                    // Only set deposit status ref if not already set during transport
-                    if (deposit.getDepositStatusRef() == null) {
-                        deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
-                    }
+                    deposit.setDepositStatusRef(packageStream.metadata().packageDepositStatusRef());
                     return tr;
                 } catch (Exception e) {
                     throw new RuntimeException("Error closing transport session for deposit " +

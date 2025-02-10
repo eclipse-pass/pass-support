@@ -21,7 +21,6 @@ import org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper;
 import org.eclipse.pass.deposit.support.dspace.DSpaceDepositService;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportSession;
-import org.eclipse.pass.support.client.PassClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,9 +32,6 @@ public class DSpaceTransport implements Transport {
     @Autowired
     private DSpaceMetadataMapper dspaceMetadataMapper;
 
-    @Autowired
-    private PassClient passClient;
-
     @Override
     public PROTOCOL protocol() {
         return PROTOCOL.DSpace;
@@ -43,7 +39,7 @@ public class DSpaceTransport implements Transport {
 
     @Override
     public TransportSession open(Map<String, String> hints) {
-        return new DSpaceSession(dspaceDepositService, dspaceMetadataMapper, passClient);
+        return new DSpaceSession(dspaceDepositService, dspaceMetadataMapper);
     }
 
     @Override

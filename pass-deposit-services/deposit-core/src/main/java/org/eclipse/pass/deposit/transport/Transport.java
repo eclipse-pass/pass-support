@@ -24,7 +24,7 @@ import org.eclipse.pass.deposit.assembler.PackageStream;
  * Abstracts the transport protocol used to deposit a package with a target submission system.  Callers are able to
  * {@link #open(Map) open} a {@link TransportSession} by supplying configuration hints, which allows the implementation
  * to perform necessary connection initialization, prior to a package being transported using
- * {@link TransportSession#send(PackageStream, Map, Deposit)}.
+ * {@link TransportSession#send(PackageStream, Map)}.
  */
 public interface Transport {
 
@@ -68,36 +68,36 @@ public interface Transport {
 
     /**
      * Property key identifying the base64 encoded checksum of the {@code InputStream} being deposited by {@link
-     * TransportSession#send(PackageStream, Map, Deposit)}.  <em>N.B.</em>: The preferred form of obtaining
-     * the checksum of the {@code InputStream} would be {@link PackageStream.Metadata#checksums()}.
+     * TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the checksum of the
+     * {@code InputStream} would be {@link PackageStream.Metadata#checksums()}.
      */
     String TRANSPORT_CHECKSUM_SHA256 = "deposit.transport.checksum.sha256";
 
     /**
      * Property key identifying the base64 encoded checksum of the {@code InputStream} being deposited by {@link
-     * TransportSession#send(PackageStream, Map, Deposit)}.  <em>N.B.</em>: The preferred form of obtaining
-     * the checksum of the {@code InputStream} would be {@link PackageStream.Metadata#checksums()}.
+     * TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the checksum of the
+     * {@code InputStream} would be {@link PackageStream.Metadata#checksums()}.
      */
     String TRANSPORT_CHECKSUM_SHA512 = "deposit.transport.checksum.sha512";
 
     /**
      * Property key identifying the base64 encoded checksum of the {@code InputStream} being deposited by {@link
-     * TransportSession#send(PackageStream, Map, Deposit)}.  <em>N.B.</em>: The preferred form of obtaining
-     * the checksum of the {@code InputStream} would be {@link PackageStream.Metadata#checksums()}.
+     * TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the checksum of the
+     * {@code InputStream} would be {@link PackageStream.Metadata#checksums()}.
      */
     String TRANSPORT_CHECKSUM_MD5 = "deposit.transport.checksum.md5";
 
     /**
      * Property key identifying the mime type of the {@code InputStream} being deposited by
-     * {@link TransportSession#send(PackageStream, Map, Deposit)}.  <em>N.B.</em>: The preferred form of obtaining the name of
+     * {@link TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the name of
      * the {@code InputStream} would be {@link PackageStream.Metadata#name()}.
      */
     String TRANSPORT_MIME_TYPE = "deposit.transport.mime-type";
 
     /**
      * Property key identifying the packaging spec of the {@code InputStream} being deposited by {@link
-     * TransportSession#send(PackageStream, Map, DepositWorker)}.  <em>N.B.</em>: The preferred form
-     * of obtaining the packaging specification of the {@code InputStream} would be {@link PackageStream.Metadata#spec()}.
+     * TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the packaging
+     * specification of the {@code InputStream} would be {@link PackageStream.Metadata#spec()}.
      */
     String TRANSPORT_PACKAGE_SPEC = "deposit.transport.package-spec";
 
@@ -143,7 +143,7 @@ public interface Transport {
     /**
      * Open a {@link TransportSession} with the underlying transport.  The returned {@code TransportSession} should be
      * ready to use by the caller, without the caller having to perform any further setup (the implementation of this
-     * method should perform all necessary actions to allow {@link TransportSession#send(PackageStream, Map, Deposit)} to
+     * method should perform all necessary actions to allow {@link TransportSession#send(PackageStream, Map)} to
      * succeed).  The supplied {@code hints} may be used by the implementation to configure and open the session.  Well
      * known properties include those documented in {@link Transport}, and individual implementations may document
      * properties as well.

@@ -26,8 +26,6 @@ import org.eclipse.pass.deposit.support.dspace.DSpaceDepositService;
 import org.eclipse.pass.deposit.support.dspace.DSpaceDepositService.AuthContext;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
-import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.client.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,81 +35,49 @@ import org.slf4j.LoggerFactory;
  * Finally a workflow item is created referencing the workspace item in order to trigger submission.
  */
 class DSpaceSession implements TransportSession {
-    private static final String DEPOSIT_STATUS_REF_PREFIX = "wsi:";
     private static final Logger LOG = LoggerFactory.getLogger(DSpaceSession.class);
 
     private final DSpaceDepositService dspaceDepositService;
     private final DSpaceMetadataMapper dspaceMetadataMapper;
-    private final PassClient passClient;
 
-    public DSpaceSession(DSpaceDepositService dspaceDepositService, DSpaceMetadataMapper dspaceMetadataMapper,
-            PassClient passClient) {
+    public DSpaceSession(DSpaceDepositService dspaceDepositService, DSpaceMetadataMapper dspaceMetadataMapper) {
         this.dspaceDepositService = dspaceDepositService;
         this.dspaceMetadataMapper = dspaceMetadataMapper;
-        this.passClient = passClient;
     }
 
     @Override
-    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata, Deposit deposit) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
         try {
             DepositSubmission depositSubmission = packageStream.getDepositSubmission();
 
-            LOG.info("Processing Dspace Deposit for Submission: {}", depositSubmission.getId());
+            LOG.warn("Processing Dspace Deposit for Submission: {}", depositSubmission.getId());
 
             AuthContext authContext = dspaceDepositService.authenticate();
 
-            // Create WorkspaceItem if it does not already exist
+            // Create WorkspaceItem
 
-            int workspaceItemId = -1;
-            DocumentContext workspaceItemContext = null;
-
-            try {
-                String ref = deposit.getDepositStatusRef();
-
-                if (ref != null && ref.startsWith(DEPOSIT_STATUS_REF_PREFIX)) {
-                    workspaceItemId = Integer.parseInt(ref.substring(DEPOSIT_STATUS_REF_PREFIX.length()));
-                }
-            } catch (NumberFormatException e) {
-                LOG.warn("Unable to parse status ref for Submission: {}", depositSubmission.getId());
-            }
-
-            if (workspaceItemId == -1) {
-                workspaceItemContext = JsonPath.parse(dspaceDepositService.createWorkspaceItem(
+            DocumentContext workspaceItemContext = JsonPath.parse(dspaceDepositService.createWorkspaceItem(
                         packageStream.getCustodialContent(), authContext));
-                workspaceItemId = workspaceItemContext.read("$._embedded.workspaceitems[0].id");
+            int workspaceItemId = workspaceItemContext.read("$._embedded.workspaceitems[0].id");
 
-                // Use the deposit status ref to mark that the workspace item was created
-                deposit.setDepositStatusRef(DEPOSIT_STATUS_REF_PREFIX + workspaceItemId);
-                passClient.updateObject(deposit);
+            LOG.debug("Created WorkspaceItem: {}", workspaceItemId);
 
-                LOG.debug("Created WorkspaceItem: {}", workspaceItemId);
-            } else {
-                LOG.info("DSpace WorkspaceItem already exists for Submission: {}", depositSubmission.getId());
+            // Patch in metadata
 
-                workspaceItemContext = JsonPath.parse(dspaceDepositService.
-                        getWorkspaceItem(workspaceItemId, authContext));
-            }
+            String patchJson = dspaceMetadataMapper.patchWorkspaceItem(depositSubmission);
 
-            // Check metadata to see if it needs to be patched.
+            LOG.debug("Patching WorkspaceItem to add metadata {}", patchJson);
+            dspaceDepositService.patchWorkspaceItem(workspaceItemId, patchJson, authContext);
 
-            Map<String, Object> itemMetadata = workspaceItemContext.
-                    read("$._embedded.workspaceitems[0]._embedded.item.metadata");
-
-            if (!itemMetadata.containsKey("dc.title")) {
-                String patchJson = dspaceMetadataMapper.patchWorkspaceItem(depositSubmission);
-
-                LOG.debug("Patching WorkspaceItem to add metadata {}", patchJson);
-                dspaceDepositService.patchWorkspaceItem(workspaceItemId, patchJson, authContext);
-            }
+            // Publish the WorkspaceItem
 
             LOG.debug("Creating WorkflowItem for WorkspaceItem {}", workspaceItemId);
             dspaceDepositService.createWorkflowItem(workspaceItemId, authContext);
 
-            // Item which should be published
             String itemUuid = workspaceItemContext.read("$._embedded.workspaceitems[0]._embedded.item.uuid");
             String accessUrl = dspaceDepositService.createAccessUrlFromItemUuid(itemUuid);
 
-            LOG.info("Completed DSpace Deposit for Submission: {}, accessUrl: {}",
+            LOG.warn("Completed DSpace Deposit for Submission: {}, accessUrl: {}",
                     depositSubmission.getId(), accessUrl);
             return new DSpaceResponse(true, accessUrl);
         } catch (Exception e) {
