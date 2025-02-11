@@ -78,7 +78,8 @@ public class DSpaceDepositService {
 
     public record AuthContext(String xsrfToken, String authToken){}
 
-    public DSpaceDepositService(@Value("${dspace.api.url}") String dspaceApiUrl, RepositoryConnectivityService repositoryConnectivityService) {
+    public DSpaceDepositService(@Value("${dspace.api.url}") String dspaceApiUrl,
+            RepositoryConnectivityService repositoryConnectivityService) {
         this.repositoryConnectivityService = repositoryConnectivityService;
 
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
