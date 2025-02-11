@@ -21,16 +21,17 @@ import org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper;
 import org.eclipse.pass.deposit.support.dspace.DSpaceDepositService;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DSpaceTransport implements Transport {
-    @Autowired
-    private DSpaceDepositService dspaceDepositService;
+    private final DSpaceDepositService dspaceDepositService;
+    private final DSpaceMetadataMapper dspaceMetadataMapper;
 
-    @Autowired
-    private DSpaceMetadataMapper dspaceMetadataMapper;
+    public DSpaceTransport(DSpaceDepositService dspaceDepositService, DSpaceMetadataMapper dspaceMetadataMapper) {
+        this.dspaceDepositService = dspaceDepositService;
+        this.dspaceMetadataMapper = dspaceMetadataMapper;
+    }
 
     @Override
     public PROTOCOL protocol() {
