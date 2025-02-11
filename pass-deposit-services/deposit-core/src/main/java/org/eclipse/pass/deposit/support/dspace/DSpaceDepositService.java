@@ -34,7 +34,6 @@ import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
@@ -75,12 +74,13 @@ public class DSpaceDepositService {
     @Value("${dspace.collection.handle}")
     private String dspaceCollectionHandle;
 
-    @Autowired
-    private RepositoryConnectivityService repositoryConnectivityService;
+    private final RepositoryConnectivityService repositoryConnectivityService;
 
     public record AuthContext(String xsrfToken, String authToken){}
 
-    public DSpaceDepositService(@Value("${dspace.api.url}") String dspaceApiUrl) {
+    public DSpaceDepositService(@Value("${dspace.api.url}") String dspaceApiUrl, RepositoryConnectivityService repositoryConnectivityService) {
+        this.repositoryConnectivityService = repositoryConnectivityService;
+
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
             .setDefaultSocketConfig(SocketConfig.custom()
                 .setSoTimeout(Timeout.ofMinutes(1))
