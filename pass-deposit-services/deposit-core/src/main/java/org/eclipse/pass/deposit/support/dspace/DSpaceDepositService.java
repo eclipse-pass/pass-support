@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.jayway.jsonpath.JsonPath;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -142,15 +143,15 @@ public class DSpaceDepositService {
                 ? deposit.getRepositoryCopy().getAccessUrl()
                 : null;
         LOG.warn("Deposit accessUrl={}", accessUrl);
-        if (Objects.nonNull(accessUrl)) {
-            String itemUuid = parseItemUuid(accessUrl);
+        String itemUuid = parseItemUuid(accessUrl);
+        if (StringUtils.isNotEmpty(itemUuid)) {
             LOG.warn("Processing item UUID={}", itemUuid);
             List<String> bundleUuidArray = findBundleUuids(itemUuid, authContext);
             bundleUuidArray.forEach(bundleUuid -> deleteBundle(bundleUuid, authContext));
             deleteItem(itemUuid, authContext);
             LOG.warn("Deleted Test Deposit In Dspace (PASS Deposit ID={})", deposit.getId());
         } else {
-            LOG.error("Deposit has no accessUrl (PASS Deposit ID={}), nothing deleted", deposit.getId());
+            LOG.error("Deposit has invalid accessUrl (PASS Deposit ID={}), nothing deleted", deposit.getId());
         }
     }
 
@@ -163,16 +164,13 @@ public class DSpaceDepositService {
     }
 
     private String parseItemUuid(URI accessUrl) {
+        if (Objects.isNull(accessUrl)) {
+            return "";
+        }
         String path = accessUrl.getPath();
-
         String mark = "/items/";
         int start = path.indexOf(mark);
-
-        if (start == -1) {
-            throw new RuntimeException("Unable to determine dspace item UUID for " + accessUrl);
-        }
-
-        return path.substring(start + mark.length());
+        return start == -1 ? "" : path.substring(start + mark.length());
     }
 
     public String createAccessUrlFromItemUuid(String itemUuid) {
