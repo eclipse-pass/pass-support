@@ -143,19 +143,12 @@ public class DSpaceDepositService {
                 : null;
         LOG.warn("Deposit accessUrl={}", accessUrl);
         if (Objects.nonNull(accessUrl)) {
-            String handleValue = parseHandleFilter(accessUrl);
-            String submissionMetadata = deposit.getSubmission().getMetadata();
-            String submissionTitle = JsonPath.parse(submissionMetadata).read("$.title");
-            String itemUuid = findItemUuid(handleValue, authContext, submissionTitle);
-            if (Objects.nonNull(itemUuid)) {
-                LOG.warn("Processing item UUID={}", itemUuid);
-                List<String> bundleUuidArray = findBundleUuids(itemUuid, authContext);
-                bundleUuidArray.forEach(bundleUuid -> deleteBundle(bundleUuid, authContext));
-                deleteItem(itemUuid, authContext);
-                LOG.warn("Deleted Test Deposit In Dspace (PASS Deposit ID={})", deposit.getId());
-            } else {
-                LOG.error("Did not find item in Dspace with handle={}, nothing deleted", handleValue);
-            }
+            String itemUuid = parseItemUuid(accessUrl);
+            LOG.warn("Processing item UUID={}", itemUuid);
+            List<String> bundleUuidArray = findBundleUuids(itemUuid, authContext);
+            bundleUuidArray.forEach(bundleUuid -> deleteBundle(bundleUuid, authContext));
+            deleteItem(itemUuid, authContext);
+            LOG.warn("Deleted Test Deposit In Dspace (PASS Deposit ID={})", deposit.getId());
         } else {
             LOG.error("Deposit has no accessUrl (PASS Deposit ID={}), nothing deleted", deposit.getId());
         }
@@ -169,14 +162,14 @@ public class DSpaceDepositService {
         return values.get(0);
     }
 
-    private String parseHandleFilter(URI accessUrl) {
+    private String parseItemUuid(URI accessUrl) {
         String path = accessUrl.getPath();
 
-        String mark = "/handle/";
+        String mark = "/items/";
         int start = path.indexOf(mark);
 
         if (start == -1) {
-            throw new RuntimeException("Unable to determine dspace item handle for " + accessUrl);
+            throw new RuntimeException("Unable to determine dspace item UUID for " + accessUrl);
         }
 
         return path.substring(start + mark.length());
@@ -184,33 +177,6 @@ public class DSpaceDepositService {
 
     public String createAccessUrlFromItemUuid(String itemUuid) {
         return dspaceWebsiteUrl + "/items/" + itemUuid;
-    }
-
-    private String findItemUuid(String handleValue, AuthContext authContext, String submissionTitle) {
-        LOG.warn("Search Dspace for item with handle={}", handleValue);
-        String searchResponse = restClient.get()
-            .uri("/discover/search/objects?query=handle:{handleValue}&dsoType=item", handleValue)
-            .accept(MediaType.APPLICATION_JSON)
-            .header(AUTHORIZATION, authContext.authToken())
-            .retrieve()
-            .body(String.class);
-        List<Map<String, ?>> searchArray = JsonPath.parse(searchResponse).read("$..indexableObject[?(@.handle)]");
-        if (searchArray.size() == 1) {
-            Map<String, ?> itemMap = searchArray.get(0);
-            String itemName = itemMap.get("name").toString();
-            String itemHandle = itemMap.get("handle").toString();
-            String itemUuid = itemMap.get("uuid").toString();
-            LOG.warn("Found item UUID={} with handle={} and name={}", itemUuid, itemHandle, itemName);
-            if (handleValue.equals(itemHandle) && itemName.equals(submissionTitle)) {
-                return itemUuid;
-            } else {
-                throw new RuntimeException(
-                    String.format("Item handle and name don't match [expected handle=%s, " +
-                            "name=%s/actual handle=%s and name=%s]",
-                    handleValue, submissionTitle, itemHandle, itemName));
-            }
-        }
-        return null;
     }
 
     private  List<String> findBundleUuids(String itemUuid, AuthContext authContext) {
@@ -283,15 +249,13 @@ public class DSpaceDepositService {
 
         String uuid = getUuidForHandle(dspaceCollectionHandle, authContext);
 
-        String json = restClient.post()
+        return restClient.post()
             .uri("/submission/workspaceitems?owningCollection={collectionUuid}", uuid)
             .header(AUTHORIZATION, authContext.authToken())
             .header(X_XSRF_TOKEN, authContext.xsrfToken())
             .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
             .body(body)
             .retrieve().body(String.class);
-
-        return json;
     }
 
     public void patchWorkspaceItem(int workspaceItemId, String patch, AuthContext authContext) {
@@ -316,17 +280,6 @@ public class DSpaceDepositService {
             .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
             .body(workspaceItemUrl)
             .retrieve().toBodilessEntity();
-    }
-
-    public String getWorkspaceItem(int workspaceItemId, AuthContext authContext) {
-        String json = restClient.get()
-                .uri("/submission/workspaceitems/{workspaceItemId}", workspaceItemId)
-                .header(AUTHORIZATION, authContext.authToken())
-                .header(X_XSRF_TOKEN, authContext.xsrfToken())
-                .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
-                .retrieve().body(String.class);
-
-        return json;
     }
 
     public boolean verifyConnectivity() {
