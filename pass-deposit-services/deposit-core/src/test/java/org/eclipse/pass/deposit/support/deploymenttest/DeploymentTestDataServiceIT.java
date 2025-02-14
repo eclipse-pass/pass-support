@@ -199,7 +199,7 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
         initSubmissionAndDeposits(testGrant, false);
-        initDspaceApiStubs("Test-Title");
+        initDspaceApiStubs();
         ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
 
         // WHEN
@@ -224,7 +224,7 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
         initSubmissionAndDeposits(testGrant, true);
-        initDspaceApiStubs("Test-Title");
+        initDspaceApiStubs();
         ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
 
         // WHEN
@@ -255,7 +255,7 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         testOtherGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testOtherGrant);
         Submission testOtherSubmission = initSubmissionAndDeposits(testOtherGrant, false);
-        initDspaceApiStubs("Test-Title");
+        initDspaceApiStubs();
         ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
 
         // WHEN
@@ -325,7 +325,7 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         testGrant.setAwardStatus(AwardStatus.ACTIVE);
         passClient.createObject(testGrant);
         initSubmissionAndDeposits(testGrant, false);
-        initDspaceApiStubs("Test-Title");
+        initDspaceApiStubs();
 
         // WHEN
         deploymentTestDataService.processTestData();
@@ -339,39 +339,6 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
             any(DSpaceDepositService.AuthContext.class));
         verifyDspaceApiStubs(0, 0);
-    }
-
-    @Test
-    void testProcessTestData_DoesNotDeleteDspaceDepositIfNameMismatch() throws Exception {
-        // GIVEN
-        Grant testGrant = new Grant();
-        testGrant.setProjectName(PASS_E2E_TEST_GRANT);
-        testGrant.setAwardStatus(AwardStatus.ACTIVE);
-        passClient.createObject(testGrant);
-        initSubmissionAndDeposits(testGrant, false);
-        initDspaceApiStubs("Test-Title-Mismatch");
-        ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
-
-        // WHEN
-        deploymentTestDataService.processTestData();
-
-        // THEN
-        verifyTestGrantDeleted();
-        verify(dspaceDepositService, times(1)).deleteDeposit(
-            argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
-            any(DSpaceDepositService.AuthContext.class));
-        verify(dspaceDepositService, times(0)).deleteDeposit(
-            argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
-            any(DSpaceDepositService.AuthContext.class));
-        WireMock.verify(1, getRequestedFor(urlEqualTo("/server/api/security/csrf")));
-        WireMock.verify(1, postRequestedFor(urlEqualTo("/server/api/authn/login")));
-        WireMock.verify(1, getRequestedFor(
-            urlEqualTo("/server/api/discover/search/objects?query=handle:a.1234%2Fabcd&dsoType=item")));
-        WireMock.verify(0, getRequestedFor(urlEqualTo("/server/api/core/items/12345-aabb/bundles")));
-        WireMock.verify(0, deleteRequestedFor(urlEqualTo("/server/api/core/bundles/aa-11")));
-        WireMock.verify(0, deleteRequestedFor(urlEqualTo("/server/api/core/bundles/bb-22")));
-        WireMock.verify(0, deleteRequestedFor(urlEqualTo("/server/api/core/bundles/cc-33")));
-        WireMock.verify(0, deleteRequestedFor(urlEqualTo("/server/api/core/items/12345-aabb")));
     }
 
     private Submission initSubmissionAndDeposits(Grant testGrant, boolean skipRepoCopy) throws Exception {
@@ -415,7 +382,7 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
             RepositoryCopy repositoryCopyDspace = new RepositoryCopy();
             repositoryCopyDspace.setRepository(repositoryDspace);
             repositoryCopyDspace.setPublication(publication);
-            repositoryCopyDspace.setAccessUrl(URI.create("http://localhost:9020/handle/a.1234/abcd"));
+            repositoryCopyDspace.setAccessUrl(URI.create("http://localhost:9020/items/12345-aabb"));
             passClient.createObject(repositoryCopyDspace);
             dspaceDeposit.setRepositoryCopy(repositoryCopyDspace);
             passClient.updateObject(dspaceDeposit);
@@ -482,17 +449,11 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
         assertTrue(testSubEvents.isEmpty());
     }
 
-    private void initDspaceApiStubs(String expectedName) throws Exception {
+    private void initDspaceApiStubs() throws Exception {
         stubFor(get("/server/api/security/csrf")
             .willReturn(ok().withHeader("DSPACE-XSRF-TOKEN", "test-csrf-token")));
         stubFor(post("/server/api/authn/login")
             .willReturn(ok().withHeader("Authorization", "test-auth-token")));
-
-        String searchJson = Files.readString(
-            Paths.get(DeploymentTestDataServiceIT.class.getResource("/dspace-resp/search.json").toURI()))
-            .replaceAll("<item_name>", expectedName);
-        stubFor(get("/server/api/discover/search/objects?query=handle:a.1234%2Fabcd&dsoType=item")
-            .willReturn(ok(searchJson)));
 
         String bundlesJson = Files.readString(
             Paths.get(DeploymentTestDataServiceIT.class.getResource("/dspace-resp/bundles.json").toURI()));
@@ -513,8 +474,6 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
     private void verifyDspaceApiStubs(int expectedCount, int expectedAuthCount) {
         WireMock.verify(expectedAuthCount, getRequestedFor(urlEqualTo("/server/api/security/csrf")));
         WireMock.verify(expectedAuthCount, postRequestedFor(urlEqualTo("/server/api/authn/login")));
-        WireMock.verify(expectedCount, getRequestedFor(
-            urlEqualTo("/server/api/discover/search/objects?query=handle:a.1234%2Fabcd&dsoType=item")));
         WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/server/api/core/items/12345-aabb/bundles")));
         WireMock.verify(expectedCount, deleteRequestedFor(urlEqualTo("/server/api/core/bundles/aa-11")));
         WireMock.verify(expectedCount, deleteRequestedFor(urlEqualTo("/server/api/core/bundles/bb-22")));
