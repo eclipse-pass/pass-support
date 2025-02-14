@@ -34,8 +34,7 @@
     <logger name="org.eclipse.pass" additivity="false" level="${org.eclipse.pass.level:-WARN}">
         <appender-ref ref="STDERR"/>
     </logger>
-    <logger name="org.eclipse.pass.notification" additivity="false"
-            level="${org.eclipse.pass.notification.level:-WARN}">
+    <logger name="NOTIFICATION_LOG" additivity="false" level="${NOTIFICATION_LOG.level:-INFO}">
         <appender-ref ref="STDERR"/>
     </logger>
 </configuration>
