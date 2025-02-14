@@ -21,7 +21,7 @@ import static java.util.Optional.ofNullable;
 import java.util.Collections;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -71,7 +71,7 @@ public class LoggingAspect {
      * Pointcut for after dispatch logging.
      * @param jp the joinpoint
      */
-    @After("dispatchApiMethod()")
+    @AfterReturning("dispatchApiMethod()")
     public void logNotificationReturn(JoinPoint jp) {
         Object[] args = jp.getArgs();
         if (args == null || args.length == 0) {
