@@ -21,7 +21,7 @@ import static java.util.Optional.ofNullable;
 import java.util.Collections;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -70,10 +70,9 @@ public class LoggingAspect {
     /**
      * Pointcut for after dispatch logging.
      * @param jp the joinpoint
-     * @param id the id
      */
-    @AfterReturning(pointcut = "dispatchApiMethod()", returning = "id")
-    public void logNotificationReturn(JoinPoint jp, String id) {
+    @After("dispatchApiMethod()")
+    public void logNotificationReturn(JoinPoint jp) {
         Object[] args = jp.getArgs();
         if (args == null || args.length == 0) {
             return;
@@ -82,9 +81,8 @@ public class LoggingAspect {
         Notification n = (Notification) args[0];
 
         NOTIFICATION_LOG.info(
-            "Successfully dispatched notification with id {} to [{}], cc [{}] bcc [{}] (Notification type: {}, " +
+            "Successfully dispatched notification to [{}], cc [{}] bcc [{}] (Notification type: {}, " +
                 "Event ID: {}, Resource ID: {})",
-            id,
             join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
             join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),
             join(",", ofNullable(n.getBcc()).orElseGet(Collections::emptyList)),
