@@ -19,6 +19,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -214,6 +215,41 @@ class DeploymentTestDataServiceIT extends AbstractDepositIT {
             argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
             any(DSpaceDepositService.AuthContext.class));
         verifyDspaceApiStubs(1, 1);
+    }
+
+    @Test
+    void testProcessTestData_DeleteTestSubmissionsForTestGrantIfDSpaceAlreadyDeleted() throws Exception {
+        // GIVEN
+        Grant testGrant = new Grant();
+        testGrant.setProjectName(PASS_E2E_TEST_GRANT);
+        testGrant.setAwardStatus(AwardStatus.ACTIVE);
+        passClient.createObject(testGrant);
+        initSubmissionAndDeposits(testGrant, false);
+        stubFor(get("/server/api/security/csrf")
+            .willReturn(ok().withHeader("DSPACE-XSRF-TOKEN", "test-csrf-token")));
+        stubFor(post("/server/api/authn/login")
+            .willReturn(ok().withHeader("Authorization", "test-auth-token")));
+        stubFor(get("/server/api/core/items/12345-aabb/bundles")
+            .willReturn(notFound()));
+        stubFor(delete("/server/api/core/items/12345-aabb")
+            .willReturn(notFound()));
+        ReflectionTestUtils.setField(deploymentTestDataService, "skipDeploymentTestDeposits", Boolean.FALSE);
+
+        // WHEN
+        deploymentTestDataService.processTestData();
+
+        // THEN
+        verifyTestGrantDeleted();
+        verify(dspaceDepositService, times(1)).deleteDeposit(
+            argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestDspace")),
+            any(DSpaceDepositService.AuthContext.class));
+        verify(dspaceDepositService, times(0)).deleteDeposit(
+            argThat(deposit -> deposit.getRepository().getRepositoryKey().equals("TestNihms")),
+            any(DSpaceDepositService.AuthContext.class));
+        WireMock.verify(1, getRequestedFor(urlEqualTo("/server/api/security/csrf")));
+        WireMock.verify(1, postRequestedFor(urlEqualTo("/server/api/authn/login")));
+        WireMock.verify(1, getRequestedFor(urlEqualTo("/server/api/core/items/12345-aabb/bundles")));
+        WireMock.verify(1, deleteRequestedFor(urlEqualTo("/server/api/core/items/12345-aabb")));
     }
 
     @Test

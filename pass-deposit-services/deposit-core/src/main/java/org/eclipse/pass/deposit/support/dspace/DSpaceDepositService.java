@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -179,13 +180,21 @@ public class DSpaceDepositService {
 
     private  List<String> findBundleUuids(String itemUuid, AuthContext authContext) {
         LOG.warn("Search Dspace for item bundles with item UUID={}",  itemUuid);
-        String bundlesResponse = restClient.get()
-            .uri("/core/items/{itemUuid}/bundles", itemUuid)
-            .accept(MediaType.APPLICATION_JSON)
-            .header(AUTHORIZATION, authContext.authToken())
-            .retrieve()
-            .body(String.class);
-        return JsonPath.parse(bundlesResponse).read("$..bundles[*].uuid");
+        try {
+            String bundlesResponse = restClient.get()
+                .uri("/core/items/{itemUuid}/bundles", itemUuid)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(AUTHORIZATION, authContext.authToken())
+                .retrieve()
+                .body(String.class);
+            return JsonPath.parse(bundlesResponse).read("$..bundles[*].uuid");
+        } catch (RestClientResponseException clientResponseException) {
+            if (clientResponseException.getStatusCode() == HttpStatus.NOT_FOUND) {
+                LOG.error("Delete Bundle UUIDs Not Found: {}", itemUuid);
+                return List.of();
+            }
+            throw clientResponseException;
+        }
     }
 
     private void deleteBundle(String bundleUuid, AuthContext authContext) {
@@ -203,15 +212,23 @@ public class DSpaceDepositService {
 
     private void deleteItem(String itemUuid, AuthContext authContext) {
         LOG.warn("Deleting item UUID={}", itemUuid);
-        restClient.delete()
-            .uri("/core/items/{itemUuid}", itemUuid)
-            .accept(MediaType.APPLICATION_JSON)
-            .header(AUTHORIZATION, authContext.authToken())
-            .header(X_XSRF_TOKEN, authContext.xsrfToken())
-            .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
-            .retrieve()
-            .toBodilessEntity();
-        LOG.warn("Deleted item UUID={}", itemUuid);
+        try {
+            restClient.delete()
+                .uri("/core/items/{itemUuid}", itemUuid)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(AUTHORIZATION, authContext.authToken())
+                .header(X_XSRF_TOKEN, authContext.xsrfToken())
+                .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
+                .retrieve()
+                .toBodilessEntity();
+            LOG.warn("Deleted item UUID={}", itemUuid);
+        } catch (RestClientResponseException clientResponseException) {
+            if (clientResponseException.getStatusCode() == HttpStatus.NOT_FOUND) {
+                LOG.error("Delete Item Not Found: {}", itemUuid);
+                return;
+            }
+            throw clientResponseException;
+        }
     }
 
     public String getUuidForHandle(String handle, AuthContext authContext) {
