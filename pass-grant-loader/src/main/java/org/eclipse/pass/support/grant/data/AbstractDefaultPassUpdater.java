@@ -611,7 +611,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         if (Objects.nonNull(passUser)) {
             User updatedUser = updateUserIfNeeded(systemUser, passUser);
             if (Objects.nonNull(updatedUser)) { //need to update
-                //post COEUS processing goes here
+                //post Grant database processing goes here
                 if (!updatedUser.getRoles().contains(UserRole.SUBMITTER)) {
                     updatedUser.getRoles().add(UserRole.SUBMITTER);
                 }

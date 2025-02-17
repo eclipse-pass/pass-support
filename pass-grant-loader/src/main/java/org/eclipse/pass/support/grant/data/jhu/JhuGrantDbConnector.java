@@ -16,14 +16,17 @@
 package org.eclipse.pass.support.grant.data.jhu;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,31 +44,28 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * This class connects to a COEUS database via the Oracle JDBC driver. The query string reflects local JHU
+ * This class connects to a JHU Grant database. The query string reflects local JHU
  * database views
  *
  * @author jrm@jhu.edu
  */
 @Component
 @Profile("jhu")
-public class CoeusConnector implements GrantConnector {
-    private static final Logger LOG = LoggerFactory.getLogger(CoeusConnector.class);
+public class JhuGrantDbConnector implements GrantConnector {
+    private static final Logger LOG = LoggerFactory.getLogger(JhuGrantDbConnector.class);
 
     static final String C_GRANT_AWARD_NUMBER = "AWARD_ID";
     static final String C_GRANT_AWARD_STATUS = "AWARD_STATUS";
-    static final String C_GRANT_LOCAL_KEY = "GRANT_NUMBER";
+    static final String C_GRANT_LOCAL_KEY = "SAP_GRANT_NUMBER";
     static final String C_GRANT_PROJECT_NAME = "TITLE";
     static final String C_GRANT_AWARD_DATE = "AWARD_DATE";
-    static final String C_GRANT_START_DATE = "AWARD_START";
-    static final String C_GRANT_END_DATE = "AWARD_END";
+    static final String C_GRANT_START_DATE = "AWARD_START_DATE";
+    static final String C_GRANT_END_DATE = "AWARD_END_DATE";
 
-    static final String C_DIRECT_FUNDER_LOCAL_KEY = "SPOSNOR_CODE";// misspelling in COEUS view - if this gets
-    // corrected
-    //it will collide with C_PRIMARY_SPONSOR_CODE below - this field will then have to be aliased in order to
-    //access it in the ResultSet
-    static final String C_DIRECT_FUNDER_NAME = "SPONSOR";
-    static final String C_PRIMARY_FUNDER_LOCAL_KEY = "SPONSOR_CODE";
-    static final String C_PRIMARY_FUNDER_NAME = "SPONSOR_NAME";
+    static final String C_DIRECT_FUNDER_LOCAL_KEY = "SPONSOR_CODE";
+    static final String C_DIRECT_FUNDER_NAME = "SPONSOR_NAME";
+    static final String C_PRIMARY_FUNDER_LOCAL_KEY = "PRIME_SPONSOR_CODE";
+    static final String C_PRIMARY_FUNDER_NAME = "PRIME_SPONSOR_NAME";
 
     static final String C_USER_FIRST_NAME = "FIRST_NAME";
     static final String C_USER_MIDDLE_NAME = "MIDDLE_NAME";
@@ -76,7 +76,7 @@ public class CoeusConnector implements GrantConnector {
 
     //these fields are accessed for processing, but are not mapped to PASS objects
     static final String C_UPDATE_TIMESTAMP = "UPDATE_TIMESTAMP";
-    static final String C_ABBREVIATED_ROLE = "ABBREVIATED_ROLE";
+    static final String C_ABBREVIATED_ROLE = "ROLE";
 
     private static final String SELECT_GRANT_SQL =
         "SELECT " +
@@ -88,7 +88,9 @@ public class CoeusConnector implements GrantConnector {
         "A." + C_GRANT_START_DATE + ", " +
         "A." + C_GRANT_END_DATE + ", " +
         "A." + C_DIRECT_FUNDER_NAME + ", " +
-        "A." + C_DIRECT_FUNDER_LOCAL_KEY + ", " + //"SPOSNOR_CODE"
+        "A." + C_DIRECT_FUNDER_LOCAL_KEY + ", " +
+        "A." + C_PRIMARY_FUNDER_NAME + ", " +
+        "A." + C_PRIMARY_FUNDER_LOCAL_KEY + ", " +
         "A." + C_UPDATE_TIMESTAMP + ", " +
         "B." + C_ABBREVIATED_ROLE + ", " +
         "B." + C_USER_EMPLOYEE_ID + ", " +
@@ -96,60 +98,62 @@ public class CoeusConnector implements GrantConnector {
         "C." + C_USER_MIDDLE_NAME + ", " +
         "C." + C_USER_LAST_NAME + ", " +
         "C." + C_USER_EMAIL + ", " +
-        "C." + C_USER_INSTITUTIONAL_ID + ", " +
-        "D." + C_PRIMARY_FUNDER_NAME + ", " +
-        "D." + C_PRIMARY_FUNDER_LOCAL_KEY + " " +
-        "FROM " +
-        "COEUS.JHU_FACULTY_FORCE_PROP A " +
-        "INNER JOIN COEUS.JHU_FACULTY_FORCE_PRSN B ON A.INST_PROPOSAL = B.INST_PROPOSAL " +
-        "INNER JOIN COEUS.JHU_FACULTY_FORCE_PRSN_DETAIL C ON B.EMPLOYEE_ID = C.EMPLOYEE_ID " +
-        "LEFT JOIN COEUS.SWIFT_SPONSOR D ON A.PRIME_SPONSOR_CODE = D.SPONSOR_CODE " +
-        "WHERE (B.ABBREVIATED_ROLE = 'P' OR B.ABBREVIATED_ROLE = 'C' " +
-        "OR REGEXP_LIKE (UPPER(B.ROLE), '^CO ?-?INVESTIGATOR$')) " +
-        "AND TO_DATE(A.AWARD_END, 'MM/DD/YYYY') >= TO_DATE('01/01/2011', 'MM/DD/YYYY') "  +
-        "AND A.PROPOSAL_STATUS = 'Funded' " +
-        "AND A.GRANT_NUMBER IS NOT NULL " +
+        "C." + C_USER_INSTITUTIONAL_ID + " " +
+        "FROM JHU_PASS_AWD_VIEW A, " +
+        "JHU_FIBI_IP_INV_VIEW B, " +
+        "JHU_PERSON_VIEW C " +
+        "WHERE A.inst_proposal = B.inst_proposal " +
+        "AND B.employee_id = C.employee_id " +
+        "AND A.AWARD_END_DATE >= '2011-01-01' "  +
+        "AND B.ROLE != 'KP' "  +
         "AND EXISTS (" +
-        "    select * from COEUS.JHU_FACULTY_FORCE_PROP EA where" +
+        "    select * from JHU_PASS_AWD_VIEW EA where" +
         "        EA.UPDATE_TIMESTAMP > ?" +
-        "        AND EA.GRANT_NUMBER = A.GRANT_NUMBER" +
-        "        AND TO_DATE(EA.AWARD_END, 'MM/DD/YYYY') >= TO_DATE(?, 'MM/DD/YYYY')" +
-        "        AND EA.PROPOSAL_STATUS = 'Funded' ";
+        "        and EA.SAP_GRANT_NUMBER = A.SAP_GRANT_NUMBER" +
+        "        AND EA.AWARD_END_DATE >= ? ";
 
     private static final String SELECT_USER_SQL =
         "SELECT " +
-            C_USER_FIRST_NAME + ", " +
-            C_USER_MIDDLE_NAME + ", " +
-            C_USER_LAST_NAME + ", " +
-            C_USER_EMAIL + ", " +
-            C_USER_INSTITUTIONAL_ID + ", " +
-            C_USER_EMPLOYEE_ID + ", " +
-            C_UPDATE_TIMESTAMP + " " +
-            "FROM COEUS.JHU_FACULTY_FORCE_PRSN_DETAIL " +
-            "WHERE UPDATE_TIMESTAMP > ?";
+            "A." + C_USER_FIRST_NAME + ", " +
+            "A." + C_USER_MIDDLE_NAME + ", " +
+            "A." + C_USER_LAST_NAME + ", " +
+            "A." + C_USER_EMAIL + ", " +
+            "A." + C_USER_INSTITUTIONAL_ID + ", " +
+            "B." + C_USER_EMPLOYEE_ID + ", " +
+            "A." + C_UPDATE_TIMESTAMP + " " +
+            "FROM JHU_PERSON_VIEW A, " +
+            "JHU_FIBI_IP_INV_VIEW B " +
+            "WHERE A.employee_id = B.employee_id " +
+            "and A.UPDATE_TIMESTAMP > ?";
 
     private static final String SELECT_FUNDER_SQL =
         "SELECT " +
-            C_PRIMARY_FUNDER_NAME + ", " +
-            C_PRIMARY_FUNDER_LOCAL_KEY + " " +
-            "FROM COEUS.SWIFT_SPONSOR " +
+            C_DIRECT_FUNDER_NAME + ", " +
+            C_DIRECT_FUNDER_LOCAL_KEY + " " +
+            "FROM JHU_SPONSOR_VIEW " +
             "WHERE SPONSOR_CODE IN (%s)";
 
+    private final Map<String, String> jhuGrantDbRoleMapping = Map.of(
+        "PI", "P",
+        "Co-PI", "C",
+        "Co-I", "C"
+    );
+
     @Value("${grant.db.url}")
-    private String coeusUrl;
+    private String grantDbUrl;
 
     @Value("${grant.db.username}")
-    private String coeusUser;
+    private String grantDbUser;
 
     @Value("${grant.db.password}")
-    private String coeusPassword;
+    private String grantDbPassword;
 
     private final Set<String> funderIds;
 
     /**
      * Class constructor.
      */
-    public CoeusConnector(@Qualifier("policyProperties") Properties policyProperties) {
+    public JhuGrantDbConnector(@Qualifier("policyProperties") Properties policyProperties) {
         this.funderIds = policyProperties.stringPropertyNames();
     }
 
@@ -170,13 +174,16 @@ public class CoeusConnector implements GrantConnector {
         String sql = buildGrantQueryString(grant);
         List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
 
+        LOG.info("Retrieving Grants from JHU Grant DB using start date={}, award end date={}", startDate, awardEndDate);
+
         try (
-            Connection con = DriverManager.getConnection(coeusUrl, coeusUser, coeusPassword);
+            Connection con = DriverManager.getConnection(grantDbUrl, grantDbUser, grantDbPassword);
             PreparedStatement ps = con.prepareStatement(sql);
         ) {
             LocalDateTime startLd = LocalDateTime.from(DateTimeUtil.DATE_TIME_FORMATTER.parse(startDate));
             ps.setTimestamp(1, Timestamp.valueOf(startLd));
-            ps.setString(2, awardEndDate);
+            LocalDate awardEndFilter = LocalDate.from(DateTimeUtil.DATE_TIME_FORMATTER.parse(awardEndDate));
+            ps.setDate(2, Date.valueOf(awardEndFilter));
             if (StringUtils.isNotEmpty(grant)) {
                 ps.setString(3, grant);
             }
@@ -192,7 +199,9 @@ public class CoeusConnector implements GrantConnector {
                     grantIngestRecord.setAwardStart(rs.getString(C_GRANT_START_DATE));
                     grantIngestRecord.setAwardEnd(rs.getString(C_GRANT_END_DATE));
                     grantIngestRecord.setDirectFunderName(rs.getString(C_DIRECT_FUNDER_NAME));
+                    grantIngestRecord.setDirectFunderCode(rs.getString(C_DIRECT_FUNDER_LOCAL_KEY));
                     grantIngestRecord.setPrimaryFunderName(rs.getString(C_PRIMARY_FUNDER_NAME));
+                    grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
                     grantIngestRecord.setPiFirstName(rs.getString(C_USER_FIRST_NAME));
                     grantIngestRecord.setPiMiddleName(rs.getString(C_USER_MIDDLE_NAME));
                     grantIngestRecord.setPiLastName(rs.getString(C_USER_LAST_NAME));
@@ -200,9 +209,9 @@ public class CoeusConnector implements GrantConnector {
                     grantIngestRecord.setPiEmployeeId(rs.getString(C_USER_EMPLOYEE_ID));
                     grantIngestRecord.setPiInstitutionalId(rs.getString(C_USER_INSTITUTIONAL_ID));
                     grantIngestRecord.setUpdateTimeStamp(rs.getString(C_UPDATE_TIMESTAMP));
-                    grantIngestRecord.setPiRole(rs.getString(C_ABBREVIATED_ROLE));
-                    grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
-                    grantIngestRecord.setDirectFunderCode(rs.getString(C_DIRECT_FUNDER_LOCAL_KEY));
+                    grantIngestRecord.setPiRole(
+                        jhuGrantDbRoleMapping.get(rs.getString(C_ABBREVIATED_ROLE))
+                    );
                     LOG.debug("Record processed: {}", grantIngestRecord);
                     if (!grantIngestRecords.contains(grantIngestRecord)) {
                         grantIngestRecords.add(grantIngestRecord);
@@ -210,14 +219,14 @@ public class CoeusConnector implements GrantConnector {
                 }
             }
         }
-        LOG.info("Retrieved result set from COEUS: {} records processed", grantIngestRecords.size());
+        LOG.info("Retrieved Grants result set from JHU Grant DB: {} records processed", grantIngestRecords.size());
         return grantIngestRecords;
     }
 
     private String buildGrantQueryString(String grant) {
         return StringUtils.isEmpty(grant)
-            ? SELECT_GRANT_SQL + "AND EA.GRANT_NUMBER IS NOT NULL)"
-            : SELECT_GRANT_SQL + "AND EA.GRANT_NUMBER = ?)";
+            ? SELECT_GRANT_SQL + ")"
+            : SELECT_GRANT_SQL + "AND EA.SAP_GRANT_NUMBER = ?)";
     }
 
     private List<GrantIngestRecord> retrieveFunderUpdates(Set<String> funderIds) throws SQLException {
@@ -225,7 +234,7 @@ public class CoeusConnector implements GrantConnector {
         String funderSql = String.format(SELECT_FUNDER_SQL,
             funderIds.stream().map(v -> "?").collect(Collectors.joining(", ")));
         try (
-            Connection con = DriverManager.getConnection(coeusUrl, coeusUser, coeusPassword);
+            Connection con = DriverManager.getConnection(grantDbUrl, grantDbUser, grantDbPassword);
             PreparedStatement ps = con.prepareStatement(funderSql);
         ) {
             int index = 1;
@@ -235,19 +244,20 @@ public class CoeusConnector implements GrantConnector {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) { //these are the field names in the swift sponsor view
                     GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
-                    grantIngestRecord.setPrimaryFunderCode(rs.getString(C_PRIMARY_FUNDER_LOCAL_KEY));
-                    grantIngestRecord.setPrimaryFunderName(rs.getString(C_PRIMARY_FUNDER_NAME));
+                    grantIngestRecord.setPrimaryFunderCode(rs.getString(C_DIRECT_FUNDER_LOCAL_KEY));
+                    grantIngestRecord.setPrimaryFunderName(rs.getString(C_DIRECT_FUNDER_NAME));
                     grantIngestRecords.add(grantIngestRecord);
                 }
             }
         }
+        LOG.info("Retrieved Funders result set from JHU Grant DB: {} records processed", grantIngestRecords.size());
         return grantIngestRecords;
     }
 
     private List<GrantIngestRecord> retrieveUserUpdates(String startDate) throws SQLException {
         List<GrantIngestRecord> grantIngestRecords = new ArrayList<>();
         try (
-            Connection con = DriverManager.getConnection(coeusUrl, coeusUser, coeusPassword);
+            Connection con = DriverManager.getConnection(grantDbUrl, grantDbUser, grantDbPassword);
             PreparedStatement ps = con.prepareStatement(SELECT_USER_SQL);
         ) {
             LocalDateTime startLd = LocalDateTime.from(DateTimeUtil.DATE_TIME_FORMATTER.parse(startDate));
@@ -269,7 +279,7 @@ public class CoeusConnector implements GrantConnector {
                 }
             }
         }
-        LOG.info("Retrieved Users result set from COEUS: {} records processed", grantIngestRecords.size());
+        LOG.info("Retrieved Users result set from JHU Grant DB: {} records processed", grantIngestRecords.size());
         return grantIngestRecords;
     }
 

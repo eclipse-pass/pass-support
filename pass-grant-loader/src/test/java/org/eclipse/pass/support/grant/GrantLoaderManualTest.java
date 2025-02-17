@@ -15,29 +15,72 @@
  */
 package org.eclipse.pass.support.grant;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.io.IOException;
+
+import org.eclipse.pass.support.client.PassClient;
+import org.eclipse.pass.support.client.PassClientResult;
+import org.eclipse.pass.support.client.PassClientSelector;
+import org.eclipse.pass.support.client.RSQL;
+import org.eclipse.pass.support.client.model.Grant;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
+/**
+ * @author Russ Poetker (rpoetke1@jh.edu)
+ */
+@SpringBootTest
+@TestPropertySource("classpath:test-application.properties")
 public class GrantLoaderManualTest {
 
+    @Autowired private GrantLoaderApp grantLoaderApp;
+    @MockBean private GrantLoaderCLIRunner grantLoaderCLIRunner;
+
     /**
-     * This is a manual test that can run locally to test pulling the COEUS data into a file.
-     * You need to set the system prop APP_HOME to the path of the test/resouces dir.
-     * You also need the connection.properties file in test/resources which contains connection props
-     * for COEUS and the Directory Service.
+     * This is a manual test that can run locally to test pulling the grant data into a file.
+     * You also need the grant db connection props in the test-application.properties file.
      * Be careful with the startDateTime to no pull too much data.  Know what the impact is on pulling
      * data before running this test.
      */
     @Disabled
     @Test
-    public void testPullCoeusFile() {
-        System.setProperty(
-                "APP_HOME",
-                "full_path_to/pass-support/pass-grant-loader/pass-grant-cli/src/test/resources"
-        );
-        String[] args = {"-a", "pull", "-s", "2023-04-01 00:00:00.000", "-z", "04/01/2023",
-            "full_path_to/testresults"};
-        GrantLoaderCLI.main(args);
+    public void testPullGrantFile() throws PassCliException {
+        grantLoaderApp.run("2023-04-01 00:00:00", "2023-04-01",
+            "grant", "pull", "file:./src/test/resources/your-file.csv", null);
+    }
+
+    /**
+     * This is a manual test that can run locally to test loading the grant data.
+     * You also need to set the test pass.core props in the test-application.properties file.
+     */
+    @Disabled
+    @Test
+    public void testLoadGrantFile() throws PassCliException {
+        grantLoaderApp.run("2023-04-01 00:00:00", "2023-04-01",
+            "grant", "load", "file:./src/test/resources/your-file.csv", null);
+    }
+
+    @Disabled
+    @Test
+    void testCheckGrant() throws IOException {
+        System.setProperty("pass.core.url","http://localhost:8080");
+        System.setProperty("pass.core.user","<test_user>");
+        System.setProperty("pass.core.password","<test_pw>");
+        PassClient passClient = PassClient.newInstance();
+
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:143377"));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant.getTotal());
+        Grant passGrant = resultGrant.getObjects().get(0);
+        assertNotNull(passGrant);
     }
 
 }
