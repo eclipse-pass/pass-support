@@ -20,7 +20,7 @@
 
     <properties>
         <!-- Properties for dependency versions -->
-        <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>
+        <spring-boot-maven-plugin.version>3.4.2</spring-boot-maven-plugin.version>
         <awsspring.version>3.2.1</awsspring.version>
         <org-json.version>20240303</org-json.version>
         <commons.csv.version>1.12.0</commons.csv.version>
@@ -73,6 +73,21 @@
                 <artifactId>joda-time</artifactId>
                 <version>${joda-time.version}</version>
             </dependency>
+
+            <!-- The following deps were declared to resolve CVEs from transitive deps. -->
+            <!-- These should all be checked whenever deps are upgraded. Should be removed if possible once parent -->
+            <!-- dep updates with fixed version. -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>4.1.118.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-common</artifactId>
+                <version>4.1.118.Final</version>
+            </dependency>
+            <!-- End of transitive deps with CVE issues. -->
 
         </dependencies>
     </dependencyManagement>
