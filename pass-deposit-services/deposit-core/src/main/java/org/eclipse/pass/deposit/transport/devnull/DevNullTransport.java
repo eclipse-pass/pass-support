@@ -22,6 +22,7 @@ import java.util.Map;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.service.DepositUtil;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
@@ -67,6 +68,8 @@ public class DevNullTransport implements Transport {
 
         @Override
         public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
+            DepositSubmission depositSubmission = packageStream.getDepositSubmission();
+            LOG.warn("Processing Deposit to DevNull for Submission: {}", depositSubmission.getId());
             // no-op, just return successful response
             return new TransportResponse() {
                 @Override

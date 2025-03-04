@@ -30,8 +30,8 @@ import org.eclipse.pass.support.client.model.Deposit;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -41,7 +41,7 @@ import org.springframework.test.context.TestPropertySource;
 })
 public class DepositListenerIT extends AbstractListenerIT {
 
-    @MockBean private DepositProcessor depositProcessor;
+    @MockitoBean private DepositProcessor depositProcessor;
     @Captor ArgumentCaptor<Deposit> messageCaptor;
 
     @Test

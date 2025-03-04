@@ -67,8 +67,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -87,7 +87,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class DeploymentTestDataServiceIT extends AbstractDepositIT {
 
     @Autowired private DeploymentTestDataService deploymentTestDataService;
-    @SpyBean private DSpaceDepositService dspaceDepositService;
+    @MockitoSpyBean private DSpaceDepositService dspaceDepositService;
 
     @BeforeEach
     public void initPolicyAndUser() throws IOException {

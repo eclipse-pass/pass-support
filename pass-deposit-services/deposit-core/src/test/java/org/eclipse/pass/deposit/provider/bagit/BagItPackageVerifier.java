@@ -17,9 +17,9 @@ package org.eclipse.pass.deposit.provider.bagit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -89,7 +89,7 @@ public class BagItPackageVerifier implements PackageVerifier {
 
         // Directory under which the payload (i.e. custodial content of the submission) will be found
         final File payloadDir = new File(explodedPackage.getExplodedDir(), BagItPackageProvider.PAYLOAD_DIR);
-        assertTrue("Missing payload directory: " + payloadDir, payloadDir.exists());
+        assertTrue(payloadDir.exists());
 
         // Maps payload file to a DepositFile
         final BiFunction<File, File, DepositFile> MAPPER = (packageDir, payloadFile) -> {
@@ -132,7 +132,7 @@ public class BagItPackageVerifier implements PackageVerifier {
         }
 
         // must be at least one checksum specified in the package options
-        assertTrue("Package options must specify at least one checksum.", checksums.size() > 0);
+        assertFalse(checksums.isEmpty());
         checksums.forEach(algorithm -> {
             File manifest = new File(explodedPackage.getExplodedDir(),
                                      String.format(BagItPackageProvider.PAYLOAD_MANIFEST_TMPL,
@@ -212,7 +212,7 @@ public class BagItPackageVerifier implements PackageVerifier {
      * @see <a href="https://tools.ietf.org/html/rfc8493#section-2.2.1">RFC 8439 §2.2.1</a>
      */
     protected void verifyTagManifest(File packageDir, File tagManifestFile, Checksum.OPTS algo) {
-        assertTrue("Missing expected tag manifest '" + tagManifestFile + "'", tagManifestFile.exists());
+        assertTrue(tagManifestFile.exists());
 
         assertEquals(String.format(BagItPackageProvider.TAG_MANIFEST_TMPL, algo.name().toLowerCase()),
                      tagManifestFile.getName());
@@ -267,7 +267,7 @@ public class BagItPackageVerifier implements PackageVerifier {
     protected void verifyManifest(List<DepositFile> payload, File packageDir, File manifestFile, Checksum.OPTS algo) {
 
         // Insure the manifest file exists
-        assertTrue("Missing expected manifest file '" + manifestFile + "'", manifestFile.exists());
+        assertTrue(manifestFile.exists());
 
         // verify name of the manifest file conforms to the spec
         assertEquals(String.format(BagItPackageProvider.PAYLOAD_MANIFEST_TMPL,
@@ -292,10 +292,8 @@ public class BagItPackageVerifier implements PackageVerifier {
                 relative = BagItPackageProvider.PAYLOAD_DIR + "/" + encodedLocation;
             }
             File expectedPayloadFile = new File(packageDir, relative);
-            assertTrue("Missing expected payload file '" + expectedPayloadFile + "'", expectedPayloadFile.exists());
-            assertTrue(
-                "Missing payload file '" + relative + "' from the manifest (package directory: " + packageDir + "')",
-                manifest.containsKey(relative));
+            assertTrue(expectedPayloadFile.exists());
+            assertTrue(manifest.containsKey(relative));
         });
 
         // make sure each file in the manifest is present in the payload
