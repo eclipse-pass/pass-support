@@ -21,8 +21,8 @@ import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
 import static org.apache.commons.io.filefilter.FileFilterUtils.or;
 import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.BULK_META_FILENAME;
 import static org.eclipse.pass.deposit.provider.nihms.NihmsAssembler.MANIFEST_FILENAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileFilter;

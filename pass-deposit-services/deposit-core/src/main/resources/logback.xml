@@ -50,14 +50,6 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
-  <!-- DEBUG level will show logs for sword client requests/responses. -->
-  <logger name="org.swordapp.client" additivity="false" level="${org.swordapp.client:-WARN}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-  <logger name="org.apache.commons.httpclient" additivity="false" level="${org.apache.commons.httpclient:-WARN}">
-    <appender-ref ref="STDERR"/>
-  </logger>
-
   <!-- Cross-cutting loggers -->
 
   <logger name="WORKERS_LOGGER" additivity="false"

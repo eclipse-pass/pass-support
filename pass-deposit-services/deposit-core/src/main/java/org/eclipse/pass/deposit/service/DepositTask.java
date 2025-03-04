@@ -40,7 +40,6 @@ import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.deposit.transport.TransportResponse;
 import org.eclipse.pass.deposit.transport.TransportSession;
-import org.eclipse.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.CopyStatus;
 import org.eclipse.pass.support.client.model.Deposit;
@@ -74,14 +73,6 @@ public class DepositTask {
     private final DepositWorkerContext dc;
     private final PassClient passClient;
     private final CriticalRepositoryInteraction cri;
-
-    private long swordSleepTimeMs = 10000;
-
-    // e.g. http://dspace-prod.mse.jhu.edu:8080/swordv2
-    private String prefixToMatch;
-
-    // e.g. https://jscholarship.library.jhu.edu/swordv2
-    private String replacementPrefix;
 
     public DepositTask(DepositWorkerContext dc,
                        PassClient passClient,
@@ -137,73 +128,8 @@ public class DepositTask {
                                       dc.deposit()));
 
         // Determine *logical* success: was the Deposit accepted by the remote system?
-
-        // TODO: clean up
-        // TODO: refactor to the onSuccess(...) TransportResponse handler?
-        if (transportResponse instanceof Sword2DepositReceiptResponse) {
-            String statementUri = null;
-            String itemUri = null;
-            try {
-                Sword2DepositReceiptResponse swordResponse = (Sword2DepositReceiptResponse) transportResponse;
-
-                // deposit receipt -> SWORD Statement (ORE ReM/Atom XML) -> sword:state
-                if (swordResponse.getReceipt().getSplashPageLink() != null) {
-                    itemUri = swordResponse.getReceipt().getSplashPageLink().getHref();
-                }
-
-                // deposit receipt -> DSpace Item URL
-                statementUri = swordResponse.getReceipt().getAtomStatementLink().getIRI().toURI().toString();
-
-                if (prefixToMatch != null && statementUri.startsWith(prefixToMatch) && replacementPrefix != null) {
-                    String newUri = statementUri.replace(prefixToMatch, replacementPrefix);
-                    LOG.trace("Replacing Atom Statement URI '{}' with '{}'", statementUri, newUri);
-                    statementUri = newUri;
-                } else {
-                    LOG.trace("Prefix '{}' did not match Atom Statement URI '{}', no replacement will take place.",
-                              prefixToMatch == null ? "<null>" : prefixToMatch, statementUri);
-                }
-            } catch (Exception e) {
-                String msg = format("Failed to update deposit status to %s for tuple [%s, %s, %s]; " +
-                                    "parsing the Atom statement %s for %s failed: %s",
-                                    DepositStatus.ACCEPTED, dc.submission().getId(), dc.repository().getId(),
-                                    dc.deposit().getId(), statementUri, dc.deposit().getId(), e.getMessage());
-                throw new DepositServiceRuntimeException(msg, e, dc.deposit());
-            }
-
-            // Update and persist the Deposit and RepositoryCopy in the repository
-
-            String finalStatementUri = statementUri;
-            String finalItemUri = itemUri;
-            CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(
-                dc.deposit().getId(),
-                Deposit.class,
-                (criDeposit) -> true,
-                TransportResponseUpdateFunc.verifyResourceState(dc),
-                TransportResponseUpdateFunc.updateResources(finalStatementUri, finalItemUri, passClient, dc));
-
-            if (!cr.success()) {
-                if (cr.throwable().isPresent()) {
-                    Throwable t = cr.throwable().get();
-                    if (t instanceof DepositServiceRuntimeException) {
-                        throw (DepositServiceRuntimeException) t;
-                    }
-
-                    if (t instanceof RuntimeException) {
-                        throw (RuntimeException) t;
-                    }
-
-                    throw new RuntimeException(t.getMessage(), t);
-                } else {
-                    throw new RuntimeException(format("Failed updating Deposit and RepositoryCopy for tuple " +
-                                                      "[%s, %s, %s]", dc.submission().getId(), dc.repository().getId(),
-                                                      dc.deposit().getId()));
-                }
-            }
-        }
-
-        // If a RepositoryCopy wasn't created by the Sword2DepositReceiptResponse, create an IN_PROGRESS placeholder
-        // copy, attach the Deposit to the placeholder.  Then supply the Submission, Deposit, and RepositoryCopy to
-        // the onSuccess(...) handler of the TransportResponse
+        // Create an IN_PROGRESS placeholder copy, attach the Deposit to the placeholder.  Then supply the Submission,
+        // Deposit, and RepositoryCopy to the onSuccess(...) handler of the TransportResponse
 
         if (dc.repoCopy() == null) {
             RepositoryCopy repoCopy = TransportResponseUpdateFunc.newRepositoryCopy(dc, "", CopyStatus.IN_PROGRESS)
@@ -223,18 +149,6 @@ public class DepositTask {
         transportResponse.onSuccess(dc, passClient);
     }
 
-    public void setPrefixToMatch(String prefixToMatch) {
-        this.prefixToMatch = prefixToMatch;
-    }
-
-    public void setReplacementPrefix(String replacementPrefix) {
-        this.replacementPrefix = replacementPrefix;
-    }
-
-    public void setSwordSleepTimeMs(long swordSleepTimeMs) {
-        this.swordSleepTimeMs = swordSleepTimeMs;
-    }
-
     @Override
     public String toString() {
         return "DepositTask{" + "dc=" + dc + ", passClient=" + passClient + '}';
@@ -248,10 +162,6 @@ public class DepositTask {
      * <p>
      * Provides a {@code Function} that sets {@link Deposit#getDepositStatusRef() Deposit.depositStatusRef} on the
      * supplied {@code Deposit} and creates a {@link RepositoryCopy} with default state.
-     * </p>
-     * <p>
-     * In the case of a SWORD2 Transport Response from DSpace, the {@code Deposit.depositStatusRef} will be a URL to the
-     * SWORD2 statement, and {@code RespositoryCopy.externalIds} will contain a URL to the Item ingested into DSpace.
      * </p>
      * <p>
      * The default state of the {@code RepositoryCopy} created by the {@code Function} is (note that the URI for the
@@ -269,8 +179,6 @@ public class DepositTask {
      *     <dd>the URI provided to this function</dd>
      * </dl>
      * </p>
-     *
-     * @see <a href="https://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement">SWORDv2 Profile §11</a>
      */
     static class TransportResponseUpdateFunc {
 

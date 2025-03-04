@@ -49,7 +49,6 @@ import java.util.function.Predicate;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.builder.DepositSubmissionModelBuilder;
-import org.eclipse.pass.deposit.config.repository.Repositories;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.eclipse.pass.deposit.model.DepositFile;
@@ -82,14 +81,13 @@ public class SubmissionProcessorTest {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setUp() throws Exception {
+    public void setUp() {
         passClient = mock(PassClient.class);
         depositSubmissionModelBuilder = mock(DepositSubmissionModelBuilder.class);
         packagerRegistry = mock(Registry.class);
         cri = mock(CriticalRepositoryInteraction.class);
-        Repositories repositories = mock(Repositories.class);
         DevNullTransport devNullTransport = mock(DevNullTransport.class);
-        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, cri, repositories, devNullTransport);
+        DepositTaskHelper depositTaskHelper = new DepositTaskHelper(passClient, cri, devNullTransport);
         ReflectionTestUtils.setField(depositTaskHelper, "skipDeploymentTestDeposits", true);
         ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", true);
         depositServiceErrorHandler = mock(DepositServiceErrorHandler.class);

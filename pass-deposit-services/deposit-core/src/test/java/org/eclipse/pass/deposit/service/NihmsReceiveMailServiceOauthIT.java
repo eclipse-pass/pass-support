@@ -16,8 +16,10 @@
 package org.eclipse.pass.deposit.service;
 
 import org.eclipse.pass.deposit.DepositApp;
+import org.eclipse.pass.deposit.config.spring.email.Oauth2ExchangeMailAuthenticator;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -40,4 +42,5 @@ import org.springframework.test.context.TestPropertySource;
 })
 public class NihmsReceiveMailServiceOauthIT extends AbstractNihmsReceiveMailServiceIT {
     // Test is in abstract class; important config params for imap oauth auth in test annotations in this class.
+    @MockitoBean private Oauth2ExchangeMailAuthenticator mockAuthenticator;
 }
