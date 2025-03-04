@@ -105,10 +105,7 @@ class DepositTaskIT extends AbstractDepositIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
-        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
-            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
-        stubFor(post("/dspace/api/authn/login")
-            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
+        initDSpaceApiStubsForError();
 
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
@@ -163,10 +160,7 @@ class DepositTaskIT extends AbstractDepositIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(false);
-        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
-            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
-        stubFor(post("/dspace/api/authn/login")
-            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
+        initDSpaceApiStubsForError();
 
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());

@@ -74,6 +74,13 @@ public abstract class AbstractSubmissionIT extends AbstractDepositSubmissionIT {
         stubFor(post("/dspace/api/workflow/workflowitems").willReturn(WireMock.ok()));
     }
 
+    protected void initDSpaceApiStubsForError() {
+        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
+            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
+        stubFor(post("/dspace/api/authn/login")
+            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
+    }
+
     protected void verifyDSpaceApiStubs(int expectedCount) {
         WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/dspace/api/security/csrf")));
         WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/authn/login")));

@@ -91,10 +91,7 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         // GIVEN
         Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
-        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
-            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
-        stubFor(post("/dspace/api/authn/login")
-            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
+        initDSpaceApiStubsForError();
 
         // WHEN
         try {
@@ -176,10 +173,7 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         // GIVEN
         ReflectionTestUtils.setField(depositUpdater, "retryFailedDepositsEnabled", false);
         ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", false);
-        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
-            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
-        stubFor(post("/dspace/api/authn/login")
-            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
+        initDSpaceApiStubsForError();
         Submission submission = initFailedSubmissionDeposit(DepositStatus.FAILED);
 
         // WHEN
