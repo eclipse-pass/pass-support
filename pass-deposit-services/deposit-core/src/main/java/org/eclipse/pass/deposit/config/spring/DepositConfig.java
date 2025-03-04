@@ -15,7 +15,6 @@
  */
 package org.eclipse.pass.deposit.config.spring;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -24,8 +23,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.abdera.parser.Parser;
-import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.assembler.Assembler;
 import org.eclipse.pass.deposit.assembler.ExceptionHandlingThreadPoolExecutor;
@@ -34,10 +31,6 @@ import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.model.InMemoryMapRegistry;
 import org.eclipse.pass.deposit.model.Packager;
 import org.eclipse.pass.deposit.model.Registry;
-import org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor;
-import org.eclipse.pass.deposit.status.DepositStatusProcessor;
-import org.eclipse.pass.deposit.status.DepositStatusResolver;
-import org.eclipse.pass.deposit.support.swordv2.ResourceResolverImpl;
 import org.eclipse.pass.deposit.transport.Transport;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.SubmissionStatusService;
@@ -87,19 +80,6 @@ public class DepositConfig {
         Map<String, Packager> packagers = repositories.getAllConfigs().stream()
             .map(repoConfig -> {
                 String dspBeanName = null;
-                DepositStatusProcessor dsp = null;
-                if (repoConfig.getRepositoryDepositConfig() != null &&
-                    repoConfig.getRepositoryDepositConfig().getDepositProcessing() != null) {
-                    dspBeanName = repoConfig.getRepositoryDepositConfig()
-                        .getDepositProcessing()
-                        .getBeanName();
-                    dsp = null;
-                    if (dspBeanName != null) {
-                        dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
-                        repoConfig.getRepositoryDepositConfig()
-                            .getDepositProcessing().setProcessor(dsp);
-                    }
-                }
 
                 String repositoryKey = repoConfig.getRepositoryKey();
                 String transportProtocol = repoConfig.getTransportConfig()
@@ -137,8 +117,7 @@ public class DepositConfig {
                 return new Packager(repositoryKey,
                     assemblers.get(assemblerBean),
                     transport,
-                    repoConfig,
-                    dsp);
+                    repoConfig);
             })
             .collect(
                 Collectors.toMap(Packager::getName, Function.identity()));
@@ -192,25 +171,6 @@ public class DepositConfig {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         return dbf;
-    }
-
-    @Bean
-    public ResourceResolverImpl resourceResolver(
-        @Value("${pass.deposit.transport.swordv2.followRedirects}") boolean followRedirects) {
-        return new ResourceResolverImpl(followRedirects);
-    }
-
-    @Bean({
-        "defaultDepositStatusProcessor",
-        "org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor"
-    })
-    public DefaultDepositStatusProcessor defaultDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {
-        return new DefaultDepositStatusProcessor(statusResolver);
-    }
-
-    @Bean
-    Parser abderaParser() {
-        return new FOMParserFactory().getParser();
     }
 
     @Bean

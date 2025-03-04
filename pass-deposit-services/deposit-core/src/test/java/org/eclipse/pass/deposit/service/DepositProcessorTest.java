@@ -31,12 +31,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import org.eclipse.pass.deposit.cri.CriticalRepositoryInteraction;
 import org.eclipse.pass.deposit.service.DepositProcessor.DepositProcessorCriFunc;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
@@ -52,10 +50,6 @@ public class DepositProcessorTest {
 
     private final PassClient passClient = mock(PassClient.class);
     private final Submission submission = mock(Submission.class);
-    private final CriticalRepositoryInteraction cri = mock(CriticalRepositoryInteraction.class);
-    private final DepositTaskHelper depositTaskHelper = mock(DepositTaskHelper.class);
-    private final DepositProcessor depositProcessor =
-        new DepositProcessor(cri, passClient, depositTaskHelper);
 
     @Test
     public void criFuncPreconditionSuccess() {
@@ -150,40 +144,6 @@ public class DepositProcessorTest {
         assertSame(submission, DepositProcessorCriFunc.critical(passClient).apply(submission));
 
         verify(submission).setAggregatedDepositStatus(expectedStatus);
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void acceptDepositWithTerminalStatus() {
-        String submissionId = randomId();
-        when(submission.getId()).thenReturn(submissionId);
-        Deposit terminalDeposit = mock(Deposit.class);
-        DepositStatus terminalStatus = randomTerminalDepositStatus.get();
-
-        when(terminalDeposit.getSubmission()).thenReturn(submission);
-        when(terminalDeposit.getDepositStatus()).thenReturn(terminalStatus);
-
-        depositProcessor.accept(terminalDeposit);
-
-        verify(terminalDeposit).getDepositStatus();
-        verify(cri).performCritical(any(), any(), any(), any(Predicate.class), any());
-        verifyNoInteractions(depositTaskHelper);
-    }
-
-    @Test
-    public void acceptDepositWithIntermediateStatus() {
-        String depositId = randomId();
-        Deposit intermediateDeposit = mock(Deposit.class);
-        DepositStatus intermediateStatus = randomIntermediateDepositStatus.get();
-
-        when(intermediateDeposit.getId()).thenReturn(depositId);
-        when(intermediateDeposit.getDepositStatus()).thenReturn(intermediateStatus);
-
-        depositProcessor.accept(intermediateDeposit);
-
-        verify(intermediateDeposit).getDepositStatus();
-        verifyNoInteractions(cri);
-        verify(depositTaskHelper).processDepositStatus(intermediateDeposit);
     }
 
     private void prepareCriFuncCriticalSuccess(DepositStatus depositStatus) throws IOException {

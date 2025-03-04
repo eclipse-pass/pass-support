@@ -41,14 +41,11 @@ public class DepositProcessor implements Consumer<Deposit> {
 
     private final CriticalRepositoryInteraction cri;
     private final PassClient passClient;
-    private final DepositTaskHelper depositHelper;
 
     public DepositProcessor(CriticalRepositoryInteraction cri,
-                            PassClient passClient,
-                            DepositTaskHelper depositHelper) {
+                            PassClient passClient) {
         this.cri = cri;
         this.passClient = passClient;
-        this.depositHelper = depositHelper;
     }
 
     @Override
@@ -60,17 +57,6 @@ public class DepositProcessor implements Consumer<Deposit> {
                                 DepositProcessorCriFunc.precondition(),
                                 DepositProcessorCriFunc.postcondition(),
                                 DepositProcessorCriFunc.critical(passClient));
-        } else {
-            // intermediate status, process the Deposit depositStatusRef
-
-            // determine the RepositoryConfig for the Deposit
-            // retrieve and invoke the DepositStatusProcessor from the RepositoryConfig
-            //   - requires Collection<AuthRealm> and StatusMapping
-
-            // if result is still intermediate, add Deposit to queue for processing?
-
-            // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy
-            depositHelper.processDepositStatus(deposit);
         }
     }
 

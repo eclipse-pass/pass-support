@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
-import org.eclipse.pass.deposit.config.repository.Repositories;
-import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
 import org.eclipse.pass.support.client.ModelUtil;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientSelector;
@@ -40,11 +37,7 @@ public class DepositUpdater {
     private static final Logger LOG = LoggerFactory.getLogger(DepositUpdater.class);
 
     private final PassClient passClient;
-    private final DepositTaskHelper depositHelper;
     private final FailedDepositRetry failedDepositRetry;
-    private final Repositories repositories;
-
-    private final List<String> repoKeysWithDepositProcessors;
 
     @Value("${pass.status.update.window.days}")
     private long updateWindowDays;
@@ -53,19 +46,14 @@ public class DepositUpdater {
     private Boolean retryFailedDepositsEnabled;
 
     @Autowired
-    public DepositUpdater(PassClient passClient, DepositTaskHelper depositHelper,
-                          FailedDepositRetry failedDepositRetry, Repositories repositories) {
+    public DepositUpdater(PassClient passClient, FailedDepositRetry failedDepositRetry) {
         this.passClient = passClient;
-        this.depositHelper = depositHelper;
         this.failedDepositRetry = failedDepositRetry;
-        this.repositories = repositories;
-        this.repoKeysWithDepositProcessors = getReposWithDepositProcessors();
     }
 
     public void doUpdate() throws IOException {
         ZonedDateTime submissionFromDate = ZonedDateTime.now(ZoneOffset.UTC).minusDays(updateWindowDays);
         retryFailedDeposits(submissionFromDate);
-        updateSubmittedDeposits(submissionFromDate);
     }
 
     private void retryFailedDeposits(ZonedDateTime submissionFromDate) throws IOException {
@@ -90,40 +78,5 @@ public class DepositUpdater {
                 LOG.warn("Failed to retry Failed Deposit {}: {}", deposit.getId(), e.getMessage(), e);
             }
         });
-    }
-
-    private void updateSubmittedDeposits(ZonedDateTime submissionFromDate) throws IOException {
-        if (repoKeysWithDepositProcessors.isEmpty()) {
-            return;
-        }
-        PassClientSelector<Deposit> submittedDepositsSelector = new PassClientSelector<>(Deposit.class);
-        submittedDepositsSelector.setFilter(
-            RSQL.and(
-                RSQL.equals("depositStatus", DepositStatus.SUBMITTED.getValue()),
-                RSQL.gte("submission.submittedDate", ModelUtil.dateTimeFormatter().format(submissionFromDate)),
-                RSQL.in("repository.repositoryKey", repoKeysWithDepositProcessors.toArray(new String[0]))
-            )
-        );
-        List<Deposit> submittedDeposits = passClient.streamObjects(submittedDepositsSelector).toList();
-        LOG.warn("Deposit Count for updating: {}", submittedDeposits.size());
-        submittedDeposits.forEach(deposit -> {
-            try {
-                LOG.info("Updating Deposit.depositStatus for {}", deposit.getId());
-                depositHelper.processDepositStatus(deposit);
-            } catch (Exception e) {
-                LOG.warn("Failed to update Deposit {}: {}", deposit.getId(), e.getMessage(), e);
-            }
-        });
-    }
-
-    private List<String> getReposWithDepositProcessors() {
-        return repositories.getAllConfigs().stream()
-            .filter(repositoryConfig ->
-                Objects.nonNull(repositoryConfig.getRepositoryDepositConfig())
-                    && Objects.nonNull(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing())
-                    && Objects.nonNull(repositoryConfig.getRepositoryDepositConfig().getDepositProcessing()
-                        .getProcessor())
-            ).map(RepositoryConfig::getRepositoryKey)
-            .toList();
     }
 }

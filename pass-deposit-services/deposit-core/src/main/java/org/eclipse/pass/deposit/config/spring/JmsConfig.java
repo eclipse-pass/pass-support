@@ -23,7 +23,7 @@ import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Session;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.model.DepositMessage;
 import org.eclipse.pass.deposit.model.SubmissionMessage;

@@ -22,19 +22,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RepositoryDepositConfig {
 
-    @JsonProperty("processing")
-    private DepositProcessing depositProcessing;
-
     @JsonProperty("mapping")
     private StatusMapping statusMapping;
-
-    public DepositProcessing getDepositProcessing() {
-        return depositProcessing;
-    }
-
-    public void setDepositProcessing(DepositProcessing depositProcessing) {
-        this.depositProcessing = depositProcessing;
-    }
 
     public StatusMapping getStatusMapping() {
         return statusMapping;
@@ -55,23 +44,16 @@ public class RepositoryDepositConfig {
 
         RepositoryDepositConfig that = (RepositoryDepositConfig) o;
 
-        if (depositProcessing != null ? !depositProcessing.equals(that.depositProcessing) : that.depositProcessing !=
-                                                                                            null) {
-            return false;
-        }
         return statusMapping != null ? statusMapping.equals(that.statusMapping) : that.statusMapping == null;
     }
 
     @Override
     public int hashCode() {
-        int result = depositProcessing != null ? depositProcessing.hashCode() : 0;
-        result = 31 * result + (statusMapping != null ? statusMapping.hashCode() : 0);
-        return result;
+        return 31 * (statusMapping != null ? statusMapping.hashCode() : 0);
     }
 
     @Override
     public String toString() {
-        return "RepositoryDepositConfig{" + "depositProcessing=" + depositProcessing +
-               ", statusMapping=" + statusMapping + "}";
+        return "RepositoryDepositConfig{statusMapping=" + statusMapping + "}";
     }
 }
