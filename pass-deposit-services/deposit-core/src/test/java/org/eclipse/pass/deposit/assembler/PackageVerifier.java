@@ -15,9 +15,10 @@
  */
 package org.eclipse.pass.deposit.assembler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -114,7 +115,7 @@ public interface PackageVerifier {
                 if (custodialFilter.accept(file)) {
                     custodialFiles.add(file);
                     DepositFile depositFile = packageFileMapper.andThen(df -> {
-                        assertNotNull("Package File Mapper returned a null DepositFile for the file " + file, df);
+                        assertNotNull(df);
                         return df;
                     }).apply(packageDir, file);
                     custodialMap.put(file, depositFile);
@@ -132,12 +133,8 @@ public interface PackageVerifier {
 
         // Assert the expected number of *custodial* files in the extracted package equals the number of files actually
         // packaged
-        assertTrue("No custodial files were detected in the package directory " + packageDir + ".  " +
-            DOUBLE_CHECK_MSG, custodialFiles.size() > 0);
-        assertEquals("The number of files in the submission (" + submission.getFiles().size() + ") does not " +
-                "equal the number of custodial files (" + custodialFiles.size() + ") found in the package " +
-                "directory " + packageDir + ".  " + DOUBLE_CHECK_MSG, submission.getFiles().size(),
-            custodialFiles.size());
+        assertFalse(custodialFiles.isEmpty());
+        assertEquals(submission.getFiles().size(), custodialFiles.size());
 
         // Sanity check the size and contents of the depositFileMap.  Every DepositFile in the DepositSubmission should
         // be present in the map, and every DepositFile in the map should be present in the DepositSubmission.
@@ -146,16 +143,11 @@ public interface PackageVerifier {
         submission.getFiles().forEach(df -> assertTrue(custodialMap.containsValue(df)));
 
         // Assert each custodial file in the DepositSubmission is present on the filesystem
-        submission.getFiles().forEach(depositFile -> assertTrue("The custodial file from the submission (" +
-                depositFile.getName() + ") was not found in the " +
-                "exploded package under " + packageDir + ".  " +
-                DOUBLE_CHECK_MAPPER_MSG,
+        submission.getFiles().forEach(depositFile -> assertTrue(
             lookup(depositFile, custodialMap).exists()));
 
         // Each custodial file on the filesystem is present in the DepositSubmission
-        custodialFiles.forEach(file -> assertTrue("A custodial file found inside the package ( " + file +
-                ") is not present in the submission.",
-            custodialMap.containsKey(file)));
+        custodialFiles.forEach(file -> assertTrue(custodialMap.containsKey(file)));
     }
 
     /**

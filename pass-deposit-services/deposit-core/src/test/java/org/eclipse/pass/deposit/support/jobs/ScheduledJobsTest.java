@@ -25,9 +25,9 @@ import org.eclipse.pass.deposit.service.SubmissionStatusUpdater;
 import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -52,9 +52,9 @@ import org.springframework.test.context.TestPropertySource;
 @DirtiesContext
 public class ScheduledJobsTest {
 
-    @MockBean private SubmissionStatusUpdater submissionStatusUpdater;
-    @MockBean private DepositUpdater depositUpdater;
-    @MockBean private DeploymentTestDataService deploymentTestDataService;
+    @MockitoBean private SubmissionStatusUpdater submissionStatusUpdater;
+    @MockitoBean private DepositUpdater depositUpdater;
+    @MockitoBean private DeploymentTestDataService deploymentTestDataService;
 
     @Test
     void testDepositUpdaterJob() {

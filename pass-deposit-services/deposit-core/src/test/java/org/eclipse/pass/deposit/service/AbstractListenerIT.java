@@ -20,10 +20,10 @@ import org.eclipse.pass.support.client.PassClient;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -58,6 +58,6 @@ public abstract class AbstractListenerIT {
             .withServices(LocalStackContainer.Service.SQS);
 
     @Autowired protected JmsTemplate jmsTemplate;
-    @MockBean protected PassClient passClient;
+    @MockitoBean protected PassClient passClient;
 
 }

@@ -15,7 +15,7 @@
  */
 package org.eclipse.pass.deposit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,11 +48,11 @@ import org.eclipse.pass.support.client.model.SubmissionStatus;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -108,7 +108,7 @@ public abstract class AbstractDepositSubmissionIT {
         .withExposedPorts(8080);
 
     @Autowired protected SubmissionTestUtil submissionTestUtil;
-    @SpyBean protected PassClient passClient;
+    @MockitoSpyBean protected PassClient passClient;
 
     @DynamicPropertySource
     static void updateProperties(DynamicPropertyRegistry registry) {
@@ -136,11 +136,8 @@ public abstract class AbstractDepositSubmissionIT {
         Submission submission = findSubmission(entities);
 
         // verify state of the initial Submission
-        assertEquals("Submission must have a Submission.source = Submission.Source.PASS",
-                     Source.PASS, submission.getSource());
-        assertEquals("Submission must have a Submission.aggregatedDepositStatus = " +
-                     "Submission.AggregatedDepositStatus.NOT_STARTED",
-                     AggregatedDepositStatus.NOT_STARTED, submission.getAggregatedDepositStatus());
+        assertEquals(Source.PASS, submission.getSource());
+        assertEquals(AggregatedDepositStatus.NOT_STARTED, submission.getAggregatedDepositStatus());
 
         return entities;
     }
@@ -173,7 +170,7 @@ public abstract class AbstractDepositSubmissionIT {
             .filter(submissionFilter)
             .count();
 
-        assertEquals("Found " + count + " Submission resources, expected exactly 1", count, 1);
+        assertEquals(1, count);
 
         return (Submission) entities
             .stream()
@@ -197,7 +194,7 @@ public abstract class AbstractDepositSubmissionIT {
         Callable<Set<Deposit>> deposits = () -> {
             PassClientSelector<Deposit> depositSelector = new PassClientSelector<>(Deposit.class);
             depositSelector.setFilter(RSQL.equals("submission.id", submissionId));
-            depositSelector.setInclude("repository");
+            depositSelector.setInclude("repository", "repositoryCopy");
             PassClientResult<Deposit> resultDeposits = passClient.selectObjects(depositSelector);
 
             return resultDeposits.getObjects().stream()

@@ -21,8 +21,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static com.github.tomakehurst.wiremock.client.WireMock.patch;
-import static com.github.tomakehurst.wiremock.client.WireMock.patchRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -70,8 +68,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -94,9 +92,9 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
     @Autowired private SubmissionStatusUpdater submissionStatusUpdater;
     @Autowired private DepositProcessor depositProcessor;
     @Autowired private DepositTaskHelper depositTaskHelper;
-    @SpyBean private FilesystemTransport filesystemTransport;
-    @SpyBean private DevNullTransport devNullTransport;
-    @SpyBean private InvenioRdmTransport invenioRdmTransport;
+    @MockitoSpyBean private FilesystemTransport filesystemTransport;
+    @MockitoSpyBean private DevNullTransport devNullTransport;
+    @MockitoSpyBean private InvenioRdmTransport invenioRdmTransport;
 
     @BeforeEach
     void cleanUp() {
@@ -401,51 +399,5 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         });
         WireMock.verify(expectedCount, postRequestedFor(
             urlEqualTo("/api/records/test-record-id/draft/actions/publish")));
-    }
-
-    private void initDSpaceApiStubs() throws IOException {
-        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
-                withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
-        stubFor(post("/dspace/api/authn/login").willReturn(WireMock.ok().withHeader("Authorization", "authtoken")));
-
-        String searchJson = "{\n"
-                + "  \"_embedded\": {\n"
-                + "    \"searchResult\": {\n"
-                + "      \"_embedded\": {\n"
-                + "        \"objects\": [\n"
-                + "          {\n"
-                + "            \"_embedded\": {\n"
-                + "              \"indexableObject\": {\n"
-                + "                \"handle\": \"collectionhandle\",\n"
-                + "                \"uuid\": \"collectionuuid\"\n"
-                + "              }\n"
-                + "            }\n"
-                + "          }\n"
-                + "        ]\n"
-                + "      }\n"
-                + "    }\n"
-                + "  }\n"
-                + "}\n";
-        stubFor(get("/dspace/api/discover/search/objects?query=handle:collectionhandle")
-                .willReturn(ok(searchJson)));
-
-        stubFor(post("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")
-                .willReturn(WireMock.ok("{\"_embedded\": {\"workspaceitems\": [{\"id\": 1,"
-                        + "\"_embedded\": {\"item\": {\"uuid\": \"uuid\", \"metadata\": {}}}}]}}")));
-
-        stubFor(patch("/dspace/api/submission/workspaceitems/1").willReturn(WireMock.ok()));
-
-        stubFor(post("/dspace/api/workflow/workflowitems").willReturn(WireMock.ok()));
-    }
-
-    private void verifyDSpaceApiStubs(int expectedCount) throws IOException {
-        WireMock.verify(expectedCount, getRequestedFor(urlEqualTo("/dspace/api/security/csrf")));
-        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/authn/login")));
-        WireMock.verify(expectedCount, getRequestedFor(
-                urlEqualTo("/dspace/api/discover/search/objects?query=handle:collectionhandle")));
-        WireMock.verify(expectedCount, postRequestedFor(
-                urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")));
-        WireMock.verify(expectedCount, patchRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems/1")));
-        WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/workflow/workflowitems")));
     }
 }

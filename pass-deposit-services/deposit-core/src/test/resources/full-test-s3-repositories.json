@@ -1,10 +1,5 @@
 {
   "JScholarship-S3": {
-    "deposit-config": {
-      "processing": {
-        "beanName": "org.eclipse.pass.deposit.status.DefaultDepositStatusProcessor"
-      }
-    },
     "assembler": {
       "specification": "simple",
       "beanName": "simpleAssembler",

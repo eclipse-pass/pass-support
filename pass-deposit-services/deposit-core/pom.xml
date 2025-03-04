@@ -145,11 +145,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.swordapp</groupId>
-      <artifactId>sword2-client</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -190,18 +185,6 @@
       <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>deposit-model</artifactId>
       <version>${project.parent.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.github.joergreichert</groupId>
-      <artifactId>mets-api</artifactId>
-      <version>${mets-api.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>

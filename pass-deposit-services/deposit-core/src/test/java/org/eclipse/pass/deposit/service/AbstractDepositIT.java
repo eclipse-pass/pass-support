@@ -15,50 +15,34 @@
  */
 package org.eclipse.pass.deposit.service;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
-import org.apache.abdera.i18n.iri.IRI;
-import org.apache.abdera.model.Category;
-import org.apache.abdera.model.Document;
-import org.apache.abdera.model.Feed;
-import org.apache.abdera.parser.Parser;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.assembler.PackageOptions;
 import org.eclipse.pass.deposit.assembler.PackageStream;
 import org.eclipse.pass.deposit.assembler.PreassembledAssembler;
-import org.eclipse.pass.deposit.support.swordv2.ResourceResolverImpl;
-import org.eclipse.pass.deposit.transport.sword2.Sword2ClientFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.Resource;
 import org.springframework.test.context.TestPropertySource;
-import org.swordapp.client.DepositReceipt;
-import org.swordapp.client.SWORDClient;
-import org.swordapp.client.SWORDCollection;
-import org.swordapp.client.SWORDWorkspace;
-import org.swordapp.client.ServiceDocument;
-import org.swordapp.client.SwordIdentifier;
 
-@TestPropertySource(properties = {
-    "pass.deposit.repository.configuration=classpath:org/eclipse/pass/deposit/messaging/status/DepositTaskIT.json",
-    "dspace.user=test-dspace-user",
-    "dspace.password=test-dspace-password",
-    "dspace.server=localhost:9020",
-    "dspace.baseuri=http://localhost",
-    "dspace.collection.handle=foobartest",
-})
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@TestPropertySource(properties = {
+    "pass.deposit.repository.configuration=classpath:org/eclipse/pass/deposit/service/DepositTaskIT.json",
+    "dspace.user=test-dspace-user",
+    "dspace.password=test-dspace-password",
+    "dspace.server=localhost:9030",
+    "dspace.api.url=http://localhost:9030/dspace/api",
+    "dspace.website.url=http://localhost:9030/dspace/website",
+    "dspace.collection.handle=collectionhandle"
+})
+@WireMockTest(httpPort = 9030)
 public abstract class AbstractDepositIT extends AbstractSubmissionIT {
 
     private static final String SPEC = "http://purl.org/net/sword/package/METSDSpaceSIP";
@@ -66,11 +50,6 @@ public abstract class AbstractDepositIT extends AbstractSubmissionIT {
     private static final String CHECKSUM_PATH = PACKAGE_PATH + ".md5";
 
     @Autowired private PreassembledAssembler assembler;
-    @MockBean private Sword2ClientFactory clientFactory;
-    @MockBean private ResourceResolverImpl resourceResolver;
-    @MockBean private Parser mockParser;
-
-    protected SWORDClient mockSwordClient;
 
     /**
      * Mocks up the {@link #assembler} so that it streams back a {@link #PACKAGE_PATH package} conforming to the
@@ -92,45 +71,6 @@ public abstract class AbstractDepositIT extends AbstractSubmissionIT {
         assembler.setPackageLength(33849);
         assembler.setCompression(PackageOptions.Compression.OPTS.ZIP);
         assembler.setArchive(PackageOptions.Archive.OPTS.ZIP);
-
-        mockSwordClient = mock(SWORDClient.class);
-        when(clientFactory.newInstance(any())).thenReturn(mockSwordClient);
-
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void mockSword() throws Exception {
-        ServiceDocument mockServiceDoc = mock(ServiceDocument.class);
-        SWORDWorkspace mockSwordWorkspace = mock(SWORDWorkspace.class);
-        SWORDCollection mockSwordCollection = mock(SWORDCollection.class);
-        when(mockSwordCollection.getHref()).thenReturn(mock(IRI.class));
-        when(mockSwordCollection.getHref().toString())
-            .thenReturn("http://localhost/swordv2/collection/foobartest");
-        when(mockSwordWorkspace.getCollections()).thenReturn(List.of(mockSwordCollection));
-        when(mockServiceDoc.getWorkspaces()).thenReturn(List.of(mockSwordWorkspace));
-        doReturn(mockServiceDoc).when(mockSwordClient).getServiceDocument(any(), any());
-
-        DepositReceipt mockReceipt = mock(DepositReceipt.class);
-        when(mockReceipt.getStatusCode()).thenReturn(200);
-        when(mockReceipt.getSplashPageLink()).thenReturn(mock(SwordIdentifier.class));
-        when(mockReceipt.getSplashPageLink().getHref()).thenReturn("http://foobarsplashlink");
-        when(mockReceipt.getAtomStatementLink()).thenReturn(mock(SwordIdentifier.class));
-        when(mockReceipt.getAtomStatementLink().getIRI()).thenReturn(mock(IRI.class));
-        when(mockReceipt.getAtomStatementLink().getIRI().toURI()).thenReturn(mock(URI.class));
-        when(mockReceipt.getAtomStatementLink().getIRI().toURI().toString())
-            .thenReturn("http://localhost/swordv2");
-        doReturn(mockReceipt).when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
-
-        Resource mockResource = mock(Resource.class);
-        when(mockResource.getInputStream()).thenReturn(mock(InputStream.class));
-        doReturn(mockResource).when(resourceResolver).resolve(any(), any());
-
-        Document<Feed> mockParserDoc = (Document<Feed>) mock(Document.class);
-        when(mockParserDoc.getRoot()).thenReturn(mock(Feed.class));
-        Category category = mock(Category.class);
-        when(category.getTerm()).thenReturn("http://dspace.org/state/archived");
-        when((mockParserDoc.getRoot()).getCategories(any())).thenReturn(List.of(category));
-        doReturn(mockParserDoc).when(mockParser).parse(any(InputStream.class));
     }
 
 }

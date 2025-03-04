@@ -56,10 +56,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -85,8 +85,8 @@ public class NihmsReceiveMailServiceTest {
         .withConfiguration(new GreenMailConfiguration().withUser("testnihms@localhost", "testnihmspassword"))
         .withPerMethodLifecycle(false);
 
-    @MockBean private PassClient passClient;
-    @SpyBean private NihmsReceiveMailService nihmsReceiveMailService;
+    @MockitoBean private PassClient passClient;
+    @MockitoSpyBean private NihmsReceiveMailService nihmsReceiveMailService;
     @Captor ArgumentCaptor<MimeMessage> messageCaptor;
     @Captor ArgumentCaptor<PassEntity> passEntityCaptor;
 

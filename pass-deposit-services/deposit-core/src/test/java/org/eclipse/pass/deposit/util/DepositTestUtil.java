@@ -15,7 +15,7 @@
  */
 package org.eclipse.pass.deposit.util;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;

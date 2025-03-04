@@ -42,7 +42,6 @@
     <okhttp.version>4.12.0</okhttp.version>
     <xmlunit.version>2.10.0</xmlunit.version>
     <commons-codec.version>1.17.1</commons-codec.version>
-    <sword2-client.version>0.9.3</sword2-client.version>
     <mets-api.version>1.3</mets-api.version>
     <tika.version>2.9.2</tika.version>
     <gson.version>2.11.0</gson.version>
@@ -134,46 +133,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.swordapp</groupId>
-        <artifactId>sword2-client</artifactId>
-        <version>${sword2-client.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>xerces</groupId>
-            <artifactId>xmlParserAPIs</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-javamail_1.4_spec</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
         <groupId>xom</groupId>
         <artifactId>xom</artifactId>
         <version>${xom.version}</version>
@@ -231,16 +190,6 @@
         <groupId>org.jsoup</groupId>
         <artifactId>jsoup</artifactId>
         <version>1.18.1</version>
-      </dependency>
-      <dependency>
-        <groupId>xerces</groupId>
-        <artifactId>xercesImpl</artifactId>
-        <version>2.12.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.woodstox</groupId>
-        <artifactId>wstx-asl</artifactId>
-        <version>3.2.9</version>
       </dependency>
       <!-- End of transitive deps with convergence issues. -->
 
@@ -386,11 +335,6 @@
                 <ignoredDependency>org.springframework*::</ignoredDependency>
                 <ignoredDependency>software.amazon.awssdk::</ignoredDependency>
                 <ignoredDependency>io.awspring.cloud::</ignoredDependency>
-                <!-- Comes from outdated sword2 client -->
-                <ignoredDependency>org.apache.abdera::</ignoredDependency>
-                <ignoredDependency>junit:junit:</ignoredDependency>
-                <ignoredDependency>commons-httpclient:commons-httpclient:</ignoredDependency>
-                <ignoredDependency>commons-lang:commons-lang:</ignoredDependency>
               </ignoredDependencies>
               <ignoredUsedUndeclaredDependencies>
                 <!-- These both come from junit-jupiter, so version is tied to that direct dependency -->

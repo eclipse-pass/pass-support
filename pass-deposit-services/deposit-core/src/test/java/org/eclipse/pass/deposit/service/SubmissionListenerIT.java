@@ -29,8 +29,8 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -40,7 +40,7 @@ import org.springframework.test.context.TestPropertySource;
 })
 public class SubmissionListenerIT extends AbstractListenerIT {
 
-    @MockBean private SubmissionProcessor submissionProcessor;
+    @MockitoBean private SubmissionProcessor submissionProcessor;
     @Captor ArgumentCaptor<Submission> messageCaptor;
 
     @Test

@@ -15,13 +15,14 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
@@ -39,11 +41,9 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.swordapp.client.SWORDCollection;
-import org.swordapp.client.SWORDError;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -52,13 +52,13 @@ class FailedDepositRetryIT extends AbstractDepositIT {
 
     @Autowired private DepositUpdater depositUpdater;
     @Autowired private DepositTaskHelper depositTaskHelper;
-    @MockBean private RepositoryConnectivityService repositoryConnectivityService;
+    @MockitoBean private RepositoryConnectivityService repositoryConnectivityService;
 
     @Test
     void testFailedDepositRetry_SuccessOnRetry() throws Exception {
         // GIVEN
         Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
-        mockSword();
+        initDSpaceApiStubs();
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
 
         // WHEN
@@ -72,14 +72,14 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         Condition<Set<Deposit>> actualDeposits = depositsForSubmission(submission.getId(), 1,
             (deposit, repo) -> true);
         assertTrue(actualDeposits.awaitAndVerify(deposits -> deposits.size() == 1 &&
-            DepositStatus.SUBMITTED == deposits.iterator().next().getDepositStatus()));
+            DepositStatus.ACCEPTED == deposits.iterator().next().getDepositStatus()));
 
         Deposit actualDeposit = actualDeposits.getResult().iterator().next();
         Deposit updatedDeposit = passClient.getObject(actualDeposit, "repositoryCopy");
         RepositoryCopy popRepoCopy = passClient.getObject(updatedDeposit.getRepositoryCopy(),
             "repository", "publication");
         updatedDeposit.setRepositoryCopy(popRepoCopy);
-        verify(passClient, times(3)).updateObject(
+        verify(passClient, times(4)).updateObject(
             argThat(deposit -> deposit.getId().equals(actualDeposit.getId())));
         assertEquals(submission.getPublication().getId(), popRepoCopy.getPublication().getId());
         assertEquals(1, submission.getRepositories().size());
@@ -91,9 +91,10 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         // GIVEN
         Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
-        mockSword();
-        doThrow(new SWORDError(400, "Testing deposit error"))
-            .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
+            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
+        stubFor(post("/dspace/api/authn/login")
+            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
 
         // WHEN
         try {
@@ -145,7 +146,7 @@ class FailedDepositRetryIT extends AbstractDepositIT {
     void testFailedDepositRetry_NoFailRetryIfDisabledAfterDeposit() throws Exception {
         // GIVEN
         Submission submission = initFailedSubmissionDeposit(DepositStatus.RETRY);
-        mockSword();
+        initDSpaceApiStubs();
         ReflectionTestUtils.setField(depositUpdater, "retryFailedDepositsEnabled", false);
         ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", false);
 
@@ -175,9 +176,10 @@ class FailedDepositRetryIT extends AbstractDepositIT {
         // GIVEN
         ReflectionTestUtils.setField(depositUpdater, "retryFailedDepositsEnabled", false);
         ReflectionTestUtils.setField(depositTaskHelper, "retryFailedDepositsEnabled", false);
-        mockSword();
-        doThrow(new SWORDError(400, "Testing deposit error"))
-            .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
+            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
+        stubFor(post("/dspace/api/authn/login")
+            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
         Submission submission = initFailedSubmissionDeposit(DepositStatus.FAILED);
 
         // WHEN

@@ -15,26 +15,29 @@
  */
 package org.eclipse.pass.deposit.status;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.service.AbstractDepositIT;
 import org.eclipse.pass.deposit.service.DepositProcessor;
 import org.eclipse.pass.deposit.service.DepositTaskHelper;
 import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
-import org.eclipse.pass.deposit.transport.sword2.Sword2Transport;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
 import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
@@ -42,33 +45,15 @@ import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.swordapp.client.SWORDCollection;
-import org.swordapp.client.SWORDError;
 
 /**
- * This IT insures that the SWORD transport properly handles the Deposit.depositStatusRef field by updating the
- * Deposit.depositStatus field according to the SWORD state document.  It configures Deposit Services with an Assembler
- * that streams a pre-built package (the files actually submitted to Pass Core in the Submission are ignored, and not
- * streamed to DSpace).  DSpace is the only concrete implementation of a SWORD server used by Deposit Services, so it is
- * employed here.
- *
- * Note this IT uses a specific runtime configuration for Deposit Services in the classpath resource
- * DepositTaskIT.json.  The status mapping indicates that by default the state of a Deposit will be SUBMITTED unless
- * the package is archived (SUCCESS) or withdrawn (REJECTED).  Now, if an exception occurs when performing the SWORD
- * deposit to DSpace (for example, if the package is corrupt), there will be no SWORD state to examine because the
- * package could not be ingested.  In the case of a corrupt package that is rejected without getting in the front door,
- * there will be no Deposit.depositStatusRef, and Deposit.depositStatus will be FAILED.
- *
- * Note that FAILED is an intermediate status.  This means that remedial action can be taken, and the package can be
- * re-submitted without creating a new Submission.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-// the repository configuration json pollutes the context
 class DepositTaskIT extends AbstractDepositIT {
 
     /**
@@ -79,10 +64,8 @@ class DepositTaskIT extends AbstractDepositIT {
     @Autowired private DepositProcessor depositProcessor;
     @Autowired private DepositTaskHelper depositTaskHelper;
 
-    @SpyBean(name = "errorHandler") private DepositServiceErrorHandler errorHandler;
-    @SpyBean private DepositStatusProcessor depositStatusProcessor;
-    @SpyBean private Sword2Transport sword2Transport;
-    @MockBean private RepositoryConnectivityService repositoryConnectivityService;
+    @MockitoSpyBean(name = "errorHandler") private DepositServiceErrorHandler errorHandler;
+    @MockitoBean private RepositoryConnectivityService repositoryConnectivityService;
 
     /**
      * A submission with a valid package should result in success.
@@ -92,7 +75,7 @@ class DepositTaskIT extends AbstractDepositIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
-        mockSword();
+        initDSpaceApiStubs();
 
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
@@ -102,32 +85,19 @@ class DepositTaskIT extends AbstractDepositIT {
 
         // Wait for the Deposit resource to show up as ACCEPTED (terminal state)
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-            deposit.getDepositStatusRef() != null);
-
-        assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1
-            && DepositStatus.SUBMITTED == deposits.iterator().next().getDepositStatus()));
-
-        c.getResult().forEach(deposit -> depositProcessor.accept(deposit));
-
+            true);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                                                DepositStatus.ACCEPTED == deposits.iterator().next()
-                                                                                          .getDepositStatus()));
+            DepositStatus.ACCEPTED == deposits.iterator().next().getDepositStatus()));
+
         Set<Deposit> deposits = c.getResult();
         Deposit deposit = deposits.iterator().next();
 
-        // Insure a Deposit.depositStatusRef was set on the Deposit resource
-        assertNotNull(deposit.getDepositStatusRef());
+        assertEquals("http://localhost:9030/dspace/website/items/uuid",
+            deposit.getRepositoryCopy().getAccessUrl().toString());
 
         // No exceptions should be handled by the error handler
         verifyNoInteractions(errorHandler);
-
-        // Insure the DepositStatusProcessor processed the Deposit.depositStatusRef
-        ArgumentCaptor<Deposit> processedDepositCaptor = ArgumentCaptor.forClass(Deposit.class);
-        verify(depositStatusProcessor).process(processedDepositCaptor.capture(), any());
-        assertEquals(deposit.getId(), processedDepositCaptor.getValue().getId());
-
-        verify(sword2Transport).open(any());
-        verify(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+        verifyDSpaceApiStubs(1);
     }
 
     @Test
@@ -135,9 +105,10 @@ class DepositTaskIT extends AbstractDepositIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(true);
-        mockSword();
-        doThrow(new SWORDError(400, "Testing deposit error"))
-            .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
+            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
+        stubFor(post("/dspace/api/authn/login")
+            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
 
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
@@ -162,7 +133,7 @@ class DepositTaskIT extends AbstractDepositIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(false);
-        mockSword();
+        initDSpaceApiStubs();
 
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
@@ -182,7 +153,7 @@ class DepositTaskIT extends AbstractDepositIT {
         verify(errorHandler).handleError(throwableCaptor.capture());
         assertTrue(throwableCaptor.getValue().getCause().getMessage()
             .contains("Transport connectivity failed for deposit"));
-        verifyNoInteractions(mockSwordClient);
+        verifyDSpaceApiStubs(0);
     }
 
     @Test
@@ -192,9 +163,10 @@ class DepositTaskIT extends AbstractDepositIT {
         Submission submission = findSubmission(createSubmission(
             ResourceTestUtil.readSubmissionJson("sample2")));
         when(repositoryConnectivityService.verifyConnectByURL(anyString())).thenReturn(false);
-        mockSword();
-        doThrow(new SWORDError(400, "Testing deposit error"))
-            .when(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+        stubFor(get("/dspace/api/security/csrf").willReturn(WireMock.notFound().
+            withHeader("DSPACE-XSRF-TOKEN", "csrftoken")));
+        stubFor(post("/dspace/api/authn/login")
+            .willReturn(WireMock.badRequest().withStatusMessage("Testing deposit error")));
 
         triggerSubmission(submission);
         final Submission actualSubmission = passClient.getObject(Submission.class, submission.getId());
@@ -213,8 +185,8 @@ class DepositTaskIT extends AbstractDepositIT {
 
         verify(errorHandler).handleError(throwableCaptor.capture());
         assertTrue(throwableCaptor.getValue().getCause().getMessage().contains("Testing deposit error"));
-        verify(sword2Transport).open(any());
-        verify(mockSwordClient).deposit(any(SWORDCollection.class), any(), any());
+        WireMock.verify(1, getRequestedFor(urlEqualTo("/dspace/api/security/csrf")));
+        WireMock.verify(1, postRequestedFor(urlEqualTo("/dspace/api/authn/login")));
     }
 
 }

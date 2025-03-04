@@ -37,7 +37,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -45,7 +45,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 public class SubmissionStatusUpdaterIT extends AbstractSubmissionIT {
 
     @Autowired private SubmissionStatusUpdater submissionStatusUpdater;
-    @MockBean private SubmissionStatusService statusService;
+    @MockitoBean private SubmissionStatusService statusService;
 
     @Value("${pass.status.update.window.days}")
     private long updateWindowDays;

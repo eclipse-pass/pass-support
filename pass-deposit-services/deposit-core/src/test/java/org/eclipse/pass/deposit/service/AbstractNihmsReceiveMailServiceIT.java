@@ -47,7 +47,7 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -59,7 +59,7 @@ public abstract class AbstractNihmsReceiveMailServiceIT extends AbstractDepositS
         .withConfiguration(new GreenMailConfiguration().withUser("testnihms@localhost", "testnihmspassword"))
         .withPerMethodLifecycle(false);
 
-    @SpyBean private NihmsReceiveMailService nihmsReceiveMailService;
+    @MockitoSpyBean private NihmsReceiveMailService nihmsReceiveMailService;
 
     @Test
     void testHandleReceivedMail() throws Exception {
