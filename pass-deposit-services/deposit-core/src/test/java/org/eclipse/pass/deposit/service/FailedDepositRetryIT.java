@@ -15,9 +15,6 @@
  */
 package org.eclipse.pass.deposit.service;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,7 +28,6 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.transport.RepositoryConnectivityService;
 import org.eclipse.pass.deposit.util.ResourceTestUtil;
