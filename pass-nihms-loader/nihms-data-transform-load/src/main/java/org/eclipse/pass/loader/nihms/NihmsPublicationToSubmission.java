@@ -100,6 +100,9 @@ public class NihmsPublicationToSubmission {
 
         //this stage will be all about building up the DTO
         SubmissionDTO submissionDTO = new SubmissionDTO();
+        //todo: TEST SONARQUBE COVERAGE
+        submissionDTO.setGrantId("1");
+        //todo: END TEST
         submissionDTO.setGrantId(grant.getId());
 
         Publication publication = retrieveOrCreatePublication(pub, submissionDTO);
