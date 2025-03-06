@@ -4,6 +4,8 @@ on: [pull_request, workflow_dispatch]
 jobs:
   test:
     name: "Run Unit & Integration Tests"
-    uses: eclipse-pass/main/.github/workflows/ci.yml@main
+    uses: eclipse-pass/main/.github/workflows/ci.yml@1089-test-ci-yml-NO-MERGE-DELETE-AFTER-TESTING
     with:
       run_acceptance_tests: false
+      project-key: 'eclipse-pass_pass-support'
+    secrets: inherit
