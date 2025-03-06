@@ -148,6 +148,9 @@ public class NihmsPublicationToSubmission {
                         deposit.setDepositStatus(DepositStatus.ACCEPTED);
                         break;
                     case IN_PROCESS:
+                        //TODO: testing SQ
+                        deposit.setDepositStatus(DepositStatus.REJECTED);
+                        //TODO: remove when done
                         deposit.setDepositStatus(DepositStatus.SUBMITTED);
                         break;
                     case NON_COMPLIANT:
