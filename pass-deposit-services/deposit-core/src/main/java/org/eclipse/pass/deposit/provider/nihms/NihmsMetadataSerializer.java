@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -73,7 +74,11 @@ public class NihmsMetadataSerializer implements StreamingSerializer {
 
             write_metadata(doc);
 
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory trFactory = TransformerFactory.newInstance();
+            trFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            trFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            trFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            Transformer transformer = trFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
