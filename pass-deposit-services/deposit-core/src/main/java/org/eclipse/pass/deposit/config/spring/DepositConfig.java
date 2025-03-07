@@ -21,7 +21,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.pass.deposit.DepositServiceErrorHandler;
 import org.eclipse.pass.deposit.assembler.Assembler;
@@ -164,13 +163,6 @@ public class DepositConfig {
         });
 
         return assemblers;
-    }
-
-    @Bean
-    public DocumentBuilderFactory dbf() {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        return dbf;
     }
 
     @Bean
