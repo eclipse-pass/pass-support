@@ -7,5 +7,4 @@ jobs:
     uses: eclipse-pass/main/.github/workflows/ci.yml@1089-test-ci-yml-NO-MERGE-DELETE-AFTER-TESTING
     with:
       run_acceptance_tests: false
-      project-key: 'eclipse-pass_pass-support'
     secrets: inherit
