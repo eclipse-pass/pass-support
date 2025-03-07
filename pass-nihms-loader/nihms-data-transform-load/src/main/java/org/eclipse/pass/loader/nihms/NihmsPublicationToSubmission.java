@@ -100,9 +100,6 @@ public class NihmsPublicationToSubmission {
 
         //this stage will be all about building up the DTO
         SubmissionDTO submissionDTO = new SubmissionDTO();
-        //todo: TEST SONARQUBE COVERAGE
-        submissionDTO.setGrantId("1");
-        //todo: END TEST
         submissionDTO.setGrantId(grant.getId());
 
         Publication publication = retrieveOrCreatePublication(pub, submissionDTO);
@@ -148,9 +145,6 @@ public class NihmsPublicationToSubmission {
                         deposit.setDepositStatus(DepositStatus.ACCEPTED);
                         break;
                     case IN_PROCESS:
-                        //TODO: testing SQ
-                        deposit.setDepositStatus(DepositStatus.REJECTED);
-                        //TODO: remove when done
                         deposit.setDepositStatus(DepositStatus.SUBMITTED);
                         break;
                     case NON_COMPLIANT:
