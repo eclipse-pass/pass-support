@@ -75,6 +75,9 @@
     <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
     <kotlin.version>1.9.25</kotlin.version>
+    <sonar.projectName>pass-support</sonar.projectName>
+    <sonar.projectKey>eclipse-pass_pass-support</sonar.projectKey>
+    <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/jacoco-aggregate-report-pass-support/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <dependencyManagement>
@@ -146,6 +149,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>${maven-dependency-plugin.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
