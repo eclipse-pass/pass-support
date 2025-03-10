@@ -4,6 +4,6 @@ on: [pull_request, workflow_dispatch]
 jobs:
   test:
     name: "Run Unit & Integration Tests"
-    uses: eclipse-pass/main/.github/workflows/ci.yml@main
+    uses: eclipse-pass/main/.github/workflows/ci.yml@1089-setup-jacoco-sonarqube-integration
     with:
       run_acceptance_tests: false
