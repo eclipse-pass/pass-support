@@ -4,7 +4,7 @@ on: [pull_request, workflow_dispatch]
 jobs:
   test:
     name: "Run Unit & Integration Tests"
-    uses: eclipse-pass/main/.github/workflows/ci.yml@1089-setup-jacoco-sonarqube-integration
+    uses: eclipse-pass/main/.github/workflows/ci.yml@main
     secrets: inherit
     with:
       run_acceptance_tests: false
