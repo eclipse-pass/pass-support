@@ -7,4 +7,3 @@ jobs:
     uses: eclipse-pass/main/.github/workflows/ci.yml@main
     with:
       run_acceptance_tests: false
-    secrets: inherit
