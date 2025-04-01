@@ -70,6 +70,11 @@ class RepositoriesFactoryBeanConfigTest {
         assertEquals("ZIP", j10p.getAssemblerConfig().getOptions().getArchive());
         assertEquals(List.of("sha512", "md5"), j10p.getAssemblerConfig().getOptions().getAlgorithms());
         assertEquals(0, j10p.getAssemblerConfig().getOptions().getOptionsMap().size());
+        assertEquals("RepositoryConfig{repositoryKey='JScholarship', transportConfig=TransportConfig{" +
+            "authRealms=null, protocolBinding=FilesystemBinding{baseDir='target/packages', overwrite='true', " +
+            "createIfMissing='true'} ProtocolBinding{protocol='filesystem', serverFqdn='null', serverPort='null'}}, " +
+            "assemblerConfig=AssemblerConfig{spec='simple', options=AssemblerOptions{compression='NONE', " +
+            "archive='ZIP', algorithms=[sha512, md5]}, beanName='simpleAssembler'}}", j10p.toString());
     }
 
     @Test
