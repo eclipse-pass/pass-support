@@ -17,6 +17,10 @@ package org.eclipse.pass.deposit.config.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.deposit.config.repository.Repositories;
@@ -31,31 +35,70 @@ import org.springframework.test.context.TestPropertySource;
  */
 @SpringBootTest(classes = DepositApp.class)
 @TestPropertySource("classpath:test-application.properties")
-public class RepositoriesFactoryBeanConfigTest {
+@TestPropertySource(
+    locations = "/test-application.properties",
+    properties = {
+        "pass.deposit.repository.configuration=classpath:/full-test-repositories.json",
+        "inveniordm.api.token=test-invenio-api-token",
+        "inveniordm.api.baseUrl=http://localhost:9030/api",
+        "dspace.server=localhost:9030",
+        "dspace.api.url=http://localhost:9030/dspace/api",
+        "dspace.website.url=http://localhost:9030/dspace/website",
+        "dspace.collection.handle=collectionhandle"
+    })
+class RepositoriesFactoryBeanConfigTest {
     @Autowired
     private Repositories repositories;
 
     @Test
-    public void testLoadRepositoryConfigurations() {
+    void testLoadRepositoryConfigurationsSize() {
         assertNotNull(repositories);
+        assertEquals(5, repositories.getAllConfigs().size());
+    }
 
-        assertEquals(4, repositories.getAllConfigs().size());
-
+    @Test
+    void testLoadRepositoryConfigurationJS() {
         RepositoryConfig j10p = repositories.getConfig("JScholarship");
-        assertNotNull(j10p);
-
-        RepositoryConfig pubMed = repositories.getConfig("PubMed Central");
-        assertNotNull(pubMed);
-
         assertEquals("JScholarship", j10p.getRepositoryKey());
+        assertNull(j10p.getTransportConfig().getAuthRealms());
+        assertEquals("filesystem", j10p.getTransportConfig().getProtocolBinding().getProtocol());
+        assertNull(j10p.getTransportConfig().getProtocolBinding().getServerFqdn());
+        assertNull(j10p.getTransportConfig().getProtocolBinding().getServerPort());
+        assertEquals("simple", j10p.getAssemblerConfig().getSpec());
+        assertEquals("simpleAssembler", j10p.getAssemblerConfig().getBeanName());
+        assertEquals("NONE", j10p.getAssemblerConfig().getOptions().getCompression());
+        assertEquals("ZIP", j10p.getAssemblerConfig().getOptions().getArchive());
+        assertEquals(List.of("sha512", "md5"), j10p.getAssemblerConfig().getOptions().getAlgorithms());
+        assertEquals(0, j10p.getAssemblerConfig().getOptions().getOptionsMap().size());
+    }
+
+    @Test
+    void testLoadRepositoryConfigurationsPMC() {
+        RepositoryConfig pubMed = repositories.getConfig("PubMed Central");
         assertEquals("PubMed Central", pubMed.getRepositoryKey());
+        assertNull(pubMed.getTransportConfig().getAuthRealms());
+        assertEquals("filesystem", pubMed.getTransportConfig().getProtocolBinding().getProtocol());
+        assertNull(pubMed.getTransportConfig().getProtocolBinding().getServerFqdn());
+        assertNull(pubMed.getTransportConfig().getProtocolBinding().getServerPort());
+        assertEquals("nihms-native-2017-07", pubMed.getAssemblerConfig().getSpec());
+        assertEquals("nihmsAssembler", pubMed.getAssemblerConfig().getBeanName());
+        assertEquals("GZIP", pubMed.getAssemblerConfig().getOptions().getCompression());
+        assertEquals("TAR", pubMed.getAssemblerConfig().getOptions().getArchive());
+        assertEquals(List.of("sha512", "md5"), pubMed.getAssemblerConfig().getOptions().getAlgorithms());
+        assertEquals(35,
+            ((Map<?, ?>) pubMed.getAssemblerConfig().getOptions().getOptionsMap().get("funder-mapping")).size());
+    }
 
-        assertNotNull(j10p.getTransportConfig());
-        assertNotNull(j10p.getTransportConfig().getProtocolBinding());
-        assertNotNull(j10p.getAssemblerConfig().getSpec());
-
-        assertNotNull(pubMed.getTransportConfig());
-        assertNotNull(pubMed.getTransportConfig().getProtocolBinding());
-        assertNotNull(pubMed.getAssemblerConfig().getSpec());
+    @Test
+    void testLoadRepositoryConfigurationsDS() {
+        RepositoryConfig dSpace = repositories.getConfig("DSpace");
+        assertEquals("DSpace", dSpace.getRepositoryKey());
+        assertNull(dSpace.getTransportConfig().getAuthRealms());
+        assertEquals("DSpace", dSpace.getTransportConfig().getProtocolBinding().getProtocol());
+        assertNull(dSpace.getTransportConfig().getProtocolBinding().getServerFqdn());
+        assertNull(dSpace.getTransportConfig().getProtocolBinding().getServerPort());
+        assertEquals("DSpace", dSpace.getAssemblerConfig().getSpec());
+        assertEquals("DSpaceAssembler", dSpace.getAssemblerConfig().getBeanName());
+        assertNull(dSpace.getAssemblerConfig().getOptions());
     }
 }
