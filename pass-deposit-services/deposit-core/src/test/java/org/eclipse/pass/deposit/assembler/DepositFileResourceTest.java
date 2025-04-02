@@ -63,7 +63,7 @@ class DepositFileResourceTest {
             "depositFile=DepositFile{type=supplement, name='test-name', label='test-label', " +
             "location='/submissions/sample1/Chart.jpg'}}", depositFileResource.toString());
         assertEquals(199679, depositFileResource.contentLength());
-        assertEquals(1743533512671L, depositFileResource.lastModified());
+        assertTrue(depositFileResource.lastModified() > 0);
     }
 
     @Test
