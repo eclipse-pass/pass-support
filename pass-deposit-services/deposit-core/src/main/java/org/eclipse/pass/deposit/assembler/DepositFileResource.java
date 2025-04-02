@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 
 import org.eclipse.pass.deposit.model.DepositFile;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -49,7 +50,7 @@ public class DepositFileResource implements Resource {
 
     private Resource resource;
 
-    private DepositFile depositFile;
+    private final DepositFile depositFile;
 
     /**
      * Create a new instance.  The underlying {@code Resource} must be {@link #setResource(Resource) set} after
@@ -66,43 +67,12 @@ public class DepositFileResource implements Resource {
     }
 
     /**
-     * Create a new instance with the {@code resource} supplying the bytes for the {@code depositFile}.
-     *
-     * @param depositFile the DepositFile
-     * @param resource    the underlying Resource
-     */
-    public DepositFileResource(DepositFile depositFile, Resource resource) {
-        if (resource == null) {
-            throw new IllegalArgumentException("Spring Resource must not be null.");
-        }
-
-        if (depositFile == null) {
-            throw new IllegalArgumentException("DepositFile must not be null.");
-        }
-
-        this.resource = resource;
-        this.depositFile = depositFile;
-    }
-
-    /**
      * Obtain the underlying {@code DepositFile}
      *
      * @return the {@code DepositFile}
      */
     public DepositFile getDepositFile() {
         return depositFile;
-    }
-
-    /**
-     * Set the underlying {@code DepositFile}
-     *
-     * @param depositFile the {@code DepositFile}
-     */
-    public void setDepositFile(DepositFile depositFile) {
-        if (depositFile == null) {
-            throw new IllegalArgumentException("DepositFile must not be null.");
-        }
-        this.depositFile = depositFile;
     }
 
     /**
@@ -133,7 +103,7 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -147,7 +117,7 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -161,7 +131,7 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -175,7 +145,7 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -189,12 +159,13 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NotNull
     @Override
     public URL getURL() throws IOException {
         assertState();
@@ -203,12 +174,13 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NotNull
     @Override
     public URI getURI() throws IOException {
         assertState();
@@ -217,12 +189,13 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NotNull
     @Override
     public File getFile() throws IOException {
         assertState();
@@ -231,12 +204,13 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NotNull
     @Override
     public ReadableByteChannel readableChannel() throws IOException {
         assertState();
@@ -245,7 +219,7 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -259,7 +233,7 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -273,21 +247,22 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NotNull
     @Override
-    public Resource createRelative(String relativePath) throws IOException {
+    public Resource createRelative(@NotNull String relativePath) throws IOException {
         assertState();
         return resource.createRelative(relativePath);
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -302,12 +277,13 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NotNull
     @Override
     public String getDescription() {
         assertState();
@@ -316,12 +292,13 @@ public class DepositFileResource implements Resource {
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NotNull
     @Override
     public InputStream getInputStream() throws IOException {
         assertState();
