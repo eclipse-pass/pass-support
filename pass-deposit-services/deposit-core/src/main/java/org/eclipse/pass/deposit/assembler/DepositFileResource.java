@@ -23,10 +23,10 @@ import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 
 import org.eclipse.pass.deposit.model.DepositFile;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -165,7 +165,7 @@ public class DepositFileResource implements Resource {
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
-    @NotNull
+    @NonNull
     @Override
     public URL getURL() throws IOException {
         assertState();
@@ -180,7 +180,7 @@ public class DepositFileResource implements Resource {
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
-    @NotNull
+    @NonNull
     @Override
     public URI getURI() throws IOException {
         assertState();
@@ -195,7 +195,7 @@ public class DepositFileResource implements Resource {
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
-    @NotNull
+    @NonNull
     @Override
     public File getFile() throws IOException {
         assertState();
@@ -210,7 +210,7 @@ public class DepositFileResource implements Resource {
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
-    @NotNull
+    @NonNull
     @Override
     public ReadableByteChannel readableChannel() throws IOException {
         assertState();
@@ -253,9 +253,9 @@ public class DepositFileResource implements Resource {
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
-    @NotNull
+    @NonNull
     @Override
-    public Resource createRelative(@NotNull String relativePath) throws IOException {
+    public Resource createRelative(@NonNull String relativePath) throws IOException {
         assertState();
         return resource.createRelative(relativePath);
     }
@@ -283,7 +283,7 @@ public class DepositFileResource implements Resource {
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
-    @NotNull
+    @NonNull
     @Override
     public String getDescription() {
         assertState();
@@ -298,7 +298,7 @@ public class DepositFileResource implements Resource {
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
-    @NotNull
+    @NonNull
     @Override
     public InputStream getInputStream() throws IOException {
         assertState();
