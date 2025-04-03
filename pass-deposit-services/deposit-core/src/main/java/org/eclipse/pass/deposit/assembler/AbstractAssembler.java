@@ -195,49 +195,9 @@ public abstract class AbstractAssembler implements Assembler {
         Resource resource = getResource(depositFile);
         DepositFileResource depositFileResource = new DepositFileResource(depositFile, resource);
         if (LOG.isTraceEnabled()) {
-            logTrace(depositFileResource);
+            logDepositFileResource(depositFileResource);
         }
         return depositFileResource;
-    }
-
-    private void logTrace(DepositFileResource depositFileResource) {
-        try {
-            LOG.trace("""
-                    Processing DepositFileResource:
-                    \tresource: '{}'
-                    \t\tresource.URI: '{}'
-                    \tdepositFile: '{}'
-                    \t\tdepositFile.name: '{}'
-                    \t\tdepositFile.label: '{}'
-                    \t\tdepositFile.type: '{}'
-                    \t\tdepositFile.location: '{}'
-                    """,
-                depositFileResource.getResource(),
-                depositFileResource.getResource().getURI(),
-                depositFileResource.getDepositFile(),
-                depositFileResource.getDepositFile().getName(),
-                depositFileResource.getDepositFile().getLabel(),
-                depositFileResource.getDepositFile().getType(),
-                depositFileResource.getDepositFile().getLocation());
-        } catch (IOException e) {
-            LOG.trace("""
-                    Caught exception processing DepositFileResource:
-                    \tresource: '{}'
-                    \t\tresource.URI: Error getting URI '{}'
-                    \tdepositFile: '{}'
-                    \t\tdepositFile.name: '{}'
-                    \t\tdepositFile.label: '{}'
-                    \t\tdepositFile.type: '{}'
-                    \t\tdepositFile.location: '{}'
-                    """,
-                depositFileResource.getResource(),
-                e.getMessage(),
-                depositFileResource.getDepositFile(),
-                depositFileResource.getDepositFile().getName(),
-                depositFileResource.getDepositFile().getLabel(),
-                depositFileResource.getDepositFile().getType() ,
-                depositFileResource.getDepositFile().getLocation(), e);
-        }
     }
 
     private Resource getResource(DepositFile depositFile) {
@@ -279,6 +239,46 @@ public abstract class AbstractAssembler implements Assembler {
 
     private boolean isClasspathResource(String location) {
         return location.startsWith(CLASSPATH_PREFIX) || location.startsWith(WILDCARD_CLASSPATH_PREFIX);
+    }
+
+    private void logDepositFileResource(DepositFileResource depositFileResource) {
+        try {
+            LOG.trace("""
+                    Processing DepositFileResource:
+                    \tresource: '{}'
+                    \t\tresource.URI: '{}'
+                    \tdepositFile: '{}'
+                    \t\tdepositFile.name: '{}'
+                    \t\tdepositFile.label: '{}'
+                    \t\tdepositFile.type: '{}'
+                    \t\tdepositFile.location: '{}'
+                    """,
+                depositFileResource.getResource(),
+                depositFileResource.getResource().getURI(),
+                depositFileResource.getDepositFile(),
+                depositFileResource.getDepositFile().getName(),
+                depositFileResource.getDepositFile().getLabel(),
+                depositFileResource.getDepositFile().getType(),
+                depositFileResource.getDepositFile().getLocation());
+        } catch (IOException e) {
+            LOG.trace("""
+                    Caught exception processing DepositFileResource:
+                    \tresource: '{}'
+                    \t\tresource.URI: Error getting URI '{}'
+                    \tdepositFile: '{}'
+                    \t\tdepositFile.name: '{}'
+                    \t\tdepositFile.label: '{}'
+                    \t\tdepositFile.type: '{}'
+                    \t\tdepositFile.location: '{}'
+                    """,
+                depositFileResource.getResource(),
+                e.getMessage(),
+                depositFileResource.getDepositFile(),
+                depositFileResource.getDepositFile().getName(),
+                depositFileResource.getDepositFile().getLabel(),
+                depositFileResource.getDepositFile().getType() ,
+                depositFileResource.getDepositFile().getLocation(), e);
+        }
     }
 
 }
