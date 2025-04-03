@@ -48,21 +48,26 @@ import org.springframework.lang.Nullable;
  */
 public class DepositFileResource implements Resource {
 
-    private Resource resource;
+    private final Resource resource;
 
     private final DepositFile depositFile;
 
     /**
-     * Create a new instance.  The underlying {@code Resource} must be {@link #setResource(Resource) set} after
-     * construction.
+     * Create a new instance with the {@code resource} supplying the bytes for the {@code depositFile}.
      *
      * @param depositFile the DepositFile
+     * @param resource    the underlying Resource
      */
-    public DepositFileResource(DepositFile depositFile) {
+    public DepositFileResource(DepositFile depositFile, Resource resource) {
+        if (resource == null) {
+            throw new IllegalArgumentException("Spring Resource must not be null.");
+        }
+
         if (depositFile == null) {
             throw new IllegalArgumentException("DepositFile must not be null.");
         }
 
+        this.resource = resource;
         this.depositFile = depositFile;
     }
 
@@ -77,28 +82,12 @@ public class DepositFileResource implements Resource {
 
     /**
      * Obtain the underlying Spring {@code Resource}.  All {@link Resource} methods on this class forward to the
-     * instance returned by this method.  If this method returns {@code null}, all {@code Resource} methods will throw
-     * an {@code IllegalStateException} until the {@code Resource} is {@link #setResource(Resource) set}.
+     * instance returned by this method.
      *
      * @return the Spring {@code Resource}
      */
     public Resource getResource() {
         return resource;
-    }
-
-    /**
-     * Set the underlying Spring {@code Resource}.  All {@link Resource} methods on this class forward to the instance
-     * set here.  Until this method is invoked with a non-{@code null} {@code Resource}, all {@code Resource} methods on
-     * this class will throw {@code IllegalArgumentException}.
-     *
-     * @param resource the Spring {@code Resource}
-     * @throws IllegalArgumentException if {@code resource} is {@code null}
-     */
-    public void setResource(Resource resource) {
-        if (resource == null) {
-            throw new IllegalArgumentException("Spring Resource must not be null.");
-        }
-        this.resource = resource;
     }
 
     /**
@@ -111,7 +100,6 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean exists() {
-        assertState();
         return resource.exists();
     }
 
@@ -125,7 +113,6 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean isReadable() {
-        assertState();
         return resource.isReadable();
     }
 
@@ -139,7 +126,6 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean isOpen() {
-        assertState();
         return resource.isOpen();
     }
 
@@ -153,7 +139,6 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean isFile() {
-        assertState();
         return resource.isFile();
     }
 
@@ -168,7 +153,6 @@ public class DepositFileResource implements Resource {
     @NonNull
     @Override
     public URL getURL() throws IOException {
-        assertState();
         return resource.getURL();
     }
 
@@ -183,7 +167,6 @@ public class DepositFileResource implements Resource {
     @NonNull
     @Override
     public URI getURI() throws IOException {
-        assertState();
         return resource.getURI();
     }
 
@@ -198,7 +181,6 @@ public class DepositFileResource implements Resource {
     @NonNull
     @Override
     public File getFile() throws IOException {
-        assertState();
         return resource.getFile();
     }
 
@@ -213,7 +195,6 @@ public class DepositFileResource implements Resource {
     @NonNull
     @Override
     public ReadableByteChannel readableChannel() throws IOException {
-        assertState();
         return resource.readableChannel();
     }
 
@@ -227,7 +208,6 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public long contentLength() throws IOException {
-        assertState();
         return resource.contentLength();
     }
 
@@ -241,7 +221,6 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public long lastModified() throws IOException {
-        assertState();
         return resource.lastModified();
     }
 
@@ -256,7 +235,6 @@ public class DepositFileResource implements Resource {
     @NonNull
     @Override
     public Resource createRelative(@NonNull String relativePath) throws IOException {
-        assertState();
         return resource.createRelative(relativePath);
     }
 
@@ -271,7 +249,6 @@ public class DepositFileResource implements Resource {
     @Nullable
     @Override
     public String getFilename() {
-        assertState();
         return resource.getFilename();
     }
 
@@ -286,7 +263,6 @@ public class DepositFileResource implements Resource {
     @NonNull
     @Override
     public String getDescription() {
-        assertState();
         return resource.getDescription();
     }
 
@@ -301,15 +277,7 @@ public class DepositFileResource implements Resource {
     @NonNull
     @Override
     public InputStream getInputStream() throws IOException {
-        assertState();
         return resource.getInputStream();
-    }
-
-    private void assertState() {
-        if (this.resource == null) {
-            throw new IllegalStateException("The delegate Spring Resource is null: has setResource(Resource) been " +
-                                            "called?");
-        }
     }
 
     @Override

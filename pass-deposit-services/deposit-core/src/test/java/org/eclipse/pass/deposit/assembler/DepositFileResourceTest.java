@@ -44,8 +44,7 @@ class DepositFileResourceTest {
         ClassPathResource resource = new ClassPathResource(depositFile.getLocation());
 
         // WHEN
-        DepositFileResource depositFileResource = new DepositFileResource(depositFile);
-        depositFileResource.setResource(resource);
+        DepositFileResource depositFileResource = new DepositFileResource(depositFile, resource);
 
         // THEN
         assertTrue(depositFileResource.exists());
@@ -72,8 +71,7 @@ class DepositFileResourceTest {
         DepositFile depositFile = new DepositFile();
         depositFile.setLocation("/submissions/sample1/Chart.jpg");
         ClassPathResource resource = new ClassPathResource(depositFile.getLocation());
-        DepositFileResource depositFileResource = new DepositFileResource(depositFile);
-        depositFileResource.setResource(resource);
+        DepositFileResource depositFileResource = new DepositFileResource(depositFile, resource);
 
         // WHEN
         Resource relativeResource = depositFileResource.createRelative("Figure2.png");
