@@ -24,9 +24,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.eclipse.deposit.util.spring.EncodingClassPathResource;
+import org.eclipse.pass.deposit.DepositServiceRuntimeException;
 import org.eclipse.pass.deposit.model.DepositFile;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.support.client.PassClient;
@@ -77,7 +77,7 @@ public abstract class AbstractAssembler implements Assembler {
      * @param mbf used by implementations to create package metadata
      * @param rbf used by implementations to create package resource metadata
      */
-    public AbstractAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, PassClient passClient) {
+    protected AbstractAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, PassClient passClient) {
         this.mbf = mbf;
         this.rbf = rbf;
         this.passClient = passClient;
@@ -165,95 +165,7 @@ public abstract class AbstractAssembler implements Assembler {
         // Locate byte streams containing uploaded manuscript and any supplement data
         // essentially, the custodial content of the package (i.e. excluding package-specific
         // metadata such as bagit tag files, or mets xml files)
-        return manifest
-            .stream()
-            .map(DepositFileResource::new)
-            .peek(dfr -> {
-                try {
-                    LOG.trace("Processing DepositFileResource:" +
-                              "\n\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t\t{}: '{}'",
-                              "resource", dfr.getResource(),
-                              "resource.URI", dfr.getResource() != null ? dfr.getResource().getURI() : null,
-                              "depositFile", dfr.getDepositFile(),
-                              "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
-                              "depositFile.label",
-                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
-                              "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
-                              "depositFile.location",
-                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null);
-                } catch (IOException e) {
-                    LOG.trace("Caught exception processing DepositFileResource:" +
-                              "\n\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t\t{}: '{}'" +
-                              "\n\t\t{}: '{}'",
-                              "resource", dfr.getResource(),
-                              "resource.URI", dfr.getResource() != null ? "Error getting URI: " + e.getMessage() : null,
-                              "depositFile", dfr.getDepositFile(),
-                              "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
-                              "depositFile.label",
-                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
-                              "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
-                              "depositFile.location",
-                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null, e);
-                }
-            })
-            .peek(dfr -> {
-                String location = dfr.getDepositFile().getLocation();
-                Resource delegateResource = null;
-
-                if (location.startsWith(FILE_PREFIX)) {
-                    try {
-                        delegateResource = new UrlResource(location);
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException("Unable to create URL resource for file location '" + location
-                                                   + "': " + e.getMessage(), e);
-                    }
-                } else if (location.startsWith(CLASSPATH_PREFIX) ||
-                           location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
-                    if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
-                        delegateResource = new ClassPathResource(
-                            location.substring(WILDCARD_CLASSPATH_PREFIX.length()));
-                    } else {
-
-                        delegateResource = new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
-                    }
-                } else if (location.startsWith(ENCODED_CLASSPATH_PREFIX)) {
-                    delegateResource = new EncodingClassPathResource(
-                        location.substring(ENCODED_CLASSPATH_PREFIX.length()));
-                } else if (Objects.nonNull(dfr.getDepositFile().getPassFileId())) {
-                    String passFileId = dfr.getDepositFile().getPassFileId();
-                    LOG.trace("Returning PassFileResource for Pass File {}", passFileId);
-                    delegateResource = new PassFileResource(passClient, passFileId, dfr.getDepositFile().getName());
-                } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX) ||
-                           location.startsWith(JAR_PREFIX)) {
-                    try {
-                        delegateResource = new UrlResource(location);
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e.getMessage(), e);
-                    }
-                } else if (location.contains("/") || location.contains("\\")) {
-                    // assume it is a file
-                    delegateResource = new FileSystemResource(location);
-                }
-
-                if (delegateResource == null) {
-                    throw new RuntimeException(String.format(ERR_MAPPING_LOCATION, location));
-                }
-
-                dfr.setResource(delegateResource);
-
-            })
-            .collect(Collectors.toList());
+        return manifest.stream().map(this::getDepositFileResource).toList();
     }
 
     /**
@@ -268,7 +180,7 @@ public abstract class AbstractAssembler implements Assembler {
      *                                  characters)
      */
     public static String sanitizeFilename(String candidateFilename) {
-        if (candidateFilename == null || candidateFilename.length() == 0) {
+        if (candidateFilename == null || candidateFilename.isEmpty()) {
             throw new IllegalArgumentException("Supplied name was null or the empty string.");
         }
 
@@ -277,6 +189,96 @@ public abstract class AbstractAssembler implements Assembler {
         LOG.trace("Filename was sanitized from '{}' to '{}'", candidateFilename, result);
 
         return result;
+    }
+
+    private DepositFileResource getDepositFileResource(DepositFile depositFile) {
+        Resource resource = getResource(depositFile);
+        DepositFileResource depositFileResource = new DepositFileResource(depositFile, resource);
+        if (LOG.isTraceEnabled()) {
+            logTrace(depositFileResource);
+        }
+        return depositFileResource;
+    }
+
+    private void logTrace(DepositFileResource depositFileResource) {
+        try {
+            LOG.trace("""
+                    Processing DepositFileResource:
+                    \tresource: '{}'
+                    \t\tresource.URI: '{}'
+                    \tdepositFile: '{}'
+                    \t\tdepositFile.name: '{}'
+                    \t\tdepositFile.label: '{}'
+                    \t\tdepositFile.type: '{}'
+                    \t\tdepositFile.location: '{}'
+                    """,
+                depositFileResource.getResource(),
+                depositFileResource.getResource().getURI(),
+                depositFileResource.getDepositFile(),
+                depositFileResource.getDepositFile().getName(),
+                depositFileResource.getDepositFile().getLabel(),
+                depositFileResource.getDepositFile().getType(),
+                depositFileResource.getDepositFile().getLocation());
+        } catch (IOException e) {
+            LOG.trace("""
+                    Caught exception processing DepositFileResource:
+                    \tresource: '{}'
+                    \t\tresource.URI: Error getting URI '{}'
+                    \tdepositFile: '{}'
+                    \t\tdepositFile.name: '{}'
+                    \t\tdepositFile.label: '{}'
+                    \t\tdepositFile.type: '{}'
+                    \t\tdepositFile.location: '{}'
+                    """,
+                depositFileResource.getResource(),
+                e.getMessage(),
+                depositFileResource.getDepositFile(),
+                depositFileResource.getDepositFile().getName(),
+                depositFileResource.getDepositFile().getLabel(),
+                depositFileResource.getDepositFile().getType() ,
+                depositFileResource.getDepositFile().getLocation(), e);
+        }
+    }
+
+    private Resource getResource(DepositFile depositFile) {
+        String location = depositFile.getLocation();
+        if (isURLResource(location)) {
+            try {
+                return new UrlResource(location);
+            } catch (MalformedURLException e) {
+                throw new DepositServiceRuntimeException("Invalid resource URL", e);
+            }
+        } else if (isClasspathResource(location)) {
+            return getClasspathResource(location);
+        } else if (location.startsWith(ENCODED_CLASSPATH_PREFIX)) {
+            return new EncodingClassPathResource(location.substring(ENCODED_CLASSPATH_PREFIX.length()));
+        } else if (Objects.nonNull(depositFile.getPassFileId())) {
+            String passFileId = depositFile.getPassFileId();
+            LOG.trace("Returning PassFileResource for Pass File {}", passFileId);
+            return new PassFileResource(passClient, passFileId, depositFile.getName());
+        } else if (location.contains("/") || location.contains("\\")) {
+            return new FileSystemResource(location);
+        } else {
+            throw new DepositServiceRuntimeException(String.format(ERR_MAPPING_LOCATION, location));
+        }
+
+    }
+
+    private Resource getClasspathResource(String location) {
+        if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
+            return new ClassPathResource(location.substring(WILDCARD_CLASSPATH_PREFIX.length()));
+        } else {
+            return new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
+        }
+    }
+
+    private boolean isURLResource(String location) {
+        return location.startsWith(FILE_PREFIX) || location.startsWith(HTTP_PREFIX)
+            || location.startsWith(HTTPS_PREFIX) || location.startsWith(JAR_PREFIX);
+    }
+
+    private boolean isClasspathResource(String location) {
+        return location.startsWith(CLASSPATH_PREFIX) || location.startsWith(WILDCARD_CLASSPATH_PREFIX);
     }
 
 }
