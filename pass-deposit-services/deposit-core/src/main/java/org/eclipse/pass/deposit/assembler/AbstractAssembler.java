@@ -194,9 +194,7 @@ public abstract class AbstractAssembler implements Assembler {
     private DepositFileResource getDepositFileResource(DepositFile depositFile) {
         Resource resource = getResource(depositFile);
         DepositFileResource depositFileResource = new DepositFileResource(depositFile, resource);
-        if (LOG.isTraceEnabled()) {
-            logDepositFileResource(depositFileResource);
-        }
+        logDepositFileResource(depositFileResource);
         return depositFileResource;
     }
 
@@ -242,8 +240,9 @@ public abstract class AbstractAssembler implements Assembler {
     }
 
     private void logDepositFileResource(DepositFileResource depositFileResource) {
-        try {
-            LOG.trace("""
+        if (LOG.isTraceEnabled()) {
+            try {
+                LOG.trace("""
                     Processing DepositFileResource:
                     \tresource: '{}'
                     \t\tresource.URI: '{}'
@@ -253,15 +252,15 @@ public abstract class AbstractAssembler implements Assembler {
                     \t\tdepositFile.type: '{}'
                     \t\tdepositFile.location: '{}'
                     """,
-                depositFileResource.getResource(),
-                depositFileResource.getResource().getURI(),
-                depositFileResource.getDepositFile(),
-                depositFileResource.getDepositFile().getName(),
-                depositFileResource.getDepositFile().getLabel(),
-                depositFileResource.getDepositFile().getType(),
-                depositFileResource.getDepositFile().getLocation());
-        } catch (IOException e) {
-            LOG.trace("""
+                    depositFileResource.getResource(),
+                    depositFileResource.getResource().getURI(),
+                    depositFileResource.getDepositFile(),
+                    depositFileResource.getDepositFile().getName(),
+                    depositFileResource.getDepositFile().getLabel(),
+                    depositFileResource.getDepositFile().getType(),
+                    depositFileResource.getDepositFile().getLocation());
+            } catch (IOException e) {
+                LOG.trace("""
                     Caught exception processing DepositFileResource:
                     \tresource: '{}'
                     \t\tresource.URI: Error getting URI '{}'
@@ -271,13 +270,14 @@ public abstract class AbstractAssembler implements Assembler {
                     \t\tdepositFile.type: '{}'
                     \t\tdepositFile.location: '{}'
                     """,
-                depositFileResource.getResource(),
-                e.getMessage(),
-                depositFileResource.getDepositFile(),
-                depositFileResource.getDepositFile().getName(),
-                depositFileResource.getDepositFile().getLabel(),
-                depositFileResource.getDepositFile().getType() ,
-                depositFileResource.getDepositFile().getLocation(), e);
+                    depositFileResource.getResource(),
+                    e.getMessage(),
+                    depositFileResource.getDepositFile(),
+                    depositFileResource.getDepositFile().getName(),
+                    depositFileResource.getDepositFile().getLabel(),
+                    depositFileResource.getDepositFile().getType() ,
+                    depositFileResource.getDepositFile().getLocation(), e);
+            }
         }
     }
 
