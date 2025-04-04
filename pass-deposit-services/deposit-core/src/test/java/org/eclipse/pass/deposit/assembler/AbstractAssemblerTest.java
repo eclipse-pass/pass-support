@@ -106,6 +106,7 @@ class AbstractAssemblerTest {
 
         // THEN
         assertNotNull(packageStream);
+        assertEquals(1, packageStream.getCustodialContent().size());
         DepositFileResource depositFileResource = packageStream.getCustodialContent().get(0);
         assertNotNull(depositFileResource);
         assertEquals(expectedResourceClass, depositFileResource.getResource().getClass());
