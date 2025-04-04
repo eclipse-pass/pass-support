@@ -26,6 +26,7 @@ import org.eclipse.pass.deposit.model.DepositFile;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -47,23 +48,9 @@ import org.springframework.lang.Nullable;
  */
 public class DepositFileResource implements Resource {
 
-    private Resource resource;
+    private final Resource resource;
 
-    private DepositFile depositFile;
-
-    /**
-     * Create a new instance.  The underlying {@code Resource} must be {@link #setResource(Resource) set} after
-     * construction.
-     *
-     * @param depositFile the DepositFile
-     */
-    public DepositFileResource(DepositFile depositFile) {
-        if (depositFile == null) {
-            throw new IllegalArgumentException("DepositFile must not be null.");
-        }
-
-        this.depositFile = depositFile;
-    }
+    private final DepositFile depositFile;
 
     /**
      * Create a new instance with the {@code resource} supplying the bytes for the {@code depositFile}.
@@ -94,21 +81,8 @@ public class DepositFileResource implements Resource {
     }
 
     /**
-     * Set the underlying {@code DepositFile}
-     *
-     * @param depositFile the {@code DepositFile}
-     */
-    public void setDepositFile(DepositFile depositFile) {
-        if (depositFile == null) {
-            throw new IllegalArgumentException("DepositFile must not be null.");
-        }
-        this.depositFile = depositFile;
-    }
-
-    /**
      * Obtain the underlying Spring {@code Resource}.  All {@link Resource} methods on this class forward to the
-     * instance returned by this method.  If this method returns {@code null}, all {@code Resource} methods will throw
-     * an {@code IllegalStateException} until the {@code Resource} is {@link #setResource(Resource) set}.
+     * instance returned by this method.
      *
      * @return the Spring {@code Resource}
      */
@@ -117,23 +91,8 @@ public class DepositFileResource implements Resource {
     }
 
     /**
-     * Set the underlying Spring {@code Resource}.  All {@link Resource} methods on this class forward to the instance
-     * set here.  Until this method is invoked with a non-{@code null} {@code Resource}, all {@code Resource} methods on
-     * this class will throw {@code IllegalArgumentException}.
-     *
-     * @param resource the Spring {@code Resource}
-     * @throws IllegalArgumentException if {@code resource} is {@code null}
-     */
-    public void setResource(Resource resource) {
-        if (resource == null) {
-            throw new IllegalArgumentException("Spring Resource must not be null.");
-        }
-        this.resource = resource;
-    }
-
-    /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -141,13 +100,12 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean exists() {
-        assertState();
         return resource.exists();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -155,13 +113,12 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean isReadable() {
-        assertState();
         return resource.isReadable();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -169,13 +126,12 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean isOpen() {
-        assertState();
         return resource.isOpen();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -183,69 +139,68 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public boolean isFile() {
-        assertState();
         return resource.isFile();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NonNull
     @Override
     public URL getURL() throws IOException {
-        assertState();
         return resource.getURL();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NonNull
     @Override
     public URI getURI() throws IOException {
-        assertState();
         return resource.getURI();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NonNull
     @Override
     public File getFile() throws IOException {
-        assertState();
         return resource.getFile();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NonNull
     @Override
     public ReadableByteChannel readableChannel() throws IOException {
-        assertState();
         return resource.readableChannel();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -253,13 +208,12 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public long contentLength() throws IOException {
-        assertState();
         return resource.contentLength();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -267,27 +221,26 @@ public class DepositFileResource implements Resource {
      */
     @Override
     public long lastModified() throws IOException {
-        assertState();
         return resource.lastModified();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NonNull
     @Override
-    public Resource createRelative(String relativePath) throws IOException {
-        assertState();
+    public Resource createRelative(@NonNull String relativePath) throws IOException {
         return resource.createRelative(relativePath);
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -296,43 +249,35 @@ public class DepositFileResource implements Resource {
     @Nullable
     @Override
     public String getFilename() {
-        assertState();
         return resource.getFilename();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NonNull
     @Override
     public String getDescription() {
-        assertState();
         return resource.getDescription();
     }
 
     /**
      * <em>Implementation note:</em> forwards to the underlying Spring {@link Resource}.
-     *
+     * <p>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
      * @throws IllegalStateException if the underlying Spring {@code Resource} has not been set
      */
+    @NonNull
     @Override
     public InputStream getInputStream() throws IOException {
-        assertState();
         return resource.getInputStream();
-    }
-
-    private void assertState() {
-        if (this.resource == null) {
-            throw new IllegalStateException("The delegate Spring Resource is null: has setResource(Resource) been " +
-                                            "called?");
-        }
     }
 
     @Override

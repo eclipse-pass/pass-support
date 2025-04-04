@@ -30,9 +30,6 @@ public class RepositoryConfig {
 
     private String repositoryKey;
 
-    @JsonProperty("deposit-config")
-    private RepositoryDepositConfig repositoryDepositConfig;
-
     @JsonProperty("transport-config")
     private TransportConfig transportConfig;
 
@@ -45,14 +42,6 @@ public class RepositoryConfig {
 
     public void setRepositoryKey(String repositoryKey) {
         this.repositoryKey = repositoryKey;
-    }
-
-    public RepositoryDepositConfig getRepositoryDepositConfig() {
-        return repositoryDepositConfig;
-    }
-
-    public void setRepositoryDepositConfig(RepositoryDepositConfig repositoryDepositConfig) {
-        this.repositoryDepositConfig = repositoryDepositConfig;
     }
 
     public TransportConfig getTransportConfig() {
@@ -85,10 +74,6 @@ public class RepositoryConfig {
         if (repositoryKey != null ? !repositoryKey.equals(that.repositoryKey) : that.repositoryKey != null) {
             return false;
         }
-        if (repositoryDepositConfig != null ? !repositoryDepositConfig.equals(
-            that.repositoryDepositConfig) : that.repositoryDepositConfig != null) {
-            return false;
-        }
         if (transportConfig != null ? !transportConfig.equals(that.transportConfig) : that.transportConfig != null) {
             return false;
         }
@@ -98,7 +83,6 @@ public class RepositoryConfig {
     @Override
     public int hashCode() {
         int result = repositoryKey != null ? repositoryKey.hashCode() : 0;
-        result = 31 * result + (repositoryDepositConfig != null ? repositoryDepositConfig.hashCode() : 0);
         result = 31 * result + (transportConfig != null ? transportConfig.hashCode() : 0);
         result = 31 * result + (assemblerConfig != null ? assemblerConfig.hashCode() : 0);
         return result;
@@ -106,8 +90,7 @@ public class RepositoryConfig {
 
     @Override
     public String toString() {
-        return "RepositoryConfig{" + "repositoryKey='" + repositoryKey + '\'' + ", repositoryDepositConfig=" +
-               repositoryDepositConfig + ", transportConfig=" + transportConfig +
+        return "RepositoryConfig{" + "repositoryKey='" + repositoryKey + '\'' + ", transportConfig=" + transportConfig +
                ", assemblerConfig=" + assemblerConfig + '}';
     }
 
