@@ -18,7 +18,6 @@ package org.eclipse.pass.deposit.assembler;
 
 import static org.eclipse.pass.deposit.assembler.AssemblerSupport.buildMetadata;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -194,7 +193,7 @@ public abstract class AbstractAssembler implements Assembler {
     private DepositFileResource getDepositFileResource(DepositFile depositFile) {
         Resource resource = getResource(depositFile);
         DepositFileResource depositFileResource = new DepositFileResource(depositFile, resource);
-        logDepositFileResource(depositFileResource);
+        LOG.trace("Processing DepositFileResource: {}", depositFileResource);
         return depositFileResource;
     }
 
@@ -204,7 +203,7 @@ public abstract class AbstractAssembler implements Assembler {
             try {
                 return new UrlResource(location);
             } catch (MalformedURLException e) {
-                throw new DepositServiceRuntimeException("Invalid resource URL", e);
+                throw new DepositServiceRuntimeException("Invalid resource URL: " + location, e);
             }
         } else if (isClasspathResource(location)) {
             return getClasspathResource(location);
@@ -237,48 +236,6 @@ public abstract class AbstractAssembler implements Assembler {
 
     private boolean isClasspathResource(String location) {
         return location.startsWith(CLASSPATH_PREFIX) || location.startsWith(WILDCARD_CLASSPATH_PREFIX);
-    }
-
-    private void logDepositFileResource(DepositFileResource depositFileResource) {
-        if (LOG.isTraceEnabled()) {
-            try {
-                LOG.trace("""
-                    Processing DepositFileResource:
-                    \tresource: '{}'
-                    \t\tresource.URI: '{}'
-                    \tdepositFile: '{}'
-                    \t\tdepositFile.name: '{}'
-                    \t\tdepositFile.label: '{}'
-                    \t\tdepositFile.type: '{}'
-                    \t\tdepositFile.location: '{}'
-                    """,
-                    depositFileResource.getResource(),
-                    depositFileResource.getResource().getURI(),
-                    depositFileResource.getDepositFile(),
-                    depositFileResource.getDepositFile().getName(),
-                    depositFileResource.getDepositFile().getLabel(),
-                    depositFileResource.getDepositFile().getType(),
-                    depositFileResource.getDepositFile().getLocation());
-            } catch (IOException e) {
-                LOG.trace("""
-                    Caught exception processing DepositFileResource:
-                    \tresource: '{}'
-                    \t\tresource.URI: Error getting URI '{}'
-                    \tdepositFile: '{}'
-                    \t\tdepositFile.name: '{}'
-                    \t\tdepositFile.label: '{}'
-                    \t\tdepositFile.type: '{}'
-                    \t\tdepositFile.location: '{}'
-                    """,
-                    depositFileResource.getResource(),
-                    e.getMessage(),
-                    depositFileResource.getDepositFile(),
-                    depositFileResource.getDepositFile().getName(),
-                    depositFileResource.getDepositFile().getLabel(),
-                    depositFileResource.getDepositFile().getType() ,
-                    depositFileResource.getDepositFile().getLocation(), e);
-            }
-        }
     }
 
 }
