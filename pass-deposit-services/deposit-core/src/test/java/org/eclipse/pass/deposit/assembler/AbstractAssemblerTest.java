@@ -63,7 +63,7 @@ class AbstractAssemblerTest {
     private static Stream<Arguments> provideFileLocations() {
         return Stream.of(
             Arguments.of("file:///test_deposit_file", UrlResource.class, null),
-            Arguments.of("http:///test_deposit_file", UrlResource.class, null),
+            Arguments.of("http://test_deposit_file", UrlResource.class, null),
             Arguments.of("https://test_deposit_file", UrlResource.class, null),
             Arguments.of("jar:file:/test_deposit_file.jar!/test.xml", UrlResource.class, null),
             Arguments.of("classpath:/test_deposit_file", ClassPathResource.class, null),
@@ -78,6 +78,7 @@ class AbstractAssemblerTest {
     @ParameterizedTest
     @MethodSource("provideSanitizeFilename")
     void testSanitize(String testString, String expectedResult) {
+        // GIVEN WHEN THEN
         assertEquals(expectedResult, AbstractAssembler.sanitizeFilename(testString));
         assertThrows(IllegalArgumentException.class,
             () -> AbstractAssembler.sanitizeFilename(null));
@@ -89,6 +90,7 @@ class AbstractAssemblerTest {
     @MethodSource("provideFileLocations")
     void testResolveCustodialResources(String fileLocation, Class<? extends Resource> expectedResourceClass,
                                        String expectedPassFileId) {
+        // GIVEN
         Assembler assembler = getAssembler();
         DepositSubmission submission = new DepositSubmission();
         submission.setName("test_submission");
@@ -99,8 +101,10 @@ class AbstractAssemblerTest {
         depositFile.setPassFileId(expectedPassFileId);
         depositFiles.add(depositFile);
 
+        // WHEN
         PackageStream packageStream = assembler.assemble(submission, new HashMap<>());
 
+        // THEN
         assertNotNull(packageStream);
         DepositFileResource depositFileResource = packageStream.getCustodialContent().get(0);
         assertNotNull(depositFileResource);
@@ -109,6 +113,7 @@ class AbstractAssemblerTest {
 
     @Test
     void testResolveCustodialResourcesUnknownResource() {
+        // GIVEN
         Assembler assembler = getAssembler();
         DepositSubmission submission = new DepositSubmission();
         submission.setName("test_submission");
@@ -119,15 +124,18 @@ class AbstractAssemblerTest {
         depositFiles.add(depositFile);
         Map<String, Object> options = new HashMap<>();
 
+        // WHEN
         DepositServiceRuntimeException exception =
             assertThrows(DepositServiceRuntimeException.class, () -> assembler.assemble(submission, options));
 
+        // THEN
         assertEquals("Unable to resolve the location of a submitted file ('invalid_resource') to " +
             "a Spring Resource type.", exception.getMessage());
     }
 
     @Test
     void testResolveCustodialResourcesInvalidUrl() {
+        // GIVEN
         Assembler assembler = getAssembler();
         DepositSubmission submission = new DepositSubmission();
         submission.setName("test_submission");
@@ -138,9 +146,11 @@ class AbstractAssemblerTest {
         depositFiles.add(depositFile);
         Map<String, Object> options = new HashMap<>();
 
+        // WHEN
         DepositServiceRuntimeException exception =
             assertThrows(DepositServiceRuntimeException.class, () -> assembler.assemble(submission, options));
 
+        // THEN
         assertEquals("Invalid resource URL: https://test:^^^/", exception.getMessage());
     }
 
