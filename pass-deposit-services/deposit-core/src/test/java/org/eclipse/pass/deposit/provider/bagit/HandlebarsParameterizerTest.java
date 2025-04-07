@@ -55,8 +55,7 @@ class HandlebarsParameterizerTest {
                            Payload-Oxum: {{custodialFileCount}}.{{bagSizeBytes}}
                            Internal-Sender-Identifier: {{submissionUri}}
                            Internal-Sender-Description: Submitted as {{submissionUri}} to PASS on {{submissionDate}}
-                           by {{submissionUserFullName}}
-                           ({{submissionUserEmail}}), published as {{publisherId}}
+                           by {{submissionUserFullName}} ({{submissionUserEmail}}), published as {{publisherId}}
                            """;
 
     private static final String PUBLICATION_DOI = "10.1039/c7fo01251a";
