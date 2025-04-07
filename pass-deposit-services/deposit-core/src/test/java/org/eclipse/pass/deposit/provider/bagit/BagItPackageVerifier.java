@@ -126,7 +126,7 @@ public class BagItPackageVerifier implements PackageVerifier {
         //   The checksum in the manifest matches the calculated checksum
         List<Checksum.OPTS> checksums = null;
         if (map == null || map.isEmpty()) {
-            checksums = Arrays.asList(Checksum.OPTS.SHA512, Checksum.OPTS.MD5);
+            checksums = Arrays.asList(Checksum.OPTS.SHA512);
         } else {
             checksums = (List<Checksum.OPTS>) map.get(Checksum.KEY);
         }
@@ -335,9 +335,6 @@ public class BagItPackageVerifier implements PackageVerifier {
 
         try {
             switch (checksumAlgo) {
-                case MD5:
-                    md = MessageDigest.getInstance("MD5");
-                    break;
                 case SHA256:
                     md = MessageDigest.getInstance("SHA-256");
                     break;

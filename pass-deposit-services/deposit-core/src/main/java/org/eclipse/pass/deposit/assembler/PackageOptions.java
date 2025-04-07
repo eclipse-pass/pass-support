@@ -92,8 +92,7 @@ public interface PackageOptions {
          */
         enum OPTS {
             SHA512,
-            SHA256,
-            MD5
+            SHA256
         }
 
     }

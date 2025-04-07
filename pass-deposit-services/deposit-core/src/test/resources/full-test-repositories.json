@@ -7,8 +7,7 @@
         "archive": "ZIP",
         "compression": "NONE",
         "algorithms": [
-          "sha512",
-          "md5"
+          "sha512"
         ]
       }
     },
@@ -29,8 +28,7 @@
         "archive": "TAR",
         "compression": "GZIP",
         "algorithms": [
-          "sha512",
-          "md5"
+          "sha512"
         ],
         "funder-mapping": {
           "johnshopkins.edu:funder:300032": "ahqr",
@@ -88,8 +86,7 @@
         "archive": "ZIP",
         "compression": "NONE",
         "algorithms": [
-          "sha512",
-          "md5"
+          "sha512"
         ],
         "baginfo-template-resource": "/bag-info.hbm"
       }

@@ -368,9 +368,6 @@ public class BagItPackageProvider implements PackageProvider {
 
         try {
             switch (checksumAlgo) {
-                case MD5:
-                    md = MessageDigest.getInstance("MD5");
-                    break;
                 case SHA256:
                     md = MessageDigest.getInstance("SHA-256");
                     break;

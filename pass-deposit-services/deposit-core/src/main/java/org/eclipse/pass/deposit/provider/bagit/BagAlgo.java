@@ -25,7 +25,6 @@ package org.eclipse.pass.deposit.provider.bagit;
  */
 public enum BagAlgo {
 
-    MD5(new String[] {"md5", "MD5"}, "md5"),
     SHA1(new String[] {"sha-1", "sha1", "SHA1", "SHA-1"}, "sha1"),
     SHA256(new String[] {"sha-256", "sha256", "SHA256", "SHA-256"}, "sha256"),
     SHA512(new String[] {"sha-512", "sha512", "SHA512", "SHA-512"}, "sha512");
