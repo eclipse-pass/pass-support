@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class AssemblerConfigMappingTest extends AbstractJacksonMappingTest {
+class AssemblerConfigMappingTest extends AbstractJacksonMappingTest {
 
     private static final String ASSEMBLER_CONFIG = "" +
                                                    "{\n" +
@@ -35,14 +35,13 @@ public class AssemblerConfigMappingTest extends AbstractJacksonMappingTest {
                                                    "        \"archive\": \"ZIP\",\n" +
                                                    "        \"compression\": \"NONE\",\n" +
                                                    "        \"algorithms\": [\n" +
-                                                   "          \"sha512\",\n" +
-                                                   "          \"md5\"\n" +
+                                                   "          \"sha512\"" +
                                                    "        ]\n" +
                                                    "      }\n" +
                                                    "    }";
 
     @Test
-    public void mapAssemblerConfig() throws IOException {
+    void mapAssemblerConfig() throws IOException {
         AssemblerConfig config = repositoriesMapper.readValue(ASSEMBLER_CONFIG, AssemblerConfig.class);
 
         assertEquals("http://purl.org/net/sword/package/METSDSpaceSIP", config.getSpec());
@@ -50,8 +49,7 @@ public class AssemblerConfigMappingTest extends AbstractJacksonMappingTest {
         AssemblerOptions options = config.getOptions();
         assertEquals("ZIP", options.getArchive());
         assertEquals("NONE", options.getCompression());
-        assertEquals(2, options.getAlgorithms().size());
+        assertEquals(1, options.getAlgorithms().size());
         assertTrue(options.getAlgorithms().contains("sha512"));
-        assertTrue(options.getAlgorithms().contains("md5"));
     }
 }

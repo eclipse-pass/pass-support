@@ -47,7 +47,7 @@ public abstract class AbstractDepositIT extends AbstractSubmissionIT {
 
     private static final String SPEC = "http://purl.org/net/sword/package/METSDSpaceSIP";
     private static final String PACKAGE_PATH = "/packages/example.zip";
-    private static final String CHECKSUM_PATH = PACKAGE_PATH + ".md5";
+    private static final String CHECKSUM_PATH = PACKAGE_PATH + ".sha512";
 
     @Autowired private PreassembledAssembler assembler;
 
@@ -61,7 +61,7 @@ public abstract class AbstractDepositIT extends AbstractSubmissionIT {
     public void setUpSuccess() throws Exception {
         InputStream packageFile = this.getClass().getResourceAsStream(PACKAGE_PATH);
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
-        when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.OPTS.MD5);
+        when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.OPTS.SHA512);
         when(checksum.asHex()).thenReturn(IOUtils.resourceToString(CHECKSUM_PATH, StandardCharsets.UTF_8));
 
         assembler.setSpec(SPEC);

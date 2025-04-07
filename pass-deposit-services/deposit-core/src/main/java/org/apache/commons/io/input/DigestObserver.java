@@ -47,9 +47,6 @@ public class DigestObserver extends ResourceBuilderObserver {
 
         try {
             switch (this.algo) {
-                case MD5:
-                    this.digest = MessageDigest.getInstance("MD5");
-                    break;
                 case SHA256:
                     this.digest = MessageDigest.getInstance("SHA-256");
                     break;

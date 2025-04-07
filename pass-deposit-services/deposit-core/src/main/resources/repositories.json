@@ -7,8 +7,7 @@
         "archive": "ZIP",
         "compression": "NONE",
         "algorithms": [
-          "sha512",
-          "md5"
+          "sha512"
         ]
       }
     },
@@ -29,8 +28,7 @@
         "archive": "ZIP",
         "compression": "NONE",
         "algorithms": [
-          "sha512",
-          "md5"
+          "sha512"
         ]
       }
     },
@@ -51,8 +49,7 @@
         "archive": "ZIP",
         "compression": "NONE",
         "algorithms": [
-          "sha512",
-          "md5"
+          "sha512"
         ],
         "baginfo-template-resource": "/bag-info.hbm"
       }
@@ -74,8 +71,7 @@
         "archive": "ZIP",
         "compression": "NONE",
         "algorithms": [
-          "sha512",
-          "md5"
+          "sha512"
         ]
       }
     },

@@ -39,8 +39,7 @@ import org.eclipse.pass.deposit.assembler.PackageOptions.Compression;
  *         "archive": "ZIP",
  *         "compression": "NONE",
  *         "algorithms": [
- *           "sha512",
- *           "md5"
+ *           "sha512"
  *         ],
  *         "baginfo-template-resource": "/bag-info.hbm"
  *       }
@@ -100,8 +99,7 @@ public class AssemblerOptions {
      *         "archive": "ZIP",
      *         "compression": "NONE",
      *         "algorithms": [
-     *           "sha512",
-     *           "md5"
+     *           "sha512"
      *         ],
      *         "baginfo-template-resource": "/bag-info.hbm"
      *       }
@@ -142,8 +140,7 @@ public class AssemblerOptions {
      *         "archive": "ZIP",
      *         "compression": "NONE",
      *         "algorithms": [
-     *           "sha512",
-     *           "md5"
+     *           "sha512"
      *         ],
      *         "baginfo-template-resource": "/bag-info.hbm"
      *       }

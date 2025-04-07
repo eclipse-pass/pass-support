@@ -26,15 +26,14 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
+class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
 
     private static final String OPTIONS_CONFIG = "" +
                                                  "{\n" +
                                                  "        \"archive\": \"ZIP\",\n" +
                                                  "        \"compression\": \"NONE\",\n" +
                                                  "        \"algorithms\": [\n" +
-                                                 "          \"sha512\",\n" +
-                                                 "          \"md5\"\n" +
+                                                 "          \"sha512\"" +
                                                  "        ]\n" +
                                                  "}";
 
@@ -43,8 +42,7 @@ public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
                                                                    "        \"archive\": \"ZIP\",\n" +
                                                                    "        \"compression\": \"NONE\",\n" +
                                                                    "        \"algorithms\": [\n" +
-                                                                   "          \"sha512\",\n" +
-                                                                   "          \"md5\"\n" +
+                                                                   "          \"sha512\"" +
                                                                    "        ],\n" +
                                                                    "        \"stringkey\": \"stringvalue\",\n" +
                                                                    "        \"arraykey\": [\n" +
@@ -53,26 +51,24 @@ public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
                                                                    "}";
 
     @Test
-    public void mapOptions() throws IOException {
+    void mapOptions() throws IOException {
         AssemblerOptions options = repositoriesMapper.readValue(OPTIONS_CONFIG, AssemblerOptions.class);
 
         assertEquals("ZIP", options.getArchive());
         assertEquals("NONE", options.getCompression());
-        assertEquals(2, options.getAlgorithms().size());
+        assertEquals(1, options.getAlgorithms().size());
         assertTrue(options.getAlgorithms().contains("sha512"));
-        assertTrue(options.getAlgorithms().contains("md5"));
     }
 
     @Test
-    public void mapOptionsWithAddtionalValues() throws IOException {
+    void mapOptionsWithAddtionalValues() throws IOException {
         AssemblerOptions options = repositoriesMapper.readValue(OPTIONS_CONFIG_ADDITIONAL_VALUES,
             AssemblerOptions.class);
 
         assertEquals("ZIP", options.getArchive());
         assertEquals("NONE", options.getCompression());
-        assertEquals(2, options.getAlgorithms().size());
+        assertEquals(1, options.getAlgorithms().size());
         assertTrue(options.getAlgorithms().contains("sha512"));
-        assertTrue(options.getAlgorithms().contains("md5"));
 
         assertEquals("stringvalue", options.getOptionsMap().get("stringkey"));
         assertEquals(singletonList("arrayvalue"), options.getOptionsMap().get("arraykey"));

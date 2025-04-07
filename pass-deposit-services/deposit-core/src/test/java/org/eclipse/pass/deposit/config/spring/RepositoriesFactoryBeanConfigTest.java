@@ -68,13 +68,13 @@ class RepositoriesFactoryBeanConfigTest {
         assertEquals("simpleAssembler", j10p.getAssemblerConfig().getBeanName());
         assertEquals("NONE", j10p.getAssemblerConfig().getOptions().getCompression());
         assertEquals("ZIP", j10p.getAssemblerConfig().getOptions().getArchive());
-        assertEquals(List.of("sha512", "md5"), j10p.getAssemblerConfig().getOptions().getAlgorithms());
+        assertEquals(List.of("sha512"), j10p.getAssemblerConfig().getOptions().getAlgorithms());
         assertEquals(0, j10p.getAssemblerConfig().getOptions().getOptionsMap().size());
         assertEquals("RepositoryConfig{repositoryKey='JScholarship', transportConfig=TransportConfig{" +
             "authRealms=null, protocolBinding=FilesystemBinding{baseDir='target/packages', overwrite='true', " +
             "createIfMissing='true'} ProtocolBinding{protocol='filesystem', serverFqdn='null', serverPort='null'}}, " +
             "assemblerConfig=AssemblerConfig{spec='simple', options=AssemblerOptions{compression='NONE', " +
-            "archive='ZIP', algorithms=[sha512, md5]}, beanName='simpleAssembler'}}", j10p.toString());
+            "archive='ZIP', algorithms=[sha512]}, beanName='simpleAssembler'}}", j10p.toString());
     }
 
     @Test
@@ -89,7 +89,7 @@ class RepositoriesFactoryBeanConfigTest {
         assertEquals("nihmsAssembler", pubMed.getAssemblerConfig().getBeanName());
         assertEquals("GZIP", pubMed.getAssemblerConfig().getOptions().getCompression());
         assertEquals("TAR", pubMed.getAssemblerConfig().getOptions().getArchive());
-        assertEquals(List.of("sha512", "md5"), pubMed.getAssemblerConfig().getOptions().getAlgorithms());
+        assertEquals(List.of("sha512"), pubMed.getAssemblerConfig().getOptions().getAlgorithms());
         assertEquals(35,
             ((Map<?, ?>) pubMed.getAssemblerConfig().getOptions().getOptionsMap().get("funder-mapping")).size());
     }
