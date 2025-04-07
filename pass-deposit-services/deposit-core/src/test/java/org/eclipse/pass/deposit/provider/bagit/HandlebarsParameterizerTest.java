@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit.provider.bagit;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,25 +38,26 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class HandlebarsParameterizerTest {
+class HandlebarsParameterizerTest {
 
-    private static final String HBM_TEMPLATE = "" +
-                                               "Source-Organization: {{sourceOrganization}}\n" +
-                                               "Organization-Address: {{organizationAddress}}\n" +
-                                               "Contact-Name: {{contactName}}\n" +
-                                               "Contact-Phone: {{contactEmail}}\n" +
-                                               "Contact-Email: {{contactPhone}}\n" +
-                                               "External-Description: Submitted as {{submissionUri}} to PASS on " +
-                                               "{{submissionDate}} by {{submissionUserFullName}} " +
-                                               "({{submissionUserEmail}}), published as {{publisherId}}\n" +
-                                               "Bagging-Date: {{currentDate}}\n" +
-                                               "External-Identifier: {{publisherId}}\n" +
-                                               "Bag-Size: {{bagSizeHumanReadable}}\n" +
-                                               "Payload-Oxum: {{custodialFileCount}}.{{bagSizeBytes}}\n" +
-                                               "Internal-Sender-Identifier: {{submissionUri}}\n" +
-                                               "Internal-Sender-Description: Submitted as {{submissionUri}} to PASS " +
-                                               "on {{submissionDate}} by {{submissionUserFullName}} " +
-                                               "({{submissionUserEmail}}), published as {{publisherId}}";
+    private static final String HBM_TEMPLATE =
+                           """
+                           Source-Organization: {{sourceOrganization}}
+                           Organization-Address: {{organizationAddress}}
+                           Contact-Name: {{contactName}}
+                           Contact-Phone: {{contactPhone}}
+                           Contact-Email: {{contactEmail}}
+                           External-Description: Submitted as {{submissionUri}} to PASS on {{submissionDate}}
+                           by {{submissionUserFullName}} ({{submissionUserEmail}}), published as {{publisherId}}
+                           Bagging-Date: {{currentDate}}
+                           External-Identifier: {{publisherId}}
+                           Bag-Size: {{bagSizeHumanReadable}}
+                           Payload-Oxum: {{custodialFileCount}}.{{bagSizeBytes}}
+                           Internal-Sender-Identifier: {{submissionUri}}
+                           Internal-Sender-Description: Submitted as {{submissionUri}} to PASS on {{submissionDate}}
+                           by {{submissionUserFullName}}
+                           ({{submissionUserEmail}}), published as {{publisherId}}
+                           """;
 
     private static final String PUBLICATION_DOI = "10.1039/c7fo01251a";
 
@@ -66,7 +68,7 @@ public class HandlebarsParameterizerTest {
     private HandlebarsParameterizer underTest;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() {
         underTest = new HandlebarsParameterizer(new Handlebars());
 
         Submission passSubmission = new Submission();
@@ -100,10 +102,10 @@ public class HandlebarsParameterizerTest {
         model.setSubmission(passSubmission);
         model.setSubmissionDate(passSubmission.getSubmittedDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         model.setSubmissionUserEmail(submitter.getEmail());
-        model.setSubmissionUserUri(submitter.getId().toString());
+        model.setSubmissionUserUri(submitter.getId());
         model.setSubmissionUserFullName("Joe User");
         model.setPublisherId(PUBLICATION_DOI);
-        model.setSubmissionUri(passSubmission.getId().toString());
+        model.setSubmissionUri(passSubmission.getId());
         model.setBagSizeHumanReadable("15 GiB");
         model.setBagSizeBytes(15 * (round(pow(2, 30))));
         model.setCustodialFileCount(300);
@@ -115,8 +117,10 @@ public class HandlebarsParameterizerTest {
     }
 
     @Test
-    public void simple() {
+    void testSimpleHandlebarsParameterizer() {
         String result = underTest.parameterize(IOUtils.toInputStream(HBM_TEMPLATE, StandardCharsets.UTF_8), model);
-        System.err.println(result);
+        assertTrue(result.contains("Source-Organization: Johns Hopkins"));
+        assertTrue(result.contains("External-Identifier: " + PUBLICATION_DOI));
+        assertTrue(result.contains("Internal-Sender-Description: Submitted as test-sub-id to PASS on"));
     }
 }

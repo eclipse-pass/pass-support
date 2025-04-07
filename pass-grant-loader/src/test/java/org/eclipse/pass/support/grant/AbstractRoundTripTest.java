@@ -32,7 +32,7 @@ import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
-public class AbstractRoundTripTest extends AbstractIntegrationTest {
+public abstract class AbstractRoundTripTest extends AbstractIntegrationTest {
 
     protected List<GrantIngestRecord> getTestIngestRecords() {
         GrantIngestRecord piRecord1 = TestUtil.makeGrantIngestRecord(0, 0, "P");
