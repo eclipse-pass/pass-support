@@ -20,7 +20,6 @@ import java.io.FileReader;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.pass.support.client.PassClient;
-import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -75,7 +74,6 @@ public abstract class AbstractIntegrationTest {
 
     @SpyBean protected PassClient passClient;
     @Autowired protected GrantLoaderApp grantLoaderApp;
-    @MockBean protected GrantConnector grantConnector;
     @MockBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
 
     @DynamicPropertySource
