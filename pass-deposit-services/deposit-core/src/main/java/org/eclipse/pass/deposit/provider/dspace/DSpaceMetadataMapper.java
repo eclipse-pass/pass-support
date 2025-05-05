@@ -27,10 +27,12 @@ import org.eclipse.pass.deposit.model.DepositMetadata.Manuscript;
 import org.eclipse.pass.deposit.model.DepositMetadata.Person;
 import org.eclipse.pass.deposit.model.DepositSubmission;
 import org.eclipse.pass.deposit.provider.util.CitationUtil;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
+ * Sets metadata for a traditional submission.
+ * DSpace must have the itemAccessConditions step enabled.
+ *
  * DSpace metadata fields set:
  * <ul>
  * <li>dc.title for the Manuscript
@@ -40,8 +42,6 @@ import org.springframework.stereotype.Component;
  * <li>dc.contributor for each non-submitter associated with the Manuscript
  * <li>dc.description.abstract for the Manuscript
  * <li>dc.date.issued for the publication date
- * <li>DSPACE_FIELD_EMBARGO_LIFT   Date that the embargo is lifted
- * <li>DSPACE_FIELD_EMBARGO_TERMS  Date that the embargo is lifted
  * </ul>
  */
 @Component
@@ -49,15 +49,7 @@ public class DSpaceMetadataMapper {
     // Section of workspace item form to add metadata
     static final String SECTION_ONE = "traditionalpageone";
     static final String SECTION_TWO = "traditionalpagetwo";
-
-    private final String dspaceFieldEmbargoLift;
-    private final String dspaceFieldEmbargoTerms;
-
-    public DSpaceMetadataMapper(@Value("${dspace.field.embargo.lift}") String dspaceFieldEmbargoLift,
-            @Value("${dspace.field.embargo.terms}") String dspaceFieldEmbargoTerms) {
-        this.dspaceFieldEmbargoLift = dspaceFieldEmbargoLift;
-        this.dspaceFieldEmbargoTerms = dspaceFieldEmbargoTerms;
-    }
+    static final String SECTION_ITEM_ACCESS = "itemAccessConditions";
 
     public String patchWorkspaceItem(DepositSubmission submission) {
         DepositMetadata depositMd = submission.getMetadata();
@@ -104,8 +96,8 @@ public class DSpaceMetadataMapper {
         if (embargoLiftDate != null) {
             String liftDate = embargoLiftDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-            metadata.add(add_array(SECTION_ONE, dspaceFieldEmbargoLift, liftDate));
-            metadata.add(add_array(SECTION_ONE, dspaceFieldEmbargoTerms, liftDate));
+            metadata.add(add_array_with_object(SECTION_ITEM_ACCESS, "accessConditions", "name", "embargo",
+                    "startDate", liftDate));
         }
 
         // Required by DSpace
@@ -135,6 +127,25 @@ public class DSpaceMetadataMapper {
             op_value.add(array_value(value));
         }
 
+        op.put("value", op_value);
+
+        return op;
+    }
+
+    private JSONObject add_array_with_object(String section, String key, String... pairs) {
+        JSONObject op = new JSONObject();
+
+        op.put("op", "add");
+        op.put("path", "/sections/" + section + "/" + key);
+
+        JSONArray op_value = new JSONArray();
+        JSONObject value = new JSONObject();
+
+        for (int i = 0; i < pairs.length; i += 2) {
+            value.put(pairs[i], pairs[i + 1]);
+        }
+
+        op_value.add(value);
         op.put("value", op_value);
 
         return op;

@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.provider.dspace;
 
+import static org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper.SECTION_ITEM_ACCESS;
 import static org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper.SECTION_ONE;
 import static org.eclipse.pass.deposit.provider.dspace.DSpaceMetadataMapper.SECTION_TWO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,7 +42,7 @@ import org.junit.jupiter.api.Test;
 public class DSpaceMetadataMapperTest {
     @Test
     public void testPatchWorkspaceItem() {
-        DSpaceMetadataMapper mapper = new DSpaceMetadataMapper("test.embargo.lift", "test.embargo.terms");
+        DSpaceMetadataMapper mapper = new DSpaceMetadataMapper();
 
         DepositSubmission ds = new DepositSubmission();
         DepositManifest manifest = new DepositManifest();
@@ -102,10 +103,12 @@ public class DSpaceMetadataMapperTest {
         checkValue(jsonContext, SECTION_ONE, "dc.contributor.author", "P1 Person", "P2 Person");
         checkValue(jsonContext, SECTION_ONE, "dc.date.issued",
                 journal.getPublicationDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        checkValue(jsonContext, SECTION_ONE, "test.embargo.lift",
-                article.getEmbargoLiftDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        checkValue(jsonContext, SECTION_ONE, "test.embargo.terms",
-                article.getEmbargoLiftDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        List<String> embargoDates = jsonContext.read("$[?(@.path == '/sections/" + SECTION_ITEM_ACCESS + "/" +
+                "accessConditions" + "')].value[?(@.name == 'embargo')].startDate");
+
+        assertEquals(List.of(article.getEmbargoLiftDate().format(DateTimeFormatter.ISO_LOCAL_DATE)),
+                embargoDates);
     }
 
     private void checkValue(DocumentContext context, String section, String key, String... expected) {
@@ -118,7 +121,7 @@ public class DSpaceMetadataMapperTest {
 
     @Test
     public void testPatchWorkspaceItemMinimalMetadata() {
-        DSpaceMetadataMapper mapper = new DSpaceMetadataMapper("test.embargo.lift", "test.embargo.terms");
+        DSpaceMetadataMapper mapper = new DSpaceMetadataMapper();
 
         DepositSubmission ds = new DepositSubmission();
         DepositManifest manifest = new DepositManifest();
