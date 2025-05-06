@@ -27,19 +27,11 @@ import org.eclipse.pass.support.client.RSQL;
 import org.eclipse.pass.support.client.model.AwardStatus;
 import org.eclipse.pass.support.client.model.Funder;
 import org.eclipse.pass.support.client.model.Grant;
-import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
  */
 public abstract class AbstractRoundTripTest extends AbstractIntegrationTest {
-
-    protected List<GrantIngestRecord> getTestIngestRecords() {
-        GrantIngestRecord piRecord1 = TestUtil.makeGrantIngestRecord(0, 0, "P");
-        GrantIngestRecord coPiRecord1 = TestUtil.makeGrantIngestRecord(0, 1, "C");
-        GrantIngestRecord piRecord2 = TestUtil.makeGrantIngestRecord(3, 1, "P");
-        return List.of(piRecord1, coPiRecord1, piRecord2);
-    }
 
     protected void verifyGrantOne() throws IOException {
         PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
@@ -54,9 +46,9 @@ public abstract class AbstractRoundTripTest extends AbstractIntegrationTest {
         assertEquals("Stupendous \"Research Project\" I",
             passGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
-        assertEquals("1999-01-01T00:00Z", passGrant.getAwardDate().toString());
-        assertEquals("2000-07-01T00:00Z", passGrant.getStartDate().toString());
-        assertEquals("2004-06-30T00:00Z", passGrant.getEndDate().toString());
+        assertEquals("2021-01-01T00:00Z", passGrant.getAwardDate().toString());
+        assertEquals("2021-07-01T00:00Z", passGrant.getStartDate().toString());
+        assertEquals("2024-06-30T00:00Z", passGrant.getEndDate().toString());
 
         Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
         assertEquals("johnshopkins.edu:funder:20000001", primaryFunder.getLocalKey());
@@ -96,9 +88,9 @@ public abstract class AbstractRoundTripTest extends AbstractIntegrationTest {
         assertEquals("B10000003", passGrant.getAwardNumber());
         assertEquals("Stupendous Research ProjectIV", passGrant.getProjectName());
         assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
-        assertEquals("2004-01-01T00:00Z", passGrant.getAwardDate().toString());
-        assertEquals("2004-07-01T00:00Z", passGrant.getStartDate().toString());
-        assertEquals("2007-06-30T00:00Z", passGrant.getEndDate().toString());
+        assertEquals("2014-01-01T00:00Z", passGrant.getAwardDate().toString());
+        assertEquals("2014-07-01T00:00Z", passGrant.getStartDate().toString());
+        assertEquals("2017-06-30T00:00Z", passGrant.getEndDate().toString());
 
         Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
         assertEquals("johnshopkins.edu:funder:20000001", primaryFunder.getLocalKey());
