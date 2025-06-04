@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.eclipse.pass.support.client.PassClient;
@@ -59,6 +60,37 @@ public class LoaderEngineTest {
     public void setUp() {
 
         toTest = new LoaderEngine(client, finder);
+    }
+
+    @Test
+    public void testLoadUpdateJournal() throws IOException {
+
+        final Journal existing = new Journal();
+        existing.setId("test:journalId");
+        existing.setJournalName("TestJournalName");
+        existing.setNlmta("TestNlmta");
+        existing.setIssns(List.of("000-123", "000-456"));
+
+        Journal toAdd = new Journal();
+        toAdd.setIssns(List.of("000-123", "000-456", "000-789"));
+        toAdd.setJournalName("UpdatedTestJournalName");
+        toAdd.setNlmta("UpdatedTestNlmta");
+        toAdd.setPmcParticipation(PmcParticipation.B);
+
+        when(client.getObject(eq(Journal.class), eq(existing.getId()))).thenReturn(existing);
+        when(finder.find("UpdatedTestNlmta", "UpdatedTestJournalName",
+            List.of("000-123", "000-456", "000-789"))).thenReturn("test:journalId");
+
+        toTest.load(Stream.of(toAdd), true);
+
+        verify(client).updateObject(journalCaptor.capture());
+
+        final Journal updated = journalCaptor.getValue();
+        assertEquals("test:journalId", updated.getId());
+        assertEquals("UpdatedTestJournalName", updated.getJournalName());
+        assertEquals("UpdatedTestNlmta", updated.getNlmta());
+        assertEquals(List.of("000-123", "000-456", "000-789"), updated.getIssns());
+        assertEquals(PmcParticipation.B, updated.getPmcParticipation());
     }
 
     @Test
