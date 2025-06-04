@@ -70,6 +70,7 @@ public class LoaderEngineTest {
         existing.setJournalName("TestJournalName");
         existing.setNlmta("TestNlmta");
         existing.setIssns(List.of("000-123", "000-456"));
+        existing.setPmcParticipation(PmcParticipation.A);
 
         Journal toAdd = new Journal();
         toAdd.setIssns(List.of("000-123", "000-456", "000-789"));
