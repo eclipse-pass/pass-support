@@ -18,7 +18,6 @@ package org.eclipse.pass.loader.journal.nih;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,7 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  */
 
 @ExtendWith(MockitoExtension.class)
-public class LoaderEngineTest {
+class LoaderEngineTest {
     @Mock
     PassClient client;
 
@@ -63,7 +62,7 @@ public class LoaderEngineTest {
     }
 
     @Test
-    public void testLoadUpdateJournal() throws IOException {
+    void testLoadUpdateJournal() throws IOException {
 
         final Journal existing = new Journal();
         existing.setId("test:journalId");
@@ -78,7 +77,7 @@ public class LoaderEngineTest {
         toAdd.setNlmta("UpdatedTestNlmta");
         toAdd.setPmcParticipation(PmcParticipation.B);
 
-        when(client.getObject(eq(Journal.class), eq(existing.getId()))).thenReturn(existing);
+        when(client.getObject(Journal.class, existing.getId())).thenReturn(existing);
         when(finder.find("UpdatedTestNlmta", "UpdatedTestJournalName",
             List.of("000-123", "000-456", "000-789"))).thenReturn("test:journalId");
 
@@ -95,14 +94,14 @@ public class LoaderEngineTest {
     }
 
     @Test
-    public void addPmcParticipationUpdateTest() throws IOException {
+    void addPmcParticipationUpdateTest() throws IOException {
 
         final Journal existing = new Journal();
         existing.setId("test:addPmcParticipation");
         existing.setJournalName("My Journal");
         existing.getIssns().add("000-123");
 
-        when(client.getObject(eq(Journal.class), eq(existing.getId()))).thenReturn(existing);
+        when(client.getObject(Journal.class, existing.getId())).thenReturn(existing);
         when(finder.find(existing.getNlmta(), existing.getJournalName(), existing.getIssns())).thenReturn(
             existing.getId().toString());
 
@@ -124,14 +123,14 @@ public class LoaderEngineTest {
     }
 
     @Test
-    public void removePmcParticipationTest() throws IOException {
+    void removePmcParticipationTest() throws IOException {
         final Journal existing = new Journal();
         existing.setId("test:removePmcParticipation");
         existing.setJournalName("My Journal");
         existing.getIssns().add("000-123");
         existing.setPmcParticipation(PmcParticipation.A);
 
-        when(client.getObject(eq(Journal.class), eq(existing.getId()))).thenReturn(existing);
+        when(client.getObject(Journal.class, existing.getId())).thenReturn(existing);
         when(finder.find(existing.getNlmta(), existing.getJournalName(), existing.getIssns())).thenReturn(
             existing.getId().toString());
 
@@ -152,14 +151,14 @@ public class LoaderEngineTest {
     }
 
     @Test
-    public void noUpdateTest() throws IOException {
+    void noUpdateTest() throws IOException {
         final Journal existing = new Journal();
         existing.setId("test:noUpdateTest");
         existing.setJournalName("My Journal");
         existing.getIssns().add("000-123");
         existing.setPmcParticipation(PmcParticipation.A);
 
-        when(client.getObject(eq(Journal.class), eq(existing.getId()))).thenReturn(existing);
+        when(client.getObject(Journal.class, existing.getId())).thenReturn(existing);
         when(finder.find(existing.getNlmta(), existing.getJournalName(), existing.getIssns())).thenReturn(
             existing.getId().toString());
 
@@ -173,7 +172,7 @@ public class LoaderEngineTest {
     }
 
     @Test
-    public void createSkipDuplicatesTest() throws IOException {
+    void createSkipDuplicatesTest() throws IOException {
 
         final Journal newJournal = new Journal();
 
@@ -191,7 +190,7 @@ public class LoaderEngineTest {
 
         toTest.load(Stream.of(newJournal, newJournal), true);
 
-        verify(client, times(1)).createObject(eq(newJournal));
+        verify(client, times(1)).createObject(newJournal);
         verify(client, times(0)).updateObject(any());
     }
 }
