@@ -17,6 +17,7 @@
 package org.eclipse.pass.loader.journal.nih;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -121,14 +122,19 @@ public class LoaderEngine implements AutoCloseable {
                     update = true;
                 }
 
-                if (j.getIssns() != null && (toUpdate.getIssns() == null || !toUpdate.getIssns()
-                        .containsAll(j.getIssns()))) {
+                if (j.getIssns() != null && (toUpdate.getIssns() == null ||
+                    !toUpdate.getIssns().containsAll(j.getIssns()))) {
                     toUpdate.setIssns(j.getIssns());
                     update = true;
                 }
 
-                if (toUpdate.getNlmta() == null && j.getNlmta() != null) {
+                if (!Objects.equals(toUpdate.getNlmta(), j.getNlmta())) {
                     toUpdate.setNlmta(j.getNlmta());
+                    update = true;
+                }
+
+                if (!Objects.equals(toUpdate.getJournalName(), j.getJournalName())) {
+                    toUpdate.setJournalName(j.getJournalName());
                     update = true;
                 }
 
