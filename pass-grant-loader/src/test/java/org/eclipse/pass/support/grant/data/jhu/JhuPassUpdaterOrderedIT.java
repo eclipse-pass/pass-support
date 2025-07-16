@@ -82,7 +82,7 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
         List<GrantIngestRecord> resultSet = new ArrayList<>();
 
         //put in initial grant - PI is Einstein
-        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
+        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P", 1);
         resultSet.add(piRecord2);
 
         jhuPassUpdater.updatePass(resultSet, "grant");
@@ -121,12 +121,12 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
     @Order(2)
     public void testUpdateGrantSecond() throws IOException, GrantDataException {
         // GIVEN ordered oldest to newest
-        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
-        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
-        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P");
-        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
-        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
-        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
+        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P", 1);
+        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C", 1);
+        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P", 1);
+        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C", 1);
+        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C", 1);
+        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P", 1);
         List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord0);
         resultSet.add(coPiRecord0);
@@ -155,12 +155,12 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
     @Order(3)
     public void testUpdateGrantThird_ChangeRecordOrderWithDuplicate() throws IOException, GrantDataException {
         // GIVEN ordered newest then mix
-        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P");
-        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C");
-        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C");
-        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C");
-        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P");
-        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P");
+        GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P", 1);
+        GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C", 1);
+        GrantIngestRecord coPiRecord1 = makeGrantIngestRecord(1, 1, "C", 1);
+        GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C", 1);
+        GrantIngestRecord piRecord1 = makeGrantIngestRecord(1, 0, "P", 1);
+        GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P", 1);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
         resultSet.add(piRecord2);
@@ -233,7 +233,7 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
      * @param abbrRole  the role: Pi ("P") or co-pi (C" or "K")
      * @return the row map for the record
      */
-    private GrantIngestRecord makeGrantIngestRecord(int iteration, int user, String abbrRole) {
+    private GrantIngestRecord makeGrantIngestRecord(int iteration, int user, String abbrRole, int piUser) {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setAwardNumber(grantAwardNumber[iteration]);
         grantIngestRecord.setAwardStatus("Active");
@@ -254,6 +254,9 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
         grantIngestRecord.setPiEmail(userEmail[user]);
         grantIngestRecord.setPiInstitutionalId(userInstitutionalId[user]);
         grantIngestRecord.setPiEmployeeId(userEmployeeId[user]);
+
+        grantIngestRecord.setActivePiInstitutionalId(userInstitutionalId[piUser]);
+        grantIngestRecord.setActivePiEmployeeId(userEmployeeId[piUser]);
 
         grantIngestRecord.setUpdateTimeStamp(grantUpdateTimestamp[iteration]);
         grantIngestRecord.setPiRole(abbrRole);

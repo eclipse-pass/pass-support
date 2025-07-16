@@ -45,9 +45,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * Test class for building the {@code List} of {@code Grant}s
@@ -59,9 +59,9 @@ import org.springframework.test.context.TestPropertySource;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class JhuPassUpdaterTest {
 
-    @MockBean private PassClient passClientMock;
-    @MockBean private GrantConnector grantConnector;
-    @MockBean private GrantLoaderCLIRunner grantLoaderCLIRunner;
+    @MockitoBean private PassClient passClientMock;
+    @MockitoBean private GrantConnector grantConnector;
+    @MockitoBean private GrantLoaderCLIRunner grantLoaderCLIRunner;
     @Autowired private JhuPassUpdater jhuPassUpdater;
     @Autowired @Qualifier("policyProperties") private Properties policyProperties;
 
@@ -164,6 +164,8 @@ public class JhuPassUpdaterTest {
 
         grantIngestRecord.setUpdateTimeStamp("2018-01-01 00:00:00.0");
         grantIngestRecord.setPiRole("P");
+        grantIngestRecord.setActivePiEmployeeId("0000333");
+        grantIngestRecord.setActivePiInstitutionalId("ARECKON3");
 
         resultSet.add(grantIngestRecord);
 
@@ -190,6 +192,8 @@ public class JhuPassUpdaterTest {
 
         grantIngestRecord2.setUpdateTimeStamp("2018-01-01 00:00:00.0");
         grantIngestRecord2.setPiRole("C");
+        grantIngestRecord2.setActivePiEmployeeId("0000333");
+        grantIngestRecord2.setActivePiInstitutionalId("ARECKON3");
 
         resultSet.add(grantIngestRecord2);
         return resultSet;

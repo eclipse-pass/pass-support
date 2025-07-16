@@ -258,6 +258,14 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertTrue(ingestRecordErrors.stream().anyMatch(message ->
             message.matches(".*GrantIngestRecord.*grantNumber=888888.*\\sError Message: " +
                 "Required value missing for piRole")));
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:999999"));
+        PassClientResult<Grant> resultGrant9 = passClient.selectObjects(grantSelector);
+        // missing active pi employee id and jhed id
+        assertEquals(0, resultGrant9.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*GrantIngestRecord.*grantNumber=999999.*\\sError Message: " +
+                "Active PI has blank employeeId and institutionalId\\.")));
     }
 
 }
