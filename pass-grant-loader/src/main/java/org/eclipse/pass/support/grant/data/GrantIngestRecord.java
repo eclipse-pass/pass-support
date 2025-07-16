@@ -48,6 +48,8 @@ public class GrantIngestRecord {
     private String piInstitutionalId;
     private String piEmployeeId;
     private String piRole;
+    private String activePiEmployeeId;
+    private String activePiInstitutionalId;
     private String updateTimeStamp;
 
     /**
@@ -75,6 +77,8 @@ public class GrantIngestRecord {
         grantIngestRecord.setPiInstitutionalId(csvRecord.get(GrantIngestCsvHeaders.PI_INSTITUTIONAL_ID));
         grantIngestRecord.setPiEmployeeId(csvRecord.get(GrantIngestCsvHeaders.PI_EMPLOYEE_ID));
         grantIngestRecord.setPiRole(csvRecord.get(GrantIngestCsvHeaders.PI_ROLE));
+        grantIngestRecord.setActivePiEmployeeId(csvRecord.get(GrantIngestCsvHeaders.ACTIVE_PI_EMPLOYEE_ID));
+        grantIngestRecord.setActivePiInstitutionalId(csvRecord.get(GrantIngestCsvHeaders.ACTIVE_PI_INSTITUTIONAL_ID));
         grantIngestRecord.setUpdateTimeStamp(csvRecord.get(GrantIngestCsvHeaders.UPDATE_TIMESTAMP));
         return grantIngestRecord;
     }

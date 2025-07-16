@@ -13,6 +13,15 @@ CREATE TABLE JHU_PASS_AWD_VIEW (
     SPONSOR_NAME varchar(100),
     PRIME_SPONSOR_CODE varchar(100),
     PRIME_SPONSOR_NAME varchar(100),
+    EMPLOYEE_ID varchar(100),
+    ROLE varchar(100),
+    FIRST_NAME varchar(100) NOT NULL,
+    MIDDLE_NAME varchar(100),
+    LAST_NAME varchar(100),
+    EMAIL_ADDRESS varchar(100),
+    JHED_ID varchar(100),
+    PI_EMPLOYEE_ID varchar(100),
+    PI_JHED_ID varchar(100),
     UPDATE_TIMESTAMP timestamp
 );
 
