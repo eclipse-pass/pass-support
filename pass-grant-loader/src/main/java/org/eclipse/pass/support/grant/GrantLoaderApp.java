@@ -112,7 +112,6 @@ public class GrantLoaderApp {
 
         List<GrantIngestRecord> resultSet;
 
-        //now do things;
         if (!action.equals("load")) { //action includes a pull - need to build a result set
             //establish the start dateTime - it is either given as an option, or it is
             //the last entry in the update_timestamps file
@@ -130,10 +129,8 @@ public class GrantLoaderApp {
                         }
                     }
                 }
-                if (awardEndDate != null) {
-                    if (!verifyDateTimeFormat(awardEndDate)) {
-                        throw processException(format(ERR_INVALID_COMMAND_LINE_DATE, awardEndDate), null);
-                    }
+                if (awardEndDate != null && !verifyDateTimeFormat(awardEndDate)) {
+                    throw processException(format(ERR_INVALID_COMMAND_LINE_DATE, awardEndDate), null);
                 }
             }
 

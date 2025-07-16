@@ -17,6 +17,7 @@ package org.eclipse.pass.support.grant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -37,7 +38,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
  */
 @SpringBootTest
 @TestPropertySource("classpath:test-application.properties")
-public class GrantLoaderManualTest {
+class GrantLoaderManualTest {
 
     @Autowired private GrantLoaderApp grantLoaderApp;
     @MockitoBean private GrantLoaderCLIRunner grantLoaderCLIRunner;
@@ -48,25 +49,27 @@ public class GrantLoaderManualTest {
      * Be careful with the startDateTime to no pull too much data.  Know what the impact is on pulling
      * data before running this test.
      */
-    @Disabled
+    @Disabled("Manual test, comment out Disabled to run")
     @Test
-    public void testPullGrantFile() throws PassCliException {
+    void testPullGrantFile() throws PassCliException {
         grantLoaderApp.run("2023-04-01 00:00:00", "2023-04-01",
             "grant", "pull", "file:./src/test/resources/your-file.csv", null);
+        assertTrue(true);
     }
 
     /**
      * This is a manual test that can run locally to test loading the grant data.
      * You also need to set the test pass.core props in the test-application.properties file.
      */
-    @Disabled
+    @Disabled("Manual test, comment out Disabled to run")
     @Test
-    public void testLoadGrantFile() throws PassCliException {
+    void testLoadGrantFile() throws PassCliException {
         grantLoaderApp.run("2023-04-01 00:00:00", "2023-04-01",
             "grant", "load", "file:./src/test/resources/your-file.csv", null);
+        assertTrue(true);
     }
 
-    @Disabled
+    @Disabled("Manual test, comment out Disabled to run")
     @Test
     void testCheckGrant() throws IOException {
         System.setProperty("pass.core.url","http://localhost:8080");

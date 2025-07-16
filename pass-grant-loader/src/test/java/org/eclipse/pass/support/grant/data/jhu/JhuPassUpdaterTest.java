@@ -57,7 +57,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest
 @TestPropertySource("classpath:test-application.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class JhuPassUpdaterTest {
+class JhuPassUpdaterTest {
 
     @MockitoBean private PassClient passClientMock;
     @MockitoBean private GrantConnector grantConnector;
@@ -67,7 +67,7 @@ public class JhuPassUpdaterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testUpdatePassGrant_Success_NewGrant() throws IOException, IllegalAccessException, GrantDataException {
+    void testUpdatePassGrant_Success_NewGrant() throws IOException, IllegalAccessException, GrantDataException {
 
         List<GrantIngestRecord> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
@@ -106,7 +106,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUpdatePassGrant_Success_SkipDuplicateGrantInPass() throws IOException {
+    void testUpdatePassGrant_Success_SkipDuplicateGrantInPass() throws IOException {
 
         List<GrantIngestRecord> resultSet = buildTestInputResultSet();
         preparePassClientMockCallsGrantRelations();
@@ -237,7 +237,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUserBuilding() {
+    void testUserBuilding() {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setPiFirstName("Marsha");
         grantIngestRecord.setPiMiddleName(null);
@@ -257,7 +257,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testPrimaryFunderBuilding() {
+    void testPrimaryFunderBuilding() {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setPrimaryFunderName( "Funder Name");
         grantIngestRecord.setPrimaryFunderCode("8675309");
@@ -271,7 +271,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUpdatePassUser_Fail_ModeCheck() {
+    void testUpdatePassUser_Fail_ModeCheck() {
         assertThrows(RuntimeException.class, () -> {
             List<GrantIngestRecord> grantResultSet = new ArrayList<>();
             GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
@@ -283,7 +283,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUpdatePassGrant_Fail_ModeCheck() {
+    void testUpdatePassGrant_Fail_ModeCheck() {
         assertThrows(RuntimeException.class, () -> {
             List<GrantIngestRecord> userResultSet = new ArrayList<>();
             GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
@@ -295,7 +295,7 @@ public class JhuPassUpdaterTest {
     }
 
     @Test
-    public void testUpdatePassFunder_Fail_ModeCheck() {
+    void testUpdatePassFunder_Fail_ModeCheck() {
         assertThrows(RuntimeException.class, () -> {
             List<GrantIngestRecord> userResultSet = new ArrayList<>();
             GrantIngestRecord grantIngestRecord = new GrantIngestRecord();

@@ -47,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class JhuPassUpdaterIT extends AbstractIntegrationTest {
+class JhuPassUpdaterIT extends AbstractIntegrationTest {
 
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
 
@@ -86,7 +86,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
      *
      */
     @Test
-    public void testUpdateGrant() throws IOException, GrantDataException {
+    void testUpdateGrant() throws IOException, GrantDataException {
         // GIVEN
         Policy policy = getTestPolicy();
 
@@ -184,7 +184,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_DoesUpdateWithNoChange() throws IOException, GrantDataException {
+    void testUpdateGrantDoesUpdateWithNoChange() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(3, 3, "P", 3);
@@ -234,7 +234,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(1, resultGrant2.getTotal());
         Grant passGrant2 = resultGrant2.getObjects().get(0);
 
-        User user3_2 = getVerifiedUser(3);
+        User user32 = getVerifiedUser(3);
 
         assertEquals(TestUtil.grantAwardNumber[3], passGrant2.getAwardNumber());
         assertEquals(AwardStatus.ACTIVE, passGrant2.getAwardStatus());
@@ -243,7 +243,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
         assertEquals(createZonedDateTime(TestUtil.grantAwardDate[3]), passGrant2.getAwardDate());
         assertEquals(createZonedDateTime(TestUtil.grantStartDate[3]), passGrant2.getStartDate());
         assertEquals(createZonedDateTime(TestUtil.grantEndDate[3]), passGrant2.getEndDate());
-        assertEquals(user3_2, passGrant2.getPi()); //Reckondwith
+        assertEquals(user32, passGrant2.getPi()); //Reckondwith
         assertEquals(0, passGrant2.getCoPis().size()); // same user is also PI
         assertEquals(TestUtil.grantUpdateTimestamp[3], jhuPassUpdater.getLatestUpdate());//latest
 
@@ -254,44 +254,44 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithOneNullAwardDateDescOrder() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithOneNullAwardDateDescOrder() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
-        GrantIngestRecord coPiRecord1_0 = TestUtil.makeGrantIngestRecord(0, 0, "C", 1);
-        coPiRecord1_0.setAwardDate(null);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
+        GrantIngestRecord coPiRecord10 = TestUtil.makeGrantIngestRecord(0, 0, "C", 1);
+        coPiRecord10.setAwardDate(null);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord2_1);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(coPiRecord1_0);
+        resultSet.add(piRecord21);
+        resultSet.add(coPiRecord12);
+        resultSet.add(coPiRecord10);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN/THEN
-        testUpdateGrant_RecordWithOneNullAwardDate(resultSet);
+        testUpdateGrantRecordWithOneNullAwardDate(resultSet);
     }
 
     @Test
-    public void testUpdateGrant_RecordWithOneNullAwardDateAscOrder() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithOneNullAwardDateAscOrder() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord coPiRecord1_0 = TestUtil.makeGrantIngestRecord(0, 0, "C", 1);
-        coPiRecord1_0.setAwardDate(null);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
+        GrantIngestRecord coPiRecord10 = TestUtil.makeGrantIngestRecord(0, 0, "C", 1);
+        coPiRecord10.setAwardDate(null);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(coPiRecord1_0);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(piRecord2_1);
+        resultSet.add(coPiRecord10);
+        resultSet.add(coPiRecord12);
+        resultSet.add(piRecord21);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN/THEN
-        testUpdateGrant_RecordWithOneNullAwardDate(resultSet);
+        testUpdateGrantRecordWithOneNullAwardDate(resultSet);
     }
 
-    private void testUpdateGrant_RecordWithOneNullAwardDate(List<GrantIngestRecord> resultSet) throws IOException,
+    private void testUpdateGrantRecordWithOneNullAwardDate(List<GrantIngestRecord> resultSet) throws IOException,
         GrantDataException {
         // WHEN
         jhuPassUpdater.updatePass(resultSet, "grant");
@@ -330,20 +330,20 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithAllNullAwardDate() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithAllNullAwardDate() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
-        piRecord2_1.setAwardDate(null);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
-        coPiRecord1_2.setAwardDate(null);
-        GrantIngestRecord coPiRecord1_0 = TestUtil.makeGrantIngestRecord(0, 0, "C", 1);
-        coPiRecord1_0.setAwardDate(null);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
+        piRecord21.setAwardDate(null);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
+        coPiRecord12.setAwardDate(null);
+        GrantIngestRecord coPiRecord10 = TestUtil.makeGrantIngestRecord(0, 0, "C", 1);
+        coPiRecord10.setAwardDate(null);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord2_1);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(coPiRecord1_0);
+        resultSet.add(piRecord21);
+        resultSet.add(coPiRecord12);
+        resultSet.add(coPiRecord10);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN
@@ -383,20 +383,20 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithOneNullPiAwardDateDescOrder() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithOneNullPiAwardDateDescOrder() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 3);
-        piRecord2_1.setAwardDate(null);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 3);
-        GrantIngestRecord piRecord1_3 = TestUtil.makeGrantIngestRecord(1, 3, "P", 3);
-        GrantIngestRecord piRecord0_0 = TestUtil.makeGrantIngestRecord(0, 0, "P",3);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 3);
+        piRecord21.setAwardDate(null);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 3);
+        GrantIngestRecord piRecord13 = TestUtil.makeGrantIngestRecord(1, 3, "P", 3);
+        GrantIngestRecord piRecord00 = TestUtil.makeGrantIngestRecord(0, 0, "P",3);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord2_1);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(piRecord1_3);
-        resultSet.add(piRecord0_0);
+        resultSet.add(piRecord21);
+        resultSet.add(coPiRecord12);
+        resultSet.add(piRecord13);
+        resultSet.add(piRecord00);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN
@@ -438,20 +438,20 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithOneNullPiAwardDateAscOrder() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithOneNullPiAwardDateAscOrder() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord0_0 = TestUtil.makeGrantIngestRecord(0, 0, "P", 3);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 3);
-        GrantIngestRecord piRecord1_3 = TestUtil.makeGrantIngestRecord(1, 3, "P", 3);
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 3);
-        piRecord2_1.setAwardDate(null);
+        GrantIngestRecord piRecord00 = TestUtil.makeGrantIngestRecord(0, 0, "P", 3);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 3);
+        GrantIngestRecord piRecord13 = TestUtil.makeGrantIngestRecord(1, 3, "P", 3);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 3);
+        piRecord21.setAwardDate(null);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord0_0);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(piRecord1_3);
-        resultSet.add(piRecord2_1);
+        resultSet.add(piRecord00);
+        resultSet.add(coPiRecord12);
+        resultSet.add(piRecord13);
+        resultSet.add(piRecord21);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN
@@ -493,18 +493,18 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithOneNullPiAndOldPi() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithOneNullPiAndOldPi() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 0);
-        piRecord2_1.setAwardDate(null);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 0);
-        GrantIngestRecord piRecord0_0 = TestUtil.makeGrantIngestRecord(0, 0, "P", 0);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 0);
+        piRecord21.setAwardDate(null);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 0);
+        GrantIngestRecord piRecord00 = TestUtil.makeGrantIngestRecord(0, 0, "P", 0);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord2_1);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(piRecord0_0);
+        resultSet.add(piRecord21);
+        resultSet.add(coPiRecord12);
+        resultSet.add(piRecord00);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN
@@ -544,20 +544,20 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithOneOlderNullPiAwardDate() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithOneOlderNullPiAwardDate() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord0_0 = TestUtil.makeGrantIngestRecord(0, 0, "P", 1);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
-        GrantIngestRecord piRecord1_3 = TestUtil.makeGrantIngestRecord(1, 3, "P", 1);
-        piRecord1_3.setAwardDate(null);
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
+        GrantIngestRecord piRecord00 = TestUtil.makeGrantIngestRecord(0, 0, "P", 1);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
+        GrantIngestRecord piRecord13 = TestUtil.makeGrantIngestRecord(1, 3, "P", 1);
+        piRecord13.setAwardDate(null);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord0_0);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(piRecord1_3);
-        resultSet.add(piRecord2_1);
+        resultSet.add(piRecord00);
+        resultSet.add(coPiRecord12);
+        resultSet.add(piRecord13);
+        resultSet.add(piRecord21);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN
@@ -599,26 +599,26 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithAllNullAwardDateMixedPi() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithAllNullAwardDateMixedPi() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord0_0 = TestUtil.makeGrantIngestRecord(0, 0, "P", 1);
-        piRecord0_0.setAwardDate(null);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
-        coPiRecord1_2.setAwardDate(null);
-        GrantIngestRecord piRecord1_3 = TestUtil.makeGrantIngestRecord(1, 3, "P", 1);
-        piRecord1_3.setAwardDate(null);
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
-        piRecord2_1.setAwardDate(null);
-        GrantIngestRecord piRecord0_3 = TestUtil.makeGrantIngestRecord(0, 3, "P", 1);
-        piRecord0_3.setAwardDate(null);
+        GrantIngestRecord piRecord00 = TestUtil.makeGrantIngestRecord(0, 0, "P", 1);
+        piRecord00.setAwardDate(null);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
+        coPiRecord12.setAwardDate(null);
+        GrantIngestRecord piRecord13 = TestUtil.makeGrantIngestRecord(1, 3, "P", 1);
+        piRecord13.setAwardDate(null);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(2, 1, "P", 1);
+        piRecord21.setAwardDate(null);
+        GrantIngestRecord piRecord03 = TestUtil.makeGrantIngestRecord(0, 3, "P", 1);
+        piRecord03.setAwardDate(null);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord0_0);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(piRecord1_3);
-        resultSet.add(piRecord2_1);
-        resultSet.add(piRecord0_3);
+        resultSet.add(piRecord00);
+        resultSet.add(coPiRecord12);
+        resultSet.add(piRecord13);
+        resultSet.add(piRecord21);
+        resultSet.add(piRecord03);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN
@@ -660,17 +660,17 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_RecordWithPiUpdate() throws IOException, GrantDataException {
+    void testUpdateGrantRecordWithPiUpdate() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
-        GrantIngestRecord piRecord0_0 = TestUtil.makeGrantIngestRecord(0, 0, "P", 1);
-        GrantIngestRecord coPiRecord1_2 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
-        GrantIngestRecord piRecord2_1 = TestUtil.makeGrantIngestRecord(1, 1, "P", 1);
+        GrantIngestRecord piRecord00 = TestUtil.makeGrantIngestRecord(0, 0, "P", 1);
+        GrantIngestRecord coPiRecord12 = TestUtil.makeGrantIngestRecord(1, 2, "C", 1);
+        GrantIngestRecord piRecord21 = TestUtil.makeGrantIngestRecord(1, 1, "P", 1);
 
         List<GrantIngestRecord> resultSet = new ArrayList<>();
-        resultSet.add(piRecord0_0);
-        resultSet.add(coPiRecord1_2);
-        resultSet.add(piRecord2_1);
+        resultSet.add(piRecord00);
+        resultSet.add(coPiRecord12);
+        resultSet.add(piRecord21);
         jhuPassUpdater.getStatistics().reset();
 
         // WHEN
@@ -710,7 +710,7 @@ public class JhuPassUpdaterIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdateGrant_UpdateUserLocatorsJhed() throws IOException, GrantDataException {
+    void testUpdateGrantUpdateUserLocatorsJhed() throws IOException, GrantDataException {
         // GIVEN
         getTestPolicy();
         GrantIngestRecord piRecord0 = TestUtil.makeGrantIngestRecord(4, 4, "P", 4);

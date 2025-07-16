@@ -43,7 +43,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
+class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
 
     private final String[] grantAwardNumber = {"A10000000", "A10000001", "A10000002"};
     private final String[] grantLocalKey = {"10000000", "10000000", "10000000"}; //all the same
@@ -62,7 +62,6 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
     private final String[] userEmail = {"amelon1@jhu.edu", "aeinst1@jhu.edu", "jjones1@jhu.edu"};
 
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
-    //private final String funderIdPrefix = "johnshopkins.edu:funder:";
 
     @Autowired private JhuPassUpdater jhuPassUpdater;
 
@@ -77,7 +76,7 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
      */
     @Test
     @Order(1)
-    public void testUpdateGrantCreate() throws IOException, GrantDataException {
+    void testUpdateGrantCreate() throws IOException, GrantDataException {
         // GIVEN
         List<GrantIngestRecord> resultSet = new ArrayList<>();
 
@@ -119,7 +118,7 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
 
     @Test
     @Order(2)
-    public void testUpdateGrantSecond() throws IOException, GrantDataException {
+    void testUpdateGrantSecond() throws IOException, GrantDataException {
         // GIVEN ordered oldest to newest
         GrantIngestRecord piRecord0 = makeGrantIngestRecord(0, 0, "P", 1);
         GrantIngestRecord coPiRecord0 = makeGrantIngestRecord(0, 1, "C", 1);
@@ -153,7 +152,7 @@ public class JhuPassUpdaterOrderedIT extends AbstractIntegrationTest {
 
     @Test
     @Order(3)
-    public void testUpdateGrantThird_ChangeRecordOrderWithDuplicate() throws IOException, GrantDataException {
+    void testUpdateGrantThird_ChangeRecordOrderWithDuplicate() throws IOException, GrantDataException {
         // GIVEN ordered newest then mix
         GrantIngestRecord piRecord2 = makeGrantIngestRecord(2, 1, "P", 1);
         GrantIngestRecord newCoPiRecord1 = makeGrantIngestRecord(1, 2, "C", 1);
