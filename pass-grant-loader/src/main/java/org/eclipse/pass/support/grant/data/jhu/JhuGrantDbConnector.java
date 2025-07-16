@@ -73,6 +73,8 @@ public class JhuGrantDbConnector implements GrantConnector {
     static final String C_USER_EMAIL = "EMAIL_ADDRESS";
     static final String C_USER_INSTITUTIONAL_ID = "JHED_ID";
     static final String C_USER_EMPLOYEE_ID = "EMPLOYEE_ID";
+    static final String C_ACTIVE_PI_EMPLOYEE_ID = "PI_EMPLOYEE_ID";
+    static final String C_ACTIVE_PI_JHED_ID = "PI_JHED_ID";
 
     //these fields are accessed for processing, but are not mapped to PASS objects
     static final String C_UPDATE_TIMESTAMP = "UPDATE_TIMESTAMP";
@@ -92,20 +94,17 @@ public class JhuGrantDbConnector implements GrantConnector {
         "A." + C_PRIMARY_FUNDER_NAME + ", " +
         "A." + C_PRIMARY_FUNDER_LOCAL_KEY + ", " +
         "A." + C_UPDATE_TIMESTAMP + ", " +
-        "B." + C_ABBREVIATED_ROLE + ", " +
-        "B." + C_USER_EMPLOYEE_ID + ", " +
-        "C." + C_USER_FIRST_NAME + ", " +
-        "C." + C_USER_MIDDLE_NAME + ", " +
-        "C." + C_USER_LAST_NAME + ", " +
-        "C." + C_USER_EMAIL + ", " +
-        "C." + C_USER_INSTITUTIONAL_ID + " " +
-        "FROM JHU_PASS_AWD_VIEW A, " +
-        "JHU_FIBI_IP_INV_VIEW B, " +
-        "JHU_PERSON_VIEW C " +
-        "WHERE A.inst_proposal = B.inst_proposal " +
-        "AND B.employee_id = C.employee_id " +
-        "AND A.AWARD_END_DATE >= '2011-01-01' "  +
-        "AND B.ROLE != 'KP' "  +
+        "A." + C_ABBREVIATED_ROLE + ", " +
+        "A." + C_ACTIVE_PI_EMPLOYEE_ID + ", " +
+        "A." + C_ACTIVE_PI_JHED_ID + ", " +
+        "A." + C_USER_EMPLOYEE_ID + ", " +
+        "A." + C_USER_FIRST_NAME + ", " +
+        "A." + C_USER_MIDDLE_NAME + ", " +
+        "A." + C_USER_LAST_NAME + ", " +
+        "A." + C_USER_EMAIL + ", " +
+        "A." + C_USER_INSTITUTIONAL_ID + " " +
+        "FROM JHU_PASS_AWD_VIEW A " +
+        "WHERE A.AWARD_END_DATE >= '2011-01-01' "  +
         "AND EXISTS (" +
         "    select * from JHU_PASS_AWD_VIEW EA where" +
         "        EA.UPDATE_TIMESTAMP > ?" +
@@ -207,6 +206,8 @@ public class JhuGrantDbConnector implements GrantConnector {
                     grantIngestRecord.setPiLastName(rs.getString(C_USER_LAST_NAME));
                     grantIngestRecord.setPiEmail(rs.getString(C_USER_EMAIL));
                     grantIngestRecord.setPiEmployeeId(rs.getString(C_USER_EMPLOYEE_ID));
+                    grantIngestRecord.setActivePiEmployeeId(rs.getString(C_ACTIVE_PI_EMPLOYEE_ID));
+                    grantIngestRecord.setActivePiInstitutionalId(rs.getString(C_ACTIVE_PI_JHED_ID));
                     grantIngestRecord.setPiInstitutionalId(rs.getString(C_USER_INSTITUTIONAL_ID));
                     grantIngestRecord.setUpdateTimeStamp(rs.getString(C_UPDATE_TIMESTAMP));
                     grantIngestRecord.setPiRole(

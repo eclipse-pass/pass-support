@@ -98,6 +98,8 @@ public final class GrantDataCsvFileUtils {
                     record.getPiInstitutionalId(),
                     record.getPiEmployeeId(),
                     record.getPiRole(),
+                    record.getActivePiEmployeeId(),
+                    record.getActivePiInstitutionalId(),
                     record.getUpdateTimeStamp()
                 );
             }

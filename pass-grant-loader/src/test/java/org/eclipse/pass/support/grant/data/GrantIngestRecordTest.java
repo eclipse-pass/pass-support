@@ -53,6 +53,8 @@ public class GrantIngestRecordTest {
         when(csvRecord.get(GrantIngestCsvHeaders.PI_INSTITUTIONAL_ID)).thenReturn("test-pi-inst-id");
         when(csvRecord.get(GrantIngestCsvHeaders.PI_EMPLOYEE_ID)).thenReturn("test-pi-emp-id");
         when(csvRecord.get(GrantIngestCsvHeaders.PI_ROLE)).thenReturn("test-pi-role");
+        when(csvRecord.get(GrantIngestCsvHeaders.ACTIVE_PI_EMPLOYEE_ID)).thenReturn("test-active-pi-emp-id");
+        when(csvRecord.get(GrantIngestCsvHeaders.ACTIVE_PI_INSTITUTIONAL_ID)).thenReturn("test-active-pi-inst-id");
         when(csvRecord.get(GrantIngestCsvHeaders.UPDATE_TIMESTAMP)).thenReturn("test-update-ts");
 
         // WHEN
@@ -77,6 +79,8 @@ public class GrantIngestRecordTest {
         assertEquals("test-pi-inst-id", grantIngestRecord.getPiInstitutionalId());
         assertEquals("test-pi-emp-id", grantIngestRecord.getPiEmployeeId());
         assertEquals("test-pi-role", grantIngestRecord.getPiRole());
+        assertEquals("test-active-pi-emp-id", grantIngestRecord.getActivePiEmployeeId());
+        assertEquals("test-active-pi-inst-id", grantIngestRecord.getActivePiInstitutionalId());
         assertEquals("test-update-ts", grantIngestRecord.getUpdateTimeStamp());
     }
 }

@@ -22,8 +22,8 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -40,7 +40,7 @@ import org.springframework.test.context.TestPropertySource;
 )
 public class GrantLoaderCLITest {
 
-    @MockBean GrantLoaderApp grantLoaderApp;
+    @MockitoBean GrantLoaderApp grantLoaderApp;
 
     @Test
     public void testHarvesterCLI() throws PassCliException {
