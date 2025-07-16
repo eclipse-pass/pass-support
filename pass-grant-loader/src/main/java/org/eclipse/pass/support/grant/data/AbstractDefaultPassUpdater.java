@@ -323,9 +323,8 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
     private void updatePisOnGrant(Grant grant, GrantIngestRecord grantIngestRecord) {
         String userKey = getUserKey(grantIngestRecord);
-        String piUserKey = grantIngestRecord.getActivePiEmployeeId() + grantIngestRecord.getActivePiInstitutionalId();
         User user = userMap.get(userKey);
-        if (piUserKey.equals(userKey)) {
+        if (isUserPi(grantIngestRecord)) {
             if (Objects.isNull(grant.getPi())) {
                 grant.setPi(user);
                 statistics.addPi();
@@ -336,6 +335,14 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 statistics.addCoPi();
             }
         }
+    }
+
+    private boolean isUserPi(GrantIngestRecord grantIngestRecord) {
+        if (StringUtils.isNotBlank(grantIngestRecord.getPiEmployeeId())) {
+            return Objects.equals(grantIngestRecord.getPiEmployeeId(), grantIngestRecord.getActivePiEmployeeId());
+        }
+        return StringUtils.isNotBlank(grantIngestRecord.getPiInstitutionalId()) &&
+            Objects.equals(grantIngestRecord.getPiInstitutionalId(), grantIngestRecord.getActivePiInstitutionalId());
     }
 
     /**
