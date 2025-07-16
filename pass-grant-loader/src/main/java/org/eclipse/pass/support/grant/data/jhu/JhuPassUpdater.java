@@ -15,10 +15,8 @@
  */
 package org.eclipse.pass.support.grant.data.jhu;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.PassClient;
@@ -203,10 +201,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         stored.setFirstName(system.getFirstName());
         stored.setMiddleName(system.getMiddleName());
         stored.setLastName(system.getLastName());
-        //combine the locatorIds from both objects
-        Set<String> idSet = new HashSet<>();
-        idSet.addAll(stored.getLocatorIds());
-        idSet.addAll(system.getLocatorIds());
         String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
         if (Objects.nonNull(systemUserJhedLocatorId) && !stored.getLocatorIds().contains(systemUserJhedLocatorId)) {
             stored.getLocatorIds().removeIf(locatorId -> locatorId.startsWith(JhuPassUpdater.JHED_LOCATOR_ID));
