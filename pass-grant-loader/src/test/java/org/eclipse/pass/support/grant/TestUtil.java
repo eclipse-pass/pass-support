@@ -48,7 +48,7 @@ public class TestUtil {
 
     private TestUtil () {}
 
-    public static GrantIngestRecord makeGrantIngestRecord(int iteration, int user, String abbrRole) {
+    public static GrantIngestRecord makeGrantIngestRecord(int iteration, int user, String abbrRole, int piUser) {
         GrantIngestRecord grantIngestRecord = new GrantIngestRecord();
         grantIngestRecord.setAwardNumber(grantAwardNumber[iteration]);
         grantIngestRecord.setAwardStatus("Active");
@@ -69,6 +69,9 @@ public class TestUtil {
         grantIngestRecord.setPiEmail(userEmail[user]);
         grantIngestRecord.setPiInstitutionalId(userInstitutionalId[user]);
         grantIngestRecord.setPiEmployeeId(userEmployeeId[user]);
+
+        grantIngestRecord.setActivePiInstitutionalId(userInstitutionalId[piUser]);
+        grantIngestRecord.setActivePiEmployeeId(userEmployeeId[piUser]);
 
         grantIngestRecord.setUpdateTimeStamp(grantUpdateTimestamp[iteration]);
         grantIngestRecord.setPiRole(abbrRole);
