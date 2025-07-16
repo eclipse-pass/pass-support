@@ -22,12 +22,12 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.pass.support.client.PassClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
@@ -72,9 +72,9 @@ public abstract class AbstractIntegrationTest {
         .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "moo"))
         .withExposedPorts(8080);
 
-    @SpyBean protected PassClient passClient;
+    @MockitoSpyBean protected PassClient passClient;
     @Autowired protected GrantLoaderApp grantLoaderApp;
-    @MockBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
+    @MockitoBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
 
     @DynamicPropertySource
     static void updateProperties(DynamicPropertyRegistry registry) {

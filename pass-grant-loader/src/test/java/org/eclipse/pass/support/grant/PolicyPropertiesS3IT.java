@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -66,7 +66,7 @@ public class PolicyPropertiesS3IT {
                 "/tmp/tmp-test-s3-policy.properties", BindMode.READ_ONLY)
             .withServices(S3);
 
-    @MockBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
+    @MockitoBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
     @Autowired @Qualifier("policyProperties") private Properties policyProperties;
 
     @DynamicPropertySource

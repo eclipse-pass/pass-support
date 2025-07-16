@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -40,7 +40,7 @@ import org.springframework.test.context.TestPropertySource;
 public class GrantLoaderManualTest {
 
     @Autowired private GrantLoaderApp grantLoaderApp;
-    @MockBean private GrantLoaderCLIRunner grantLoaderCLIRunner;
+    @MockitoBean private GrantLoaderCLIRunner grantLoaderCLIRunner;
 
     /**
      * This is a manual test that can run locally to test pulling the grant data into a file.

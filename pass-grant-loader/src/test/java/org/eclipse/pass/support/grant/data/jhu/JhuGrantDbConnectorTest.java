@@ -26,8 +26,8 @@ import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author jrm@jhu.edu
@@ -36,7 +36,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource("classpath:test-application.properties")
 public class JhuGrantDbConnectorTest {
 
-    @MockBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
+    @MockitoBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
     @Autowired private JhuGrantDbConnector connector;
 
     @Test
