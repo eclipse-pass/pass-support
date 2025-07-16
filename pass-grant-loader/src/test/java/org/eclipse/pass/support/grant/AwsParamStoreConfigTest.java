@@ -26,11 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -60,8 +60,8 @@ class AwsParamStoreConfigTest {
     private static final LocalStackContainer localStack = new LocalStackContainer(LOCALSTACK_IMG).withServices(SSM);
 
     @Autowired private Environment environment;
-    @MockBean protected GrantConnector grantConnector;
-    @MockBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
+    @MockitoBean protected GrantConnector grantConnector;
+    @MockitoBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
