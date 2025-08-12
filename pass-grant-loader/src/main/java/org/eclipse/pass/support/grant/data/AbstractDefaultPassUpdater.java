@@ -138,6 +138,22 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     }
 
     /**
+     * Returns true if the user contains a locator for the employeeId.
+     * @param user the user
+     * @param employeeId the employeeId
+     * @return true if found, false if not
+     */
+    public abstract boolean hasEmployeeId(User user, String employeeId);
+
+    /**
+     * Returns true if the user contains a locator for the institutionalId.
+     * @param user the user
+     * @param institutionalId the institutionalId
+     * @return true if found, false if not
+     */
+    public abstract boolean hasInstitutionalId(User user, String institutionalId);
+
+    /**
      * Build a Collection of Grants from a ResultSet, then update the grants in Pass
      * Because we need to make sure we catch any updates to fields referenced by URIs, we construct
      * these and update these as well
@@ -324,25 +340,58 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     private void updatePisOnGrant(Grant grant, GrantIngestRecord grantIngestRecord) {
         String userKey = getUserKey(grantIngestRecord);
         User user = userMap.get(userKey);
-        if (isUserPi(grantIngestRecord)) {
-            if (Objects.isNull(grant.getPi())) {
-                grant.setPi(user);
-                statistics.addPi();
-            }
-        } else {
-            if (!grant.getCoPis().contains(user)) {
-                grant.getCoPis().add(user);
-                statistics.addCoPi();
-            }
+        GrantIngestUserRole grantIngestUserRole = GrantIngestUserRole.valueOf(grantIngestRecord.getPiRole());
+        if (grantIngestUserRole == GrantIngestUserRole.P) {
+            processPiUser(user, grant, grantIngestRecord);
+        } else if (isUserNotSetAsPiOnGrant(grantIngestRecord, grant)) {
+            updateCoPisIfNeeded(user, grant);
         }
     }
 
-    private boolean isUserPi(GrantIngestRecord grantIngestRecord) {
+    private void processPiUser(User user, Grant grant, GrantIngestRecord grantIngestRecord) {
+        if (Objects.isNull(grant.getPi())) {
+            grant.setPi(user);
+            statistics.addPi();
+        } else if (isUserNotSetAsPiOnGrant(grantIngestRecord, grant)) {
+            updatePiOnGrant(user, grant, grantIngestRecord);
+        }
+    }
+
+    private boolean isUserNotSetAsPiOnGrant(GrantIngestRecord grantIngestRecord, Grant grant) {
+        if (StringUtils.isNotBlank(grantIngestRecord.getPiEmployeeId())) {
+            return !hasEmployeeId(grant.getPi(), grantIngestRecord.getPiEmployeeId());
+        }
+        return StringUtils.isNotBlank(grantIngestRecord.getPiInstitutionalId()) &&
+            !hasInstitutionalId(grant.getPi(), grantIngestRecord.getPiInstitutionalId());
+    }
+
+    private void updatePiOnGrant(User user, Grant grant, GrantIngestRecord grantIngestRecord) {
+        if (isUserActivePi(grantIngestRecord)) {
+            User existingPi = grant.getPi();
+            updateCoPisIfNeeded(existingPi, grant);
+            grant.setPi(user);
+            boolean removed = grant.getCoPis().remove(user);
+            if (removed) {
+                statistics.subtractCoPi();
+            }
+        } else {
+            updateCoPisIfNeeded(user, grant);
+        }
+    }
+
+    private boolean isUserActivePi(GrantIngestRecord grantIngestRecord) {
         if (StringUtils.isNotBlank(grantIngestRecord.getPiEmployeeId())) {
             return Objects.equals(grantIngestRecord.getPiEmployeeId(), grantIngestRecord.getActivePiEmployeeId());
         }
         return StringUtils.isNotBlank(grantIngestRecord.getPiInstitutionalId()) &&
             Objects.equals(grantIngestRecord.getPiInstitutionalId(), grantIngestRecord.getActivePiInstitutionalId());
+    }
+
+    private void updateCoPisIfNeeded(User user, Grant grant) {
+        if (!grant.getCoPis().contains(user)) {
+            grant.getCoPis().add(user);
+            statistics.addCoPi();
+        }
     }
 
     /**
