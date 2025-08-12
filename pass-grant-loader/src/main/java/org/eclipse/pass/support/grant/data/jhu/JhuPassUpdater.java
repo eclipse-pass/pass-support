@@ -91,16 +91,6 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         return null;
     }
 
-    public boolean hasEmployeeId(User user, String employeeId) {
-        return Objects.nonNull(user) &&
-            user.getLocatorIds().stream().anyMatch(id -> id.equals(EMPLOYEE_LOCATOR_ID + employeeId));
-    }
-
-    public boolean hasInstitutionalId(User user, String institutionalId) {
-        return Objects.nonNull(user) &&
-            user.getLocatorIds().stream().anyMatch(id -> id.equals(JHED_LOCATOR_ID + institutionalId));
-    }
-
     @Override
     public User buildUser(GrantIngestRecord grantIngestRecord) {
         User user = new User();
