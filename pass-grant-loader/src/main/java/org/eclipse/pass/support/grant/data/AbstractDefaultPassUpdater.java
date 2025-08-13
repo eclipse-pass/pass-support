@@ -148,6 +148,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         //Map and add to it as additional rows add information.
         Map<String, Grant> grantRowMap = new HashMap<>();
         Map<String,  Map<String, GrantAccumulate>> grantAggregateMap = new HashMap<>();
+        Map<String, User> backupPiMap = new HashMap<>();
 
         LOG.warn("Processing result set with {} rows", results.size());
         boolean modeChecked = false;
@@ -207,7 +208,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
 
                 grant = grantRowMap.get(grantLocalKey);
 
-                updatePisOnGrant(grant, grantIngestRecord);
+                updatePisOnGrant(grant, grantIngestRecord, backupPiMap);
 
                 Map<String, GrantAccumulate> grantAccumulateMap = grantAggregateMap.computeIfAbsent(grantLocalKey,
                     this::createGrantAccumulateMap);
@@ -235,11 +236,14 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         for (Grant grant : grantRowMap.values()) {
             String grantLocalKey = grant.getLocalKey();
             try {
-                setGrantAttributes(grant, grantAggregateMap);
+                setGrantAttributes(grant, grantAggregateMap, backupPiMap);
                 Grant updatedGrant = updateGrantInPass(grant);
                 grantResultMap.put(grantLocalKey, updatedGrant);
             } catch (IOException | GrantDataException e) {
-                LOG.error("Error updating Grant with localKey: " + grantLocalKey, e);
+                String message = "Error updating Grant with localKey: " + grantLocalKey +
+                    "\nError Message: " + e.getMessage();
+                ingestRecordErrors.add(message);
+                LOG.error(message, e);
             }
         }
 
@@ -321,10 +325,10 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         return grantIngestRecord.getPiEmployeeId() + grantIngestRecord.getPiInstitutionalId();
     }
 
-    private void updatePisOnGrant(Grant grant, GrantIngestRecord grantIngestRecord) {
+    private void updatePisOnGrant(Grant grant, GrantIngestRecord grantIngestRecord, Map<String, User> backupPiMap) {
         String userKey = getUserKey(grantIngestRecord);
         User user = userMap.get(userKey);
-        if (isUserPi(grantIngestRecord)) {
+        if (isUserActivePi(grantIngestRecord)) {
             if (Objects.isNull(grant.getPi())) {
                 grant.setPi(user);
                 statistics.addPi();
@@ -334,10 +338,14 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
                 grant.getCoPis().add(user);
                 statistics.addCoPi();
             }
+            GrantIngestUserRole grantIngestUserRole = GrantIngestUserRole.valueOf(grantIngestRecord.getPiRole());
+            if (grantIngestUserRole == GrantIngestUserRole.P) {
+                backupPiMap.put(grant.getLocalKey(), user);
+            }
         }
     }
 
-    private boolean isUserPi(GrantIngestRecord grantIngestRecord) {
+    private boolean isUserActivePi(GrantIngestRecord grantIngestRecord) {
         if (StringUtils.isNotBlank(grantIngestRecord.getPiEmployeeId())) {
             return Objects.equals(grantIngestRecord.getPiEmployeeId(), grantIngestRecord.getActivePiEmployeeId());
         }
@@ -381,7 +389,8 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         }
     }
 
-    private void setGrantAttributes(Grant grant, Map<String,  Map<String, GrantAccumulate>> grantAggregateMap)
+    private void setGrantAttributes(Grant grant, Map<String,  Map<String, GrantAccumulate>> grantAggregateMap,
+                                    Map<String, User> backupPiMap)
         throws GrantDataException {
         String grantLocalKey = grant.getLocalKey();
         Map<String, GrantAccumulate> grantAccumulateMap = grantAggregateMap.get(grantLocalKey);
@@ -395,6 +404,24 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
         GrantIngestRecord grantIngestRecordEnd = Objects.nonNull(awardHi) ? awardHi.grantIngestRecord()
             : grantAccumulateMap.get(END_HI).grantIngestRecord();
         setGrantEndAttributes(grant, grantIngestRecordEnd);
+
+        setGrantPiIfNeeded(grant, backupPiMap);
+    }
+
+    private void setGrantPiIfNeeded(Grant grant, Map<String, User> backupPiMap) throws GrantDataException {
+        if (Objects.isNull(grant.getPi())) {
+            User piUser = backupPiMap.get(grant.getLocalKey());
+            if (Objects.nonNull(piUser)) {
+                grant.setPi(piUser);
+                statistics.addPi();
+                boolean removed = grant.getCoPis().remove(piUser);
+                if (removed) {
+                    statistics.subtractCoPi();
+                }
+            } else {
+                throw new GrantDataException("No PI found for grant " + grant.getLocalKey());
+            }
+        }
     }
 
     private void setGrantStartAttributes(Grant grant, GrantIngestRecord grantIngestRecord) throws GrantDataException {
