@@ -70,6 +70,7 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         verifyGrantOne();
         verifyGrantTwo();
         verifyGrantThree();
+        verifyGrantFour();
         verifyInvalidGrants(passUpdater.getIngestRecordErrors());
     }
 
@@ -198,9 +199,9 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertEquals("1", primaryFunder.getPolicy().getId());
 
         Funder directFunder = passClient.getObject(passGrant.getDirectFunder(), "policy");
-        assertEquals("johnshopkins.edu:funder:300865", primaryFunder.getLocalKey());
-        assertEquals("NATIONAL INSTITUTES OF HEALTH", primaryFunder.getName());
-        assertEquals("1", primaryFunder.getPolicy().getId());
+        assertEquals("johnshopkins.edu:funder:300865", directFunder.getLocalKey());
+        assertEquals("NATIONAL INSTITUTES OF HEALTH", directFunder.getName());
+        assertEquals("1", directFunder.getPolicy().getId());
 
         assertEquals("UserOneFn", passGrant.getPi().getFirstName());
         assertEquals("UserOneMn", passGrant.getPi().getMiddleName());
@@ -210,6 +211,48 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
             passGrant.getPi().getLocatorIds());
 
         assertEquals(0, passGrant.getCoPis().size());
+    }
+
+    private void verifyGrantFour() throws IOException {
+        PassClientSelector<Grant> grantSelector = new PassClientSelector<>(Grant.class);
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:130844"));
+        grantSelector.setInclude("primaryFunder", "directFunder", "pi", "coPis");
+        PassClientResult<Grant> resultGrant1 = passClient.selectObjects(grantSelector);
+        assertEquals(1, resultGrant1.getTotal());
+        Grant passGrant = resultGrant1.getObjects().get(0);
+        assertNotNull(passGrant.getId());
+        assertEquals("johnshopkins.edu:grant:130844", passGrant.getLocalKey());
+        assertEquals("test-33664-1000055108", passGrant.getAwardNumber());
+        assertEquals("Test PI", passGrant.getProjectName());
+        assertEquals(AwardStatus.ACTIVE, passGrant.getAwardStatus());
+        assertEquals("2018-12-14T00:00Z", passGrant.getAwardDate().toString());
+        assertEquals("2018-08-15T10:00Z", passGrant.getStartDate().toString());
+        assertEquals("2025-05-31T00:00Z", passGrant.getEndDate().toString());
+
+        Funder primaryFunder = passClient.getObject(passGrant.getPrimaryFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:300865", primaryFunder.getLocalKey());
+        assertEquals("NATIONAL INSTITUTES OF HEALTH", primaryFunder.getName());
+        assertEquals("1", primaryFunder.getPolicy().getId());
+
+        Funder directFunder = passClient.getObject(passGrant.getDirectFunder(), "policy");
+        assertEquals("johnshopkins.edu:funder:304106", directFunder.getLocalKey());
+        assertEquals("WAKE FOREST UNIV",directFunder.getName());
+        assertEquals("1", directFunder.getPolicy().getId());
+
+        assertEquals("UserBarFn", passGrant.getPi().getFirstName());
+        assertEquals("UserBarLn", passGrant.getPi().getLastName());
+        assertEquals("userbar@jhu.edu", passGrant.getPi().getEmail());
+        assertEquals(List.of("johnshopkins.edu:employeeid:123222", "johnshopkins.edu:eppn:userbar"),
+            passGrant.getPi().getLocatorIds());
+
+        assertEquals(1, passGrant.getCoPis().size());
+        User copi1 = passGrant.getCoPis().stream().filter(copi -> copi.getLastName().equals("UserFooLn"))
+            .findFirst().get();
+        assertEquals("UserFooFn", copi1.getFirstName());
+        assertEquals("UserFooLn", copi1.getLastName());
+        assertEquals("userfoo@jhu.edu", copi1.getEmail());
+        assertEquals(List.of("johnshopkins.edu:employeeid:123111", "johnshopkins.edu:eppn:userfoo"),
+            copi1.getLocatorIds());
     }
 
     private void verifyInvalidGrants(List<String> ingestRecordErrors) throws IOException {
@@ -266,6 +309,14 @@ public class GrantLoaderLoadFileIT extends AbstractIntegrationTest {
         assertTrue(ingestRecordErrors.stream().anyMatch(message ->
             message.matches(".*GrantIngestRecord.*grantNumber=999999.*\\sError Message: " +
                 "Active PI has blank employeeId and institutionalId\\.")));
+
+        grantSelector.setFilter(RSQL.equals("localKey", "johnshopkins.edu:grant:130855"));
+        PassClientResult<Grant> resultGrant10 = passClient.selectObjects(grantSelector);
+        // missing pi row for grant
+        assertEquals(0, resultGrant10.getTotal());
+        assertTrue(ingestRecordErrors.stream().anyMatch(message ->
+            message.matches(".*Error updating Grant with localKey: 130855.*\\sError Message: " +
+                "No PI found for grant 130855")));
     }
 
 }
