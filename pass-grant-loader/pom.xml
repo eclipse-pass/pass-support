@@ -32,7 +32,7 @@
     <awsspring.version>3.2.1</awsspring.version>
     <args4j.version>2.37</args4j.version>
     <commons.csv.version>1.12.0</commons.csv.version>
-    <mysql.jdbc.version>8.0.33</mysql.jdbc.version>
+    <mysql.jdbc.version>9.4.0</mysql.jdbc.version>
     <maven-model.version>3.9.9</maven-model.version>
   </properties>
 
@@ -124,8 +124,8 @@
         <artifactId>commons-lang3</artifactId>
       </dependency>
       <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
         <version>${mysql.jdbc.version}</version>
       </dependency>
       <dependency>
@@ -303,7 +303,8 @@
                   <ignoredUnusedDeclaredDependency>com.oracle.database.jdbc::</ignoredUnusedDeclaredDependency>
                   <!-- Used by ITs via classpath -->
                   <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>mysql:mysql-connector-java::</ignoredUnusedDeclaredDependency>
+                  <!-- JDBC driver -->
+                  <ignoredUnusedDeclaredDependency>com.mysql:mysql-connector-j::</ignoredUnusedDeclaredDependency>
                   <!-- Used in tests by spring boot -->
                   <ignoredUnusedDeclaredDependency>com.h2database:h2::</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
