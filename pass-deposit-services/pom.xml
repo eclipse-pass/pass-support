@@ -39,6 +39,7 @@
     <awsspring.version>3.2.1</awsspring.version>
     <commons-compress.version>1.27.1</commons-compress.version>
     <commons-io.version>2.17.0</commons-io.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
     <okhttp.version>4.12.0</okhttp.version>
     <xmlunit.version>2.10.0</xmlunit.version>
     <commons-codec.version>1.17.1</commons-codec.version>
@@ -205,6 +206,11 @@
         <groupId>io.netty</groupId>
         <artifactId>netty-common</artifactId>
         <version>4.1.118.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
       </dependency>
       <!-- End of transitive deps with CVE issues. -->
     </dependencies>
