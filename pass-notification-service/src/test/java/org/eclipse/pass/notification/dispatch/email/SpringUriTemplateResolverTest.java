@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -45,11 +46,13 @@ public class SpringUriTemplateResolverTest {
         assertNotNull(springUriTemplateResolver.resolve(null, "classpath:" + packageName + "/" + "templateToResolve"));
     }
 
+    @Disabled("flaky test using example.com")
     @Test
     public void resolveHttpUrl() {
         assertNotNull(springUriTemplateResolver.resolve(null, "http://example.org"));
     }
 
+    @Disabled("flaky test using example.com")
     @Test
     public void resolveHttpsUrl() {
         assertNotNull(springUriTemplateResolver.resolve(null, "https://example.org"));
