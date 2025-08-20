@@ -1,5 +1,10 @@
 name: Continuous Integration
-on: [pull_request, workflow_dispatch]
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '5 8 15 * *'
 
 jobs:
   test:
