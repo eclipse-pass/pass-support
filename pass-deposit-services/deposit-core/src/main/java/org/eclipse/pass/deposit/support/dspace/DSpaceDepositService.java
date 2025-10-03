@@ -265,7 +265,7 @@ public class DSpaceDepositService {
         String uuid = getUuidForHandle(dspaceCollectionHandle, authContext);
 
         return restClient.post()
-            .uri("/submission/workspaceitems?owningCollection={collectionUuid}", uuid)
+            .uri("/submission/workspaceitems?owningCollection={collectionUuid}&embed=item", uuid)
             .header(AUTHORIZATION, authContext.authToken())
             .header(X_XSRF_TOKEN, authContext.xsrfToken())
             .header(COOKIE, DSPACE_XSRF_COOKIE + authContext.xsrfToken())
