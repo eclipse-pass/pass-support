@@ -65,7 +65,7 @@ public abstract class AbstractSubmissionIT extends AbstractDepositSubmissionIT {
         stubFor(get("/dspace/api/discover/search/objects?query=handle:collectionhandle")
             .willReturn(ok(searchJson)));
 
-        stubFor(post("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")
+        stubFor(post("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid&embed=item")
             .willReturn(WireMock.ok("{\"_embedded\": {\"workspaceitems\": [{\"id\": 1,"
                 + "\"_embedded\": {\"item\": {\"uuid\": \"uuid\", \"metadata\": {}}}}]}}")));
 
@@ -87,7 +87,7 @@ public abstract class AbstractSubmissionIT extends AbstractDepositSubmissionIT {
         WireMock.verify(expectedCount, getRequestedFor(
             urlEqualTo("/dspace/api/discover/search/objects?query=handle:collectionhandle")));
         WireMock.verify(expectedCount, postRequestedFor(
-            urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid")));
+            urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid&embed=item")));
         WireMock.verify(expectedCount, patchRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems/1")));
         WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/workflow/workflowitems")));
     }
