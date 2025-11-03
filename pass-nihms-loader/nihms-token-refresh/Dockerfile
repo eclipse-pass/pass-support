@@ -1,12 +1,13 @@
 FROM --platform=linux/amd64 node:20
 
+ENV CHROME_VERSION=141.0.7390.122-1
+
 RUN apt-get update \
     && apt-get --no-install-recommends install -y xauth \
     && apt-get --no-install-recommends install -y xvfb \
-    && curl https://dl-ssl.google.com/linux/linux_signing_key.pub -so - | apt-key add - \
-    && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && curl -O https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \
     && apt-get update \
-    && apt-get --no-install-recommends -y install google-chrome-stable \
+    && apt-get install -y ./google-chrome-stable_${CHROME_VERSION}_amd64.deb \
     && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -so "awscliv2.zip" \
     && unzip awscliv2.zip \
 	&& ./aws/install \
