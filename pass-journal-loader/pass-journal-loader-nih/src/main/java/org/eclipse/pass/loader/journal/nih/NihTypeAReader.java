@@ -16,8 +16,6 @@
 
 package org.eclipse.pass.loader.journal.nih;
 
-import static java.util.stream.StreamSupport.stream;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,50 +32,55 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Reads the NIH type A participation .csv file
+ * Reads the NIH type A participation .csv file.
+ *
  * <p>
- * See also: http://www.ncbi.nlm.nih.gov/pmc/front-page/NIH_PA_journal_list.csv
+ * See the spreadsheet definition at https://www.nlm.nih.gov/pubs/techbull/mj24/mj24_pmc_preview_journal_list.html
+ * and the spreadsheet at https://cdn.ncbi.nlm.nih.gov/pmc/home/jlist.csv.
  * </p>
  *
  * @author apb@jhu.edu
  */
 public class NihTypeAReader implements JournalReader {
+    private static final String[] header = new String[] {
+        "Journal Title",
+        "NLM Title Abbreviation (TA)",
+        "Publisher",
+        "ISSN (print)",
+        "ISSN (online)",
+        "NLM Unique ID",
+        "Most Recent",
+        "Earliest",
+        "Release Delay (Embargo)",
+        "Agreement Status",
+        "Agreement to Deposit",
+        "Journal Note",
+        "PMC URL"
+    };
 
     private static final Logger LOG = LoggerFactory.getLogger(NihTypeAReader.class);
 
     private Stream<Journal> readJournals(Reader csv) throws IOException {
+        CSVFormat csvFormat = CSVFormat.RFC4180.builder().setHeader(header).setSkipHeaderRecord(true).build();
 
-        return stream(CSVFormat.RFC4180.parse(csv).spliterator(), false)
-            .map(NihTypeAReader::toJournal)
-            .filter(Objects::nonNull);
+        return csvFormat.parse(csv).stream().map(NihTypeAReader::toJournal).filter(Objects::nonNull);
     }
 
     private static Journal toJournal(final CSVRecord record) {
-
         LOG.debug("Parsing CSV record..");
 
-        //final Journal j = new PMCSource();
         final Journal j = new Journal();
 
         try {
-
             j.setJournalName(record.get(0));
             j.setNlmta(record.get(1));
 
-            // columns 2, 3 are issns. column 2 is type "Print" and 3 is type "Online"
-            // see https://publicaccess.nih.gov/testsite/field_definitions.htm
-            addIssnIfPresent(j, record.get(2), "Print");
-            addIssnIfPresent(j, record.get(3), "Online");
+            addIssnIfPresent(j, record.get(3), "Print");
+            addIssnIfPresent(j, record.get(4), "Online");
 
-            // 4 is start date (we don't care)
-            // 5 is end date (if ended, then it's not active)
-            String endDate = null;
-            if (record.size() > 5) { //csv file may lack trailing comma if this field is empty
-                endDate = record.get(5);
-            }
-            final boolean isActive = (endDate == null || endDate.trim().equals(""));
+            String status = record.get(9).strip();
 
-            if (isActive) {
+            if (status.equals("Active")) {
                 j.setPmcParticipation(PmcParticipation.A);
             }
 
@@ -90,7 +93,7 @@ public class NihTypeAReader implements JournalReader {
     }
 
     private static void addIssnIfPresent(Journal journal, String issn, String type) {
-        if (issn != null && !issn.trim().equals("")) {
+        if (issn != null && !issn.strip().equals("")) {
             journal.getIssns().add(String.join(":", type, issn));
         }
     }
@@ -108,5 +111,4 @@ public class NihTypeAReader implements JournalReader {
     public boolean hasPmcParticipation() {
         return true;
     }
-
 }
