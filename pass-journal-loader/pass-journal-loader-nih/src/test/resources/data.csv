@@ -1,2 +1,3 @@
-Journal 1,j1,2190-572X,2190-5738,Jul 2011,
-Journal 2,j2,,1550-7416,Sep 2004,Feb 2016
+Journal Title,NLM Title Abbreviation (TA),Publisher,ISSN (print),ISSN (online),NLM Unique ID,Most Recent,Earliest,Release Delay (Embargo),Agreement Status,Agreement to Deposit,Journal Note,PMC URL
+Journal 1,j1,publisher,2190-572X,2190-5738,111111111,v.12(3) 2026,v.1(1) 2011,12 months,Active,All articles,,"http://exmample.com/blah"
+Journal 2,j2,publisher,,1550-7416,000000000,v.16(3) 2020,v.1(1) 20009,10 months,No longer participating,All articles,,"http://example.com/blah2"
