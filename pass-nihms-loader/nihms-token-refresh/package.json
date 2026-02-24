@@ -7,9 +7,9 @@
     "refresh-token": "./run_refresh.sh"
   },
   "dependencies": {
-    "testcafe": "3.3.0"
+    "testcafe": "3.7.4"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   }
 }
