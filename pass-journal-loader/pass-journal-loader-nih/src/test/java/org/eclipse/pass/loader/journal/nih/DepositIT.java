@@ -111,7 +111,7 @@ public class DepositIT {
         System.setProperty("pmc", "");
         Main.main(new String[] {});
 
-        // We expect three journals, but no PMC A journals
+        // We expect 4 journals, but no PMC A journals
         assertEquals(4, listJournals().size());
         assertEquals(0, typeA(listJournals()).size());
 
@@ -119,7 +119,7 @@ public class DepositIT {
         System.setProperty("pmc", "http://localhost:" + wmPort + "/pmc/front-page/NIH_PA_journal_list-1.csv");
         Main.main(new String[] {});
 
-        // We still expect three journals in the repository, but now two are PMC A
+        // We still expect 4 journals in the repository, but now two are PMC A
         assertEquals(4, listJournals().size());
         assertEquals(2, typeA(listJournals()).size());
 
