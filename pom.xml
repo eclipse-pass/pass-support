@@ -73,8 +73,9 @@
 
   <properties>
     <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
-    <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
     <kotlin.version>1.9.25</kotlin.version>
+    <okhttp.version>5.3.2</okhttp.version>
     <sonar.projectName>pass-support</sonar.projectName>
     <sonar.projectKey>eclipse-pass_pass-support</sonar.projectKey>
     <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/jacoco-aggregate-report-pass-support/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
@@ -82,13 +83,37 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Declared here so same version of okhttp is used in all modules. Need for pass-data-client. -->
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp-bom</artifactId>
+        <version>${okhttp.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <!-- The following are transitive deps with convergence issues. -->
       <!-- These should all be checked whenever deps are upgraded. -->
+
+      <!--
+        Force the jsonapi-adapters dep in pass-data-client to use a higher version of moshi
+        which is a transitive dep of jsonapi-adapters. This is required so moshi uses the 3.x version of
+        okio-jvm which is what okhttp3 5.x uses. These are here because several modules in this project
+        use pass-data-client, so these need to be set at this level.
+        These should be checked whenever deps are upgraded.
+      -->
+      <dependency>
+        <groupId>com.squareup.moshi</groupId>
+        <artifactId>moshi</artifactId>
+        <version>1.15.2</version>
+      </dependency>
       <dependency>
         <groupId>com.squareup.okio</groupId>
-        <artifactId>okio</artifactId>
-        <version>3.6.0</version>
+        <artifactId>okio-jvm</artifactId>
+        <version>3.16.4</version>
       </dependency>
+      <!-- End of okhttp deps. -->
+
       <dependency>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-stdlib</artifactId>
@@ -136,6 +161,15 @@
             </goals>
           </execution>
         </executions>
+        <!--
+        [JaCoCo 0.8.14] Known issue caused by the class exceeding the technical limits of the
+        Java specification after JaCoCo adds its coverage probes.
+        -->
+        <configuration>
+            <excludes>
+                <exclude>software/amazon/awssdk/services/ssm/DefaultSsmClient</exclude>
+            </excludes>
+        </configuration>
       </plugin>
 
       <plugin>

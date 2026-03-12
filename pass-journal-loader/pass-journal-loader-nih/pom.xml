@@ -15,9 +15,9 @@
 
   <properties>
     <!-- Properties for dependency versions -->
-    <wiremock.version>3.9.2</wiremock.version>
-    <testcontainers.version>1.19.8</testcontainers.version>
-    <maven-model.version>3.9.9</maven-model.version>
+    <wiremock.version>3.13.2</wiremock.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
+    <maven-model.version>3.9.13</maven-model.version>
   </properties>
 
   <dependencies>
