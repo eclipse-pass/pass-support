@@ -14,16 +14,14 @@
 
   <properties>
     <!-- Properties for dependency versions -->
-    <okhttp.version>4.12.0</okhttp.version>
-    <moshi.version>4.12.0</moshi.version>
     <jsonapi-adapters.version>1.1.0</jsonapi-adapters.version>
-    <slf4j.version>2.0.16</slf4j.version>
-    <logback.version>1.5.16</logback.version>
-    <commons-lang3.version>3.18.0</commons-lang3.version>
-    <junit.jupiter.version>5.10.5</junit.jupiter.version>
-    <mockito.version>5.11.0</mockito.version>
-    <testcontainers.version>1.19.8</testcontainers.version>
-    <maven-model.version>3.9.9</maven-model.version>
+    <slf4j.version>2.0.17</slf4j.version>
+    <logback.version>1.5.32</logback.version>
+    <commons-lang3.version>3.20.0</commons-lang3.version>
+    <junit.jupiter.version>5.14.3</junit.jupiter.version>
+    <mockito.version>5.22.0</mockito.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
+    <maven-model.version>3.9.13</maven-model.version>
   </properties>
 
   <dependencyManagement>
@@ -53,8 +51,7 @@
 
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>${okhttp.version}</version>
+      <artifactId>okhttp-jvm</artifactId>
     </dependency>
 
     <dependency>

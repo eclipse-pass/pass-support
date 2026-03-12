@@ -23,17 +23,16 @@
 
     <properties>
         <!-- Properties for dependency versions -->
-        <spring-boot-maven-plugin.version>3.4.2</spring-boot-maven-plugin.version>
-        <awsspring.version>3.2.1</awsspring.version>
-        <org-json.version>20240303</org-json.version>
-        <commons.csv.version>1.12.0</commons.csv.version>
+        <spring-boot-maven-plugin.version>3.5.11</spring-boot-maven-plugin.version>
+        <awsspring.version>3.4.2</awsspring.version>
+        <org-json.version>20251224</org-json.version>
+        <commons.csv.version>1.14.1</commons.csv.version>
         <args4j.version>2.37</args4j.version>
         <handy-uri-templates.version>2.1.8</handy-uri-templates.version>
-        <commons-io.version>2.17.0</commons-io.version>
-        <okhttp.version>4.12.0</okhttp.version>
-        <commons-collections4.version>4.4</commons-collections4.version>
-        <joda-time.version>2.13.0</joda-time.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <commons-io.version>2.21.0</commons-io.version>
+        <commons-collections4.version>4.5.0</commons-collections4.version>
+        <joda-time.version>2.14.1</joda-time.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
     </properties>
 
     <dependencyManagement>
@@ -48,6 +47,12 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
                 <version>${commons.csv.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
             </dependency>
 
             <dependency>
@@ -67,12 +72,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${okhttp.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
                 <version>${joda-time.version}</version>
@@ -81,16 +80,6 @@
             <!-- The following deps were declared to resolve CVEs from transitive deps. -->
             <!-- These should all be checked whenever deps are upgraded. Should be removed if possible once parent -->
             <!-- dep updates with fixed version. -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-handler</artifactId>
-                <version>4.1.118.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
-                <version>4.1.118.Final</version>
-            </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
@@ -197,7 +186,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-help-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
             </plugin>
         </plugins>
     </build>
