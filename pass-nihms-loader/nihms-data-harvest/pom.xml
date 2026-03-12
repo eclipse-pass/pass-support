@@ -35,12 +35,11 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>${commons-io.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
+      <artifactId>okhttp-jvm</artifactId>
     </dependency>
 
     <dependency>
