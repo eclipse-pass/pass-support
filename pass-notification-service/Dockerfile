@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.13_11-jre-jammy
+FROM eclipse-temurin:17.0.18_8-jre-noble
 
 WORKDIR /app
 
