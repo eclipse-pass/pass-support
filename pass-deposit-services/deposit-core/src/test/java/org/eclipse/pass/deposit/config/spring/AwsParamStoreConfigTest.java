@@ -49,6 +49,7 @@ import org.testcontainers.utility.DockerImageName;
     dspace.api.url=http://localhost:8000/api
     dspace.website.url=http://localhost:8000/website
     dspace.collection.handle=1234/1
+    dspace.user.agent=test-pass-user-agent
     """
 )
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
