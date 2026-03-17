@@ -82,7 +82,8 @@ import org.springframework.test.util.ReflectionTestUtils;
     "dspace.server=localhost:9030",
     "dspace.api.url=http://localhost:9030/dspace/api",
     "dspace.website.url=http://localhost:9030/dspace/website",
-    "dspace.collection.handle=collectionhandle"
+    "dspace.collection.handle=collectionhandle",
+    "dspace.user.agent=test-pass-user-agent"
 })
 @WireMockTest(httpPort = 9030)
 public class SubmissionProcessorIT extends AbstractSubmissionIT {

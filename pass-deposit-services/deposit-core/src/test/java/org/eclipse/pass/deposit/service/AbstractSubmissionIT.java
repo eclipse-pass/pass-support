@@ -15,6 +15,7 @@
  */
 package org.eclipse.pass.deposit.service;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
@@ -29,6 +30,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import org.eclipse.pass.deposit.AbstractDepositSubmissionIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -90,6 +92,32 @@ public abstract class AbstractSubmissionIT extends AbstractDepositSubmissionIT {
             urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid&embed=item")));
         WireMock.verify(expectedCount, patchRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems/1")));
         WireMock.verify(expectedCount, postRequestedFor(urlEqualTo("/dspace/api/workflow/workflowitems")));
+
+        // If no calls expected, don't check for user-agent headers.
+        if (expectedCount == 0) {
+            return;
+        }
+
+        WireMock.verify(getRequestedFor(urlEqualTo("/dspace/api/security/csrf"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("test-pass-user-agent"))
+        );
+        WireMock.verify(postRequestedFor(urlEqualTo("/dspace/api/authn/login"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("test-pass-user-agent"))
+        );
+        WireMock.verify(getRequestedFor(
+            urlEqualTo("/dspace/api/discover/search/objects?query=handle:collectionhandle"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("test-pass-user-agent"))
+        );
+        WireMock.verify(postRequestedFor(
+            urlEqualTo("/dspace/api/submission/workspaceitems?owningCollection=collectionuuid&embed=item"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("test-pass-user-agent"))
+        );
+        WireMock.verify(patchRequestedFor(urlEqualTo("/dspace/api/submission/workspaceitems/1"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("test-pass-user-agent"))
+        );
+        WireMock.verify(postRequestedFor(urlEqualTo("/dspace/api/workflow/workflowitems"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("test-pass-user-agent"))
+        );
     }
 
 }

@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -80,8 +81,11 @@ public class DSpaceDepositService {
 
     public record AuthContext(String xsrfToken, String authToken){}
 
-    public DSpaceDepositService(@Value("${dspace.api.url}") String dspaceApiUrl,
-            RepositoryConnectivityService repositoryConnectivityService) {
+    public DSpaceDepositService(
+        @Value("${dspace.api.url}") String dspaceApiUrl,
+        @Value("${dspace.user.agent}") String dspaceUserAgent,
+        RepositoryConnectivityService repositoryConnectivityService
+    ) {
         this.repositoryConnectivityService = repositoryConnectivityService;
 
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
@@ -102,6 +106,7 @@ public class DSpaceDepositService {
         this.restClient = RestClient.builder()
             .requestFactory(new HttpComponentsClientHttpRequestFactory(httpClient))
             .baseUrl(dspaceApiUrl)
+            .defaultHeader(HttpHeaders.USER_AGENT, dspaceUserAgent)
             .build();
     }
 
