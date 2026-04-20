@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.PassClientResult;
@@ -71,7 +72,9 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     @Getter
     private final List<String> ingestRecordErrors = new ArrayList<>();
 
+    @Setter @Getter
     private String domain = "default.domain";
+
     private String latestUpdateString = "";
 
     private record GrantAccumulate(GrantIngestRecord grantIngestRecord, ZonedDateTime awardDate,
@@ -112,10 +115,6 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
             default -> {
             }
         }
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
     }
 
     /**
@@ -575,7 +574,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
      */
     private Funder updateFunderInPass(Funder systemFunder) throws IOException, GrantDataException {
         String baseLocalKey = systemFunder.getLocalKey();
-        String fullLocalKey = GrantDataUtils.buildLocalKey(domain, FUNDER_ID_TYPE, baseLocalKey);
+        String fullLocalKey = GrantDataUtils.buildLocalKey(getDomain(), FUNDER_ID_TYPE, baseLocalKey);
         systemFunder.setLocalKey(fullLocalKey);
 
         PassClientSelector<Funder> selector = new PassClientSelector<>(Funder.class);
@@ -654,7 +653,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
      */
     private Grant updateGrantInPass(Grant systemGrant) throws IOException, GrantDataException {
         String baseLocalKey = systemGrant.getLocalKey();
-        String fullLocalKey = GrantDataUtils.buildLocalKey(domain, GRANT_ID_TYPE, baseLocalKey);
+        String fullLocalKey = GrantDataUtils.buildLocalKey(getDomain(), GRANT_ID_TYPE, baseLocalKey);
         systemGrant.setLocalKey(fullLocalKey);
 
         LOG.debug("Looking for grant with localKey {}", fullLocalKey);

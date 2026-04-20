@@ -30,6 +30,7 @@ import org.eclipse.pass.support.grant.data.GrantIngestRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -44,12 +45,12 @@ import org.springframework.stereotype.Component;
 public class JhuPassUpdater extends AbstractDefaultPassUpdater {
 
     private static final Logger LOG = LoggerFactory.getLogger(JhuPassUpdater.class);
-    private static final String DOMAIN = "johnshopkins.edu";
+
     private static final String EMPLOYEE_ID_TYPE = "employeeid";
     private static final String JHED_ID_TYPE = "eppn";
 
-    static final String EMPLOYEE_LOCATOR_ID = DOMAIN + ":" + EMPLOYEE_ID_TYPE + ":";
-    static final String JHED_LOCATOR_ID = DOMAIN + ":" + JHED_ID_TYPE + ":";
+    private final String employeeIdLocatorPrefix;
+    private final String eppnLocatorPrefix;
 
     private final DifferenceLogger differenceLogger;
 
@@ -58,13 +59,17 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
      * @param differenceLogger the diff logger
      * @param passClient the pass client
      * @param policyProperties the policy properties
+     * @param localKeyDomainPrefix the domain prefix to use in localKeys
      */
     public JhuPassUpdater(DifferenceLogger differenceLogger,
                           PassClient passClient,
-                          @Qualifier("policyProperties") Properties policyProperties) {
+                          @Qualifier("policyProperties") Properties policyProperties,
+                          @Value("${local.key.domain.prefix}") String localKeyDomainPrefix) {
         super(passClient, policyProperties);
         this.differenceLogger = differenceLogger;
-        setDomain(DOMAIN);
+        setDomain(localKeyDomainPrefix);
+        employeeIdLocatorPrefix = getDomain() + ":" + EMPLOYEE_ID_TYPE + ":";
+        eppnLocatorPrefix =  getDomain() + ":" + JHED_ID_TYPE + ":";
     }
 
     @Override
@@ -104,11 +109,11 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         String employeeId = grantIngestRecord.getPiEmployeeId();
         //Build the List of locatorIds - put the most reliable ids first
         if (StringUtils.isNotBlank(employeeId)) {
-            user.getLocatorIds().add(EMPLOYEE_LOCATOR_ID + employeeId);
+            user.getLocatorIds().add(employeeIdLocatorPrefix + employeeId);
         }
         if (StringUtils.isNotBlank(grantIngestRecord.getPiInstitutionalId())) {
             String jhedId = grantIngestRecord.getPiInstitutionalId().toLowerCase();
-            user.getLocatorIds().add(JHED_LOCATOR_ID + jhedId);
+            user.getLocatorIds().add(eppnLocatorPrefix + jhedId);
         }
         user.getRoles().add(UserRole.SUBMITTER);
         LOG.debug("Built user with employee ID {}", employeeId);
@@ -166,7 +171,7 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         if (!Objects.equals(system.getLastName(), stored.getLastName())) {
             return true;
         }
-        String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
+        String systemUserJhedLocatorId = findLocatorId(system, eppnLocatorPrefix);
         if (Objects.nonNull(systemUserJhedLocatorId) && !stored.getLocatorIds().contains(systemUserJhedLocatorId)) {
             return true;
         }
@@ -201,9 +206,9 @@ public class JhuPassUpdater extends AbstractDefaultPassUpdater {
         stored.setFirstName(system.getFirstName());
         stored.setMiddleName(system.getMiddleName());
         stored.setLastName(system.getLastName());
-        String systemUserJhedLocatorId = findLocatorId(system, JhuPassUpdater.JHED_LOCATOR_ID);
+        String systemUserJhedLocatorId = findLocatorId(system, eppnLocatorPrefix);
         if (Objects.nonNull(systemUserJhedLocatorId) && !stored.getLocatorIds().contains(systemUserJhedLocatorId)) {
-            stored.getLocatorIds().removeIf(locatorId -> locatorId.startsWith(JhuPassUpdater.JHED_LOCATOR_ID));
+            stored.getLocatorIds().removeIf(locatorId -> locatorId.startsWith(eppnLocatorPrefix));
             stored.getLocatorIds().add(systemUserJhedLocatorId);
         }
         //populate null fields if we can

@@ -48,7 +48,8 @@ import org.testcontainers.utility.DockerImageName;
         "pass.client.password=${PASS_CORE_PASSWORD:test-pw}",
         "grant.db.url=${GRANT_DB_URL:test-grant-db-url}",
         "grant.db.username=${GRANT_DB_USER:test-grant-db-user}",
-        "grant.db.password=${GRANT_DB_PASSWORD:test-grant-db-pw}"
+        "grant.db.password=${GRANT_DB_PASSWORD:test-grant-db-pw}",
+        "local.key.domain.prefix=passtest.edu"
     })
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Testcontainers

@@ -51,7 +51,8 @@ import org.testcontainers.utility.DockerImageName;
     "pass.client.password=test-pw",
     "grant.db.url=test-grant-db-url",
     "grant.db.username=test-grant-db-user",
-    "grant.db.password=test-grant-db-pw"
+    "grant.db.password=test-grant-db-pw",
+    "local.key.domain.prefix=passtest.edu"
 })
 @Testcontainers
 public class PolicyPropertiesS3IT {
