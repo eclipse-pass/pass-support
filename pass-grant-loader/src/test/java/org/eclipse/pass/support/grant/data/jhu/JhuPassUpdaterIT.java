@@ -16,8 +16,6 @@
 package org.eclipse.pass.support.grant.data.jhu;
 
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
-import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
-import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater.JHED_LOCATOR_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -48,6 +46,9 @@ import org.springframework.test.annotation.DirtiesContext;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class JhuPassUpdaterIT extends AbstractIntegrationTest {
+
+    static final String EMPLOYEE_LOCATOR_ID = "johnshopkins.edu:employeeid:";
+    static final String JHED_LOCATOR_ID = "johnshopkins.edu:eppn:";
 
     private final String grantIdPrefix = "johnshopkins.edu:grant:";
 

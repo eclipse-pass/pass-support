@@ -16,8 +16,8 @@
 package org.eclipse.pass.support.grant.data.jhu;
 
 import static org.eclipse.pass.support.grant.data.DateTimeUtil.createZonedDateTime;
-import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater.EMPLOYEE_LOCATOR_ID;
-import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdater.JHED_LOCATOR_ID;
+import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdaterIT.EMPLOYEE_LOCATOR_ID;
+import static org.eclipse.pass.support.grant.data.jhu.JhuPassUpdaterIT.JHED_LOCATOR_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
