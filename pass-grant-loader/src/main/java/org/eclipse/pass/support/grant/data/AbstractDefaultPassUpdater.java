@@ -73,7 +73,7 @@ public abstract class AbstractDefaultPassUpdater implements PassUpdater {
     private final List<String> ingestRecordErrors = new ArrayList<>();
 
     @Setter @Getter
-    private String domain = "default.domain";
+    private String domain;
 
     private String latestUpdateString = "";
 
