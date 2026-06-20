@@ -33,7 +33,7 @@
         <spring-boot-maven-plugin.version>3.5.11</spring-boot-maven-plugin.version>
         <awsspring.version>3.4.2</awsspring.version>
         <commons-io.version>2.21.0</commons-io.version>
-        <handlebars.version>4.5.0</handlebars.version>
+        <handlebars.version>4.5.2</handlebars.version>
         <amazon.sqs.version>2.1.4</amazon.sqs.version>
         <junit-jupiter-params.version>5.12.2</junit-jupiter-params.version>
         <greenmail-junit5.version>2.1.8</greenmail-junit5.version>
