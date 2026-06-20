@@ -30,7 +30,7 @@
 
   <properties>
     <amazon.sqs.version>2.1.4</amazon.sqs.version>
-    <handlebars.version>4.5.0</handlebars.version>
+    <handlebars.version>4.5.2</handlebars.version>
     <sshd.version>2.14.0</sshd.version>
     <jsoup.version>1.22.1</jsoup.version>
     <greenmail-junit5.version>2.1.8</greenmail-junit5.version>
