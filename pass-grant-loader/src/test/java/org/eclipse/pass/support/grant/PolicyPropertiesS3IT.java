@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
 
@@ -32,11 +33,15 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -63,8 +68,6 @@ public class PolicyPropertiesS3IT {
     @Container
     static final LocalStackContainer localStack =
         new LocalStackContainer(LOCALSTACK_IMG)
-            .withClasspathResourceMapping("/s3-policy.properties",
-                "/tmp/tmp-test-s3-policy.properties", BindMode.READ_ONLY)
             .withServices(S3);
 
     @MockitoBean protected GrantLoaderCLIRunner grantLoaderCLIRunner;
@@ -79,10 +82,25 @@ public class PolicyPropertiesS3IT {
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "s3", "mb", "s3://test-bucket");
-        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/tmp-test-s3-policy.properties",
-            "s3://test-bucket/s3-policy.properties");
+    static void beforeAll() throws IOException {
+        // The bucket is filled through the S3 API, not by mounting files and running commands in the
+        // container: exec into a container fails under rootless Podman, and the failure would go unnoticed.
+        try (S3Client s3 = S3Client.builder()
+                .endpointOverride(localStack.getEndpointOverride(S3))
+                .region(Region.of(localStack.getRegion()))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+                .forcePathStyle(true)
+                .build()) {
+            s3.createBucket(request -> request.bucket("test-bucket"));
+            putResource(s3, "/s3-policy.properties", "s3-policy.properties");
+        }
+    }
+
+    private static void putResource(S3Client s3, String resource, String key) throws IOException {
+        try (InputStream in = PolicyPropertiesS3IT.class.getResourceAsStream(resource)) {
+            s3.putObject(request -> request.bucket("test-bucket").key(key), RequestBody.fromBytes(in.readAllBytes()));
+        }
     }
 
     @Test

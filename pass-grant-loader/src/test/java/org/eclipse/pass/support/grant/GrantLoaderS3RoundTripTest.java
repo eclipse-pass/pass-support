@@ -34,10 +34,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -55,10 +59,6 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
     @Container
     static final LocalStackContainer localStack =
         new LocalStackContainer(LOCALSTACK_IMG)
-            .withClasspathResourceMapping("/policy.properties",
-                "/tmp/test-s3-policy.properties", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("/s3-testgrantupdatets",
-                "/tmp/test-s3-testgrantupdatets", BindMode.READ_ONLY)
             .withServices(S3);
 
     @Autowired private S3Template s3Template;
@@ -73,12 +73,26 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "s3", "mb", "s3://test-bucket");
-        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/test-s3-policy.properties",
-            "s3://test-bucket/s3-policy.properties");
-        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/test-s3-testgrantupdatets",
-            "s3://test-bucket/s3-testgrantupdatets");
+    static void beforeAll() throws IOException {
+        // The bucket is filled through the S3 API, not by mounting files and running commands in the
+        // container: exec into a container fails under rootless Podman, and the failure would go unnoticed.
+        try (S3Client s3 = S3Client.builder()
+                .endpointOverride(localStack.getEndpointOverride(S3))
+                .region(Region.of(localStack.getRegion()))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+                .forcePathStyle(true)
+                .build()) {
+            s3.createBucket(request -> request.bucket("test-bucket"));
+            putResource(s3, "/policy.properties", "s3-policy.properties");
+            putResource(s3, "/s3-testgrantupdatets", "s3-testgrantupdatets");
+        }
+    }
+
+    private static void putResource(S3Client s3, String resource, String key) throws IOException {
+        try (InputStream in = GrantLoaderS3RoundTripTest.class.getResourceAsStream(resource)) {
+            s3.putObject(request -> request.bucket("test-bucket").key(key), RequestBody.fromBytes(in.readAllBytes()));
+        }
     }
 
     @Test

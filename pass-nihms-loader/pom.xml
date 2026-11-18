@@ -158,6 +158,8 @@
                                 <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>
                                 <!-- These come from testcontainers junit-jupiter -->
                                 <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
+                                <!-- These come from spring-cloud-aws-starter-parameter-store, used by tests to set up parameters -->
+                                <ignoredUsedUndeclaredDependency>software.amazon.awssdk::</ignoredUsedUndeclaredDependency>
                             </ignoredUsedUndeclaredDependencies>
                             <ignoredUnusedDeclaredDependencies>
                                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
@@ -175,6 +177,8 @@
                                 <!-- Needed for when data-transform jar is created -->
                                 <ignoredNonTestScopedDependency>org.json:json:</ignoredNonTestScopedDependency>
                                 <ignoredNonTestScopedDependency>commons-io:commons-io:</ignoredNonTestScopedDependency>
+                                <!-- Needed at runtime by spring-cloud-aws-starter-parameter-store, used directly only by tests -->
+                                <ignoredNonTestScopedDependency>software.amazon.awssdk::</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
