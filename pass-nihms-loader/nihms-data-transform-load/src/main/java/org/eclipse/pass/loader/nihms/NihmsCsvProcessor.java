@@ -62,6 +62,8 @@ public class NihmsCsvProcessor {
     private static final Integer FINALAPPROVAL_COLNUM = 9;
     private static final String ARTICLETITLE_HEADING = "Article Title";
     private static final Integer ARTICLETITLE_COLNUM = 10;
+    // Optional column, only present in files produced from Crossref and PMC ID Converter data
+    private static final Integer DOI_COLNUM = 16;
 
     /**
      * Lists expected headers and their column number to support header validation
@@ -151,27 +153,28 @@ public class NihmsCsvProcessor {
         if (row == null) {
             return;
         }
-        if (StringUtils.isEmpty(row.get(PMID_COLNUM))) {
+        String pmid = row.get(PMID_COLNUM);
+        String doi = row.size() > DOI_COLNUM ? row.get(DOI_COLNUM) : null;
+        if (StringUtils.isEmpty(pmid) && StringUtils.isEmpty(doi)) {
             return;
         } //not a valid row
         recCount = recCount + 1;
-        NihmsPublication pub = null;
+        String nihmsId = row.get(NIHMSID_COLNUM);
         try {
-            pub = new NihmsPublication(status, row.get(PMID_COLNUM), row.get(GRANTID_COLNUM), row.get(NIHMSID_COLNUM),
+            NihmsPublication pub = new NihmsPublication(status, pmid, row.get(GRANTID_COLNUM), nihmsId,
                                        row.get(PMCID_COLNUM), row.get(FILEDEPOSIT_COLNUM),
                                        row.get(INITIALAPPROVAL_COLNUM),
                                        row.get(TAGGINGCOMPLETE_COLNUM), row.get(FINALAPPROVAL_COLNUM),
-                                       row.get(ARTICLETITLE_COLNUM));
+                                       row.get(ARTICLETITLE_COLNUM), doi);
 
-            LOG.info("NIHMS record PMID={} and NIHMS ID={} is being processed", pub.getPmid(), pub.getRawNihmsId());
+            LOG.info("NIHMS record PMID={}, DOI={} and NIHMS ID={} is being processed", pmid, doi, nihmsId);
             pubConsumer.accept(pub);
-            LOG.info("NIHMS record PMID={} and NIHMS ID={} was processed successfully", pub.getPmid(),
-                pub.getRawNihmsId());
+            LOG.info("NIHMS record PMID={}, DOI={} and NIHMS ID={} was processed successfully", pmid, doi, nihmsId);
         } catch (Exception ex) {
             failCount = failCount + 1;
             LOG.error(
-                "A problem occurred while processing csv row {} with PMID {} and NIHMS ID {}. The record was not " +
-                    "imported successfully.", recCount + 1, pub.getPmid(), pub.getRawNihmsId(), ex);
+                "A problem occurred while processing csv row {} with PMID {}, DOI {} and NIHMS ID {}. The record " +
+                    "was not imported successfully.", recCount + 1, pmid, doi, nihmsId, ex);
         }
     }
 

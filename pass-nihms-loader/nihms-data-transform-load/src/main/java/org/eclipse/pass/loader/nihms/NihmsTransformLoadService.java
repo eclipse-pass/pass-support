@@ -108,9 +108,12 @@ public class NihmsTransformLoadService {
         final int MAX_ATTEMPTS = 3; //applies to UpdateConflictExceptions only, which can be recovered from
         int attempt = 0;
 
+        // the cache is keyed on PMID, or on DOI for a publication with no PMID
+        final String cacheKey = pub.getPmid() != null ? pub.getPmid() : pub.getDoi();
+
         // if the record is compliant, let's check the cache to see if it has been processed previously
         if (pub.getNihmsStatus().equals(NihmsStatus.COMPLIANT)
-            && completedPublicationsCache.contains(pub.getPmid(), pub.getGrantNumber())) {
+            && completedPublicationsCache.contains(cacheKey, pub.getGrantNumber())) {
             LOG.info("Compliant NIHMS record with PMID {}, NIHMS ID {}, and award number {} has been processed " +
                     "in a previous load", pub.getPmid(), pub.getRawNihmsId(), pub.getGrantNumber());
             return;
@@ -148,7 +151,7 @@ public class NihmsTransformLoadService {
         if (pub.getNihmsStatus().equals(NihmsStatus.COMPLIANT)
             && StringUtils.isNotEmpty(pub.getPmcId())) {
             //add to cache so it doesn't check it again once it has been processed and has a pmcid assigned
-            completedPublicationsCache.add(pub.getPmid(), pub.getGrantNumber());
+            completedPublicationsCache.add(cacheKey, pub.getGrantNumber());
             LOG.debug("Added PMID {} and grant \"{}\" to cache", pub.getPmid(), pub.getGrantNumber());
         }
     }

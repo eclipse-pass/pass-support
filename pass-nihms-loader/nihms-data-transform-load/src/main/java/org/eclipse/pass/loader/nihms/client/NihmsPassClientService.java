@@ -239,12 +239,12 @@ public class NihmsPassClientService {
      * @throws IOException if there is an error reading the publication from the PassClient
      */
     public Publication findPublicationByDoi(String doi, String pmid) throws IOException {
-        if (pmid == null) {
-            throw new RuntimeException("PMID cannot be null when searching for existing Publication.");
+        if (pmid == null && doi == null) {
+            throw new RuntimeException("PMID and DOI cannot both be null when searching for existing Publication.");
         }
 
         //if the pmid/publicationId pair is in the cache, retrieve it.
-        String publicationId = publicationCache.get(pmid);
+        String publicationId = pmid == null ? null : publicationCache.get(pmid);
 
         if (doi != null) {
             publicationId = findPublicationByArticleId(doi, "doi");
@@ -252,7 +252,9 @@ public class NihmsPassClientService {
 
         if (publicationId != null) {
             Publication publication = readPublication(publicationId);
-            publicationCache.put(pmid, publicationId);
+            if (pmid != null) {
+                publicationCache.put(pmid, publicationId);
+            }
             return publication;
         }
 
@@ -562,7 +564,9 @@ public class NihmsPassClientService {
         passClient.createObject(publication);
         LOG.info("New Publication created with ID {} and PMID {}", publication.getId(), publication.getPmid());
         //add to local cache for faster lookup
-        publicationCache.put(publication.getPmid(), publication.getId());
+        if (publication.getPmid() != null) {
+            publicationCache.put(publication.getPmid(), publication.getId());
+        }
         return publication.getId();
     }
 

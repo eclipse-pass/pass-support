@@ -16,6 +16,7 @@
 package org.eclipse.pass.loader.nihms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -104,6 +105,43 @@ public class NihmsCsvProcessorTest {
             fail("Count should be 3 by the end of the test");
         }
 
+    }
+
+    /**
+     * Check files with the DOI column are read, including rows which have a DOI but no PMID
+     *
+     * @throws URISyntaxException
+     */
+    @Test
+    public void testReadCsvWithDoiColumn() throws URISyntaxException {
+        Path resource = Paths.get(NihmsCsvProcessorTest.class.getResource("/noncompliant_DoiData.csv").toURI());
+
+        NihmsCsvProcessor processor = new NihmsCsvProcessor(resource, NihmsStatus.NON_COMPLIANT);
+
+        Consumer<NihmsPublication> consumer = pub -> {
+            count = count + 1;
+            if (count == 1) {
+                assertEquals("12345678", pub.getPmid());
+                assertEquals("PMC3453453", pub.getPmcId());
+                assertEquals("NIHMS678678", pub.getNihmsId());
+                assertEquals("R01EB019135", pub.getGrantNumber());
+                assertEquals("Article A", pub.getArticleTitle());
+                assertEquals("10.1000/a", pub.getDoi());
+            }
+            if (count == 2) {
+                assertNull(pub.getPmid());
+                assertEquals("", pub.getPmcId());
+                assertEquals("", pub.getNihmsId());
+                assertEquals("K23HL153888", pub.getGrantNumber());
+                assertEquals("Article B, with a comma", pub.getArticleTitle());
+                assertEquals("10.1000/b", pub.getDoi());
+            }
+        };
+
+        processor.processCsv(consumer);
+
+        // The row with neither a PMID nor a DOI is skipped
+        assertEquals(2, count);
     }
 
     /**

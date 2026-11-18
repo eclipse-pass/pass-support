@@ -71,6 +71,11 @@ public class NihmsPublication {
     private String articleTitle;
 
     /**
+     * NIHMS submission CSV field "DOI"
+     */
+    private String doi;
+
+    /**
      * Status of NIHMS deposit according to spreadsheets
      */
     private NihmsStatus nihmsStatus;
@@ -92,7 +97,36 @@ public class NihmsPublication {
     public NihmsPublication(NihmsStatus nihmsStatus, String pmid, String grantNumber, String nihmsId, String pmcId,
                             String fileDepositedDate, String initialApprovalDate, String taggingCompleteDate,
                             String finalApprovalDate, String articleTitle) {
-        if (pmid == null || pmid.length() < 3) {
+        this(nihmsStatus, pmid, grantNumber, nihmsId, pmcId, fileDepositedDate, initialApprovalDate,
+             taggingCompleteDate, finalApprovalDate, articleTitle, null);
+    }
+
+    /**
+     * Constructor populates the required fields for a NIHMS publication. A publication must be identified
+     * by a PMID or a DOI. A publication which is not in PMC may have no PMID.
+     *
+     * @param pmid PMID of publication, may be empty if there is a DOI
+     * @param grantNumber Grant number of publication
+     * @param nihmsId NIHMS ID of publication
+     * @param pmcId PMC ID of publication
+     * @param nihmsStatus Status of publication
+     * @param fileDepositedDate Date of files that were deposited in NIHMS
+     * @param initialApprovalDate Date of initial NIHMS approval
+     * @param taggingCompleteDate Date tagging of article was complete
+     * @param finalApprovalDate Date of final approval
+     * @param articleTitle Title of publication
+     * @param doi DOI of publication, may be empty if there is a PMID
+     */
+    public NihmsPublication(NihmsStatus nihmsStatus, String pmid, String grantNumber, String nihmsId, String pmcId,
+                            String fileDepositedDate, String initialApprovalDate, String taggingCompleteDate,
+                            String finalApprovalDate, String articleTitle, String doi) {
+        if (pmid != null && pmid.isEmpty()) {
+            pmid = null;
+        }
+        if (doi != null && doi.isEmpty()) {
+            doi = null;
+        }
+        if (pmid != null && pmid.length() < 3 || pmid == null && doi == null) {
             throw new IllegalArgumentException(String.format("PMID \"%s\" is not valid.", pmid));
         }
         if (grantNumber == null || grantNumber.length() < 3) {
@@ -118,6 +152,7 @@ public class NihmsPublication {
         this.taggingCompleteDate = taggingCompleteDate;
         this.finalApprovalDate = finalApprovalDate;
         this.articleTitle = articleTitle;
+        this.doi = doi;
     }
 
     /**
@@ -316,6 +351,20 @@ public class NihmsPublication {
      */
     public void setArticleTitle(String articleTitle) {
         this.articleTitle = articleTitle;
+    }
+
+    /**
+     * @return the DOI, null if not known
+     */
+    public String getDoi() {
+        return doi;
+    }
+
+    /**
+     * @param doi the DOI to set
+     */
+    public void setDoi(String doi) {
+        this.doi = doi;
     }
 
 }
