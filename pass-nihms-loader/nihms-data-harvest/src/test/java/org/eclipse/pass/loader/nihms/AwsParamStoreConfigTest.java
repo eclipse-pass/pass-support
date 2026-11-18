@@ -39,7 +39,10 @@ import org.testcontainers.utility.DockerImageName;
     properties = {
         "spring.cloud.aws.credentials.access-key=noop",
         "spring.cloud.aws.credentials.secret-key=noop",
-        "spring.cloud.aws.region.static=us-east-1"
+        "spring.cloud.aws.region.static=us-east-1",
+        "pass.client.url=http://localhost:8080",
+        "pass.client.user=test",
+        "pass.client.password=test"
     })
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Testcontainers
@@ -53,7 +56,7 @@ class AwsParamStoreConfigTest {
     @Autowired private Environment environment;
 
     @MockBean private NihmsHarvesterCLIRunner nihmsHarvesterCLIRunner;
-    @MockBean private NihmsHarvesterDownloader nihmsHarvesterDownloader;
+    @MockBean private NihmsCsvWriter nihmsCsvWriter;
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -67,17 +70,17 @@ class AwsParamStoreConfigTest {
     @BeforeAll
     static void beforeAll() throws IOException, InterruptedException {
         localStack.execInContainer("awslocal", "ssm", "put-parameter",
-            "--name", "/config/pass-nihms/NIHMS_API_TOKEN",
-            "--value", "aws-param-store-test-token",
+            "--name", "/config/pass-nihms/NIHMS_CROSSREF_MAILTO",
+            "--value", "aws-param-store-test-mailto",
             "--type", "SecureString");
     }
 
     @Test
     public void testLoadPropFromParamStore() {
-        String nihmsApiHostProp = environment.getProperty("nihmsetl.api.host");
-        assertEquals("www.ncbi.nlm.nih.gov", nihmsApiHostProp);
-        String repoIdProp = environment.getProperty("nihmsetl.api.url.param.api-token");
-        assertEquals("aws-param-store-test-token", repoIdProp);
+        String crossrefUrlProp = environment.getProperty("nihmsetl.crossref.url");
+        assertEquals("https://api.crossref.org", crossrefUrlProp);
+        String mailtoProp = environment.getProperty("nihmsetl.crossref.mailto");
+        assertEquals("aws-param-store-test-mailto", mailtoProp);
     }
 
 }

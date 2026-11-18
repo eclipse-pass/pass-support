@@ -1,0 +1,4 @@
+{"status":"ok","message-type":"work-list","message":{"total-results":2,"next-cursor":"cursor2","items":[
+ {"DOI":"10.2352/J.ImagingSci.Technol.2017.61.1.010405","title":["Article One"]},
+ {"DOI":"10.1000/notitle"}
+]}}
