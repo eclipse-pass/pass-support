@@ -17,7 +17,6 @@
         <module>nihms-data-harvest</module>
         <module>nihms-data-transform-load</module>
         <module>nihms-docker</module>
-        <module>nihms-token-refresh</module>
         <module>nihms-etl-model</module>
     </modules>
 
