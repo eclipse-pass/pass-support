@@ -123,10 +123,6 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
      */
     @Test
     public void testNewNonCompliantPublicationWithDoiOnly() throws Exception {
-        PassClientSelector<Publication> pubSelector = new PassClientSelector<>(Publication.class);
-        PassClientSelector<Submission> subSelector = new PassClientSelector<>(Submission.class);
-        PassClientSelector<RepositoryCopy> repoCopySelector = new PassClientSelector<>(RepositoryCopy.class);
-
         User user = new User();
         passClient.createObject(user);
 
@@ -136,19 +132,20 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         String doi1 = "10.1000/" + UUID.randomUUID();
 
         //we should start with no publication for this doi
-        pubSelector.setFilter(RSQL.equals("doi", doi1));
-        assertFalse(passClient.streamObjects(pubSelector).findAny().isPresent());
+        assertEquals(0, findByFilter(Publication.class, RSQL.equals("doi", doi1)).size());
 
         NihmsPublication pub = new NihmsPublication(NihmsStatus.NON_COMPLIANT, null, grant1_award_num, null, null,
                 null, null, null, null, title, doi1);
         nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
 
-        Publication publication = passClient.streamObjects(pubSelector).findFirst().orElseThrow();
+        List<Publication> publications = findByFilter(Publication.class, RSQL.equals("doi", doi1));
+        assertEquals(1, publications.size());
+        Publication publication = publications.get(0);
         assertNull(publication.getPmid());
         assertEquals(title, publication.getTitle());
 
-        subSelector.setFilter(RSQL.equals("publication.id", publication.getId()));
-        List<Submission> testSub = passClient.streamObjects(subSelector).toList();
+        String forPublication = RSQL.equals("publication.id", publication.getId());
+        List<Submission> testSub = findByFilter(Submission.class, forPublication);
         assertEquals(1, testSub.size());
 
         Submission submission = testSub.get(0);
@@ -158,13 +155,19 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
         assertEquals(user.getId(), submission.getSubmitter().getId());
         assertEquals(SubmissionStatus.MANUSCRIPT_REQUIRED, submission.getSubmissionStatus());
 
-        repoCopySelector.setFilter(RSQL.equals("publication.id", publication.getId()));
-        assertFalse(passClient.streamObjects(repoCopySelector).findAny().isPresent());
+        assertEquals(0, findByFilter(RepositoryCopy.class, forPublication).size());
 
         //processing the same record again must not create a second publication or submission
         nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
-        assertEquals(1, passClient.streamObjects(pubSelector).count());
-        assertEquals(1, passClient.streamObjects(subSelector).count());
+        assertEquals(1, findByFilter(Publication.class, RSQL.equals("doi", doi1)).size());
+        assertEquals(1, findByFilter(Submission.class, forPublication).size());
+    }
+
+    // A selector keeps its paging position, so each query needs a new one
+    private <T extends PassEntity> List<T> findByFilter(Class<T> type, String filter) throws Exception {
+        PassClientSelector<T> selector = new PassClientSelector<>(type);
+        selector.setFilter(filter);
+        return passClient.streamObjects(selector).toList();
     }
 
     /**
