@@ -235,6 +235,10 @@
             <artifactId>pass-core</artifactId>
             <version>${project.parent.version}</version>
             <classifier>test-config</classifier>
+            <!-- Only the test config files are needed, not the pass-core dependencies -->
+            <exclusions>
+                <exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion>
+            </exclusions>
             <scope>test</scope>
         </dependency>
 
