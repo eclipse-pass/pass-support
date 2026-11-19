@@ -109,8 +109,9 @@
 
     <dependency>
       <groupId>org.eclipse.pass</groupId>
-      <artifactId>pass-core-test-config</artifactId>
+      <artifactId>pass-core</artifactId>
       <version>${project.parent.version}</version>
+      <classifier>test-config</classifier>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -177,7 +178,7 @@
                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
                 <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
                 <!-- Used by ITs via classpath -->
-                <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
+                <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core::</ignoredUnusedDeclaredDependency>
               </ignoredUnusedDeclaredDependencies>
               <ignoredNonTestScopedDependencies>
                 <ignoredNonTestScopedDependency>ch.qos.logback:logback-classic:</ignoredNonTestScopedDependency>

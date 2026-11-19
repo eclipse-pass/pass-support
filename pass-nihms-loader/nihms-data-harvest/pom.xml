@@ -128,8 +128,9 @@
 
     <dependency>
       <groupId>org.eclipse.pass</groupId>
-      <artifactId>pass-core-test-config</artifactId>
+      <artifactId>pass-core</artifactId>
       <version>${project.parent.version}</version>
+      <classifier>test-config</classifier>
       <scope>test</scope>
     </dependency>
 

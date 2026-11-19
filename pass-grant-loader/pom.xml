@@ -192,8 +192,9 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.pass</groupId>
-        <artifactId>pass-core-test-config</artifactId>
+        <artifactId>pass-core</artifactId>
         <version>${project.parent.version}</version>
+        <classifier>test-config</classifier>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -317,7 +318,7 @@
                   <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>com.oracle.database.jdbc::</ignoredUnusedDeclaredDependency>
                   <!-- Used by ITs via classpath -->
-                  <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core::</ignoredUnusedDeclaredDependency>
                   <!-- JDBC driver -->
                   <ignoredUnusedDeclaredDependency>com.mysql:mysql-connector-j::</ignoredUnusedDeclaredDependency>
                   <!-- Used in tests by spring boot -->
