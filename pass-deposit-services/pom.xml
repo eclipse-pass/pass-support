@@ -40,7 +40,6 @@
   <properties>
     <spring-boot-maven-plugin.version>4.1.2</spring-boot-maven-plugin.version>
     <awsspring.version>4.2.2</awsspring.version>
-    <spring-retry.version>2.0.13</spring-retry.version>
     <commons-compress.version>1.28.0</commons-compress.version>
     <commons-io.version>2.22.0</commons-io.version>
     <commons-lang3.version>3.22.0</commons-lang3.version>
@@ -108,13 +107,6 @@
             <artifactId>android-json</artifactId>
           </exclusion>
         </exclusions>
-      </dependency>
-
-      <!-- spring-retry is no longer managed by the Spring Boot BOM as of Boot 4. -->
-      <dependency>
-        <groupId>org.springframework.retry</groupId>
-        <artifactId>spring-retry</artifactId>
-        <version>${spring-retry.version}</version>
       </dependency>
 
       <dependency>
