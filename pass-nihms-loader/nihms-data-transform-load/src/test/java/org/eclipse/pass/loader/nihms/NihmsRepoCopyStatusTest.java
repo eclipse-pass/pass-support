@@ -161,13 +161,19 @@ public class NihmsRepoCopyStatusTest {
         status = NihmsPublicationToSubmission.calcRepoCopyStatus(pub, null);
         assertEquals(null, status);
 
-        //PASS system says file was ready-to-submit, but NIHMS says non compliant...
-        //presumably NIHMS submission did not take place yet hence non-compliant.
-        //it shouldn't touch status NIHMS is unaware of submission yet
+        //PASS system says file was accepted, but the data only says non compliant with nothing
+        //about progress in NIHMS, for instance because all that is known is that the publication
+        //is not in PMC. The status PASS already holds must be kept.
         pub = newTestPub();
         pub.setNihmsStatus(NihmsStatus.NON_COMPLIANT);
         status = NihmsPublicationToSubmission.calcRepoCopyStatus(pub, CopyStatus.ACCEPTED);
-        assertEquals(null, status);
+        assertEquals(CopyStatus.ACCEPTED, status);
+
+        status = NihmsPublicationToSubmission.calcRepoCopyStatus(pub, CopyStatus.IN_PROGRESS);
+        assertEquals(CopyStatus.IN_PROGRESS, status);
+
+        status = NihmsPublicationToSubmission.calcRepoCopyStatus(pub, CopyStatus.STALLED);
+        assertEquals(CopyStatus.STALLED, status);
 
     }
 

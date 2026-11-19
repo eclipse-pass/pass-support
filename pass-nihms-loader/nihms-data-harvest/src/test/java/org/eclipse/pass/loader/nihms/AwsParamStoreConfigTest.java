@@ -18,8 +18,6 @@ package org.eclipse.pass.loader.nihms;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SSM;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +32,20 @@ import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.ParameterType;
 
 @SpringBootTest(
     properties = {
         "spring.cloud.aws.credentials.access-key=noop",
         "spring.cloud.aws.credentials.secret-key=noop",
-        "spring.cloud.aws.region.static=us-east-1"
+        "spring.cloud.aws.region.static=us-east-1",
+        "pass.client.url=http://localhost:8080",
+        "pass.client.user=test",
+        "pass.client.password=test"
     })
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class)
 @Testcontainers
@@ -53,7 +59,7 @@ class AwsParamStoreConfigTest {
     @Autowired private Environment environment;
 
     @MockBean private NihmsHarvesterCLIRunner nihmsHarvesterCLIRunner;
-    @MockBean private NihmsHarvesterDownloader nihmsHarvesterDownloader;
+    @MockBean private NihmsCsvWriter nihmsCsvWriter;
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -65,19 +71,29 @@ class AwsParamStoreConfigTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "ssm", "put-parameter",
-            "--name", "/config/pass-nihms/NIHMS_API_TOKEN",
-            "--value", "aws-param-store-test-token",
-            "--type", "SecureString");
+    static void beforeAll() {
+        // The parameters are written through the SSM API, not by running a command in the container:
+        // exec into a container fails under rootless Podman, and the failure would go unnoticed.
+        try (SsmClient ssm = SsmClient.builder()
+                .endpointOverride(localStack.getEndpoint())
+                .region(Region.of(localStack.getRegion()))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+                .build()) {
+            putSecureParameter(ssm, "/config/pass-nihms/NIHMS_CROSSREF_MAILTO", "aws-param-store-test-mailto");
+        }
+    }
+
+    private static void putSecureParameter(SsmClient ssm, String name, String value) {
+        ssm.putParameter(request -> request.name(name).value(value).type(ParameterType.SECURE_STRING));
     }
 
     @Test
     public void testLoadPropFromParamStore() {
-        String nihmsApiHostProp = environment.getProperty("nihmsetl.api.host");
-        assertEquals("www.ncbi.nlm.nih.gov", nihmsApiHostProp);
-        String repoIdProp = environment.getProperty("nihmsetl.api.url.param.api-token");
-        assertEquals("aws-param-store-test-token", repoIdProp);
+        String crossrefUrlProp = environment.getProperty("nihmsetl.crossref.url");
+        assertEquals("https://api.crossref.org", crossrefUrlProp);
+        String mailtoProp = environment.getProperty("nihmsetl.crossref.mailto");
+        assertEquals("aws-param-store-test-mailto", mailtoProp);
     }
 
 }

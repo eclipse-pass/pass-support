@@ -1,0 +1,4 @@
+PMID,PMCID,NIHMSID,Grant number,PI Name,Publication Date,NIHMS file deposited,NIHMS initial approval,NIHMS tagging complete,NIHMS final approval,Article Title,First Author Name,Journal Title,Journal Publisher,Method A Journal,NIHMS Person,DOI
+12345678,PMC3453453,NIHMS678678,R01EB019135,,,,,,,Article A,,,,,,10.1000/a
+,,,K23HL153888,,,,,,,"Article B, with a comma",,,,,,10.1000/b
+,,,K23HL153888,,,,,,,Article C,,,,,,

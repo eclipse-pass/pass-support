@@ -1,0 +1,11 @@
+{"status":"ok","response-date":"2026-11-18 10:00:00","request":{"ids":["10.1084/jem.20020509","10.1000/notinpmc","10.1000/current"],"idtype":"doi","format":"json","versions":"yes"},
+ "records":[
+  {"doi":"10.1084/jem.20020509","pmcid":"PMC1193645","pmid":14699080,
+   "versions":[{"pmcid":"PMC1193645.1","mid":"NIHMS2203","doi":"10.1084/jem.20020509","current":false},
+               {"pmcid":"PMC1193645.2","doi":"10.1084/jem.20020509","current":true}],
+   "requested-id":"10.1084/JEM.20020509"},
+  {"doi":"10.1000/notinpmc","requested-id":"10.1000/notinpmc","status":"error","errmsg":"Identifier not found in PMC"},
+  {"doi":"10.1000/current","pmcid":"PMC222","pmid":333,
+   "versions":[{"pmcid":"PMC222.1","doi":"10.1000/current","current":true}],
+   "requested-id":"10.1000/current"}
+ ]}

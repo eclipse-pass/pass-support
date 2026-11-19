@@ -48,36 +48,34 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
      * Actively select to include non-compliant data in processing
      **/
     @Option(name = "-n", aliases = {"-noncompliant", "--noncompliant"},
-            usage = "Non compliant NIHMS publication status. By default all available CSV data is processed. "
-                    + "If one or more status type is specified, only publications matching the selected status(es) " +
-                    "will be processed.")
+            usage = "Non compliant publication status: publications which are not in PMC. By default all "
+                    + "statuses are harvested. If one or more status type is specified, only publications "
+                    + "matching the selected status(es) will be written.")
     private boolean nonCompliant = false;
 
     /**
      * Actively select to include compliant data in processing
      **/
     @Option(name = "-c", aliases = {"-compliant", "--compliant"},
-            usage = "Compliant NIHMS publication status. By default all available CSV data is processed. "
-                    + "If one or more status type is specified, only publications matching the selected status(es) " +
-                    "will be processed.")
+            usage = "Compliant publication status: publications which are in PMC. By default all "
+                    + "statuses are harvested. If one or more status type is specified, only publications "
+                    + "matching the selected status(es) will be written.")
     private boolean compliant = false;
 
     /**
-     * Actively select to include in-process data in processing
+     * Kept so existing invocations keep working. No in-process data is available.
      **/
     @Option(name = "-p", aliases = {"-inprocess", "--inprocess"},
-            usage = "In Process NIHMS publication status. By default all available CSV data is processed. "
-                    + "If one or more status type is specified, only publications matching the selected status(es) " +
-                    "will be processed.")
+            usage = "In Process publication status. Accepted for compatibility, but no in-process data is "
+                    + "available from the current sources so nothing is written for it.")
     private boolean inProcess = false;
 
     /**
-     * The number of months of data to nihms harvest.
+     * The number of months of data to harvest.
      */
     @Option(name = "-m", aliases = {"-harvestMonths", "--harvestMonths"},
-            usage = "Period of time by month to query against NIHMS data. For example, to query for the past 3 " +
-                "months of nihms data, the argument would be -harvestMonths=3. This value will override the NIHMS " +
-                "system default which is one year before the current month.")
+            usage = "Period of time by month to harvest. For example, to harvest publications published in "
+                    + "the past 3 months, the argument would be -harvestMonths=3. The default is 12.")
     private int harvestMonths = NihmsHarvester.DEFAULT_HARVEST_MONTHS;
 
     private final NihmsHarvester nihmsHarvester;
@@ -85,7 +83,7 @@ public class NihmsHarvesterCLIRunner implements CommandLineRunner {
     /**
      * Constructor for the NihmsHarvesterCLIRunner
      *
-     * @param nihmsHarvester Object that is responsible for initiating and managing the data downloads
+     * @param nihmsHarvester Object that is responsible for initiating and managing the data harvest
      */
     public NihmsHarvesterCLIRunner(NihmsHarvester nihmsHarvester) {
         this.nihmsHarvester = nihmsHarvester;

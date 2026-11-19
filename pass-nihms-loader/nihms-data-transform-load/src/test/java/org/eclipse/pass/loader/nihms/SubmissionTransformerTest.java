@@ -21,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -127,6 +130,60 @@ public class SubmissionTransformerTest {
         assertEquals(nihmsRepositoryId, dto.getSubmission().getRepositories().get(0).getId());
         assertNull(dto.getPublication().getId());
         assertNull(dto.getSubmission().getId());
+        assertNull(dto.getRepositoryCopy());
+    }
+
+    /**
+     * Tests the scenario where the article is not in PMC, so it is only known by its DOI, and there is no current
+     * Publication or Submission in PASS for it. Entrez cannot be asked without a PMID. The returned object should
+     * have a Publication with the DOI and title of the record, an unsubmitted Submission and no RepositoryCopy.
+     */
+    @Test
+    public void testTransformDoiOnlyNewPubNewSubNoRepoCopy() throws Exception {
+        String recordDoi = "10.1000/doi-only";
+        NihmsPublication pub = new NihmsPublication(NihmsStatus.NON_COMPLIANT, null, awardNumber, null, null, null,
+                                                    null, null, null, title, recordDoi);
+
+        when(clientServiceMock.findMostRecentGrantByAwardNumber(awardNumber)).thenReturn(newTestGrant());
+        when(clientServiceMock.findPublicationByDoi(recordDoi, null)).thenReturn(null);
+        when(clientServiceMock.readRepository(nihmsRepositoryId)).thenReturn(new Repository(nihmsRepositoryId));
+
+        SubmissionDTO dto = transformer.transform(pub);
+
+        verify(clientServiceMock, never()).findPublicationByPmid(any());
+        verifyNoInteractions(pmidLookupMock);
+
+        assertNull(dto.getPublication().getPmid());
+        assertEquals(recordDoi, dto.getPublication().getDoi());
+        assertEquals(title, dto.getPublication().getTitle());
+        assertTrue(dto.doUpdate());
+        assertEquals(grantId, dto.getSubmission().getGrants().get(0).getId());
+        assertEquals(nihmsRepositoryId, dto.getSubmission().getRepositories().get(0).getId());
+        assertEquals(false, dto.getSubmission().getSubmitted());
+        assertEquals(SubmissionStatus.MANUSCRIPT_REQUIRED, dto.getSubmission().getSubmissionStatus());
+        assertNull(dto.getRepositoryCopy());
+    }
+
+    /**
+     * Tests the scenario where the article is only known by its DOI and PASS already has a Publication with that
+     * DOI. The Publication should be used as is.
+     */
+    @Test
+    public void testTransformDoiOnlyExistingPub() throws Exception {
+        NihmsPublication pub = new NihmsPublication(NihmsStatus.NON_COMPLIANT, null, awardNumber, null, null, null,
+                                                    null, null, null, "Other title", doi);
+        Publication publication = newTestPublication();
+
+        when(clientServiceMock.findMostRecentGrantByAwardNumber(awardNumber)).thenReturn(newTestGrant());
+        when(clientServiceMock.findPublicationByDoi(doi, null)).thenReturn(publication);
+        when(clientServiceMock.readRepository(nihmsRepositoryId)).thenReturn(new Repository(nihmsRepositoryId));
+
+        SubmissionDTO dto = transformer.transform(pub);
+
+        verifyNoInteractions(pmidLookupMock);
+        assertEquals(publicationId, dto.getPublication().getId());
+        assertEquals(pmid, dto.getPublication().getPmid());
+        assertEquals(title, dto.getPublication().getTitle());
         assertNull(dto.getRepositoryCopy());
     }
 

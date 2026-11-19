@@ -17,60 +17,29 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.net.URL;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
-/**
- * @author Russ Poetker (rpoetke1@jh.edu)
- */
-@SpringBootTest(classes = NihmsHarvesterCLI.class, args = {"--harvestMonths=3"})
-@TestPropertySource(
-    locations = "classpath:test-application.properties",
-    properties = {
-        "nihmsetl.api.url.param.pdf=",
-        "nihmsetl.api.url.param.pdt="
-    })
+@SpringBootTest(classes = NihmsHarvesterCLI.class, args = {"--harvestMonths=3", "-c", "-p"})
+@TestPropertySource("classpath:test-application.properties")
 public class NihmsHarvesterCLIHarvestMonthsTest {
 
-    @SpyBean NihmsHarvester nihmsHarvester;
-    @MockBean NihmsHarvesterDownloader nihmsHarvesterDownloader;
+    @MockBean NihmsHarvester nihmsHarvester;
 
     @Test
-    public void testHarvesterCLI_WithHarvestMonths() throws IOException, InterruptedException {
+    public void testHarvesterCLI_WithHarvestMonthsAndStatuses() {
         // GIVEN/WHEN
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/uuuu");
-        // 3 months passed in args up top in @SpringBootTest
-        String expectedPdf = LocalDate.now().minus(Period.ofMonths(3)).format(formatter)
-            .replace("/", "%2F");
+        // 3 months and the statuses are passed in args up top in @SpringBootTest
         // THEN
-        verify(nihmsHarvester).harvest(eq(EnumSet.allOf(NihmsStatus.class)), anyInt());
-        verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/c?pdf=" + expectedPdf +
-                "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
-            eq(NihmsStatus.COMPLIANT));
-        verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/p?pdf=" + expectedPdf +
-                "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
-            eq(NihmsStatus.IN_PROCESS));
-        verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/n?pdf=" + expectedPdf +
-                "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
-            eq(NihmsStatus.NON_COMPLIANT));
+        verify(nihmsHarvester).harvest(eq(EnumSet.of(NihmsStatus.COMPLIANT, NihmsStatus.IN_PROCESS)), eq(3));
     }
 
 }

@@ -124,11 +124,12 @@ public class NihmsPublicationToSubmission {
     private Publication retrieveOrCreatePublication(NihmsPublication nihmsPub, SubmissionDTO submissionDTO)
         throws IOException {
         //use pmid to get additional metadata from Entrez. Need this for DOI, maybe other fields too
+        // A publication which is not in PMC may only be known by its DOI
         String pmid = nihmsPub.getPmid();
-        String doi = null;
+        String doi = nihmsPub.getDoi();
         PubMedEntrezRecord pubmedRecord = null;
 
-        Publication publication = clientService.findPublicationByPmid(pmid);
+        Publication publication = pmid == null ? null : clientService.findPublicationByPmid(pmid);
 
         // Check for a user deposit which matches the nihms id
         if (publication == null && nihmsPub.getRawNihmsId() != null) {
@@ -158,13 +159,13 @@ public class NihmsPublicationToSubmission {
         }
 
         // get missing information from Entrez, if necessary
-        if (publication == null || StringUtils.isEmpty(publication.getDoi())) {
+        if (pmid != null && (publication == null || StringUtils.isEmpty(publication.getDoi()))) {
             //NOTE: if this returns null, the request succeeded, but Entrez could not match the record so we should
             // proceed without one.
             //A RuntimeException would be thrown and the transform would fail if there was e.g. a config or
             // connection problem.
             pubmedRecord = pmidLookup.retrievePubMedRecord(pmid);
-            if (pubmedRecord != null) {
+            if (pubmedRecord != null && StringUtils.isNotEmpty(pubmedRecord.getDoi())) {
                 doi = pubmedRecord.getDoi();
             }
         }
@@ -182,7 +183,7 @@ public class NihmsPublicationToSubmission {
                 publication.setDoi(doi);
                 submissionDTO.setUpdatePublication(true);
             }
-            if (StringUtils.isEmpty(publication.getPmid())) {
+            if (StringUtils.isEmpty(publication.getPmid()) && pmid != null) {
                 publication.setPmid(pmid);
                 submissionDTO.setUpdatePublication(true);
             }
@@ -213,6 +214,9 @@ public class NihmsPublicationToSubmission {
             publication.setIssue(pmr.getIssue());
         } else {
             publication.setTitle(nihmsPub.getArticleTitle());
+        }
+        if (StringUtils.isEmpty(publication.getDoi())) {
+            publication.setDoi(nihmsPub.getDoi());
         }
         clientService.createPublication(publication);
         return publication;
@@ -453,15 +457,19 @@ public class NihmsPublicationToSubmission {
             newStatus = CopyStatus.ACCEPTED;
         }
 
-        // if the current status in PASS implies we are further along than we really are, use the status according to
-        // NIHMS but log a warning
         if (currCopyStatus != null) {
-            if (newStatus == null
-                || (currCopyStatus.equals(CopyStatus.IN_PROGRESS) && newStatus.equals(CopyStatus.ACCEPTED))) {
+            // The data may say nothing about progress in NIHMS, for instance when all that is known is that the
+            // publication is not in PMC. That is no reason to discard a status PASS already holds.
+            if (newStatus == null) {
+                return currCopyStatus;
+            }
+            // if the current status in PASS implies we are further along than we really are, use the status
+            // according to NIHMS but log a warning
+            if (currCopyStatus.equals(CopyStatus.IN_PROGRESS) && newStatus.equals(CopyStatus.ACCEPTED)) {
                 LOG.warn(
                     "The status of the RepositoryCopy in PASS was at a later stage than the current NIHMS status " +
                     "would imply. Rolled back from \"{}\" to \"{}\" for PMID {} and NIHMS ID {}", currCopyStatus,
-                    (newStatus == null ? "(null)" : newStatus.toString()), pub.getPmid(), pub.getRawNihmsId());
+                    newStatus, pub.getPmid(), pub.getRawNihmsId());
             }
 
         }

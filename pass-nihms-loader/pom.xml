@@ -17,7 +17,6 @@
         <module>nihms-data-harvest</module>
         <module>nihms-data-transform-load</module>
         <module>nihms-docker</module>
-        <module>nihms-token-refresh</module>
         <module>nihms-etl-model</module>
     </modules>
 
@@ -28,7 +27,6 @@
         <org-json.version>20251224</org-json.version>
         <commons.csv.version>1.14.1</commons.csv.version>
         <args4j.version>2.37</args4j.version>
-        <handy-uri-templates.version>2.1.8</handy-uri-templates.version>
         <commons-io.version>2.21.0</commons-io.version>
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <joda-time.version>2.14.1</joda-time.version>
@@ -160,6 +158,8 @@
                                 <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api:</ignoredUsedUndeclaredDependency>
                                 <!-- These come from testcontainers junit-jupiter -->
                                 <ignoredUsedUndeclaredDependency>org.testcontainers::</ignoredUsedUndeclaredDependency>
+                                <!-- These come from spring-cloud-aws-starter-parameter-store, used by tests to set up parameters -->
+                                <ignoredUsedUndeclaredDependency>software.amazon.awssdk::</ignoredUsedUndeclaredDependency>
                             </ignoredUsedUndeclaredDependencies>
                             <ignoredUnusedDeclaredDependencies>
                                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
@@ -177,6 +177,8 @@
                                 <!-- Needed for when data-transform jar is created -->
                                 <ignoredNonTestScopedDependency>org.json:json:</ignoredNonTestScopedDependency>
                                 <ignoredNonTestScopedDependency>commons-io:commons-io:</ignoredNonTestScopedDependency>
+                                <!-- Needed at runtime by spring-cloud-aws-starter-parameter-store, used directly only by tests -->
+                                <ignoredNonTestScopedDependency>software.amazon.awssdk::</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>

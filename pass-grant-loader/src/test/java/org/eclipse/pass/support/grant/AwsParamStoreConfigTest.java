@@ -18,8 +18,6 @@ package org.eclipse.pass.support.grant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SSM;
 
-import java.io.IOException;
-
 import org.eclipse.pass.support.grant.data.GrantConnector;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,6 +33,11 @@ import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.ParameterType;
 
 @SpringBootTest(
     properties = {
@@ -75,15 +78,22 @@ class AwsParamStoreConfigTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "ssm", "put-parameter",
-            "--name", "/config/pass-core-client/PASS_CORE_PASSWORD",
-            "--value", "aws-param-store-core-pw",
-            "--type", "SecureString");
-        localStack.execInContainer("awslocal", "ssm", "put-parameter",
-            "--name", "/config/pass-grant/GRANT_DB_PASSWORD",
-            "--value", "aws-param-store-grant-pw",
-            "--type", "SecureString");
+    static void beforeAll() {
+        // The parameters are written through the SSM API, not by running a command in the container:
+        // exec into a container fails under rootless Podman, and the failure would go unnoticed.
+        try (SsmClient ssm = SsmClient.builder()
+                .endpointOverride(localStack.getEndpoint())
+                .region(Region.of(localStack.getRegion()))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+                .build()) {
+            putSecureParameter(ssm, "/config/pass-core-client/PASS_CORE_PASSWORD", "aws-param-store-core-pw");
+            putSecureParameter(ssm, "/config/pass-grant/GRANT_DB_PASSWORD", "aws-param-store-grant-pw");
+        }
+    }
+
+    private static void putSecureParameter(SsmClient ssm, String name, String value) {
+        ssm.putParameter(request -> request.name(name).value(value).type(ParameterType.SECURE_STRING));
     }
 
     @Test

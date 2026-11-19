@@ -17,48 +17,29 @@
  */
 package org.eclipse.pass.loader.nihms;
 
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.EnumSet;
 
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
-/**
- * @author Russ Poetker (rpoetke1@jh.edu)
- */
 @SpringBootTest(classes = NihmsHarvesterCLI.class)
 @TestPropertySource("classpath:test-application.properties")
 public class NihmsHarvesterCLITest {
 
-    @SpyBean NihmsHarvester nihmsHarvester;
-    @MockBean NihmsHarvesterDownloader nihmsHarvesterDownloader;
+    @MockBean NihmsHarvester nihmsHarvester;
 
     @Test
-    public void testHarvesterCLI() throws IOException, InterruptedException {
+    public void testHarvesterCLI() {
         // GIVEN/WHEN
         // THEN
-        verify(nihmsHarvester).harvest(eq(EnumSet.allOf(NihmsStatus.class)), anyInt());
-        verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/c?pdt=07%2F2019&pdf=07%2F2018" +
-                "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
-            eq(NihmsStatus.COMPLIANT));
-        verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/p?pdt=07%2F2019&pdf=07%2F2018" +
-                "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
-            eq(NihmsStatus.IN_PROCESS));
-        verify(nihmsHarvesterDownloader).download(
-            eq(new URL("https://www.ncbi.nlm.nih.gov/pmc/utils/pacm/n?pdt=07%2F2019&pdf=07%2F2018" +
-                "&api-token=test-token&inst=JOHNS-HOPKINS-TEST&format=csv&ipf=4134401-TEST")),
-            eq(NihmsStatus.NON_COMPLIANT));
+        verify(nihmsHarvester).harvest(eq(EnumSet.allOf(NihmsStatus.class)),
+                                       eq(NihmsHarvester.DEFAULT_HARVEST_MONTHS));
     }
 
 }

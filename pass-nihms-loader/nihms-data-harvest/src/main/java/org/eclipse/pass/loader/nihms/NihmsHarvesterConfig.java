@@ -18,6 +18,7 @@ package org.eclipse.pass.loader.nihms;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import org.eclipse.pass.support.client.PassClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +34,25 @@ public class NihmsHarvesterConfig {
 
     @Value("${nihmsetl.http.read-timeout-ms}")
     private Long nihmsReadTimeoutMs;
+
+    @Value("${pass.client.url}")
+    private String passClientUrl;
+
+    @Value("${pass.client.user}")
+    private String passClientUser;
+
+    @Value("${pass.client.password}")
+    private String passClientPassword;
+
+    /**
+     * The client used to read Grants from PASS
+     *
+     * @return PassClient
+     */
+    @Bean
+    public PassClient passClient() {
+        return PassClient.newInstance(passClientUrl, passClientUser, passClientPassword);
+    }
 
     /**
      * The OkHttpClient that has the connection properties set from the application.properties

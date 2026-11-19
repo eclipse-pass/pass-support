@@ -116,6 +116,61 @@ public class TransformAndLoadNonCompliantIT extends NihmsSubmissionEtlITBase {
     }
 
     /**
+     * Tests when the publication is completely new, is not in PMC and is only known by its DOI.
+     * A publication with the DOI and a submission are created, but no RepositoryCopy
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void testNewNonCompliantPublicationWithDoiOnly() throws Exception {
+        User user = new User();
+        passClient.createObject(user);
+
+        String grant1_award_num = UUID.randomUUID().toString();
+        Grant grant1 = createGrant(grant1_award_num, user);
+
+        String doi1 = "10.1000/" + UUID.randomUUID();
+
+        //we should start with no publication for this doi
+        assertEquals(0, findByFilter(Publication.class, RSQL.equals("doi", doi1)).size());
+
+        NihmsPublication pub = new NihmsPublication(NihmsStatus.NON_COMPLIANT, null, grant1_award_num, null, null,
+                null, null, null, null, title, doi1);
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
+
+        List<Publication> publications = findByFilter(Publication.class, RSQL.equals("doi", doi1));
+        assertEquals(1, publications.size());
+        Publication publication = publications.get(0);
+        assertNull(publication.getPmid());
+        assertEquals(title, publication.getTitle());
+
+        String forPublication = RSQL.equals("publication.id", publication.getId());
+        List<Submission> testSub = findByFilter(Submission.class, forPublication);
+        assertEquals(1, testSub.size());
+
+        Submission submission = testSub.get(0);
+        assertEquals(grant1.getId(), submission.getGrants().get(0).getId());
+        assertEquals(nihmsRepoId, submission.getRepositories().get(0).getId());
+        assertFalse(submission.getSubmitted());
+        assertEquals(user.getId(), submission.getSubmitter().getId());
+        assertEquals(SubmissionStatus.MANUSCRIPT_REQUIRED, submission.getSubmissionStatus());
+
+        assertEquals(0, findByFilter(RepositoryCopy.class, forPublication).size());
+
+        //processing the same record again must not create a second publication or submission
+        nihmsTransformLoadService.transformAndLoadNihmsPub(pub);
+        assertEquals(1, findByFilter(Publication.class, RSQL.equals("doi", doi1)).size());
+        assertEquals(1, findByFilter(Submission.class, forPublication).size());
+    }
+
+    // A selector keeps its paging position, so each query needs a new one
+    private <T extends PassEntity> List<T> findByFilter(Class<T> type, String filter) throws Exception {
+        PassClientSelector<T> selector = new PassClientSelector<>(type);
+        selector.setFilter(filter);
+        return passClient.streamObjects(selector).toList();
+    }
+
+    /**
      * Submission existed for repository/grant/user and there is a Deposit. Publication is now non-compliant.
      * This should create a repoCopy with STALLED status and associate it with Deposit
      *
