@@ -51,6 +51,40 @@ public class CrossrefClientTest {
         return new CrossrefClient(new OkHttpClient(), wm.getHttpBaseUrl(), mailto, 0, 1);
     }
 
+    @Test
+    public void testIntervalFromRateLimit() {
+        assertEquals(1000, CrossrefClient.intervalFromRateLimit("1", "1s"));
+        assertEquals(334, CrossrefClient.intervalFromRateLimit("3", "1s"));
+        assertEquals(100, CrossrefClient.intervalFromRateLimit(" 10 ", "1S"));
+        assertEquals(1200, CrossrefClient.intervalFromRateLimit("50", "1m"));
+        assertEquals(50, CrossrefClient.intervalFromRateLimit("2", "100ms"));
+        assertEquals(2000, CrossrefClient.intervalFromRateLimit("1", "2"));
+        assertEquals(-1, CrossrefClient.intervalFromRateLimit(null, "1s"));
+        assertEquals(-1, CrossrefClient.intervalFromRateLimit("1", null));
+        assertEquals(-1, CrossrefClient.intervalFromRateLimit("0", "1s"));
+        assertEquals(-1, CrossrefClient.intervalFromRateLimit("many", "1s"));
+        assertEquals(-1, CrossrefClient.intervalFromRateLimit("1", "soon"));
+    }
+
+    @Test
+    public void testIntervalFollowsResponseHeaders(WireMockRuntimeInfo wm) throws IOException {
+        stubFor(get(urlPathEqualTo("/works")).inScenario("rate").whenScenarioStateIs(Scenario.STARTED)
+            .willReturn(aResponse().withStatus(200).withBody(page(0, "c"))
+                .withHeader("X-Rate-Limit-Limit", "50").withHeader("X-Rate-Limit-Interval", "1s"))
+            .willSetStateTo("unstated"));
+        stubFor(get(urlPathEqualTo("/works")).inScenario("rate").whenScenarioStateIs("unstated")
+            .willReturn(aResponse().withStatus(200).withBody(page(0, "c"))));
+        CrossrefClient client = new CrossrefClient(new OkHttpClient(), wm.getHttpBaseUrl(), "", 5, 1);
+        assertEquals(5, client.requestIntervalMs());
+
+        client.findWorksByAward(AWARDS, FROM);
+        assertEquals(20, client.requestIntervalMs());
+
+        // Back to the configured wait when the limit is no longer stated
+        client.findWorksByAward(AWARDS, FROM);
+        assertEquals(5, client.requestIntervalMs());
+    }
+
     private static String page(int items, String nextCursor) {
         JSONArray array = new JSONArray();
         for (int i = 0; i < items; i++) {
@@ -71,6 +105,8 @@ public class CrossrefClientTest {
             .withQueryParam("rows", equalTo("1000"))
             .withQueryParam("cursor", equalTo("*"))
             .withQueryParam("mailto", equalTo("test@localhost"))
+            .withHeader("User-Agent", equalTo(
+                "pass-nihms-loader (https://github.com/eclipse-pass/pass-support; mailto:test@localhost)"))
             .willReturn(aResponse().withStatus(200).withBody(body)));
 
         List<CrossrefWork> works = client(wm, "test@localhost").findWorksByAward(AWARDS, FROM);
@@ -86,7 +122,8 @@ public class CrossrefClientTest {
 
         assertTrue(client(wm, "").findWorksByAward(AWARDS, FROM).isEmpty());
 
-        verify(getRequestedFor(urlPathEqualTo("/works")).withoutQueryParam("mailto"));
+        verify(getRequestedFor(urlPathEqualTo("/works")).withoutQueryParam("mailto")
+            .withHeader("User-Agent", equalTo("pass-nihms-loader (https://github.com/eclipse-pass/pass-support)")));
     }
 
     @Test

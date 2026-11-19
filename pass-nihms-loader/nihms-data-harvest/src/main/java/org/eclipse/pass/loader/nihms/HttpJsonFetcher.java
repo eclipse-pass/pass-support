@@ -17,10 +17,12 @@ package org.eclipse.pass.loader.nihms;
 
 import java.io.IOException;
 
+import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,23 +35,55 @@ class HttpJsonFetcher {
 
     static final int MAX_ATTEMPTS = 4;
 
+    static final String PRODUCT = "pass-nihms-loader";
+
+    private static final String PROJECT_URL = "https://github.com/eclipse-pass/pass-support";
+
     private final OkHttpClient okHttp;
     private final long retryWaitMs;
+    private final String userAgent;
 
-    HttpJsonFetcher(OkHttpClient okHttp, long retryWaitMs) {
+    HttpJsonFetcher(OkHttpClient okHttp, long retryWaitMs, String userAgent) {
         this.okHttp = okHttp;
         this.retryWaitMs = retryWaitMs;
+        this.userAgent = userAgent;
+    }
+
+    /**
+     * Build a User-Agent which tells a service what is calling it and who to contact about it.
+     *
+     * @param product name of the calling tool
+     * @param contact contact email address, may be blank
+     * @return e.g. {@code pass-nihms-loader/2.6.0 (https://github.com/eclipse-pass/pass-support;
+     *     mailto:someone@example.org)}
+     */
+    static String userAgent(String product, String contact) {
+        // Set in the manifest of a packaged build, absent when run from classes
+        String version = HttpJsonFetcher.class.getPackage().getImplementationVersion();
+        return (StringUtils.isBlank(product) ? PRODUCT : product.trim())
+            + (version == null ? "" : "/" + version)
+            + " (" + PROJECT_URL
+            + (StringUtils.isBlank(contact) ? "" : "; mailto:" + contact.trim()) + ")";
     }
 
     /**
      * The outcome of a request that was answered.
      *
-     * @param code the HTTP status code
-     * @param body the response body
+     * @param code    the HTTP status code
+     * @param body    the response body
+     * @param headers the response headers
      */
-    record Result(int code, String body) {
+    record Result(int code, String body, Headers headers) {
         boolean isSuccessful() {
             return code >= 200 && code < 300;
+        }
+
+        /**
+         * @param name a header name, in any case
+         * @return the value of the header, null if the response did not have it
+         */
+        String header(String name) {
+            return headers.get(name);
         }
     }
 
@@ -65,8 +99,9 @@ class HttpJsonFetcher {
             if (attempt > 1) {
                 sleep(retryWaitMs * (1L << (attempt - 2)));
             }
-            try (Response res = okHttp.newCall(new Request.Builder().get().url(url).build()).execute()) {
-                result = new Result(res.code(), res.body().string());
+            Request request = new Request.Builder().get().url(url).header("User-Agent", userAgent).build();
+            try (Response res = okHttp.newCall(request).execute()) {
+                result = new Result(res.code(), res.body().string(), res.headers());
                 lastFailure = null;
             } catch (IOException e) {
                 lastFailure = e;

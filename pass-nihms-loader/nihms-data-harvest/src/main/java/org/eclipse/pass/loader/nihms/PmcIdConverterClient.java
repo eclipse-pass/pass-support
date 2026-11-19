@@ -67,7 +67,7 @@ public class PmcIdConverterClient {
                                 @Value("${nihmsetl.idconv.email:}") String email,
                                 @Value("${nihmsetl.idconv.request-interval-ms}") long requestIntervalMs,
                                 @Value("${nihmsetl.http.retry-wait-ms}") long retryWaitMs) {
-        this.fetcher = new HttpJsonFetcher(okHttpClient, retryWaitMs);
+        this.fetcher = new HttpJsonFetcher(okHttpClient, retryWaitMs, HttpJsonFetcher.userAgent(tool, email));
         this.serviceUrl = HttpUrl.get(serviceUrl);
         this.tool = tool;
         this.email = email;

@@ -19,10 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -67,5 +69,34 @@ public class GrantAwardSourceTest {
         ArgumentCaptor<PassClientSelector<Grant>> selector = ArgumentCaptor.forClass(PassClientSelector.class);
         verify(passClient).streamObjects(selector.capture());
         assertEquals("awardStatus==ACTIVE", selector.getValue().getFilter());
+        assertEquals("id", selector.getValue().getSorting());
+    }
+
+    @Test
+    public void testDefaultFilter() {
+        Instant now = Instant.parse("2026-11-19T14:05:06Z");
+
+        assertEquals("(primaryFunder.policy.repositories.id==9133,directFunder.policy.repositories.id==9133);" +
+                     "endDate>=2023-11-19T00:00:00.000Z", GrantAwardSource.defaultFilter(" 9133 ", 36, now));
+        assertEquals("endDate>=2025-11-19T00:00:00.000Z", GrantAwardSource.defaultFilter("", 12, now));
+        assertEquals("(primaryFunder.policy.repositories.id==9133,directFunder.policy.repositories.id==9133)",
+                     GrantAwardSource.defaultFilter("9133", 0, now));
+        assertNull(GrantAwardSource.defaultFilter(null, 0, now));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testConfiguredFilterReplacesDefault() throws IOException {
+        PassClient passClient = mock(PassClient.class);
+        when(passClient.streamObjects(any(PassClientSelector.class))).thenAnswer(invocation -> Stream.of());
+
+        new GrantAwardSource(passClient, "awardStatus==active", "9133", 36).findNihAwards();
+        new GrantAwardSource(passClient, " ", "9133", 0).findNihAwards();
+
+        ArgumentCaptor<PassClientSelector<Grant>> selector = ArgumentCaptor.forClass(PassClientSelector.class);
+        verify(passClient, times(2)).streamObjects(selector.capture());
+        assertEquals("awardStatus==active", selector.getAllValues().get(0).getFilter());
+        assertEquals("(primaryFunder.policy.repositories.id==9133,directFunder.policy.repositories.id==9133)",
+                     selector.getAllValues().get(1).getFilter());
     }
 }

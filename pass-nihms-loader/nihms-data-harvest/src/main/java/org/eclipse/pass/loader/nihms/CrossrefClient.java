@@ -20,6 +20,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import okhttp3.HttpUrl;
@@ -42,17 +45,25 @@ public class CrossrefClient {
 
     static final int ROWS = 1000;
 
+    static final String RATE_LIMIT_HEADER = "x-rate-limit-limit";
+    static final String RATE_INTERVAL_HEADER = "x-rate-limit-interval";
+
+    // A number and an optional unit, e.g. 1s
+    private static final Pattern RATE_INTERVAL = Pattern.compile("(\\d+)\\s*(ms|s|m)?");
+
     private final HttpJsonFetcher fetcher;
     private final HttpUrl worksUrl;
     private final String mailto;
-    private final long requestIntervalMs;
+    private final long defaultRequestIntervalMs;
+    private long requestIntervalMs;
 
     /**
      * @param okHttpClient      the HTTP client
      * @param baseUrl           the base URL of the Crossref REST API
      * @param mailto            contact address sent with each request, which Crossref uses for rate
      *                          limiting. May be blank, in which case the slower public limits apply.
-     * @param requestIntervalMs time to wait after each request
+     * @param requestIntervalMs time to wait after a request whose response does not state the rate
+     *                          limit. When it does, the wait is taken from the response.
      * @param retryWaitMs       time to wait before the first retry of a failed request, doubled for each
      *                          further retry
      */
@@ -61,12 +72,48 @@ public class CrossrefClient {
                           @Value("${nihmsetl.crossref.mailto:}") String mailto,
                           @Value("${nihmsetl.crossref.request-interval-ms}") long requestIntervalMs,
                           @Value("${nihmsetl.http.retry-wait-ms}") long retryWaitMs) {
-        this.fetcher = new HttpJsonFetcher(okHttpClient, retryWaitMs);
+        this.fetcher = new HttpJsonFetcher(okHttpClient, retryWaitMs,
+                                           HttpJsonFetcher.userAgent(HttpJsonFetcher.PRODUCT, mailto));
         this.worksUrl = HttpUrl.get(baseUrl).newBuilder().addPathSegment("works").build();
         this.mailto = mailto;
+        this.defaultRequestIntervalMs = requestIntervalMs;
         this.requestIntervalMs = requestIntervalMs;
         if (StringUtils.isBlank(mailto)) {
             LOG.warn("nihmsetl.crossref.mailto is not set. Crossref will apply its public rate limits.");
+        }
+    }
+
+    /**
+     * Work out how far apart requests must be from the rate limit Crossref states in a response.
+     *
+     * @param limit    the x-rate-limit-limit header: the number of requests allowed in the interval
+     * @param interval the x-rate-limit-interval header: the length of the interval, e.g. 1s
+     * @return the time to leave between requests in milliseconds, or -1 if the headers are missing or
+     *     cannot be understood
+     */
+    static long intervalFromRateLimit(String limit, String interval) {
+        if (limit == null || interval == null) {
+            return -1;
+        }
+        Matcher matcher = RATE_INTERVAL.matcher(interval.trim().toLowerCase(Locale.ROOT));
+        if (!matcher.matches()) {
+            return -1;
+        }
+        try {
+            long requests = Long.parseLong(limit.trim());
+            long length = Long.parseLong(matcher.group(1));
+            if (requests <= 0 || length <= 0) {
+                return -1;
+            }
+            long lengthMs = switch (matcher.group(2) == null ? "s" : matcher.group(2)) {
+                case "ms" -> length;
+                case "m" -> length * 60_000;
+                default -> length * 1000;
+            };
+            // Round up so that the limit is never exceeded
+            return (lengthMs + requests - 1) / requests;
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 
@@ -124,9 +171,20 @@ public class CrossrefClient {
         return works;
     }
 
+    long requestIntervalMs() {
+        return requestIntervalMs;
+    }
+
     private JSONObject fetch(HttpUrl url) throws IOException {
         LOG.debug("Retrieving: {}", url);
         HttpJsonFetcher.Result result = fetcher.get(url);
+        long stated = intervalFromRateLimit(result.header(RATE_LIMIT_HEADER), result.header(RATE_INTERVAL_HEADER));
+        long interval = stated < 0 ? defaultRequestIntervalMs : stated;
+        if (interval != requestIntervalMs) {
+            LOG.info("Leaving {} ms between Crossref requests (rate limit stated: {} per {})", interval,
+                     result.header(RATE_LIMIT_HEADER), result.header(RATE_INTERVAL_HEADER));
+            requestIntervalMs = interval;
+        }
         HttpJsonFetcher.sleep(requestIntervalMs);
         if (!result.isSuccessful()) {
             throw new IOException(String.format("Error retrieving %s (HTTP status: %d)", url, result.code()));
