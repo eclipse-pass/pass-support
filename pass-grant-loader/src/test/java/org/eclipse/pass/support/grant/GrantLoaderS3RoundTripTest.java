@@ -16,7 +16,6 @@
 package org.eclipse.pass.support.grant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +34,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -50,7 +49,7 @@ import org.testcontainers.utility.DockerImageName;
 public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
 
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:3.8.1");
+        DockerImageName.parse("localstack/localstack:4.14.0");
 
     @Container
     static final LocalStackContainer localStack =
@@ -59,7 +58,7 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
                 "/tmp/test-s3-policy.properties", BindMode.READ_ONLY)
             .withClasspathResourceMapping("/s3-testgrantupdatets",
                 "/tmp/test-s3-testgrantupdatets", BindMode.READ_ONLY)
-            .withServices(S3);
+            .withServices("s3");
 
     @Autowired private S3Template s3Template;
     @Autowired private PassUpdater passUpdater;
@@ -69,7 +68,7 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
         registry.add("spring.cloud.aws.region.static", localStack::getRegion);
         registry.add("spring.cloud.aws.credentials.access-key", localStack::getAccessKey);
         registry.add("spring.cloud.aws.credentials.secret-key", localStack::getSecretKey);
-        registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpointOverride(S3).toString());
+        registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpoint().toString());
     }
 
     @BeforeAll

@@ -15,7 +15,7 @@
 
   <properties>
     <wiremock-version>3.13.2</wiremock-version>
-    <maven-model.version>3.9.13</maven-model.version>
+    <maven-model.version>3.10.1</maven-model.version>
   </properties>
 
   <dependencies>
@@ -83,6 +83,18 @@
       <artifactId>spring-boot-starter</artifactId>
     </dependency>
 
+    <!-- Spring Framework 7 depends on commons-logging, which is banned. jcl-over-slf4j provides the API instead. -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>io.awspring.cloud</groupId>
       <artifactId>spring-cloud-aws-starter-parameter-store</artifactId>
@@ -127,13 +139,13 @@
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>localstack</artifactId>
+      <artifactId>testcontainers-localstack</artifactId>
       <scope>test</scope>
     </dependency>
 

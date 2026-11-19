@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.Address;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
@@ -50,6 +49,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.mail.javamail.JavaMailSender;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -93,7 +93,7 @@ public class EmailDispatchImplMockTest {
         when(user.getEmail()).thenReturn(USER_EMAIL);
 
         Parameterizer parameterizer = new Parameterizer(config, templateResolver,
-            new HandlebarsParameterizer(new ObjectMapper()));
+            new HandlebarsParameterizer(JsonMapper.builder().build()));
 
         // mock a whitelist that accepts all recipients by simply returning the collection of recipients it was provided
         SimpleWhitelist whitelist = mock(SimpleWhitelist.class);

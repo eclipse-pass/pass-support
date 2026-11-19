@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import jakarta.mail.Folder;
@@ -69,6 +68,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -283,7 +283,7 @@ public class EmailDispatchImplTest extends AbstractNotificationSpringTest {
         MimeMessage receivedMessage = greenMail.getReceivedMessages()[0];
         assertNotNull(receivedMessage);
 
-        String expectedTitle = objectMapper.readTree(submission.getMetadata()).findValue("title").asText();
+        String expectedTitle = objectMapper.readTree(submission.getMetadata()).findValue("title").asString();
         String expectedSubject = "PASS Submission titled \"" + expectedTitle + "\" awaiting your approval";
         assertEquals(expectedSubject, receivedMessage.getSubject());
 

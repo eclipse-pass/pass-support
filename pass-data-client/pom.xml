@@ -15,13 +15,13 @@
   <properties>
     <!-- Properties for dependency versions -->
     <jsonapi-adapters.version>1.1.0</jsonapi-adapters.version>
-    <slf4j.version>2.0.17</slf4j.version>
-    <logback.version>1.5.32</logback.version>
-    <commons-lang3.version>3.20.0</commons-lang3.version>
-    <junit.jupiter.version>5.14.3</junit.jupiter.version>
-    <mockito.version>5.22.0</mockito.version>
-    <testcontainers.version>1.21.4</testcontainers.version>
-    <maven-model.version>3.9.13</maven-model.version>
+    <slf4j.version>2.0.20</slf4j.version>
+    <logback.version>1.6.7</logback.version>
+    <commons-lang3.version>3.22.0</commons-lang3.version>
+    <junit.jupiter.version>6.1.3</junit.jupiter.version>
+    <mockito.version>5.24.0</mockito.version>
+    <testcontainers.version>2.0.5</testcontainers.version>
+    <maven-model.version>3.10.1</maven-model.version>
   </properties>
 
   <dependencyManagement>
@@ -95,7 +95,7 @@
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>

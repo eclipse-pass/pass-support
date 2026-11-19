@@ -52,11 +52,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -113,10 +113,10 @@ public abstract class NihmsSubmissionEtlITBase {
     }
 
     //use when need to return reliable record information instead of using entrez api
-    @MockBean protected PmidLookup mockPmidLookup;
+    @MockitoBean protected PmidLookup mockPmidLookup;
 
     // Needed so tests can run after application starts
-    @MockBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
+    @MockitoBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
 
     @Autowired protected NihmsPassClientService nihmsPassClientService;
     @Autowired protected CompletedPublicationsCache completedPubsCache;

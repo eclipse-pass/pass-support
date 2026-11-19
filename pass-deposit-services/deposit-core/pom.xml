@@ -29,15 +29,15 @@
   <description>PASS Deposit Services Core</description>
 
   <properties>
-    <amazon.sqs.version>2.1.4</amazon.sqs.version>
-    <handlebars.version>4.5.0</handlebars.version>
-    <sshd.version>2.14.0</sshd.version>
-    <jsoup.version>1.22.1</jsoup.version>
-    <greenmail-junit5.version>2.1.8</greenmail-junit5.version>
+    <amazon.sqs.version>2.1.5</amazon.sqs.version>
+    <handlebars.version>4.5.8</handlebars.version>
+    <sshd.version>2.20.1</sshd.version>
+    <jsoup.version>1.24.1</jsoup.version>
+    <greenmail-junit5.version>2.1.15</greenmail-junit5.version>
     <jakarta-json.version>2.0.1</jakarta-json.version>
-    <maven-model.version>3.9.13</maven-model.version>
-    <msal4j.version>1.24.0</msal4j.version>
-    <json-path.version>2.10.0</json-path.version>
+    <maven-model.version>3.10.1</maven-model.version>
+    <msal4j.version>1.26.1</msal4j.version>
+    <json-path.version>3.0.0</json-path.version>
     <wiremock.version>3.13.2</wiremock.version>
   </properties>
 
@@ -46,6 +46,18 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+
+    <!-- Spring Framework 7 depends on commons-logging, which is banned. jcl-over-slf4j provides the API instead. -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -66,6 +78,12 @@
     <dependency>
       <groupId>org.springframework.integration</groupId>
       <artifactId>spring-integration-mail</artifactId>
+    </dependency>
+
+    <!-- No longer brought in by spring-boot-starter-json as of Boot 4 -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
     </dependency>
 
     <dependency>
@@ -239,13 +257,13 @@
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>localstack</artifactId>
+      <artifactId>testcontainers-localstack</artifactId>
       <scope>test</scope>
     </dependency>
 

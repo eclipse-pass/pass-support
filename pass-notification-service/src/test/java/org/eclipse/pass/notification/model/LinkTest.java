@@ -20,10 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.net.URI;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.pass.notification.AbstractNotificationSpringTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

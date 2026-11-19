@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Session;
 import org.apache.commons.lang3.StringUtils;
@@ -33,11 +32,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
-import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.JacksonJsonMessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -99,12 +99,12 @@ public class JmsConfig {
 
     /**
      * Configure the message converter
-     * @param objectMapper the object mapper
+     * @param jsonMapper the Jackson json mapper
      * @return the message converter
      */
     @Bean
-    public MessageConverter messageConverter(ObjectMapper objectMapper) {
-        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+    public MessageConverter messageConverter(JsonMapper jsonMapper) {
+        JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter(jsonMapper);
         converter.setTypeIdPropertyName("type");
         converter.setTypeIdMappings(
             Map.of(
@@ -112,7 +112,6 @@ public class JmsConfig {
                 "DepositStatus", DepositMessage.class
             )
         );
-        converter.setObjectMapper(objectMapper);
         return converter;
     }
 

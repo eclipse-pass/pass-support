@@ -25,10 +25,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.MessageChannels;
-import org.springframework.integration.mail.ImapMailReceiver;
 import org.springframework.integration.mail.dsl.ImapMailInboundChannelAdapterSpec;
 import org.springframework.integration.mail.dsl.Mail;
 import org.springframework.integration.mail.dsl.MailInboundChannelAdapterSpec;
+import org.springframework.integration.mail.inbound.ImapMailReceiver;
 import org.springframework.stereotype.Component;
 
 /**

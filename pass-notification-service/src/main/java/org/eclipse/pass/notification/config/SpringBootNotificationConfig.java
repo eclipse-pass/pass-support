@@ -17,13 +17,13 @@ package org.eclipse.pass.notification.config;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.eclipse.pass.support.client.PassClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 /**
  * Primary Spring Boot configuration class for Notification Services
@@ -58,19 +58,27 @@ public class SpringBootNotificationConfig {
     }
 
     /**
+     * Configure a Jackson module that resolves Spring property placeholders in deserialized String values.
+     * Jackson 3 object mappers are immutable, so the module is contributed as a bean and is registered by Spring Boot
+     * when it builds the shared mapper.
+     * @param envDeserializer the String deserializer that resolves placeholders
+     * @return the Jackson module
+     */
+    @Bean
+    public SimpleModule envStringDeserializerModule(SpringEnvStringDeserializer envDeserializer) {
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(String.class, envDeserializer);
+        return module;
+    }
+
+    /**
      * Configure the NotificationConfig.
      * @param objectMapper the object mapper
      * @return the NotificationConfig bean
      * @throws IOException thrown if IO error
      */
     @Bean
-    public NotificationConfig notificationConfiguration(ObjectMapper objectMapper,
-                                                        SpringEnvStringDeserializer envDeserializer)
-        throws IOException {
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(String.class, envDeserializer);
-        objectMapper.registerModule(module);
-
+    public NotificationConfig notificationConfiguration(ObjectMapper objectMapper) throws IOException {
         NotificationConfig notificationConfig = objectMapper.readValue(notificationConfigResource.getInputStream(),
             NotificationConfig.class);
         notificationConfig.setMode(notificationMode);

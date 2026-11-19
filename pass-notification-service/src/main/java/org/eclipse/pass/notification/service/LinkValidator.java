@@ -17,15 +17,15 @@ package org.eclipse.pass.notification.service;
 
 import static java.lang.String.format;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.pass.notification.config.LinkValidationRule;
 import org.eclipse.pass.notification.config.NotificationConfig;
 import org.eclipse.pass.notification.model.Link;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * @author apb@jhu.edu
@@ -71,7 +71,7 @@ public class LinkValidator implements Predicate<Link> {
                 try {
                     throw new RuntimeException(format("Invalid link %s violates rule %s", link, objectMapper
                             .writerWithDefaultPrettyPrinter().writeValueAsString(cfg)));
-                } catch (final IOException e) {
+                } catch (final JacksonException e) {
                     // Should never happen. This is a fallback in case deserializing the rule in JSON in the error
                     // message fails.
                     throw new RuntimeException("Invalid link " + link);

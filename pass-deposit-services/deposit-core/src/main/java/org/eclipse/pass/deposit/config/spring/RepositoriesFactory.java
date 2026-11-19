@@ -18,9 +18,6 @@ package org.eclipse.pass.deposit.config.spring;
 
 import java.net.URI;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.deposit.config.repository.Repositories;
 import org.eclipse.pass.deposit.config.repository.RepositoryConfig;
@@ -29,6 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Parses the global repository configuration file, and returns the configured {@link Repositories}.
@@ -84,15 +84,15 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
             return result;
         }
 
-        configNode.fields().forEachRemaining(configEntry -> {
+        configNode.properties().forEach(configEntry -> {
             String id = configEntry.getKey();
             JsonNode repositoryConfigNode = configEntry.getValue();
             RepositoryConfig config = null;
             try {
                 config = mapper.treeToValue(repositoryConfigNode, RepositoryConfig.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 LOG.error("Error processing Repository configuration node from {}:\n{}",
-                          configurationUri, repositoryConfigNode.asText());
+                          configurationUri, repositoryConfigNode.asString(""));
                 throw new RuntimeException(e);
             }
             config.setRepositoryKey(id);

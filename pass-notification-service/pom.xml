@@ -30,16 +30,15 @@
 
     <properties>
         <!-- Properties for dependency versions -->
-        <spring-boot-maven-plugin.version>3.5.11</spring-boot-maven-plugin.version>
-        <awsspring.version>3.4.2</awsspring.version>
-        <commons-io.version>2.21.0</commons-io.version>
-        <handlebars.version>4.5.0</handlebars.version>
-        <amazon.sqs.version>2.1.4</amazon.sqs.version>
-        <junit-jupiter-params.version>5.12.2</junit-jupiter-params.version>
-        <greenmail-junit5.version>2.1.8</greenmail-junit5.version>
+        <spring-boot-maven-plugin.version>4.1.2</spring-boot-maven-plugin.version>
+        <awsspring.version>4.2.2</awsspring.version>
+        <commons-io.version>2.22.0</commons-io.version>
+        <handlebars.version>4.5.8</handlebars.version>
+        <amazon.sqs.version>2.1.5</amazon.sqs.version>
+        <greenmail-junit5.version>2.1.15</greenmail-junit5.version>
         <jakarta-json.version>2.0.1</jakarta-json.version>
-        <maven-model.version>3.9.13</maven-model.version>
-        <commons-lang3.version>3.20.0</commons-lang3.version>
+        <maven-model.version>3.10.1</maven-model.version>
+        <commons-lang3.version>3.22.0</commons-lang3.version>
     </properties>
 
     <dependencyManagement>
@@ -99,12 +98,29 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- Spring Framework 7 depends on commons-logging, which is banned. jcl-over-slf4j provides the API instead. -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-artemis</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.activemq</groupId>
+                    <groupId>org.apache.artemis</groupId>
                     <artifactId>artemis-jakarta-client</artifactId>
                 </exclusion>
             </exclusions>
@@ -122,7 +138,7 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
         </dependency>
 
         <dependency>
@@ -178,7 +194,6 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit-jupiter-params.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -198,13 +213,13 @@
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>localstack</artifactId>
+            <artifactId>testcontainers-localstack</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -325,6 +340,7 @@
                             <ignoredUsedUndeclaredDependencies>
                                 <!-- These come from spring boot starter json -->
                                 <ignoredUsedUndeclaredDependency>com.fasterxml.jackson.core::</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>tools.jackson.core::</ignoredUsedUndeclaredDependency>
                                 <!-- These come from spring boot starter aop -->
                                 <ignoredUsedUndeclaredDependency>org.aspectj::</ignoredUsedUndeclaredDependency>
                                 <!-- These come from spring boot starter mail -->
@@ -343,6 +359,8 @@
                             <ignoredUnusedDeclaredDependencies>
                                 <!-- slf4j is the API used in the code, logback is the logging provider not used directly -->
                                 <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
+                                <!-- slf4j is the API used in the code, jcl is used by Spring Framework -->
+                                <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
                                 <!-- Used by ITs via classpath -->
                                 <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core-test-config::</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>

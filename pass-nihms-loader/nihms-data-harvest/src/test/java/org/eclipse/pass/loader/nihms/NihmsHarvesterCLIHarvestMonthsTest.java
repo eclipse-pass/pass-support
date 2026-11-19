@@ -31,9 +31,9 @@ import java.util.EnumSet;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -47,8 +47,8 @@ import org.springframework.test.context.TestPropertySource;
     })
 public class NihmsHarvesterCLIHarvestMonthsTest {
 
-    @SpyBean NihmsHarvester nihmsHarvester;
-    @MockBean NihmsHarvesterDownloader nihmsHarvesterDownloader;
+    @MockitoSpyBean NihmsHarvester nihmsHarvester;
+    @MockitoBean NihmsHarvesterDownloader nihmsHarvesterDownloader;
 
     @Test
     public void testHarvesterCLI_WithHarvestMonths() throws IOException, InterruptedException {

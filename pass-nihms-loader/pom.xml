@@ -23,16 +23,16 @@
 
     <properties>
         <!-- Properties for dependency versions -->
-        <spring-boot-maven-plugin.version>3.5.11</spring-boot-maven-plugin.version>
-        <awsspring.version>3.4.2</awsspring.version>
-        <org-json.version>20251224</org-json.version>
+        <spring-boot-maven-plugin.version>4.1.2</spring-boot-maven-plugin.version>
+        <awsspring.version>4.2.2</awsspring.version>
+        <org-json.version>20260814</org-json.version>
         <commons.csv.version>1.14.1</commons.csv.version>
         <args4j.version>2.37</args4j.version>
         <handy-uri-templates.version>2.1.8</handy-uri-templates.version>
-        <commons-io.version>2.21.0</commons-io.version>
-        <commons-collections4.version>4.5.0</commons-collections4.version>
-        <joda-time.version>2.14.1</joda-time.version>
-        <commons-lang3.version>3.20.0</commons-lang3.version>
+        <commons-io.version>2.22.0</commons-io.version>
+        <commons-collections4.version>4.6.0</commons-collections4.version>
+        <joda-time.version>2.15.1</joda-time.version>
+        <commons-lang3.version>3.22.0</commons-lang3.version>
     </properties>
 
     <dependencyManagement>
@@ -186,7 +186,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-help-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.6.0</version>
             </plugin>
         </plugins>
     </build>
