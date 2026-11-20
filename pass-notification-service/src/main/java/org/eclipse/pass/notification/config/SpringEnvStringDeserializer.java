@@ -15,15 +15,14 @@
  */
 package org.eclipse.pass.notification.config;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.jdk.StringDeserializer;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -35,7 +34,7 @@ public class SpringEnvStringDeserializer extends StringDeserializer {
     private Environment env;
 
     @Override
-    public String deserialize(JsonParser parser, DeserializationContext ctx) throws IOException {
+    public String deserialize(JsonParser parser, DeserializationContext ctx) throws JacksonException {
         String result = super.deserialize(parser, ctx);
         return StringUtils.isNotBlank(result) ? env.resolveRequiredPlaceholders(result) : result;
     }

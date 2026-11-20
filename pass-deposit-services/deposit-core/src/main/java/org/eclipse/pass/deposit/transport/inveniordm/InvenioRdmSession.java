@@ -17,6 +17,7 @@ package org.eclipse.pass.deposit.transport.inveniordm;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +40,10 @@ import org.eclipse.pass.deposit.transport.TransportSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.core.retry.RetryPolicy;
+import org.springframework.core.retry.RetryTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriUtils;
@@ -68,11 +70,12 @@ class InvenioRdmSession implements TransportSession {
             .baseUrl(baseServerUrl)
             .defaultHeader("Authorization", "Bearer " + apiToken)
             .build();
-        this.retryTemplate = RetryTemplate.builder()
-            .maxAttempts(5)
-            .fixedBackoff(3000)
-            .retryOn(HttpServerErrorException.class)
-            .build();
+        // maxRetries does not count the initial attempt, so 4 retries is 5 attempts in total
+        this.retryTemplate = new RetryTemplate(RetryPolicy.builder()
+            .maxRetries(4)
+            .delay(Duration.ofSeconds(3))
+            .includes(HttpServerErrorException.class)
+            .build());
     }
 
     @Override
@@ -165,7 +168,7 @@ class InvenioRdmSession implements TransportSession {
     private String publishRecord(String recordId) {
         // This call is wrapped in a retry template because of this inveniordm bug for the publish action:
         // https://github.com/inveniosoftware/invenio-rdm-records/issues/809
-        return retryTemplate.execute(ctx -> {
+        return retryTemplate.invoke(() -> {
             String publishResponse = restClient.post()
                 .uri("/records/{recordId}/draft/actions/publish", recordId)
                 .contentType(MediaType.APPLICATION_JSON)

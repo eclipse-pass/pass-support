@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.EscapingStrategy;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
@@ -31,6 +30,8 @@ import com.github.jknack.handlebars.helper.StringHelpers;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.notification.model.NotificationParam;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Parameterizes Mustache templates using Handlebars.
@@ -76,14 +77,14 @@ public class HandlebarsParameterizer {
                                 case EVENT_METADATA, RESOURCE_METADATA -> {
                                     try {
                                         return mapper.readValue(entry.getValue(), Map.class);
-                                    } catch (IOException e) {
+                                    } catch (JacksonException e) {
                                         throw new RuntimeException(e.getMessage(), e);
                                     }
                                 }
                                 case LINKS -> {
                                     try {
                                         return mapper.readValue(entry.getValue(), List.class);
-                                    } catch (IOException e) {
+                                    } catch (JacksonException e) {
                                         throw new RuntimeException(e.getMessage(), e);
                                     }
                                 }

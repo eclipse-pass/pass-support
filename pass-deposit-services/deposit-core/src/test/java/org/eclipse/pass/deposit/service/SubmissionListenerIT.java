@@ -28,7 +28,6 @@ import jakarta.json.Json;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -41,7 +40,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 public class SubmissionListenerIT extends AbstractListenerIT {
 
     @MockitoBean private SubmissionProcessor submissionProcessor;
-    @Captor ArgumentCaptor<Submission> messageCaptor;
+    // Boot 4 no longer initializes Mockito's @Captor fields in Spring tests, so the captor is created explicitly
+    private final ArgumentCaptor<Submission> messageCaptor = ArgumentCaptor.forClass(Submission.class);
 
     @Test
     void testProcessSubmissionMessage() throws IOException {

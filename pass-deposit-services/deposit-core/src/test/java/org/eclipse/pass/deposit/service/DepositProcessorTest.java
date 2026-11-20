@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.eclipse.pass.deposit.service.DepositProcessor.DepositProcessorCriFunc;
 import org.eclipse.pass.support.client.PassClient;
 import org.eclipse.pass.support.client.model.AggregatedDepositStatus;
@@ -42,6 +41,7 @@ import org.eclipse.pass.support.client.model.Deposit;
 import org.eclipse.pass.support.client.model.DepositStatus;
 import org.eclipse.pass.support.client.model.Submission;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.exc.InvalidTypeIdException;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -34,8 +34,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Karen Hanson
@@ -49,7 +49,7 @@ public class EntrezPmidLookupTest {
     protected PmidLookup pmidLookup;
 
     // Needed so tests can run after application starts
-    @MockBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
+    @MockitoBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
 
     @Test
     public void testGetEntrezRecordJson() throws IOException, URISyntaxException {

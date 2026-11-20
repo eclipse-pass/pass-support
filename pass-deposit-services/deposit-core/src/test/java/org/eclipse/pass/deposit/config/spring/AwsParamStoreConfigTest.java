@@ -16,7 +16,6 @@
 package org.eclipse.pass.deposit.config.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SSM;
 
 import java.io.IOException;
 
@@ -29,9 +28,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest(properties = """
@@ -56,10 +55,10 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 class AwsParamStoreConfigTest {
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:3.8.1");
+        DockerImageName.parse("localstack/localstack:4.14.0");
 
     @Container
-    private static final LocalStackContainer localStack = new LocalStackContainer(LOCALSTACK_IMG).withServices(SSM);
+    private static final LocalStackContainer localStack = new LocalStackContainer(LOCALSTACK_IMG).withServices("ssm");
 
     @Autowired private Environment environment;
 

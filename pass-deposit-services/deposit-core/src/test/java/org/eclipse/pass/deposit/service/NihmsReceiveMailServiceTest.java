@@ -54,7 +54,6 @@ import org.eclipse.pass.support.client.model.RepositoryCopy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -87,8 +86,9 @@ public class NihmsReceiveMailServiceTest {
 
     @MockitoBean private PassClient passClient;
     @MockitoSpyBean private NihmsReceiveMailService nihmsReceiveMailService;
-    @Captor ArgumentCaptor<MimeMessage> messageCaptor;
-    @Captor ArgumentCaptor<PassEntity> passEntityCaptor;
+    // Boot 4 no longer initializes Mockito's @Captor fields in Spring tests, so the captors are created explicitly
+    private final ArgumentCaptor<MimeMessage> messageCaptor = ArgumentCaptor.forClass(MimeMessage.class);
+    private final ArgumentCaptor<PassEntity> passEntityCaptor = ArgumentCaptor.forClass(PassEntity.class);
 
     @Test
     void testHandleReceivedMail() {

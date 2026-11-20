@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.pass.notification.config.Mode;
 import org.eclipse.pass.notification.config.RecipientConfig;
 import org.eclipse.pass.notification.model.Link;
@@ -60,6 +59,8 @@ import org.eclipse.pass.support.client.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -106,7 +107,7 @@ public class ComposerMockTest {
         when(linkValidator.test(any())).thenReturn(true);
 
         composer = new Composer(recipientConfig,
-            new RecipientAnalyzer(), submissionLinkAnalyzer, linkValidator, new ObjectMapper());
+            new RecipientAnalyzer(), submissionLinkAnalyzer, linkValidator, JsonMapper.builder().build());
     }
 
     /**
@@ -136,7 +137,7 @@ public class ComposerMockTest {
         submissionEventMessage.setUserApprovalLink(userTokenLink);
 
         composer = new Composer(recipientConfig,
-            new RecipientAnalyzer(), new SubmissionLinkAnalyzer(), linkValidator, new ObjectMapper());
+            new RecipientAnalyzer(), new SubmissionLinkAnalyzer(), linkValidator, JsonMapper.builder().build());
 
         // WHEN
         Notification notification = composer.apply(event, submissionEventMessage);
@@ -409,7 +410,7 @@ public class ComposerMockTest {
         submissionEventMessage.setUserApprovalLink(userTokenTestLink);
 
         composer = new Composer(recipientConfig,
-            new RecipientAnalyzer(), new SubmissionLinkAnalyzer(), linkValidator, new ObjectMapper());
+            new RecipientAnalyzer(), new SubmissionLinkAnalyzer(), linkValidator, JsonMapper.builder().build());
         ReflectionTestUtils.setField(composer, "passAppDomain", "testing-pass-app-domain");
 
         // WHEN
@@ -418,7 +419,7 @@ public class ComposerMockTest {
         // THEN
         Map<NotificationParam, String> params = n.getParameters();
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = JsonMapper.builder().build();
         assertEquals(JsonMetadataBuilder.resourceMetadata(submission, objectMapper),
             params.get(NotificationParam.RESOURCE_METADATA));
         // todo: Params map contains URIs of recipients at this point, they've not been resolved to email addresses

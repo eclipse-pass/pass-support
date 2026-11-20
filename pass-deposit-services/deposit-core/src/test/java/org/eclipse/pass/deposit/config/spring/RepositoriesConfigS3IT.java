@@ -17,7 +17,6 @@ package org.eclipse.pass.deposit.config.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 import java.io.IOException;
 
@@ -34,9 +33,9 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -55,14 +54,14 @@ import org.testcontainers.utility.DockerImageName;
 public class RepositoriesConfigS3IT {
 
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:3.8.1");
+        DockerImageName.parse("localstack/localstack:4.14.0");
 
     @Container
     static final LocalStackContainer localStack =
         new LocalStackContainer(LOCALSTACK_IMG)
             .withClasspathResourceMapping("/full-test-s3-repositories.json",
                 "/tmp/tmp-test-repositories.json", BindMode.READ_ONLY)
-            .withServices(S3);
+            .withServices("s3");
 
     @Autowired
     private Repositories repositories;
@@ -72,7 +71,7 @@ public class RepositoriesConfigS3IT {
         registry.add("spring.cloud.aws.region.static", localStack::getRegion);
         registry.add("spring.cloud.aws.credentials.access-key", localStack::getAccessKey);
         registry.add("spring.cloud.aws.credentials.secret-key", localStack::getSecretKey);
-        registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpointOverride(S3).toString());
+        registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpoint().toString());
     }
 
     @BeforeAll

@@ -33,10 +33,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.pass.notification.model.Link;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Utility class for working with streams of {@link Link}
@@ -49,7 +50,8 @@ public class LinksUtil {
     private LinksUtil() {
     }
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    // Jackson 2 defaults keep the serialized Link property order (rel, href) unchanged
+    private static final ObjectMapper mapper = JsonMapper.builder().configureForJackson2().build();
 
     static final Collector<Link, Collection<Link>, String> LINK_COLLECTOR =
             new Collector<>() {
@@ -77,7 +79,7 @@ public class LinksUtil {
                     return links -> {
                         try {
                             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(links);
-                        } catch (final JsonProcessingException e) {
+                        } catch (final JacksonException e) {
                             throw new RuntimeException("Could not serialize links! ", e);
                         }
                     };

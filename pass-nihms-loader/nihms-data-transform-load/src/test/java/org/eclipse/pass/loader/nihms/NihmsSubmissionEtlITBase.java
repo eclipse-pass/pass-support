@@ -52,18 +52,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 /**
  * @author Karen Hanson
@@ -83,7 +82,7 @@ public abstract class NihmsSubmissionEtlITBase {
         try {
             Model model = reader.read(new FileReader("pom.xml"));
             String version = model.getParent().getVersion();
-            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:" + version);
+            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main-for-test-only:" + version);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -93,16 +92,6 @@ public abstract class NihmsSubmissionEtlITBase {
 
     @Container
     protected static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
-        .withCopyFileToContainer(
-            MountableFile.forClasspathResource("/saml2/"),
-            "/tmp/saml2/"
-        )
-        .withCopyFileToContainer(
-            MountableFile.forClasspathResource("/application-test.yml"),
-            "/tmp/application-test.yml"
-        )
-        .withEnv("PASS_SAML_PATH", "file:/tmp/")
-        .withEnv("PASS_CORE_JAVA_OPTS", "-Dspring.config.import=file:/tmp/application-test.yml")
         .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "moo"))
         .withExposedPorts(8080);
 
@@ -113,10 +102,10 @@ public abstract class NihmsSubmissionEtlITBase {
     }
 
     //use when need to return reliable record information instead of using entrez api
-    @MockBean protected PmidLookup mockPmidLookup;
+    @MockitoBean protected PmidLookup mockPmidLookup;
 
     // Needed so tests can run after application starts
-    @MockBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
+    @MockitoBean private NihmsTransformLoadCLIRunner nihmsTransformLoadCLIRunner;
 
     @Autowired protected NihmsPassClientService nihmsPassClientService;
     @Autowired protected CompletedPublicationsCache completedPubsCache;
