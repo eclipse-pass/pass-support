@@ -230,18 +230,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.eclipse.pass</groupId>
-            <artifactId>pass-core</artifactId>
-            <version>${project.parent.version}</version>
-            <classifier>test-config</classifier>
-            <!-- Only the test config files are needed, not the pass-core dependencies -->
-            <exclusions>
-                <exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -366,8 +354,6 @@
                                 <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
                                 <!-- slf4j is the API used in the code, jcl is used by Spring Framework -->
                                 <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
-                                <!-- Used by ITs via classpath -->
-                                <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core::</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                             <ignoredNonTestScopedDependencies>
                                 <!-- org.eclipse.angus:jakarta.mail is required for runtime javamail impl -->

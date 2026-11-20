@@ -168,8 +168,6 @@
                                 <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic:</ignoredUnusedDeclaredDependency>
                                 <!-- slf4j is the API used in the code, jcl is used by a transitive dep -->
                                 <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j:</ignoredUnusedDeclaredDependency>
-                                <!-- Used by ITs via classpath -->
-                                <ignoredUnusedDeclaredDependency>org.eclipse.pass:pass-core::</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                             <ignoredNonTestScopedDependencies>
                                 <!-- junit-jupiter is a module containing the junit api jars used directly -->
