@@ -92,7 +92,7 @@ public class JsonApiPassClientIT {
         try {
             Model model = reader.read(new FileReader("pom.xml"));
             String version = model.getParent().getVersion();
-            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main-for-test-only:" + version);
+            PASS_CORE_IMG = DockerImageName.parse("ghcr.io/eclipse-pass/pass-core-main:" + version);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -107,6 +107,9 @@ public class JsonApiPassClientIT {
 
     @Container
     private static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
+        .withEnv("SPRING_PROFILES_ACTIVE", "standalone")
+        .withEnv("PASS_CORE_USER", "backend")
+        .withEnv("PASS_CORE_PASSWORD", "moo")
         .withCreateContainerCmdModifier(cmd -> {
             cmd.getHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(8080),
                     new ExposedPort(8080)));
