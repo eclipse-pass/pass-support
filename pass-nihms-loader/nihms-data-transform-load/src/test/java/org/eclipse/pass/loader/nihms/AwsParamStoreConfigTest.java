@@ -17,8 +17,6 @@ package org.eclipse.pass.loader.nihms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +31,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.ParameterType;
 
 @SpringBootTest(
     properties = {
@@ -67,15 +70,22 @@ class AwsParamStoreConfigTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "ssm", "put-parameter",
-            "--name", "/config/pass-core-client/PASS_CORE_PASSWORD",
-            "--value", "aws-param-store-core-pw",
-            "--type", "SecureString");
-        localStack.execInContainer("awslocal", "ssm", "put-parameter",
-            "--name", "/config/pass-nihms/NIHMS_REPO_ID",
-            "--value", "aws-param-store-repo-id",
-            "--type", "SecureString");
+    static void beforeAll() {
+        try (SsmClient ssmClient = SsmClient.builder()
+            .endpointOverride(localStack.getEndpoint())
+            .region(Region.of(localStack.getRegion()))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+            .build()) {
+            ssmClient.putParameter(request -> request
+                .name("/config/pass-core-client/PASS_CORE_PASSWORD")
+                .value("aws-param-store-core-pw")
+                .type(ParameterType.SECURE_STRING));
+            ssmClient.putParameter(request -> request
+                .name("/config/pass-nihms/NIHMS_REPO_ID")
+                .value("aws-param-store-repo-id")
+                .type(ParameterType.SECURE_STRING));
+        }
     }
 
     @Test
