@@ -33,10 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -54,10 +58,6 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
     @Container
     static final LocalStackContainer localStack =
         new LocalStackContainer(LOCALSTACK_IMG)
-            .withClasspathResourceMapping("/policy.properties",
-                "/tmp/test-s3-policy.properties", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("/s3-testgrantupdatets",
-                "/tmp/test-s3-testgrantupdatets", BindMode.READ_ONLY)
             .withServices("s3");
 
     @Autowired private S3Template s3Template;
@@ -72,12 +72,26 @@ public class GrantLoaderS3RoundTripTest extends AbstractRoundTripTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "s3", "mb", "s3://test-bucket");
-        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/test-s3-policy.properties",
-            "s3://test-bucket/s3-policy.properties");
-        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/test-s3-testgrantupdatets",
-            "s3://test-bucket/s3-testgrantupdatets");
+    static void beforeAll() throws IOException {
+        try (S3Client s3Client = S3Client.builder()
+            .endpointOverride(localStack.getEndpoint())
+            .region(Region.of(localStack.getRegion()))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+            .forcePathStyle(true)
+            .build()) {
+            s3Client.createBucket(request -> request.bucket("test-bucket"));
+            s3Client.putObject(request -> request.bucket("test-bucket").key("s3-policy.properties"),
+                RequestBody.fromBytes(readResource("/policy.properties")));
+            s3Client.putObject(request -> request.bucket("test-bucket").key("s3-testgrantupdatets"),
+                RequestBody.fromBytes(readResource("/s3-testgrantupdatets")));
+        }
+    }
+
+    private static byte[] readResource(String name) throws IOException {
+        try (InputStream is = GrantLoaderS3RoundTripTest.class.getResourceAsStream(name)) {
+            return is.readAllBytes();
+        }
     }
 
     @Test
