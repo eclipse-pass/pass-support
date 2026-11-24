@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,7 +46,7 @@ import org.springframework.context.annotation.Import;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Configuration
-@EnableAutoConfiguration(exclude = {RestTemplateAutoConfiguration.class})
+@EnableAutoConfiguration
 @Import(RepositoriesFactoryBeanConfig.class)
 public class DepositConfig {
 

@@ -17,9 +17,9 @@ package org.eclipse.pass.deposit.config.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.eclipse.pass.deposit.DepositApp;
 import org.eclipse.pass.deposit.config.repository.Repositories;
@@ -33,11 +33,15 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -55,14 +59,12 @@ import org.testcontainers.utility.DockerImageName;
 public class RepositoriesConfigS3IT {
 
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:3.8.1");
+        DockerImageName.parse("localstack/localstack:4.14.0");
 
     @Container
     static final LocalStackContainer localStack =
         new LocalStackContainer(LOCALSTACK_IMG)
-            .withClasspathResourceMapping("/full-test-s3-repositories.json",
-                "/tmp/tmp-test-repositories.json", BindMode.READ_ONLY)
-            .withServices(S3);
+            .withServices("s3");
 
     @Autowired
     private Repositories repositories;
@@ -72,14 +74,28 @@ public class RepositoriesConfigS3IT {
         registry.add("spring.cloud.aws.region.static", localStack::getRegion);
         registry.add("spring.cloud.aws.credentials.access-key", localStack::getAccessKey);
         registry.add("spring.cloud.aws.credentials.secret-key", localStack::getSecretKey);
-        registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpointOverride(S3).toString());
+        registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpoint().toString());
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "s3", "mb", "s3://test-bucket");
-        localStack.execInContainer("awslocal", "s3", "cp", "/tmp/tmp-test-repositories.json",
-            "s3://test-bucket/s3-test-repositories.json");
+    static void beforeAll() throws IOException {
+        try (S3Client s3Client = S3Client.builder()
+            .endpointOverride(localStack.getEndpoint())
+            .region(Region.of(localStack.getRegion()))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+            .forcePathStyle(true)
+            .build()) {
+            s3Client.createBucket(request -> request.bucket("test-bucket"));
+            s3Client.putObject(request -> request.bucket("test-bucket").key("s3-test-repositories.json"),
+                RequestBody.fromBytes(readResource("/full-test-s3-repositories.json")));
+        }
+    }
+
+    private static byte[] readResource(String name) throws IOException {
+        try (InputStream is = RepositoriesConfigS3IT.class.getResourceAsStream(name)) {
+            return is.readAllBytes();
+        }
     }
 
     @Test

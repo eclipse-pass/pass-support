@@ -33,7 +33,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -59,16 +58,9 @@ public abstract class AbstractIntegrationTest {
 
     @Container
     protected static final GenericContainer<?> PASS_CORE_CONTAINER = new GenericContainer<>(PASS_CORE_IMG)
-        .withCopyFileToContainer(
-            MountableFile.forClasspathResource("/saml2/"),
-            "/tmp/saml2/"
-        )
-        .withCopyFileToContainer(
-            MountableFile.forClasspathResource("/application-test.yml"),
-            "/tmp/application-test.yml"
-        )
-        .withEnv("PASS_SAML_PATH", "file:/tmp/")
-        .withEnv("PASS_CORE_JAVA_OPTS", "-Dspring.config.import=file:/tmp/application-test.yml")
+        .withEnv("SPRING_PROFILES_ACTIVE", "standalone")
+        .withEnv("PASS_CORE_USER", "backend")
+        .withEnv("PASS_CORE_PASSWORD", "moo")
         .waitingFor(Wait.forHttp("/data/grant").forStatusCode(200).withBasicCredentials("backend", "moo"))
         .withExposedPorts(8080);
 

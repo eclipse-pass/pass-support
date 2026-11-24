@@ -25,11 +25,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.pass.notification.model.NotificationParam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 public class HandlebarsParameterizerTest {
 
@@ -76,7 +77,7 @@ public class HandlebarsParameterizerTest {
 
     private HandlebarsParameterizer handlebarsParameterizer;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = JsonMapper.builder().build();
 
     @BeforeEach
     public void setUp() throws Exception {

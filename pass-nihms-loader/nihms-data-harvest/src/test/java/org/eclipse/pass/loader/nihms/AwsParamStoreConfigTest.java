@@ -16,24 +16,26 @@
 package org.eclipse.pass.loader.nihms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SSM;
-
-import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.ParameterType;
 
 @SpringBootTest(
     properties = {
@@ -45,15 +47,15 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 class AwsParamStoreConfigTest {
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:3.8.1");
+        DockerImageName.parse("localstack/localstack:4.14.0");
 
     @Container
-    private static final LocalStackContainer localStack = new LocalStackContainer(LOCALSTACK_IMG).withServices(SSM);
+    private static final LocalStackContainer localStack = new LocalStackContainer(LOCALSTACK_IMG).withServices("ssm");
 
     @Autowired private Environment environment;
 
-    @MockBean private NihmsHarvesterCLIRunner nihmsHarvesterCLIRunner;
-    @MockBean private NihmsHarvesterDownloader nihmsHarvesterDownloader;
+    @MockitoBean private NihmsHarvesterCLIRunner nihmsHarvesterCLIRunner;
+    @MockitoBean private NihmsHarvesterDownloader nihmsHarvesterDownloader;
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -65,11 +67,18 @@ class AwsParamStoreConfigTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "ssm", "put-parameter",
-            "--name", "/config/pass-nihms/NIHMS_API_TOKEN",
-            "--value", "aws-param-store-test-token",
-            "--type", "SecureString");
+    static void beforeAll() {
+        try (SsmClient ssmClient = SsmClient.builder()
+            .endpointOverride(localStack.getEndpoint())
+            .region(Region.of(localStack.getRegion()))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+            .build()) {
+            ssmClient.putParameter(request -> request
+                .name("/config/pass-nihms/NIHMS_API_TOKEN")
+                .value("aws-param-store-test-token")
+                .type(ParameterType.SECURE_STRING));
+        }
     }
 
     @Test

@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,11 @@ public class AssemblerSupport {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(AssemblerSupport.class);
+
+    /**
+     * The number of bytes read from the start of a stream for media type detection.
+     */
+    private static final int DETECTION_PREFIX_LENGTH = 64 * 1024;
 
     /**
      * Copies <em>supported</em> Assembler {@code options} from the supplied {@code Map} and adds them to the package
@@ -123,7 +130,20 @@ public class AssemblerSupport {
 
         // If Metadata supplied to the detector is ever refactored to be non-empty, then the javadoc on
         // AssemblerSupportTest.testResetStreamWhenMarkNotSupported should be consulted.
-        return detector.detect(in, new Metadata());
+        // Tika 4 detectors require a TikaInputStream, which buffers what it reads from the stream it wraps.  Only a
+        // prefix of the supplied stream is needed for detection, so read it, reset the supplied stream so callers can
+        // read it from the beginning, and hand the detector a TikaInputStream over the copy.
+        in.mark(DETECTION_PREFIX_LENGTH);
+        byte[] prefix;
+        try {
+            prefix = in.readNBytes(DETECTION_PREFIX_LENGTH);
+        } finally {
+            in.reset();
+        }
+
+        try (TikaInputStream tis = TikaInputStream.get(prefix)) {
+            return detector.detect(tis, new Metadata(), new ParseContext());
+        }
     }
 
 }

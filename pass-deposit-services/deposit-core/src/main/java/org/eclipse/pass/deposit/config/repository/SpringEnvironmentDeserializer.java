@@ -16,13 +16,11 @@
 
 package org.eclipse.pass.deposit.config.repository;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import org.springframework.core.env.Environment;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.jdk.StringDeserializer;
 
 public class SpringEnvironmentDeserializer extends StringDeserializer {
     private static final long serialVersionUID = 1L;
@@ -34,8 +32,7 @@ public class SpringEnvironmentDeserializer extends StringDeserializer {
     }
 
     @Override
-    public String deserialize(JsonParser parser, DeserializationContext ctx)
-        throws IOException, JsonProcessingException {
+    public String deserialize(JsonParser parser, DeserializationContext ctx) throws JacksonException {
         String result = super.deserialize(parser, ctx);
         return (result != null && !result.trim().equals("")) ? env.resolveRequiredPlaceholders(result) : result;
     }

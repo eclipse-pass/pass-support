@@ -21,9 +21,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -37,6 +34,9 @@ import org.eclipse.pass.support.client.model.PassEntity;
 import org.eclipse.pass.support.client.model.Submission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -90,9 +90,11 @@ public class SubmissionTestUtil {
             JsonArray entitiesJson = JsonParser.parseString(contentString).getAsJsonArray();
 
             // Add all the PassEntity objects to the map and remember the Submission object
-            ObjectMapper objectMapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            objectMapper.registerModule(new JavaTimeModule());
+            // java.time support is built into Jackson 3, so the JavaTimeModule is no longer registered
+            ObjectMapper objectMapper = JsonMapper.builder()
+                .configureForJackson2()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
             for (JsonElement entityJson : entitiesJson) {
                 // What is the entity type?
                 JsonElement typeName = entityJson.getAsJsonObject().get("@type");

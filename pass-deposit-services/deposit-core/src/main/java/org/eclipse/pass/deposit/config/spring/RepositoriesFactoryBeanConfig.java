@@ -16,8 +16,6 @@
 
 package org.eclipse.pass.deposit.config.spring;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.eclipse.pass.deposit.config.repository.SpringEnvironmentDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +24,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 @Configuration
 public class RepositoriesFactoryBeanConfig {
@@ -33,13 +34,16 @@ public class RepositoriesFactoryBeanConfig {
     private static final Logger LOG = LoggerFactory.getLogger(RepositoriesFactoryBeanConfig.class);
 
     @Bean
-    public ObjectMapper repositoriesMapper(Environment env) {
-        ObjectMapper mapper = new ObjectMapper();
+    public JsonMapper repositoriesMapper(Environment env) {
         SimpleModule module = new SimpleModule();
         SpringEnvironmentDeserializer envDeserializer = new SpringEnvironmentDeserializer(env);
         module.addDeserializer(String.class, envDeserializer);
-        mapper.registerModule(module);
-        return mapper;
+        // Jackson 3 mappers are immutable, so modules are added with the builder. The Jackson 2 defaults keep the
+        // behavior of the previous "new ObjectMapper()".
+        return JsonMapper.builder()
+            .configureForJackson2()
+            .addModule(module)
+            .build();
     }
 
     @Bean(name = "repositories")

@@ -25,6 +25,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.status;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +48,7 @@ import java.util.Set;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import org.eclipse.deposit.util.async.Condition;
 import org.eclipse.pass.deposit.support.deploymenttest.DeploymentTestDataService;
 import org.eclipse.pass.deposit.transport.devnull.DevNullTransport;
@@ -89,6 +91,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessorIT.class);
+
+    private static final String INVENIO_PUBLISH_PATH = "/api/records/test-record-id/draft/actions/publish";
+    private static final String INVENIO_PUBLISH_RESPONSE = "{ \"id\": \"test-record-id\", \"links\": " +
+        "{ \"self_html\": \"http://localhost:9030/records/test-record-id\"} }";
+    private static final String INVENIO_PUBLISH_SCENARIO = "invenio-publish";
 
     @Autowired private SubmissionStatusUpdater submissionStatusUpdater;
     @Autowired private DepositProcessor depositProcessor;
@@ -149,6 +156,40 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         WireMock.verify(1, deleteRequestedFor(
             urlEqualTo("/api/records/existing-record-id/draft")));
+    }
+
+    /**
+     * The InvenioRDM publish call is retried on server errors, see
+     * <a href="https://github.com/inveniosoftware/invenio-rdm-records/issues/809">invenio-rdm-records#809</a>.
+     * When the publish call fails twice and then succeeds, the deposit should still be accepted.
+     */
+    @Test
+    void testSubmissionProcessing_InvenioPublishRetriedOnServerError() throws Exception {
+        // GIVEN
+        Submission submission = findSubmission(createSubmission(
+            ResourceTestUtil.readSubmissionJson("sample1-unsubmitted")));
+        resetGrantProjectName(submission, null);
+        initInvenioApiStubs();
+        initDSpaceApiStubs();
+        // Stubs added last take precedence, so these replace the successful publish stub from initInvenioApiStubs.
+        // A 500 is used for the failures because the Apache HttpClient used by InvenioRdmSession already retries a
+        // 503 once by itself, which would make the number of requests differ from the number of retry attempts.
+        stubFor(post(INVENIO_PUBLISH_PATH)
+            .inScenario(INVENIO_PUBLISH_SCENARIO).whenScenarioStateIs(Scenario.STARTED)
+            .willReturn(status(500)).willSetStateTo("failed-once"));
+        stubFor(post(INVENIO_PUBLISH_PATH)
+            .inScenario(INVENIO_PUBLISH_SCENARIO).whenScenarioStateIs("failed-once")
+            .willReturn(status(500)).willSetStateTo("failed-twice"));
+        stubFor(post(INVENIO_PUBLISH_PATH)
+            .inScenario(INVENIO_PUBLISH_SCENARIO).whenScenarioStateIs("failed-twice")
+            .willReturn(ok(INVENIO_PUBLISH_RESPONSE)));
+
+        // WHEN/THEN
+        testSubmissionProcessor(submission, false);
+        verify(invenioRdmTransport, times(1)).open(anyMap());
+        // 2 failed attempts and then 1 successful attempt, all other InvenioRDM calls happen once
+        verifyInvenioApiStubs(1, 3);
+        verifyDSpaceApiStubs(1);
     }
 
     @Test
@@ -373,13 +414,16 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                 .willReturn(ok()));
         });
 
-        String publishJsonResponse = "{ \"id\": \"test-record-id\", \"links\": " +
-            "{ \"self_html\": \"http://localhost:9030/records/test-record-id\"} }";
-        stubFor(post("/api/records/test-record-id/draft/actions/publish")
-            .willReturn(ok(publishJsonResponse)));
+        stubFor(post(INVENIO_PUBLISH_PATH)
+            .willReturn(ok(INVENIO_PUBLISH_RESPONSE)));
     }
 
     private void verifyInvenioApiStubs(int expectedCount) throws IOException, URISyntaxException {
+        verifyInvenioApiStubs(expectedCount, expectedCount);
+    }
+
+    private void verifyInvenioApiStubs(int expectedCount, int expectedPublishCount)
+        throws IOException, URISyntaxException {
         WireMock.verify(expectedCount, getRequestedFor(
             urlEqualTo("/api/user/records?q=metadata.title:%22Specific%20protein%20supplementation%20using%20" +
                 "soya%2C%20casein%20or%20whey%20differentially%20affects%20regional%20gut%20growth%20and%20luminal%20" +
@@ -398,7 +442,6 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             WireMock.verify(expectedCount, postRequestedFor(
                 urlEqualTo("/api/records/test-record-id/draft/files/" + fileName + "/commit")));
         });
-        WireMock.verify(expectedCount, postRequestedFor(
-            urlEqualTo("/api/records/test-record-id/draft/actions/publish")));
+        WireMock.verify(expectedPublishCount, postRequestedFor(urlEqualTo(INVENIO_PUBLISH_PATH)));
     }
 }

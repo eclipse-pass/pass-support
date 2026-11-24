@@ -15,17 +15,17 @@
  */
 package org.eclipse.pass.notification.service;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.pass.support.client.model.Submission;
 import org.eclipse.pass.support.client.model.SubmissionEvent;
 import org.springframework.util.ReflectionUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -48,7 +48,7 @@ public class JsonMetadataBuilder {
         JsonNode metadataNode;
         try {
             metadataNode = mapper.readTree(metadata);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
 
@@ -87,7 +87,13 @@ public class JsonMetadataBuilder {
         if (node.isPresent() && node.get().isArray()) {
             return node.map(Objects::toString);
         }
-        return node.map(JsonNode::asText);
+        return node.map(JsonMetadataBuilder::asText);
+    }
+
+    // Jackson 3 JsonNode#asString() throws for container nodes and returns the default for null nodes, whereas
+    // Jackson 2 JsonNode#asText() returned "" for containers and "null" for null nodes.
+    private static String asText(JsonNode node) {
+        return node.isNull() ? "null" : node.asString("");
     }
 
     private static Optional<String> field(String fieldname, SubmissionEvent event) {

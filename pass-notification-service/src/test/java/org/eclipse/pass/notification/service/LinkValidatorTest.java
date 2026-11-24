@@ -25,12 +25,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.pass.notification.config.LinkValidationRule;
 import org.eclipse.pass.notification.config.NotificationConfig;
 import org.eclipse.pass.notification.model.Link;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * @author apb@jhu.edu
@@ -68,7 +68,7 @@ public class LinkValidatorTest {
     @Test
     public void simpleRuleTest() {
         rules.add(rule);
-        final LinkValidator toTest = new LinkValidator(config, new ObjectMapper());
+        final LinkValidator toTest = new LinkValidator(config, JsonMapper.builder().build());
         assertTrue(toTest.test(goodLink));
         assertFalse(toTest.test(badLink));
     }
@@ -78,7 +78,7 @@ public class LinkValidatorTest {
     public void throwExceptionIfRequestedTest() {
         rule.setThrowExceptionOnFailure(true);
         rules.add(rule);
-        final LinkValidator toTest = new LinkValidator(config, new ObjectMapper());
+        final LinkValidator toTest = new LinkValidator(config, JsonMapper.builder().build());
         Exception ex = assertThrows(Exception.class, () -> {
             toTest.test(badLink);
         });
@@ -91,7 +91,7 @@ public class LinkValidatorTest {
     public void noRulesTest() {
         rules.clear();
 
-        final LinkValidator toTest = new LinkValidator(config, new ObjectMapper());
+        final LinkValidator toTest = new LinkValidator(config, JsonMapper.builder().build());
         assertTrue(toTest.test(badLink));
         assertTrue(toTest.test(badLink));
     }
@@ -108,7 +108,7 @@ public class LinkValidatorTest {
 
         rules.addAll(asList(rule, DIFFERENT_RULE));
 
-        final LinkValidator toTest = new LinkValidator(config, new ObjectMapper());
+        final LinkValidator toTest = new LinkValidator(config, JsonMapper.builder().build());
         assertTrue(toTest.test(goodLink));
         assertFalse(toTest.test(badLink));
 
@@ -129,7 +129,7 @@ public class LinkValidatorTest {
 
         rules.add(rule);
 
-        final LinkValidator toTest = new LinkValidator(config, new ObjectMapper());
+        final LinkValidator toTest = new LinkValidator(config, JsonMapper.builder().build());
         assertFalse(toTest.test(badLink));
 
         badLink.setRel(OTHER_REL_NON_MATCHING);
@@ -149,7 +149,7 @@ public class LinkValidatorTest {
 
         rules.add(rule);
 
-        final LinkValidator toTest = new LinkValidator(config, new ObjectMapper());
+        final LinkValidator toTest = new LinkValidator(config, JsonMapper.builder().build());
         assertFalse(toTest.test(badLink));
 
         badLink.setRel(OTHER_REL_NON_MATCHING);
@@ -165,7 +165,7 @@ public class LinkValidatorTest {
         rule.setRequiredBaseURI(null);
         rules.add(rule);
 
-        final LinkValidator toTest = new LinkValidator(config, new ObjectMapper());
+        final LinkValidator toTest = new LinkValidator(config, JsonMapper.builder().build());
         assertTrue(toTest.test(goodLink));
         assertTrue(toTest.test(badLink));
     }

@@ -19,8 +19,8 @@ package org.eclipse.pass.deposit.assembler;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -28,11 +28,15 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.input.CharSequenceInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -99,6 +103,15 @@ public class AssemblerSupportTest {
     @Test
     public void testResetStreamWhenMarkSupported() throws IOException {
         Detector spy = spy(detector);
+
+        // Tika 4 detectors add what they detect to the Metadata they are given, so the size of the Metadata must be
+        // recorded when the detector is invoked, not when the invocation is verified.
+        AtomicInteger metadataSizeAtDetection = new AtomicInteger(-1);
+        doAnswer(invocation -> {
+            metadataSizeAtDetection.set(invocation.<Metadata>getArgument(1).size());
+            return invocation.callRealMethod();
+        }).when(spy).detect(any(TikaInputStream.class), any(Metadata.class), any(ParseContext.class));
+
         CharSequence cs = "Hello, world!";
         CharSequenceInputStream markSupportedIn = CharSequenceInputStream.builder()
             .setCharSequence(cs)
@@ -114,9 +127,11 @@ public class AssemblerSupportTest {
         markSupportedIn.read(b, 0, cs.length());
         assertEquals(cs, new String(b));
 
-        // The underlying detector should be invoked with the supplied InputStream and an *empty* Metadata
+        // The underlying detector should be invoked with a TikaInputStream over the bytes read from the supplied
+        // InputStream and an *empty* Metadata
         // If the Metadata is not empty (i.e. AssemblerSupport#detectMediaType has been refactored), see the
         // javadoc on testResetStreamWhenMarkNotSupported
-        verify(spy).detect(eq(markSupportedIn), argThat(arg -> arg.size() == 0));
+        verify(spy).detect(any(TikaInputStream.class), any(Metadata.class), any(ParseContext.class));
+        assertEquals(0, metadataSizeAtDetection.get());
     }
 }

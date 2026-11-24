@@ -25,9 +25,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -50,12 +50,12 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractListenerIT {
 
     private static final DockerImageName LOCALSTACK_IMG =
-        DockerImageName.parse("localstack/localstack:3.8.1");
+        DockerImageName.parse("localstack/localstack:4.14.0");
 
     @Container
     static final LocalStackContainer LOCALSTACK_CONTAINER =
         new LocalStackContainer(LOCALSTACK_IMG)
-            .withServices(LocalStackContainer.Service.SQS);
+            .withServices("sqs");
 
     @Autowired protected JmsTemplate jmsTemplate;
     @MockitoBean protected PassClient passClient;

@@ -25,8 +25,8 @@ import java.util.Set;
 import org.eclipse.pass.loader.nihms.model.NihmsStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * @author Russ Poetker (rpoetke1@jh.edu)
@@ -35,7 +35,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource("classpath:test-application.properties")
 public class NihmsTransformLoadCLITest {
 
-    @MockBean NihmsTransformLoadService nihmsTransformLoadService;
+    @MockitoBean NihmsTransformLoadService nihmsTransformLoadService;
 
     @Test
     public void testHarvesterCLI() {
